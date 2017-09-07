@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-** WORK IN PROGRESS ** (Last update: 23/08/2017)
+** WORK IN PROGRESS ** (Last update: 03/09/2017)
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -31,8 +31,8 @@ the following additional packages:
 
 + Numpy
 + Scipy
++ Eigen
 + Matplotlib (Optional)
-+ Eigen (Optional)
 + Jupyter (Optional)
 
 ---
@@ -41,7 +41,7 @@ the following additional packages:
 
 We developed BayesianTracker to enable us to track individual molecules or
 cells in large populations over very long periods of time, reconstruct lineages
-and study cell movement or sub-cellular protein localisation. Below is an
+and study cell movement or sub-cellular protein localisation. We have provided several examples in the notebooks folder.  Below is an
 example of tracking cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/dsjUnRwu33k)
@@ -92,6 +92,28 @@ with btrack.BayesianTracker() as tracker:
 ```
 
 There are many additional options, including the ability to define object models.
-More details will be provided.
+
+### Object models
+To be completed.
+
+### Motion models
+Motion models can be written as simple JSON files which can be imported into the tracker.
+
+```json
+{
+  "MotionModel":{
+    "name": "Example",
+    "dt": 1.0,
+    "measurements": 1,
+    "states": 3,
+    "accuracy": 2.0,
+    "A": {
+      "matrix": [1,0,0]
+       }
+    }
+}
+```
+
+Or can be built using the MotionModel class.
 
 ### References

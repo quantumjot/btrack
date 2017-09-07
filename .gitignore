@@ -1,0 +1,9 @@
+btrack/src/eigen/*
+resources/*
+notebooks/*
+
+*.DS_store
+*.o
+*.so
+*.dylib
+*.pyc

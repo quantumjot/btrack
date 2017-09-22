@@ -44,7 +44,7 @@ extern "C" struct PyTrackObject {
 };
 
 // Output back to Python with some tracking statistics
-extern "C" struct PyTrackingInfo {
+extern "C" struct PyTrackInfo {
 	unsigned int error;
 	unsigned int n_tracks;
 	unsigned int n_active;
@@ -58,7 +58,7 @@ extern "C" struct PyTrackingInfo {
 	bool complete;
 
 	// default constructor
-	PyTrackingInfo(): error(ERROR_none), n_tracks(0), n_active(0),
+	PyTrackInfo(): error(ERROR_none), n_tracks(0), n_active(0),
 			n_conflicts(0), n_lost(0), t_update_belief(0), t_update_link(0),
 			t_total_time(0), p_link(0), p_lost(0), complete(false) {};
 };
@@ -119,7 +119,7 @@ public:
 private:
 
 	// Store a reference to the original object?
-	const PyTrackObject* original_object;
+	// const PyTrackObject* original_object;
 };
 
 
@@ -141,10 +141,9 @@ struct Prediction
 };
 
 
-// template struct
-template <typename btrack_float> struct test_s {
-	btrack_float x;
-};
+// template <typename btrack_float> struct test_s {
+// 	btrack_float x;
+// };
 
 
 
@@ -152,7 +151,8 @@ template <typename btrack_float> struct test_s {
 typedef std::shared_ptr<TrackObject> TrackObjectPtr;
 
 // Comparison object to order track objects ready for tracking.
-inline bool compare_obj_time(const TrackObjectPtr trackobj_1, const TrackObjectPtr trackobj_2) {
+inline bool compare_obj_time(	const TrackObjectPtr trackobj_1,
+															const TrackObjectPtr trackobj_2 ) {
 	return (trackobj_1->t < trackobj_2->t);
 }
 
@@ -173,7 +173,6 @@ struct ImagingVolume
 	};
 
 	// test whether an object lies within the volume
-	// TODO(arl): check whether this works!
 	bool inside(const Eigen::Vector3d& position) const {
 		if (position(0)>= min_xyz(0) && position(0)<=max_xyz(0) &&
 				position(1)>= min_xyz(1) && position(1)<=max_xyz(1) &&

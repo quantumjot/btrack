@@ -49,10 +49,9 @@ public:
 	// return the system dimensions
 	void dimensions(unsigned int* m,
 									unsigned int* s) const {
-
 				*m = measurements;
 				*s = states;
-	 }
+	 };
 
 private:
 	// matrices for Kalman filter

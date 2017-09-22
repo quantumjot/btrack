@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-** WORK IN PROGRESS ** (Last update: 03/09/2017)
+** WORK IN PROGRESS ** (Last update: 14/09/2017)
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -14,7 +14,6 @@ probabilistic model, and utilises this to predict future states (and error in
 states) of each of the objects in the field of view.  We assign new observations
 to the growing tracklets (linking) by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible linkages.
-
 
 [![SquiggleBox](http://lowe.cs.ucl.ac.uk/images/tracks.png)]()
 *Example of tracking objects in 3D space*
@@ -31,9 +30,8 @@ the following additional packages:
 
 + Numpy
 + Scipy
++ h5py
 + Eigen
-+ Matplotlib (Optional)
-+ Jupyter (Optional)
 
 ---
 
@@ -41,28 +39,31 @@ the following additional packages:
 
 We developed BayesianTracker to enable us to track individual molecules or
 cells in large populations over very long periods of time, reconstruct lineages
-and study cell movement or sub-cellular protein localisation. We have provided several examples in the notebooks folder.  Below is an
-example of tracking cells:
+and study cell movement or sub-cellular protein localisation. We have provided
+several examples in the notebooks folder.  Below is an example of tracking
+cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/dsjUnRwu33k)
+
+More details of how the tracking algorithm can be applied to tracking cells in
+time-lapse microscopy data can be found in our publication:
+
+**Local cellular neighbourhood controls proliferation in cell competition**  
+Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
+*Mol. Biol. Cell* (2017) <https://doi.org/10.1091/mbc.E17-06-0368>
 
 ---
 
 ### Installation
 
-You can install BayesianTracker by cloning the repo and running the setup script:
+You can install BayesianTracker by cloning the repo and running the setup:
 ```sh
 $ git clone https://github.com/quantumjot/BayesianTracker.git
 $ cd BayesianTracker
 $ python setup.py install
 ```
 
-
-
 ---
-
-### Principles of operation
-To be completed.
 
 ### Usage
 
@@ -72,13 +73,13 @@ BayesianTracker can be used simply as follows:
 import btrack
 
 # NOTE:  This should be from your image segmentation code
-objects = [btrack.TrackObject(t) for t in observations]
+objects = [btrack.PyTrackObject(t) for t in observations]
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
-  # append an object to be tracked
-  for objs in objects:
-    tracker.append(obj)
+
+  # append the objects to be tracked
+  tracker.append(objects)
 
   # track them
   tracker.track()
@@ -93,8 +94,34 @@ with btrack.BayesianTracker() as tracker:
 
 There are many additional options, including the ability to define object models.
 
-### Object models
-To be completed.
+### Input data
+Observations can be provided in three basic formats:
++ a simple JSON file
++ HDF5 for larger/more complex datasets, or
++ using your own code as a PyTrackObject.
+
+Here is an example of the JSON format:
+```json
+{
+  "Object_203622": {
+    "x": 554.29737483861709,
+    "y": 1199.362071438818,
+    "z": 0.0,
+    "t": 862,
+    "label": "interphase",
+    "states": 5,
+    "probability": [
+      0.996992826461792,
+      0.0021888131741434336,
+      0.0006106126820668578,
+      0.000165432647918351,
+      4.232166247675195e-05
+    ],
+    "dummy": false
+  }
+}
+```
+
 
 ### Motion models
 Motion models can be written as simple JSON files which can be imported into the tracker.
@@ -116,4 +143,7 @@ Motion models can be written as simple JSON files which can be imported into the
 
 Or can be built using the MotionModel class.
 
-### References
+
+
+### Object models
+To be completed.

@@ -15,11 +15,13 @@
 #include "types.hpp"
 #include "motion.hpp"
 #include "belief.h"
+#include "inference.hpp"
 
 #define MAX_LOST 5
 #define PROB_NOT_ASSIGN 0.01
 #define DEFAULT_ACCURACY 2.0
 #define PROB_ASSIGN_EXP_DECAY true
+#define DYNAMIC_ACCURACY false
 #define DIMS 3
 #define DEBUG true
 
@@ -29,8 +31,6 @@
 #define RESERVE_ALL_TRACKS 500000
 #define RESERVE_ACTIVE_TRACKS 1000
 
-
-#define DYNAMIC_ACCURACY false
 
 // constants for integrating Gaussian PDF
 const double kRootTwo = std::sqrt(2.0);
@@ -42,7 +42,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 
 
 // Tracklet object. A container class to keep the list of track objects as well
-// as a dedicated motion model for the object.
+// as a dedicated motion and object models for the object.
 class Tracklet
 {
 public:
@@ -101,7 +101,7 @@ public:
 
 	// get the latest prediction from the motion model. Note that the current
 	// prediction from the Tracklet object is different to the prediction of the
-	// motion model. The tracklet adds any extra velocity information to the
+	// motion model. The tracklet adds any extra model information to the
 	// last known position, while the motion model is the filtered version of the
 	// data which may contain some lag. This is a critical part of the prediction
 	// TODO(arl): make this model agnostic
@@ -121,13 +121,14 @@ public:
 
 private:
 
-
-
 	// if the lost counter exceeds max_lost, the track is considered inactive
 	unsigned int max_lost = MAX_LOST;
 
 	// motion model
 	MotionModel motion_model;
+
+	// object model
+	ObjectModel object_model;
 };
 
 
@@ -246,6 +247,12 @@ public:
 									              const unsigned int max_lost,
 									              const double prob_not_assign);
 
+	// set up the object model
+	unsigned int set_object_model(const unsigned int states,
+																double* transition_raw,
+																double* emission_raw,
+																double* start_raw);
+
 	// add new objects
 	unsigned int xyzt(const double* xyzt);
 	unsigned int append(const PyTrackObject& new_object);
@@ -263,7 +270,7 @@ public:
 	void track_all();
 
 	// move the tracking forward by n iterations, used in interactive mode
-	void step() { return step(1); };
+	void step() { step(1); };
 	void step(const unsigned int n_steps);
 
 	// get the number of tracks
@@ -274,12 +281,13 @@ public:
 	// return the Euclidean distance between object and trajectory
 	double euclidean_dist(const size_t trk, const size_t obj) const {
 		Eigen::Vector3d dxyz = tracks[trk]->position()-new_objects[obj]->position();
-		return std::sqrt(dxyz(0)*dxyz(0) + dxyz(1)*dxyz(1) + dxyz(2)*dxyz(2));
+		return std::sqrt(dxyz.transpose()*dxyz);
 	};
 
 	// track maintenance
 	bool clean();
 	bool renumber();
+	bool purge();
 
 	// calculate the cost matrix
 	void cost(Eigen::Ref<Eigen::MatrixXd> belief,
@@ -298,8 +306,7 @@ public:
 	ImagingVolume volume;
 
 	// statistics
-	const PyTrackingInfo* stats(){
-		std::cout << "Calling stats" << std::endl;
+	const PyTrackInfo* stats(){
 		return &statistics;
 	}
 
@@ -310,6 +317,9 @@ private:
 
 	// default motion model, must remain uninitialised
 	MotionModel motion_model;
+
+	// default object model, must remain uninitialised
+	ObjectModel object_model;
 
 	// default tracking parameters
 	double prob_not_assign = PROB_NOT_ASSIGN;
@@ -358,7 +368,7 @@ private:
 	unsigned int n_conflicts = 0;
 
 	// set up a structure for the statistics
-	PyTrackingInfo statistics;
+	PyTrackInfo statistics;
 };
 
 

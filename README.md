@@ -23,7 +23,7 @@ microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 
 ---
 
-### Requirements
+### Dependencies
 
 BayesianTracker has been tested with Python 2.7+ on OS X and Linux, and requires
 the following additional packages:

@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <iostream>
+#include <limits>
 
 
 
@@ -28,6 +29,8 @@
 #define ERROR_prob_not_assign_out_of_range 908
 #define ERROR_not_defined 909
 #define ERROR_none 910
+
+const double kInfinity = std::numeric_limits<double>::infinity();
 
 
 
@@ -58,7 +61,7 @@ extern "C" struct PyTrackInfo {
 	bool complete;
 
 	// default constructor
-	PyTrackInfo(): error(ERROR_none), n_tracks(0), n_active(0),
+	PyTrackInfo() : error(ERROR_none), n_tracks(0), n_active(0),
 			n_conflicts(0), n_lost(0), t_update_belief(0), t_update_link(0),
 			t_total_time(0), p_link(0), p_lost(0), complete(false) {};
 };
@@ -77,23 +80,24 @@ public:
 	TrackObject() : x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
 
 	// Instantiate a track object with supplied parameters
-	// NOTE: we do not use this...
-	TrackObject(const double x,
-							const double y,
-							const double z,
-							const unsigned int t,
-							const bool dummy,
-							const unsigned int label,
-							const unsigned int states,
-							double* probability) : x(x), y(y), z(z), t(t), dummy(dummy),
-																		label(label), states(states),
-																		probability(probability) {};
+	// TrackObject(const double x,
+	// 						const double y,
+	// 						const double z,
+	// 						const unsigned int t,
+	// 						const bool dummy,
+	// 						const unsigned int label,
+	// 						const unsigned int states,
+	// 						double* probability) :
+	// 						x(x), y(y), z(z), t(t), dummy(dummy), label(label), states(states),
+	// 						probability(probability)
+	// 						{};
 
 	// Instantiate a track object from an existing PyTrackObject
-	TrackObject(const PyTrackObject& trk): x(trk.x), y(trk.y), z(trk.z), t(trk.t),
-																				dummy(trk.dummy), label(trk.label),
-																				states(trk.states),
-																				probability(trk.probability) {};
+	TrackObject(const PyTrackObject& trk) :
+							x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
+							label(trk.label), states(trk.states), probability(trk.probability)
+							{};
+
 	// Default destructor
 	~TrackObject() {};
 
@@ -164,7 +168,7 @@ struct ImagingVolume
 	Eigen::Vector3d max_xyz;
 
 	// default constructor
-	ImagingVolume() {min_xyz.fill(1e9); max_xyz.fill(0.);};
+	ImagingVolume() { min_xyz.fill(kInfinity); max_xyz.fill(-kInfinity); };
 
 	// update with an observation
 	void update(const TrackObjectPtr obj) {

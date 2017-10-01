@@ -15,7 +15,7 @@ states) of each of the objects in the field of view.  We assign new observations
 to the growing tracklets (linking) by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible linkages.
 
-[![SquiggleBox](http://lowe.cs.ucl.ac.uk/images/tracks.png)]()
+[![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/tracks.png)]()
 *Example of tracking objects in 3D space*
 
 BayesianTracker (btrack) is part of the ImPy image processing toolbox for
@@ -128,7 +128,7 @@ Motion models can be written as simple JSON files which can be imported into the
 
 ```json
 {
-  "MotionModel":{
+  "MotionModel": {
     "name": "Example",
     "dt": 1.0,
     "measurements": 1,

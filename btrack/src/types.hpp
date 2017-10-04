@@ -80,19 +80,6 @@ public:
   // Start a new tracklet without any prior information.
   TrackObject() : x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
 
-  // Instantiate a track object with supplied parameters
-  // TrackObject(const double x,
-  // 						const double y,
-  // 						const double z,
-  // 						const unsigned int t,
-  // 						const bool dummy,
-  // 						const unsigned int label,
-  // 						const unsigned int states,
-  // 						double* probability) :
-  // 						x(x), y(y), z(z), t(t), dummy(dummy), label(label), states(states),
-  // 						probability(probability)
-  // 						{};
-
   // Instantiate a track object from an existing PyTrackObject
   TrackObject(const PyTrackObject& trk) :
               x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),

@@ -1,5 +1,5 @@
 {
-  "MotionModel":{
+  "MotionModel": {
     "name": "BrownianMotion",
     "dt": 1.0,
     "measurements": 3,

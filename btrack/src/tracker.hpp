@@ -90,7 +90,7 @@ public:
 
   // get the current position from the last known object
   Eigen::Vector3d position() const {
-  return track.back()->position();
+    return track.back()->position();
   };
 
   // set the track to lost - permanently!

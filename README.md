@@ -100,7 +100,40 @@ Observations can be provided in three basic formats:
 + HDF5 for larger/more complex datasets, or
 + using your own code as a PyTrackObject.
 
-Here is an example of the JSON format:
+HDF5 is the *default* format for data interchange, where addtional information
+such as images or metadata can also be stored.  It is structured using symbolic
+links to store references to the original data:
+
+```HDF5
+frames/
+  frame_1/
+    ->object_1
+    ->object_2
+    ...
+segmented/
+  segmented_1
+  ...
+objects/
+  object_1/
+    x
+    y
+    z
+    t
+    ...
+  object_2/
+  ...
+tracks/
+  track_1/
+    ->object_12
+    ->object_23
+    ->object_74
+    ...
+  track_2/
+  ...
+trees/
+```
+
+Data can also be imported using JSON format. Here is an example of the simple JSON format:
 ```json
 {
   "Object_203622": {
@@ -121,7 +154,6 @@ Here is an example of the JSON format:
   }
 }
 ```
-
 
 ### Motion models
 Motion models can be written as simple JSON files which can be imported into the tracker.

@@ -37,6 +37,7 @@ const double kInfinity = std::numeric_limits<double>::infinity();
 
 // Python structure for external interface
 extern "C" struct PyTrackObject {
+  unsigned int ID;
   double x;
   double y;
   double z;
@@ -78,10 +79,11 @@ class TrackObject
 public:
 
   // Start a new tracklet without any prior information.
-  TrackObject() : x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
+  TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
 
   // Instantiate a track object from an existing PyTrackObject
   TrackObject(const PyTrackObject& trk) :
+              ID(trk.ID),
               x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
               label(trk.label), states(trk.states), probability(trk.probability)
               {};
@@ -90,6 +92,7 @@ public:
   ~TrackObject() {};
 
   // xyzt position, dummy flag and class label
+  unsigned int ID;
   double x;
   double y;
   double z;

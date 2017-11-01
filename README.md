@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-** WORK IN PROGRESS ** (Last update: 14/09/2017)
+** WORK IN PROGRESS ** (Last update: 01/10/2017)
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -89,7 +89,7 @@ with btrack.BayesianTracker() as tracker:
   tracks = tracker.tracks
 
   # export them
-  tracker.export('/home/arl/Documents/tracks.json')
+  tracker.export('/home/arl/Documents/tracks.hdf5')
 ```
 
 There are many additional options, including the ability to define object models.
@@ -102,7 +102,7 @@ Observations can be provided in three basic formats:
 
 HDF5 is the *default* format for data interchange, where addtional information
 such as images or metadata can also be stored.  It is structured using symbolic
-links to store references to the original data:
+links and pointers to store references to the original data:
 
 ```HDF5
 frames/
@@ -115,10 +115,10 @@ segmented/
   ...
 objects/
   object_1/
-    x
-    y
-    z
-    t
+    txyz
+    label
+    probability
+    attribute_1
     ...
   object_2/
   ...

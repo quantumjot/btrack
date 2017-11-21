@@ -1,6 +1,7 @@
 # Bayesian Tracker
 
-** WORK IN PROGRESS ** (Last update: 01/10/2017)
+** WORK IN PROGRESS ** (Last update: 17/11/2017)
+** Please note, this is not the full repository, yet. **
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -32,6 +33,8 @@ the following additional packages:
 + Scipy
 + h5py
 + Eigen
+
+BayesianTracker is written in C, C++ and Python.
 
 ---
 
@@ -72,8 +75,8 @@ BayesianTracker can be used simply as follows:
 ```python
 import btrack
 
-# NOTE:  This should be from your image segmentation code
-objects = [btrack.PyTrackObject(t) for t in observations]
+# NOTE(arl):  This should be from your image segmentation code
+objects = utils.import_HDF('/home/arl/Documents/objects.hdf5')
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
@@ -89,7 +92,8 @@ with btrack.BayesianTracker() as tracker:
   tracks = tracker.tracks
 
   # export them
-  tracker.export('/home/arl/Documents/tracks.hdf5')
+  # NOTE(arl): the HDF5 format stores references to the original objects
+  tracker.export('/home/arl/Documents/objects.hdf5')
 ```
 
 There are many additional options, including the ability to define object models.

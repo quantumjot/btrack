@@ -7,11 +7,11 @@
 #           information to perform the trajectory linking. This method uses
 #           positional and visual information for track linking.
 #
-# Authors:	Alan R. Lowe (arl) a.lowe@ucl.ac.uk
+# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
 #
 # License:  See LICENSE.md
 #
-# Created:	14/08/2014
+# Created:  14/08/2014
 #-------------------------------------------------------------------------------
 
 

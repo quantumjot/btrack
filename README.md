@@ -1,7 +1,7 @@
 # Bayesian Tracker
 
-** WORK IN PROGRESS ** (Last update: 17/11/2017)
-** Please note, this is not the full repository, yet. **
+**WORK IN PROGRESS** (Last update: 17/11/2017)  
+*Please note, this is not the full repository (yet)*
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to

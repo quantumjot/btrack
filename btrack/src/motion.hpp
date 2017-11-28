@@ -1,3 +1,19 @@
+/*
+--------------------------------------------------------------------------------
+ Name:     BayesianTracker
+ Purpose:  A multi object tracking library, specifically used to reconstruct
+           tracks in crowded fields. Here we use a probabilistic network of
+           information to perform the trajectory linking. This method uses
+           positional and visual information for track linking.
+
+ Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
+
+ License:  See LICENSE.md
+
+ Created:  14/08/2014
+--------------------------------------------------------------------------------
+*/
+
 #ifndef _MOTION_H_INCLUDED_
 #define _MOTION_H_INCLUDED_
 

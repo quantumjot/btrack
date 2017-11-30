@@ -23,6 +23,10 @@ Misc
 Updates
 =======
 
+0.2.3
+-----
+- Hypothesis generation from track objects
+
 0.2.2
 -----
 - HDF5 is now the default file format, for integration with conv-nets
@@ -31,8 +35,7 @@ Updates
 
 0.2.1
 -----
-- Set limits on the volume, such that tracks which are predicted to exit the
- tracking volume are set to lost automatically.
+- Set limits on the volume, such that tracks which are predicted to exit the tracking volume are set to lost automatically.
 - Enabled frame range in tracking to limit the range of data used
 - Fast plotting of tracks
 - Output a tracking statistics structure back to Python

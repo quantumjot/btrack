@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #-------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct

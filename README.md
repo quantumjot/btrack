@@ -135,6 +135,14 @@ tracks/
     ...
   track_2/
   ...
+hypotheses/
+  hypothesis_1/
+    type
+    log_probability
+    tracks
+    ...
+  hypothesis_2/
+  ...
 trees/
 ```
 

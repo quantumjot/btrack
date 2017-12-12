@@ -549,6 +549,8 @@ class HDF5_FileHandler(object):
             trk_grp.create_dataset('track_{0:d}'.format(t_ID), data=np.array(t),
                 dtype='i4')
 
+        #TODO(arl): write out the track root, parent
+
     def write_objects(self, objects):
         """ Write objects to the HDF5 file """
         raise NotImplementedError

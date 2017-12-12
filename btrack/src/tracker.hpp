@@ -135,6 +135,11 @@ public:
   // counter for number of consecutive lost/dummy observations
   unsigned int lost = 0;
 
+  // store the root, parent and original IDs
+  unsigned int root;
+  unsigned int parent;
+  unsigned int original_ID;
+
 private:
 
   // if the lost counter exceeds max_lost, the track is considered inactive
@@ -239,7 +244,7 @@ class BayesianTracker
 {
 public:
   // Default constructor
-  BayesianTracker();
+  BayesianTracker() {};
   BayesianTracker(bool verbose);
 
   // Default destructor

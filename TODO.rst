@@ -11,7 +11,7 @@ C/C++ and CUDA
 - Autoswitch CPU/GPU for tracking
 - Update belief matrix using CUDA parallelisation
 - Template track object class to use different levels of precision
-- Integrate ver 0.1 track optimiser code
+- Give each track a unique hash to make sure we don't overwrite IDs
 
 Misc
 ----
@@ -25,7 +25,9 @@ Updates
 
 0.2.3
 -----
-- Hypothesis generation from track objects
+- Hypothesis generation from track objects, integration of new Eigen code
+- Hypothesis optimisation using GLPK
+- Track merging moved to C++ code
 
 0.2.2
 -----

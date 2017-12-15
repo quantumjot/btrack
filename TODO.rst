@@ -26,7 +26,7 @@ Updates
 0.2.3
 -----
 - Hypothesis generation from track objects, integration of new Eigen code
-- Hypothesis optimisation using GLPK
+- Hypothesis based track optimisation using GLPK
 - Track merging moved to C++ code
 
 0.2.2

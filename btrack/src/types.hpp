@@ -92,45 +92,40 @@ extern "C" struct PyTrackInfo {
 // essentially a parallel of the PyTrackObject class.
 class TrackObject
 {
-public:
+  public:
+    // Start a new tracklet without any prior information.
+    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
 
-  // Start a new tracklet without any prior information.
-  TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
+    // Instantiate a track object from an existing PyTrackObject
+    TrackObject(const PyTrackObject& trk) :
+                ID(trk.ID),
+                x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
+                label(trk.label), states(trk.states), probability(trk.probability)
+                {};
 
-  // Instantiate a track object from an existing PyTrackObject
-  TrackObject(const PyTrackObject& trk) :
-              ID(trk.ID),
-              x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
-              label(trk.label), states(trk.states), probability(trk.probability)
-              {};
+    // Default destructor
+    ~TrackObject() {};
 
-  // Default destructor
-  ~TrackObject() {};
+    // xyzt position, dummy flag and class label
+    unsigned int ID;
+    double x;
+    double y;
+    double z;
+    unsigned int t;
+    bool dummy;
+    unsigned int label;
+    unsigned int states;
+    double* probability;
 
-  // xyzt position, dummy flag and class label
-  unsigned int ID;
-  double x;
-  double y;
-  double z;
-  unsigned int t;
-  bool dummy;
-  unsigned int label;
-  unsigned int states;
-  double* probability;
-
-  // return the current position of the track object
-  Eigen::Vector3d position() const {
-    Eigen::Vector3d p;
-    p << x, y, z;
-    return p;
-  };
-
-
-
-private:
-
-  // Store a reference to the original object?
-  // const PyTrackObject* original_object;
+    // return the current position of the track object
+    Eigen::Vector3d position() const {
+      Eigen::Vector3d p;
+      p << x, y, z;
+      return p;
+    };
+  private:
+    // Store a reference to the original object?
+    // const PyTrackObject* original_object;
 };
 
 

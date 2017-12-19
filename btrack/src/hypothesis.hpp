@@ -34,6 +34,7 @@
 #define TYPE_Pdivn 4
 #define TYPE_Papop 5
 #define TYPE_Pdead 6
+#define TYPE_undef 999
 
 
 #define STATE_interphase 101
@@ -68,7 +69,7 @@ struct HashIndex {
 
 // Store a hypothesis to return to Python
 // NOTE(arl): the probability is actually the log probability
-extern "C" struct Hypothesis {
+extern "C" struct PyHypothesis {
   unsigned int hypothesis;
   unsigned int ID;
   double probability;
@@ -76,7 +77,54 @@ extern "C" struct Hypothesis {
   unsigned int child_one_ID;
   unsigned int child_two_ID;
 
-  Hypothesis(unsigned int h, unsigned int id): hypothesis(h), ID(id) {};
+  PyHypothesis(unsigned int h, unsigned int id): hypothesis(h), ID(id) {};
+};
+
+
+// Internal hypothesis class
+class Hypothesis
+{
+  public:
+    Hypothesis() {};
+    ~Hypothesis() {};
+    Hypothesis( const unsigned int h,
+                const TrackletPtr a_trk ): hypothesis(h), ID(a_trk->ID),
+                trk_ID(a_trk) {};
+
+    unsigned int hypothesis = TYPE_undef;
+    unsigned int ID;
+    double probability;
+
+    // store pointers to the tracks
+    TrackletPtr trk_ID;
+    TrackletPtr trk_link_ID;
+    TrackletPtr trk_child_one_ID;
+    TrackletPtr trk_child_two_ID;
+
+    // return a python compatible hypothesis
+    PyHypothesis get_hypothesis() const {
+
+      assert(this->hypothesis != TYPE_undef);
+
+      PyHypothesis h = PyHypothesis(this->hypothesis, this->trk_ID->ID);
+      h.probability = this->probability;
+
+      if (this->hypothesis == TYPE_Plink &&
+          trk_link_ID != NULL) {
+        h.link_ID = this->trk_link_ID->ID;
+      };
+
+      if (this->hypothesis == TYPE_Pdivn &&
+          trk_child_one_ID != NULL &&
+          trk_child_two_ID != NULL) {
+        h.child_one_ID = this->trk_child_one_ID->ID;
+        h.child_two_ID = this->trk_child_two_ID->ID;
+      };
+
+      return h;
+    };
+
+  private:
 };
 
 
@@ -178,8 +226,8 @@ class HypothesisEngine
 
     // get a hypothesis
     // TODO(arl): return a reference?
-    const Hypothesis get_hypothesis(const unsigned int a_ID) const {
-      return m_hypotheses[a_ID];
+    const PyHypothesis get_hypothesis(const unsigned int a_ID) const {
+      return m_hypotheses[a_ID].get_hypothesis();
     }
 
     // space to store the hypotheses

@@ -79,10 +79,11 @@ class InterfaceWrapper
                                     const unsigned int a_start_frame,
                                     const unsigned int a_end_frame );
     // return a specific hypothesis
-    Hypothesis get_hypothesis(const unsigned int a_ID);
+    PyHypothesis get_hypothesis(const unsigned int a_ID);
 
   private:
-    // the tracker and hypothesis engines
+    // the tracker, track manager and hypothesis engines
     BayesianTracker tracker;
+    // TrackManager manager;
     HypothesisEngine h_engine;
 };

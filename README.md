@@ -82,6 +82,9 @@ objects = utils.import_HDF('/home/arl/Documents/objects.hdf5')
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
 
+  # configure the tracker using a config file
+  tracker.configure_from_file('cells_config.json')
+
   # append the objects to be tracked
   tracker.append(objects)
 

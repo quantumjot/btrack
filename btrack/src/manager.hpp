@@ -66,7 +66,7 @@ class TrackManager
 
     // merges all tracks that have a link hypothesis, renumbers others and sets
     // parent and root properties
-    void merge(const std::vector<Hypothesis>);
+    void merge(const std::vector<Hypothesis> a_hypotheses);
 
   private:
     // a vector of tracklet objects

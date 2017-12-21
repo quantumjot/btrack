@@ -17,6 +17,7 @@
 #include "types.hpp"
 #include "tracker.hpp"
 #include "hypothesis.hpp"
+#include "manager.hpp"
 
 // Interface class to coordinate the tracker, hypothesis engine and optimisation
 // Also provides a simple interface for the python facing code.
@@ -83,7 +84,7 @@ class InterfaceWrapper
 
   private:
     // the tracker, track manager and hypothesis engines
+    TrackManager manager;
     BayesianTracker tracker;
-    // TrackManager manager;
     HypothesisEngine h_engine;
 };

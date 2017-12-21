@@ -51,6 +51,7 @@ const double kInfinity = std::numeric_limits<double>::infinity();
 
 
 
+
 // Python structure for external interface
 extern "C" struct PyTrackObject {
   unsigned int ID;
@@ -163,6 +164,9 @@ inline bool compare_obj_time( const TrackObjectPtr trackobj_1,
   return (trackobj_1->t < trackobj_2->t);
 }
 
+
+
+
 // Structure to determine the imaging volume from the observations
 struct ImagingVolume
 {
@@ -181,14 +185,20 @@ struct ImagingVolume
 
   // test whether an object lies within the volume
   bool inside(const Eigen::Vector3d& position) const {
-  if (position(0)>= min_xyz(0) && position(0)<=max_xyz(0) &&
-      position(1)>= min_xyz(1) && position(1)<=max_xyz(1) &&
-      position(2)>= min_xyz(2) && position(2)<=max_xyz(2)) {
-        return true;
-      } else {
-        return false;
-      }
+    if (position(0)>= min_xyz(0) && position(0)<=max_xyz(0) &&
+        position(1)>= min_xyz(1) && position(1)<=max_xyz(1) &&
+        position(2)>= min_xyz(2) && position(2)<=max_xyz(2)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 };
+
+
+
+
+
+
 
 #endif

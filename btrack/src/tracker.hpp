@@ -18,7 +18,6 @@
 #define _TRACKER_H_INCLUDED_
 
 #include "eigen/Eigen/Dense"
-//#include <python2.7/Python.h>
 #include <vector>
 #include <iostream>
 #include <map>
@@ -30,10 +29,13 @@
 
 #include "types.hpp"
 #include "motion.hpp"
-#include "belief.h"
+// #include "belief.h"
 #include "inference.hpp"
+#include "tracklet.hpp"
+// #include "hypothesis.hpp"
+#include "manager.hpp"
 
-#define MAX_LOST 5
+
 #define PROB_NOT_ASSIGN 0.01
 #define DEFAULT_ACCURACY 2.0
 #define PROB_ASSIGN_EXP_DECAY true
@@ -57,109 +59,9 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 
 
 
-// Tracklet object. A container class to keep the list of track objects as well
-// as a dedicated motion and object models for the object.
-class Tracklet
-{
-public:
-  // default constructor for Tracklet
-  Tracklet() {};
-
-  // construct Tracklet using a new ID, new object and model specific parameters
-  Tracklet( const unsigned int new_ID,
-            const TrackObjectPtr new_object,
-            const unsigned int max_lost,
-            const MotionModel& model );
-
-  // default destructor for Tracklet
-  ~Tracklet() {};
-
-  // append a new track object to the trajectory, update flag tells the function
-  // whether to update the motion model or not - new tracks should not update
-  // the motion model
-  void append(const TrackObjectPtr new_object, bool update);
-
-  // append a dummy object to the trajectory in case of a missed observation
-  void append_dummy();
-
-  // return the length of the trajectory
-  unsigned int length() const { return track.size(); };
-
-  // return a boolean representing the status (active/inactive) of the track
-  bool active() const { return lost<max_lost; };
-
-  // trim trailing dummy objects - should only be called when the tracking is
-  // finished
-  bool trim();
-
-  // get the track data as a C-type array
-  // TODO(arl): implement this
-  double* get();
-
-  // get the position coordinates over time
-  // TODO(arl): implement these
-  std::vector<float> x();
-  std::vector<float> y();
-  std::vector<float> z();
-  std::vector<unsigned int> t();
-  std::vector<bool> dummy();
-
-  // get the current position from the last known object
-  Eigen::Vector3d position() const {
-    return track.back()->position();
-  };
-
-  // set the track to lost - permanently!
-  void set_lost() {
-    lost = max_lost+1;
-  }
-
-
-  // get the latest prediction from the motion model. Note that the current
-  // prediction from the Tracklet object is different to the prediction of the
-  // motion model. The tracklet adds any extra model information to the
-  // last known position, while the motion model is the filtered version of the
-  // data which may contain some lag. This is a critical part of the prediction
-  // TODO(arl): make this model agnostic
-  Prediction predict() const;
-
-  // Identifier for the tracklet
-  unsigned int ID = 0;
-
-  // these are vectors storing the predicted new position and the Kalman output
-  // as well as the pointers to the track objects comprising the trajectory
-  std::vector<Prediction> kalman;
-  std::vector<Prediction> prediction;
-  std::vector<TrackObjectPtr> track;
-
-  // counter for number of consecutive lost/dummy observations
-  unsigned int lost = 0;
-
-  // store the root, parent and original IDs
-  unsigned int root;
-  unsigned int parent;
-  unsigned int original_ID;
-
-private:
-
-  // if the lost counter exceeds max_lost, the track is considered inactive
-  unsigned int max_lost = MAX_LOST;
-
-  // motion model
-  MotionModel motion_model;
-
-  // object model
-  ObjectModel object_model;
-};
-
-
-
-// a shared pointer for tracklets
-typedef std::shared_ptr<Tracklet> TrackletPtr;
 
 // a pair for hypotheses, track/object ID and probability
 typedef std::pair<unsigned int, double> LinkHypothesis;
-
 
 
 
@@ -246,6 +148,7 @@ public:
   // Default constructor
   BayesianTracker() {};
   BayesianTracker(bool verbose);
+  BayesianTracker(bool verbose, ManagerPtr manager);
 
   // Default destructor
   ~BayesianTracker();
@@ -321,7 +224,8 @@ public:
             const size_t n_objects);
 
   // somewhere to store the tracks
-  std::vector<TrackletPtr> tracks;
+  //std::vector<TrackletPtr> tracks;
+  TrackManager tracks;
 
   // maintain the size of the ImagingVolume
   ImagingVolume volume;

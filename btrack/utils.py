@@ -225,9 +225,7 @@ def read_motion_model(filename):
         TODO(arl): More parsing of the data/reshaping arrays. Raise an
         appropriate error if there is something wrong with the model definition.
     """
-
     matrices = frozenset(['A','H','P','G','R'])
-
     model = core.MotionModel()
 
     with open(filename, 'r') as j:
@@ -304,8 +302,10 @@ def read_object_model(filename):
     """
 
     matrices = frozenset(['transition','emission','start'])
-
     model = core.ObjectModel()
+
+    if not os.path.exists(filename):
+        return None
 
     with open(filename, 'r') as j:
         modelfile = json.load(j)

@@ -220,35 +220,44 @@ public:
   // construct a map with n_entries, which are initialised with empty vectors
   // of hypotheses
   HypothesisMap(const unsigned int n_entries){
-    trackmap.reserve(n_entries);
+    m_hypothesis_map.reserve(n_entries);
     for (size_t i=0; i<n_entries; i++) {
-      trackmap.push_back( std::vector<T>() );
+      m_hypothesis_map.push_back( std::vector<T>() );
     }
   };
 
   // push a new hypothesis into the entry bin
-  inline void push(const unsigned int &idx, T lnk) {
-    trackmap[idx].push_back(lnk);
+  inline void push(const unsigned int &bin, T lnk) {
+    m_hypothesis_map[bin].push_back(lnk);
+    m_empty = false;
   };
 
   // return the number of entries in the HypothesisMap
   size_t size() const {
-    return trackmap.size();
+    return m_hypothesis_map.size();
   };
 
+  // is the container completely empty?
+  inline bool empty() const {
+    return m_empty;
+  }
+
   // return the vector of hypotheses in this bin
-  inline std::vector<T> operator[] (const unsigned int idx) const {
-    return trackmap[idx];
+  inline std::vector<T> operator[] (const unsigned int bin) const {
+    return m_hypothesis_map[bin];
   };
 
   // count the number of hypotheses in this bin
   const size_t count(const unsigned int &idx) const {
-    return trackmap[idx].size();
+    return m_hypothesis_map[idx].size();
   };
 
 private:
   // the map of hypotheses
-  std::vector< std::vector<T> > trackmap;
+  std::vector< std::vector<T> > m_hypothesis_map;
+
+  // empty flag, reset to true if we add a hypothesis
+  bool m_empty = true;
 };
 
 

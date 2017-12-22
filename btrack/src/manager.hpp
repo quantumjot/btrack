@@ -29,7 +29,7 @@
 typedef std::pair<TrackletPtr, TrackletPtr> MergeHypothesis;
 
 // make a branching hypothesis
-typedef std::pair<TrackletPtr, TrackletPtr> BranchHypothesis;
+typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> BranchHypothesis;
 
 
 

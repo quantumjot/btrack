@@ -129,7 +129,8 @@ class TrackObject
     // const PyTrackObject* original_object;
 };
 
-
+// type definition for a track object pointer, minimising copying
+typedef std::shared_ptr<TrackObject> TrackObjectPtr;
 
 
 
@@ -155,8 +156,7 @@ struct Prediction
 
 
 
-// type definition for a track object pointer, minimising copying
-typedef std::shared_ptr<TrackObject> TrackObjectPtr;
+
 
 // Comparison object to order track objects ready for tracking.
 inline bool compare_obj_time( const TrackObjectPtr trackobj_1,
@@ -198,6 +198,58 @@ struct ImagingVolume
 
 
 
+// Hypothesis map is a sort of dictionary of lists, and can be used to store
+// multiple hypotheses related to each track. The container has a series of
+// 'bins' (integer indexing) in which hypotheses can be placed (using push)
+//
+// It is used to:
+//  i.  enumerate different link hypotheses in the main tracker, and
+//  ii. enumerate different merge/branch hypotheses in the optimiser
+//
+// types are: LinkHypothesis and MergeHypothesis
+template <typename T>
+class HypothesisMap
+{
+public:
+  // default constructor
+  HypothesisMap() {};
+
+  // default destructor
+  ~HypothesisMap() {};
+
+  // construct a map with n_entries, which are initialised with empty vectors
+  // of hypotheses
+  HypothesisMap(const unsigned int n_entries){
+    trackmap.reserve(n_entries);
+    for (size_t i=0; i<n_entries; i++) {
+      trackmap.push_back( std::vector<T>() );
+    }
+  };
+
+  // push a new hypothesis into the entry bin
+  inline void push(const unsigned int &idx, T lnk) {
+    trackmap[idx].push_back(lnk);
+  };
+
+  // return the number of entries in the HypothesisMap
+  size_t size() const {
+    return trackmap.size();
+  };
+
+  // return the vector of hypotheses in this bin
+  inline std::vector<T> operator[] (const unsigned int idx) const {
+    return trackmap[idx];
+  };
+
+  // count the number of hypotheses in this bin
+  const size_t count(const unsigned int &idx) const {
+    return trackmap[idx].size();
+  };
+
+private:
+  // the map of hypotheses
+  std::vector< std::vector<T> > trackmap;
+};
 
 
 

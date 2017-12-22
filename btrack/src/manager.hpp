@@ -25,6 +25,18 @@
 #include "tracklet.hpp"
 
 
+// make a merging hypothesis
+typedef std::pair<TrackletPtr, TrackletPtr> MergeHypothesis;
+
+// make a branching hypothesis
+typedef std::pair<TrackletPtr, TrackletPtr> BranchHypothesis;
+
+
+
+
+
+
+
 
 
 
@@ -66,11 +78,18 @@ class TrackManager
 
     // merges all tracks that have a link hypothesis, renumbers others and sets
     // parent and root properties
-    void merge(const std::vector<Hypothesis> a_hypotheses);
+    void merge(std::vector<Hypothesis> a_hypotheses);
 
   private:
     // a vector of tracklet objects
     std::vector<TrackletPtr> m_tracks;
+
+    // make some space for the new tracks
+    std::vector<TrackletPtr> m_optimised;
+
+    // make hypothesis maps
+    HypothesisMap<MergeHypothesis> m_links;
+    HypothesisMap<BranchHypothesis> m_branches;
 };
 
 // Make a manager pointer type

@@ -13,6 +13,8 @@
  Created:  14/08/2014
 --------------------------------------------------------------------------------
 */
+#ifndef _WRAPPER_H_INCLUDED_
+#define _WRAPPER_H_INCLUDED_
 
 #include "types.hpp"
 #include "tracker.hpp"
@@ -82,9 +84,14 @@ class InterfaceWrapper
     // return a specific hypothesis
     PyHypothesis get_hypothesis(const unsigned int a_ID);
 
+    // merge tracks based on optimisation
+    void merge(unsigned int* a_hypotheses, unsigned int n_hypotheses);
+
   private:
     // the tracker, track manager and hypothesis engines
     TrackManager manager;
     BayesianTracker tracker;
     HypothesisEngine h_engine;
 };
+
+#endif

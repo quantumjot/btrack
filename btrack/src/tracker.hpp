@@ -65,67 +65,6 @@ typedef std::pair<unsigned int, double> LinkHypothesis;
 
 
 
-
-// A HypothesisMap container that maps track->object link hypotheses. This can
-// be used to determine whether linking conflicts exist and the posterior
-// probability of each one.
-class HypothesisMap
-{
-public:
-  // default constructor
-  HypothesisMap() {};
-
-  // default destructor
-  ~HypothesisMap() {};
-
-  // construct a map with n_entries, which are initialised with empty vectors
-  // of hypotheses
-  HypothesisMap(const unsigned int n_entries){
-    trackmap.reserve(n_entries);
-    for (size_t i=0; i<n_entries; i++) {
-      trackmap.push_back( std::vector<LinkHypothesis>() );
-    }
-  };
-
-  // push a new hypothesis into the entry bin
-  inline void push(const unsigned int &idx, LinkHypothesis lnk) {
-    trackmap[idx].push_back(lnk);
-  };
-
-  // return the number of entries in the HypothesisMap
-  size_t size() const {
-    return trackmap.size();
-  };
-
-  // return the vector of hypotheses in this bin
-  inline std::vector<LinkHypothesis> operator[] (const unsigned int idx) const {
-    return trackmap[idx];
-  };
-
-  // count the number of hypotheses in this bin
-  const size_t count(const unsigned int &idx) const {
-    return trackmap[idx].size();
-  };
-
-private:
-  // the map of hypotheses
-  std::vector< std::vector<LinkHypothesis> > trackmap;
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // BayesianTracker is a multi object tracking algorithm, specifically
 // used to reconstruct tracks in crowded fields. Here we use a probabilistic
 // network of information to perform the trajectory linking. This method uses
@@ -145,7 +84,7 @@ private:
 class BayesianTracker
 {
 public:
-  // Default constructor
+  // Constructor
   BayesianTracker() {};
   BayesianTracker(bool verbose);
   BayesianTracker(bool verbose, ManagerPtr manager);

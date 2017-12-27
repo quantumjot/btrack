@@ -244,6 +244,8 @@ public:
 
   // return the vector of hypotheses in this bin
   inline std::vector<T> operator[] (const unsigned int bin) const {
+    //assert(bin < size());
+    if (bin >= size()) return std::vector<T>(); // return empty if no bin exists
     return m_hypothesis_map[bin];
   };
 
@@ -256,7 +258,7 @@ private:
   // the map of hypotheses
   std::vector< std::vector<T> > m_hypothesis_map;
 
-  // empty flag, reset to true if we add a hypothesis
+  // empty flag, reset to false if we add a hypothesis
   bool m_empty = true;
 };
 

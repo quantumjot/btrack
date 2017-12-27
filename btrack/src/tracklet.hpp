@@ -32,11 +32,11 @@ class Tracklet
 {
 public:
   // default constructor for Tracklet
-  Tracklet() {};
+  Tracklet() : remove_flag(false) {};
 
   // construct Tracklet using a new ID, new object and model specific parameters
   Tracklet( const unsigned int new_ID,
-            const TrackObjectPtr new_object,
+            const TrackObjectPtr& new_object,
             const unsigned int max_lost,
             const MotionModel& model );
 
@@ -46,8 +46,8 @@ public:
   // append a new track object to the trajectory, update flag tells the function
   // whether to update the motion model or not - new tracks should not update
   // the motion model
-  void append(const TrackObjectPtr new_object, bool update);
-  void append(const TrackObjectPtr new_object) {
+  void append(const TrackObjectPtr& new_object, bool update);
+  void append(const TrackObjectPtr& new_object) {
     append(new_object, true);
   }
   // append a dummy object to the trajectory in case of a missed observation
@@ -85,6 +85,15 @@ public:
     lost = max_lost+1;
   }
 
+  // check to see whether this should be removed;
+  bool to_remove() {
+    return remove_flag;
+  }
+
+  void to_remove(bool a_remove) {
+    remove_flag = a_remove;
+  }
+
 
   // get the latest prediction from the motion model. Note that the current
   // prediction from the Tracklet object is different to the prediction of the
@@ -109,12 +118,16 @@ public:
   // store the root, parent and original IDs
   unsigned int root;
   unsigned int parent;
-  unsigned int original_ID;
+  unsigned int renamed_ID;
+
 
 private:
 
   // if the lost counter exceeds max_lost, the track is considered inactive
   unsigned int max_lost = MAX_LOST;
+
+  // set the remove flag
+  bool remove_flag = false;
 
   // motion model
   MotionModel motion_model;

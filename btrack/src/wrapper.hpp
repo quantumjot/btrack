@@ -29,7 +29,7 @@ class InterfaceWrapper
 
     // default constructors/destructors
     InterfaceWrapper();
-    ~InterfaceWrapper();
+    virtual ~InterfaceWrapper();
 
     // tracking and basic data handling
     void set_motion_model(const unsigned int measurements,
@@ -68,7 +68,6 @@ class InterfaceWrapper
     unsigned int get_kalman_pred(double* output, const unsigned int a_ID) const;
     unsigned int get_label(unsigned int* output, const unsigned int a_ID) const;
 
-
     // return the number of tracks
     unsigned int size() const {
       return tracker.size();
@@ -89,9 +88,9 @@ class InterfaceWrapper
 
   private:
     // the tracker, track manager and hypothesis engines
-    TrackManager manager;
     BayesianTracker tracker;
     HypothesisEngine h_engine;
+    TrackManager* p_manager;
 };
 
 #endif

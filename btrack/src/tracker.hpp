@@ -46,7 +46,6 @@
 
 // reserve space for objects and tracks
 #define RESERVE_NEW_OBJECTS 1000
-#define RESERVE_ALL_TRACKS 500000
 #define RESERVE_ACTIVE_TRACKS 1000
 
 
@@ -87,7 +86,6 @@ public:
   // Constructor
   BayesianTracker() {};
   BayesianTracker(bool verbose);
-  BayesianTracker(bool verbose, ManagerPtr manager);
 
   // Default destructor
   ~BayesianTracker();
@@ -163,7 +161,6 @@ public:
             const size_t n_objects);
 
   // somewhere to store the tracks
-  //std::vector<TrackletPtr> tracks;
   TrackManager tracks;
 
   // maintain the size of the ImagingVolume
@@ -200,6 +197,9 @@ private:
 
   // update the list of active tracks
   bool update_active();
+
+  // pointer to the track manager
+  // TrackManager* p_manager;
 
   // maintain pointers to tracks
   std::vector<TrackletPtr> active;

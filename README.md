@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** (Last update: 30/11/2017)  
+**WORK IN PROGRESS** (Last update: 27/12/2017)  
 *Please note, this is not the full repository (yet)*
 
 
@@ -19,6 +19,12 @@ each potential linkage from a Bayesian belief matrix for all possible linkages.
 [![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/tracks.png)]()
 *Example of tracking objects in 3D space*
 
+The tracklets are then assembled into tracks by using multiple hypothesis
+testing and integer programming to identify a globally optimal solution. The
+likelihood of each hypothesis is calculated for some or all of the tracklets
+based on heuristics. The global solution identifies a sequence of
+high-likelihood hypotheses that accounts for all observations.
+
 BayesianTracker (btrack) is part of the ImPy image processing toolbox for
 microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 
@@ -32,6 +38,7 @@ the following additional packages:
 + Numpy
 + Scipy
 + h5py
++ CVXOPT
 + Eigen
 + GLPK
 

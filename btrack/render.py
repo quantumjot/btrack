@@ -23,6 +23,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from matplotlib.collections import LineCollection
+import matplotlib.patheffects as PathEffects
 from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from itertools import product, combinations
 from matplotlib.axes import Axes
@@ -54,7 +55,7 @@ def __draw_cube(ax, box):
 
 def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
                 order='xyz', kalman=False, cmap=plt.get_cmap('viridis'),
-                title='BayesianTracker output'):
+                labels=False, title='BayesianTracker output'):
     """ plot_tracks
 
     Plot tracks using matplotlib/ matplotlib3d. Uses linecollections to speed up
@@ -107,10 +108,6 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
         addline = lambda ax, l: ax.add_collection(l)
         ax = fig.add_subplot(111)
 
-    # # set up the plotting colours
-    # h_strip = [c.lstrip('#') for c in constants.NEW_COLORS]
-    # colors_rgb = [tuple(float(int(h[i:i+2], 16))/255. for i in (0, 2 ,4)) for h in h_strip]
-
     # use a color map
     colors_rgb = [cmap(int(i)) for i in np.linspace(0,255,16)]
 
@@ -123,6 +120,16 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
 
         lines.append(segments)
         clrs.append( colors_rgb[track.ID % (len(colors_rgb)-1)])
+
+        # plot text labels on the tracks
+        if labels:
+            # set up the plotting arguments
+            l_args = [getattr(track, order[i])[0] for i in xrange(DIMS)]
+            l_args = l_args + [str(track.ID), None]
+            # plot the text label with an outline
+            ax.text(*l_args, color='k',
+                path_effects=[PathEffects.withStroke(linewidth=0.5,
+                foreground=colors_rgb[track.ID % (len(colors_rgb)-1)])])
 
         # TODO(arl): add the terminus plotting
         if terminii: pass

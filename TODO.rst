@@ -5,6 +5,7 @@ Python
 ------
 - Install script to run Makefile if necessary
 - Tracking metrics (MOT)
+- Dummy objects as part of reference return from Tracker
 
 C/C++ and CUDA
 --------------
@@ -12,6 +13,7 @@ C/C++ and CUDA
 - Update belief matrix using CUDA parallelisation
 - Template track object class to use different levels of precision
 - Give each track a unique hash to make sure we don't overwrite IDs
+- Make new references for dummy objects, return these to Python
 
 Misc
 ----
@@ -27,7 +29,7 @@ Updates
 -----
 - Hypothesis generation from track objects, integration of new Eigen code
 - Hypothesis based track optimisation using GLPK
-- Track merging moved to C++ code
+- Track merging moved to C++ code as part of track manager
 
 0.2.2
 -----

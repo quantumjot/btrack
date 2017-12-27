@@ -17,13 +17,14 @@
 #ifndef _MANAGER_H_INCLUDED_
 #define _MANAGER_H_INCLUDED_
 
-#include "eigen/Eigen/Dense"
 #include <vector>
+#include <stack>
 
 #include "types.hpp"
 #include "hypothesis.hpp"
 #include "tracklet.hpp"
 
+#define RESERVE_ALL_TRACKS 500000
 
 // make a merging hypothesis
 typedef std::pair<TrackletPtr, TrackletPtr> MergeHypothesis;
@@ -32,9 +33,14 @@ typedef std::pair<TrackletPtr, TrackletPtr> MergeHypothesis;
 typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> BranchHypothesis;
 
 
+// compare two hypotheses, used for sorting by start time
+bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two);
 
+// merge two tracks
+void merge_tracks(const TrackletPtr &parent_trk, const TrackletPtr &merge_trk);
 
-
+// set a branch between the parent and children
+void branch_tracks(const BranchHypothesis &branch);
 
 
 
@@ -42,18 +48,20 @@ typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> BranchHypothesis;
 
 
 // A track manager class, behaves as if a simple vector of TrackletPtrs, but
-// contains functions to allow track mergin and renaming. We only need a subset
-// of the vector functionality, so no need to subclass
+// contains functions to allow track merging and renaming. We only need a subset
+// of the vector functionality, so no need to subclass.
 class TrackManager
 {
   public:
     // default constructors and destructors
-    TrackManager() {};
-    ~TrackManager() {};
+    TrackManager() {
+      m_tracks.reserve(RESERVE_ALL_TRACKS);
+    };
+    virtual ~TrackManager() {};
 
     // return the number of tracks
     size_t size() const {
-      return m_tracks.size();
+      return this->m_tracks.size();
     }
 
     // return a track by index
@@ -62,7 +70,7 @@ class TrackManager
     };
 
     // push a tracklet onto the stack
-    inline void push_back(const TrackletPtr a_obj) {
+    inline void push_back(const TrackletPtr &a_obj) {
       m_tracks.push_back(a_obj);
     }
 
@@ -78,21 +86,15 @@ class TrackManager
 
     // merges all tracks that have a link hypothesis, renumbers others and sets
     // parent and root properties
-    void merge(std::vector<Hypothesis> a_hypotheses);
+    void merge(const std::vector<Hypothesis> &a_hypotheses);
 
   private:
     // a vector of tracklet objects
     std::vector<TrackletPtr> m_tracks;
 
-    // make some space for the new tracks
-    std::vector<TrackletPtr> m_optimised;
-
     // make hypothesis maps
     HypothesisMap<MergeHypothesis> m_links;
     HypothesisMap<BranchHypothesis> m_branches;
 };
-
-// Make a manager pointer type
-typedef std::shared_ptr<TrackManager> ManagerPtr;
 
 #endif

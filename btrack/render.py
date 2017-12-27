@@ -131,7 +131,7 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
             # plot the text label with an outline
             ax.text(*l_args, color='k',
                 path_effects=[PathEffects.withStroke(linewidth=0.5,
-                foreground=t_color)
+                foreground=t_color)])
 
         # TODO(arl): add the terminus plotting
         if terminii: pass

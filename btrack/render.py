@@ -118,8 +118,10 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
         p_order = [getattr(track, order[i]) for i in xrange(DIMS)]
         segments = zip(*p_order)
 
+        t_color = colors_rgb[track.ID % (len(colors_rgb)-1)]
+
         lines.append(segments)
-        clrs.append( colors_rgb[track.ID % (len(colors_rgb)-1)])
+        clrs.append(t_color)
 
         # plot text labels on the tracks
         if labels:
@@ -129,7 +131,7 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
             # plot the text label with an outline
             ax.text(*l_args, color='k',
                 path_effects=[PathEffects.withStroke(linewidth=0.5,
-                foreground=colors_rgb[track.ID % (len(colors_rgb)-1)])])
+                foreground=t_color)
 
         # TODO(arl): add the terminus plotting
         if terminii: pass

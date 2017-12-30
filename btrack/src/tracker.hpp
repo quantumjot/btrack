@@ -146,8 +146,6 @@ public:
   };
 
   // track maintenance
-  bool clean();
-  bool renumber();
   bool purge();
 
   // calculate the cost matrix

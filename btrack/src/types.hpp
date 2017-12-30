@@ -107,8 +107,9 @@ class TrackObject
     // Default destructor
     ~TrackObject() {};
 
-    // xyzt position, dummy flag and class label
-    unsigned int ID;
+    // xyzt position, dummy flag and class label, note that the ID can be
+    // negative, indicating a dummy object
+    int ID;
     double x;
     double y;
     double z;
@@ -122,6 +123,20 @@ class TrackObject
     Eigen::Vector3d position() const {
       Eigen::Vector3d p;
       p << x, y, z;
+      return p;
+    };
+
+    // return this object as a pytrack object
+    PyTrackObject get_pytrack_object() const {
+      PyTrackObject p = PyTrackObject();
+      p.ID = this->ID;
+      p.x = this->x;
+      p.y = this->y;
+      p.z = this->z;
+      p.t = this->t;
+      p.dummy = this->dummy;
+      p.label = this->label;
+      p.states = this->states;
       return p;
     };
   private:
@@ -207,59 +222,59 @@ struct ImagingVolume
 //  ii. enumerate different merge/branch hypotheses in the optimiser
 //
 // types are: LinkHypothesis and MergeHypothesis
-template <typename T>
-class HypothesisMap
+template <typename T> class HypothesisMap
 {
-public:
-  // default constructor
-  HypothesisMap() {};
+  public:
+    // default constructor
+    HypothesisMap() {};
 
-  // default destructor
-  ~HypothesisMap() {};
+    // default destructor
+    ~HypothesisMap() {};
 
-  // construct a map with n_entries, which are initialised with empty vectors
-  // of hypotheses
-  HypothesisMap(const unsigned int n_entries){
-    m_hypothesis_map.reserve(n_entries);
-    for (size_t i=0; i<n_entries; i++) {
-      m_hypothesis_map.push_back( std::vector<T>() );
+    // construct a map with n_entries, which are initialised with empty vectors
+    // of hypotheses
+    HypothesisMap(const unsigned int n_entries){
+      m_hypothesis_map.clear();
+      m_hypothesis_map.reserve(n_entries);
+      for (size_t i=0; i<n_entries; i++) {
+        m_hypothesis_map.push_back( std::vector<T>() );
+      }
+    };
+
+    // push a new hypothesis into the entry bin
+    inline void push(const unsigned int &bin, T lnk) {
+      m_hypothesis_map[bin].push_back(lnk);
+      m_empty = false;
+    };
+
+    // return the number of entries in the HypothesisMap
+    size_t size() const {
+      return m_hypothesis_map.size();
+    };
+
+    // is the container completely empty?
+    inline bool empty() const {
+      return m_empty;
     }
-  };
 
-  // push a new hypothesis into the entry bin
-  inline void push(const unsigned int &bin, T lnk) {
-    m_hypothesis_map[bin].push_back(lnk);
-    m_empty = false;
-  };
+    // return the vector of hypotheses in this bin
+    inline std::vector<T> operator[] (const unsigned int bin) const {
+      //assert(bin < size());
+      if (bin >= size()) return std::vector<T>(); // return empty if no bin exists
+      return m_hypothesis_map[bin];
+    };
 
-  // return the number of entries in the HypothesisMap
-  size_t size() const {
-    return m_hypothesis_map.size();
-  };
+    // count the number of hypotheses in this bin
+    const size_t count(const unsigned int &idx) const {
+      return m_hypothesis_map[idx].size();
+    };
 
-  // is the container completely empty?
-  inline bool empty() const {
-    return m_empty;
-  }
+  private:
+    // the map of hypotheses
+    std::vector< std::vector<T> > m_hypothesis_map;
 
-  // return the vector of hypotheses in this bin
-  inline std::vector<T> operator[] (const unsigned int bin) const {
-    //assert(bin < size());
-    if (bin >= size()) return std::vector<T>(); // return empty if no bin exists
-    return m_hypothesis_map[bin];
-  };
-
-  // count the number of hypotheses in this bin
-  const size_t count(const unsigned int &idx) const {
-    return m_hypothesis_map[idx].size();
-  };
-
-private:
-  // the map of hypotheses
-  std::vector< std::vector<T> > m_hypothesis_map;
-
-  // empty flag, reset to false if we add a hypothesis
-  bool m_empty = true;
+    // empty flag, reset to false if we add a hypothesis
+    bool m_empty = true;
 };
 
 

@@ -57,7 +57,7 @@ class InterfaceWrapper
     unsigned int get_track(double* output, const unsigned int a_ID) const;
 
     // get the object IDs of the objects in the track
-    unsigned int get_refs(unsigned int* output, const unsigned int a_ID) const;
+    unsigned int get_refs(int* output, const unsigned int a_ID) const;
 
     // get the length of a track
     unsigned int track_length(const unsigned int a_ID) const;

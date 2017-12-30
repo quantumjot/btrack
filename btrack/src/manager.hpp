@@ -69,6 +69,9 @@ class TrackManager
       return m_tracks[idx];
     };
 
+    // return a dummy object by index
+    TrackObjectPtr get_dummy(const int idx) const;
+
     // push a tracklet onto the stack
     inline void push_back(const TrackletPtr &a_obj) {
       m_tracks.push_back(a_obj);
@@ -84,13 +87,25 @@ class TrackManager
       return m_tracks.empty();
     }
 
+    // finalise the track output, giving dummy objects their unique (orthogonal)
+    // IDs for later retrieval, and any other cleanup required.
+    void finalise();
+
     // merges all tracks that have a link hypothesis, renumbers others and sets
     // parent and root properties
     void merge(const std::vector<Hypothesis> &a_hypotheses);
 
   private:
+
+    // track maintenance
+    void renumber();
+    void purge();
+
     // a vector of tracklet objects
     std::vector<TrackletPtr> m_tracks;
+
+    // a vector of dummy objects
+    std::vector<TrackObjectPtr> m_dummies;
 
     // make hypothesis maps
     HypothesisMap<MergeHypothesis> m_links;

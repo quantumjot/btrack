@@ -37,12 +37,12 @@
 #define TYPE_undef 999
 
 
-#define STATE_interphase 101
-#define STATE_prometaphase 102
-#define STATE_metaphase 103
-#define STATE_anaphase 104
-#define STATE_apoptosis 105
-#define STATE_null 109
+#define STATE_interphase 0
+#define STATE_prometaphase 1
+#define STATE_metaphase 2
+#define STATE_anaphase 3
+#define STATE_apoptosis 4
+#define STATE_null 5
 
 #define MAX_TRACK_LEN 150
 #define DEFAULT_LOW_PROBABILITY 1e-150

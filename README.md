@@ -42,7 +42,7 @@ the following additional packages:
 + Eigen
 + GLPK
 
-BayesianTracker is written in C, C++ and Python.
+BayesianTracker is written in C++ with a C interface to Python.
 
 ---
 

@@ -25,14 +25,6 @@
 
 
 
-// labels for track objects
-#define STATE_interphase 101
-#define STATE_prometaphase 102
-#define STATE_metaphase 103
-#define STATE_anaphase 104
-#define STATE_apoptosis 105
-
-
 // errors
 #define SUCCESS 900
 #define ERROR_empty_queue 901

@@ -59,6 +59,9 @@ class InterfaceWrapper
     // get the object IDs of the objects in the track
     unsigned int get_refs(int* output, const unsigned int a_ID) const;
 
+    // get a dummy object by reference
+    PyTrackObject get_dummy(const int a_ID);
+
     // get the length of a track
     unsigned int track_length(const unsigned int a_ID) const;
 

@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** (Last update: 27/12/2017)  
+**WORK IN PROGRESS** (Last update: 08/01/2018)  
 *Please note, this is not the full repository (yet)*
 
 
@@ -16,7 +16,7 @@ states) of each of the objects in the field of view.  We assign new observations
 to the growing tracklets (linking) by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible linkages.
 
-[![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/tracks.png)]()
+[![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker.png)](http://lowe.cs.ucl.ac.uk)
 *Example of tracking objects in 3D space*
 
 The tracklets are then assembled into tracks by using multiple hypothesis

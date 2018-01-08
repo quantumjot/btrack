@@ -5,7 +5,6 @@ Python
 ------
 - Install script to run Makefile if necessary
 - Tracking metrics (MOT)
-- Dummy objects as part of reference return from Tracker
 
 C/C++ and CUDA
 --------------
@@ -13,7 +12,6 @@ C/C++ and CUDA
 - Update belief matrix using CUDA parallelisation
 - Template track object class to use different levels of precision
 - Give each track a unique hash to make sure we don't overwrite IDs
-- Make new references for dummy objects, return these to Python
 
 Misc
 ----
@@ -24,6 +22,11 @@ Misc
 
 Updates
 =======
+
+0.2.4
+-----
+- Returns dummy objects to HDF5 writer
+- Returns parent ID from tracks to enable lineage tree creation
 
 0.2.3
 -----

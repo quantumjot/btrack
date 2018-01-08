@@ -54,7 +54,7 @@ and study cell movement or sub-cellular protein localisation. We have provided
 several examples in the notebooks folder.  Below is an example of tracking
 cells:
 
-[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/dsjUnRwu33k)
+[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
 
 More details of how the tracking algorithm can be applied to tracking cells in
 time-lapse microscopy data can be found in our publication:

@@ -414,7 +414,7 @@ def export_MATLAB(filename, tracks):
     savemat(filename, matlab_export)
 
 
-def export_HDF(filename, tracks):
+def export_HDF(filename, tracks, dummies=[]):
     """ HDF exporter for large datasets.
 
     This needs to deal with two different scenarios:
@@ -438,13 +438,16 @@ def export_HDF(filename, tracks):
         if not os.path.exists(filename):
             raise IOError('HDF5 file does not exist: {0:s}'.format(filename))
 
-        if not isinstance(tracks[0][0], long):
+        if not isinstance(tracks[0][0], (int, long)):
             print type(tracks[0][0]), tracks[0][0]
             raise TypeError('Track references should be integers')
 
 
         h = HDF5_FileHandler(filename)
         h.write_tracks(tracks)
+        if dummies:
+            h.write_dummies(dummies)
+        h.close()
 
 
     elif check_track_type(tracks):
@@ -480,18 +483,21 @@ class HDF5_FileHandler(object):
             ...
         objects/
             object_1/
-                x
-                y
-                z
-                t
+                xyzt
                 ...
             object_2/
             ...
+        dummies/
+            dummy_-1/
+                xyzt
+                ...
+            dummy_-2/
         tracks/
             track_1/
                 ->object_12
                 ->object_23
                 ->object_74
+                ->dummy_-1
                 ...
             track_2/
             ...
@@ -515,6 +521,10 @@ class HDF5_FileHandler(object):
         self._hdf = h5py.File(filename, 'r+') # a -file doesn't have to exist
 
     def __del__(self):
+        self.close()
+
+    def close(self):
+        """ Close the file properly """
         if self._hdf:
             self._hdf.close()
             logging.info('Closing HDF file.')
@@ -524,6 +534,13 @@ class HDF5_FileHandler(object):
         """ Return the objects in the file """
         objects = [self.new_PyTrackObject(o) for o in self._hdf['objects']]
         return objects
+
+    @property
+    def dummies(self):
+        """ Return the dummy objects in the file """
+        if 'dummies' not in self._hdf: return []
+        dummies = [self.new_PyTrackObject(o) for o in self._hdf['dummies']]
+        return dummies
 
     @property
     def tracks(self):
@@ -554,6 +571,26 @@ class HDF5_FileHandler(object):
     def write_objects(self, objects):
         """ Write objects to the HDF5 file """
         raise NotImplementedError
+
+    def write_dummies(self, dummies):
+        """ Write out the dummy objects """
+        if 'dummies' not in self._hdf:
+            self._hdf.create_group('dummies')
+        else:
+            logging.warning('Overwriting dummies in HDF5 file...')
+            del self._hdf['dummies']
+            self._hdf.create_group('dummies')
+
+        dummy_grp = self._hdf['dummies']
+        for d in dummies:
+
+            # add the coordinate data in a new group for this object
+            grp = dummy_grp.create_group('object_{0:d}'.format(d.ID))
+
+            # add the data to the objects
+            this_obj = [d.t, d.x, d.y, d.z]
+            grp.create_dataset('txyz', data=np.array(this_obj), dtype='f4')
+
 
 
     def new_PyTrackObject(self, ID):
@@ -695,12 +732,13 @@ def import_JSON_observations(filename, labeller=None):
 
 
 
-def import_ThunderSTORM(filename):
+def import_ThunderSTORM(filename, pixels_2_nm=100.):
     """  Load localisation data from ThunderSTORM. """
 
     with open(filename, 'rb') as csvfile:
         localisations = csv.reader(csvfile, delimiter=',', quotechar='"')
         header = localisations.next()
+
 
         to_use = ('frame', 'x [nm]', 'y [nm]', 'z [nm]')
         cols = [i for i in xrange(len(header)) if header[i] in to_use]
@@ -711,17 +749,18 @@ def import_ThunderSTORM(filename):
 
         #make a new object
         for data in localisations:
+
             obj = core.PyTrackObject()
             obj.t = int(float( data[cols[0]] ))
-            obj.x = float(data[cols[1]])
-            obj.y = float(data[cols[2]])
+            obj.x = float(data[cols[1]]) / pixels_2_nm
+            obj.y = float(data[cols[2]]) / pixels_2_nm
             if 'z [nm]' in header:
                 obj.z = float(data[cols[3]])
             else:
                 obj.z = 0.
             obj.dummy = False
             obj.label = 0
-            obj.prob = np.zeros((5,),dtype='float')
+            # obj.prob = np.zeros((5,),dtype='float')
 
             objects.append(obj)
     return objects

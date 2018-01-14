@@ -12,6 +12,7 @@ C/C++ and CUDA
 - Update belief matrix using CUDA parallelisation
 - Template track object class to use different levels of precision
 - Give each track a unique hash to make sure we don't overwrite IDs
+- Test other motion model instantiation
 
 Misc
 ----

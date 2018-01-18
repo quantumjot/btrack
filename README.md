@@ -98,6 +98,9 @@ with btrack.BayesianTracker() as tracker:
   # track them
   tracker.track()
 
+  # generate hypotheses and run the global optimiser
+  tracker.optimize()
+
   # get the tracks
   track_zero = tracker[0]
   tracks = tracker.tracks

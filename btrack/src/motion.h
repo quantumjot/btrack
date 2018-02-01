@@ -18,7 +18,7 @@
 #define _MOTION_H_INCLUDED_
 
 #include "eigen/Eigen/Dense"
-#include "types.hpp"
+#include "types.h"
 
 #include <vector>
 #include <iostream>

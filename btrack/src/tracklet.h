@@ -20,9 +20,9 @@
 #include "eigen/Eigen/Dense"
 #include <vector>
 
-#include "types.hpp"
-#include "motion.hpp"
-#include "inference.hpp"
+#include "types.h"
+#include "motion.h"
+#include "inference.h"
 
 #define MAX_LOST 5
 

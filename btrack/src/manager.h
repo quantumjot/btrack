@@ -20,9 +20,9 @@
 #include <vector>
 #include <stack>
 
-#include "types.hpp"
-#include "hypothesis.hpp"
-#include "tracklet.hpp"
+#include "types.h"
+#include "hypothesis.h"
+#include "tracklet.h"
 
 #define RESERVE_ALL_TRACKS 500000
 

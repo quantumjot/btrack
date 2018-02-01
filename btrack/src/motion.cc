@@ -14,7 +14,7 @@
 --------------------------------------------------------------------------------
 */
 
-#include "motion.hpp"
+#include "motion.h"
 
 MotionModel::MotionModel( const Eigen::MatrixXd &A,
                           const Eigen::MatrixXd &H,

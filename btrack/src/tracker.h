@@ -27,13 +27,11 @@
 #include <set>
 #include <ctime>
 
-#include "types.hpp"
-#include "motion.hpp"
-// #include "belief.h"
-#include "inference.hpp"
-#include "tracklet.hpp"
-// #include "hypothesis.hpp"
-#include "manager.hpp"
+#include "types.h"
+#include "motion.h"
+#include "inference.h"
+#include "tracklet.h"
+#include "manager.h"
 
 
 #define PROB_NOT_ASSIGN 0.01
@@ -42,6 +40,7 @@
 #define DYNAMIC_ACCURACY false
 #define DIMS 3
 #define DEBUG true
+#define FAST_COST_UPDATE false
 
 
 // reserve space for objects and tracks
@@ -150,6 +149,10 @@ public:
 
   // calculate the cost matrix
   void cost(Eigen::Ref<Eigen::MatrixXd> belief,
+            const size_t n_tracks,
+            const size_t n_objects);
+
+  void cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
             const size_t n_tracks,
             const size_t n_objects);
 

@@ -16,10 +16,10 @@
 #ifndef _WRAPPER_H_INCLUDED_
 #define _WRAPPER_H_INCLUDED_
 
-#include "types.hpp"
-#include "tracker.hpp"
-#include "hypothesis.hpp"
-#include "manager.hpp"
+#include "types.h"
+#include "tracker.h"
+#include "hypothesis.h"
+#include "manager.h"
 
 // Interface class to coordinate the tracker, hypothesis engine and optimisation
 // Also provides a simple interface for the python facing code.

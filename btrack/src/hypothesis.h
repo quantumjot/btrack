@@ -24,8 +24,9 @@
 #include <cmath>
 #include <limits>
 
-#include "types.hpp"
-#include "tracklet.hpp"
+#include "types.h"
+#include "tracklet.h"
+#include "hash.h"
 
 #define TYPE_Pfalse 0
 #define TYPE_Pinit 1
@@ -50,21 +51,21 @@
 
 
 
-// Hash index for use with the hash cube
-struct HashIndex {
-  int x = 0;
-  int y = 0;
-  int z = 0;
-  int n = 0;
-
-  // comparison operator for hash map, strict weak ordering
-  bool operator<(const HashIndex &o) const {
-    if (x != o.x) return x < o.x;
-    if (y != o.y) return y < o.y;
-    if (z != o.z) return z < o.z;
-    return n < o.n;
-  }
-};
+// // Hash index for use with the hash cube
+// struct HashIndex {
+//   int x = 0;
+//   int y = 0;
+//   int z = 0;
+//   int n = 0;
+//
+//   // comparison operator for hash map, strict weak ordering
+//   bool operator<(const HashIndex &o) const {
+//     if (x != o.x) return x < o.x;
+//     if (y != o.y) return y < o.y;
+//     if (z != o.z) return z < o.z;
+//     return n < o.n;
+//   }
+// };
 
 
 // Store a hypothesis to return to Python
@@ -131,32 +132,32 @@ class Hypothesis
 
 
 
-// A 4D hash (hyper) cube object.
+// // A 4D hash (hyper) cube object.
+// //
+// // Essentially a way of binsorting trajectory data for easy lookup,
+// // thus preventing excessive searching over non-local trajectories.
+// //
+// class HashCube
+// {
+// public:
+//   HashCube();
+//   HashCube(const unsigned int bin_xyz, const unsigned int bin_n);
+//   ~HashCube();
 //
-// Essentially a way of binsorting trajectory data for easy lookup,
-// thus preventing excessive searching over non-local trajectories.
+//   // member functions
+//   HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
+//   HashIndex hash_index( const float x,
+//                         const float y,
+//                         const float z,
+//                         const float n ) const;
+//   void add(TrackletPtr a_trk);
+//   std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
 //
-class HashCube
-{
-public:
-  HashCube();
-  HashCube(const unsigned int bin_xyz, const unsigned int bin_n);
-  ~HashCube();
-
-  // member functions
-  HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
-  HashIndex hash_index( const float x,
-                        const float y,
-                        const float z,
-                        const float n ) const;
-  void add(TrackletPtr a_trk);
-  std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
-
-private:
-  // bin size x,y,z,t
-  float m_bin_size[4] = {0., 0., 0., 0.};
-  std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
-};
+// private:
+//   // bin size x,y,z,t
+//   float m_bin_size[4] = {0., 0., 0., 0.};
+//   std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
+// };
 
 
 

@@ -26,7 +26,7 @@
 
 #include "types.h"
 #include "tracklet.h"
-#include "hash.h"
+#include "hyperbin.h"
 
 #define TYPE_Pfalse 0
 #define TYPE_Pinit 1
@@ -265,7 +265,7 @@ class HypothesisEngine
     std::vector<TrackletPtr> m_tracks;
 
     // space to store a hash cube
-    HashCube m_cube;
+    HypercubeBin m_cube;
 
     // store the hypothesis generation parameters
     PyHypothesisParams m_params;

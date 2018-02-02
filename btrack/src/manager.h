@@ -26,21 +26,27 @@
 
 #define RESERVE_ALL_TRACKS 500000
 
-// make a merging hypothesis
-typedef std::pair<TrackletPtr, TrackletPtr> MergeHypothesis;
+// make a joining hypothesis
+typedef std::pair<TrackletPtr, TrackletPtr> JoinHypothesis;
 
 // make a branching hypothesis
 typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> BranchHypothesis;
+
+// make a merging hypothesis
+typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> MergeHypothesis;
 
 
 // compare two hypotheses, used for sorting by start time
 bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two);
 
 // merge two tracks
-void merge_tracks(const TrackletPtr &parent_trk, const TrackletPtr &merge_trk);
+void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk);
 
 // set a branch between the parent and children
 void branch_tracks(const BranchHypothesis &branch);
+
+// merge tracks
+void merge_tracks(const MergeHypothesis &merge);
 
 
 
@@ -108,7 +114,7 @@ class TrackManager
     std::vector<TrackObjectPtr> m_dummies;
 
     // make hypothesis maps
-    HypothesisMap<MergeHypothesis> m_links;
+    HypothesisMap<JoinHypothesis> m_links;
     HypothesisMap<BranchHypothesis> m_branches;
 };
 

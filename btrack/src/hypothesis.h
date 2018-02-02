@@ -35,6 +35,7 @@
 #define TYPE_Pdivn 4
 #define TYPE_Papop 5
 #define TYPE_Pdead 6
+#define TYPE_Pmrge 7
 #define TYPE_undef 999
 
 
@@ -256,6 +257,9 @@ class HypothesisEngine
     double P_dead(TrackletPtr a_trk,
                   const unsigned int n_dead) const;
     double P_dead(TrackletPtr a_trk) const;
+    double P_merge(TrackletPtr a_trk_m0,
+                   TrackletPtr a_trk_m1,
+                   TrackletPtr a_trk) const;
 
     // calculate the distance of a track from the border of the imaging volume
     float dist_from_border( TrackletPtr a_trk, bool a_start ) const;

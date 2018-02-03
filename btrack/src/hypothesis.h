@@ -78,6 +78,8 @@ extern "C" struct PyHypothesis {
   unsigned int link_ID;
   unsigned int child_one_ID;
   unsigned int child_two_ID;
+  unsigned int parent_one_ID;
+  unsigned int parent_two_ID;
 
   PyHypothesis(unsigned int h, unsigned int id): hypothesis(h), ID(id) {};
 };
@@ -99,9 +101,18 @@ class Hypothesis
 
     // store pointers to the tracks
     TrackletPtr trk_ID;
+
+    // used only for track joining
     TrackletPtr trk_link_ID;
+
+    // used for track branching
     TrackletPtr trk_child_one_ID;
     TrackletPtr trk_child_two_ID;
+
+    // used for track merging
+    TrackletPtr trk_parent_one_ID;
+    TrackletPtr trk_parent_two_ID;
+
 
     // return a python compatible hypothesis
     PyHypothesis get_hypothesis() const {
@@ -111,16 +122,27 @@ class Hypothesis
       PyHypothesis h = PyHypothesis(this->hypothesis, this->trk_ID->ID);
       h.probability = this->probability;
 
+
+      // track joining
       if (this->hypothesis == TYPE_Plink &&
           trk_link_ID != NULL) {
         h.link_ID = this->trk_link_ID->ID;
       };
 
+      // track branching
       if (this->hypothesis == TYPE_Pdivn &&
           trk_child_one_ID != NULL &&
           trk_child_two_ID != NULL) {
         h.child_one_ID = this->trk_child_one_ID->ID;
         h.child_two_ID = this->trk_child_two_ID->ID;
+      };
+
+      // track merging
+      if (this->hypothesis == TYPE_Pmrge &&
+          trk_parent_one_ID != NULL &&
+          trk_parent_two_ID != NULL) {
+        h.parent_one_ID = this->trk_parent_one_ID->ID;
+        h.parent_two_ID = this->trk_parent_two_ID->ID;
       };
 
       return h;

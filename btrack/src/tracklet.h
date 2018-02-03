@@ -77,6 +77,7 @@ public:
 
   // get the current position from the last known object
   Eigen::Vector3d position() const {
+    assert(!track.empty());
     return track.back()->position();
   };
 

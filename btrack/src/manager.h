@@ -26,7 +26,7 @@
 
 #define RESERVE_ALL_TRACKS 500000
 
-// make a joining hypothesis
+// make a joining hypothesis (note: LinkHypothesis is used by the tracker...)
 typedef std::pair<TrackletPtr, TrackletPtr> JoinHypothesis;
 
 // make a branching hypothesis

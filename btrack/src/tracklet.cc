@@ -20,8 +20,8 @@
 
 Tracklet::Tracklet( const unsigned int new_ID,
                     const TrackObjectPtr& new_object,
-                   	const unsigned int max_lost,
-                   	const MotionModel& model ) {
+                    const unsigned int max_lost,
+                    const MotionModel& model ) {
 
   // make a local copy of the default motion model
   motion_model = model;
@@ -47,7 +47,7 @@ void Tracklet::append(const TrackObjectPtr& new_object, bool update) {
 
   // update the motion model and the prediction
   if (update) {
-  	motion_model.update( new_object );
+    motion_model.update( new_object );
   }
 
   // push back the prediction before the update

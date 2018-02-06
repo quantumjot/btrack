@@ -1,4 +1,4 @@
-btrack/src/eigen/*
+btrack/include/eigen/*
 resources/*
 notebooks/*
 

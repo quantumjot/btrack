@@ -24,6 +24,12 @@ Misc
 Updates
 =======
 
+0.2.5
+-----
+- Changed default logger to work with Impy GPU server
+- Cleaned up rendering of tracks for Jupyter notebooks
+- Added time dimension to 'volume' cropping
+
 0.2.4
 -----
 - Returns dummy objects to HDF5 writer

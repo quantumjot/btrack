@@ -37,6 +37,10 @@ from collections import OrderedDict
 
 
 
+# get the logger instance
+logger = logging.getLogger('worker_process')
+
+
 
 class TrackingError(Exception):
     """ Raise an error from the BayesianTracker """
@@ -115,7 +119,7 @@ def load_library(filename):
     release = platform.release()
 
     if system is 'Windows':
-        logging.warning('Windows is not fully supported yet. libtracker.DLL '
+        logger.warning('Windows is not fully supported yet. libtracker.DLL '
                         'must be compiled.')
 
     file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
@@ -124,7 +128,7 @@ def load_library(filename):
 
     try:
         lib = ctypes.cdll.LoadLibrary(full_lib_file)
-        logging.info('Loaded btrack: {0:s}'.format(full_lib_file))
+        logger.info('Loaded btrack: {0:s}'.format(full_lib_file))
     except IOError:
         raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
 
@@ -150,7 +154,7 @@ def log_error(err_code):
     """
 
     if err_code in constants.ERRORS:
-        logging.error('ERROR: {0:s}'.format(constants.ERRORS[err_code]))
+        logger.error('ERROR: {0:s}'.format(constants.ERRORS[err_code]))
         return True
 
     return False
@@ -162,17 +166,17 @@ def log_stats(stats):
 
     if log_error(stats['error']): return
 
-    logging.info(' - Timing (Bayesian updates: {0:.2f}ms, Linking:'
+    logger.info(' - Timing (Bayesian updates: {0:.2f}ms, Linking:'
                 ' {1:.2f}ms)'.format(stats['t_update_belief'],
                 stats['t_update_link']))
 
-    logging.info(' - Probabilities (Link: {0:.5f}, Lost:'
+    logger.info(' - Probabilities (Link: {0:.5f}, Lost:'
                 ' {1:.5f})'.format(stats['p_link'], stats['p_lost']))
 
     if stats['complete']:
         return
 
-    logging.info(' - Stats (Active: {0:d}, Lost: {1:d}, Conflicts '
+    logger.info(' - Stats (Active: {0:d}, Lost: {1:d}, Conflicts '
                 'resolved: {2:d})'.format(stats['n_active'],
                 stats['n_lost'], stats['n_conflicts']))
 
@@ -333,7 +337,7 @@ def read_object_model(filename):
 
 def crop_volume(objects, volume=constants.VOLUME):
     """ Return a list of objects that fall within a certain volume """
-    axes = ['x','y','z']
+    axes = ['x','y','z','t']
     within = lambda o: all([getattr(o, a)>=v[0] and getattr(o, a)<=v[1] for a,v in zip(axes, volume)])
     return [o for o in objects if within(o)]
 
@@ -466,6 +470,8 @@ def export_HDF(filename, tracks, dummies=[]):
 
 
 
+
+
 class HDF5_FileHandler(object):
     """ HDF5_FileHandler
 
@@ -475,33 +481,11 @@ class HDF5_FileHandler(object):
     Basic format of the HDF file is:
         frames/
             frame_1/
-                ->object_1/
-                ->object_2/
-                ...
-        segmented/
-            segmented_1
+                coords
+                labels
+                dummies
+            frame_2/
             ...
-        objects/
-            object_1/
-                xyzt
-                ...
-            object_2/
-            ...
-        dummies/
-            dummy_-1/
-                xyzt
-                ...
-            dummy_-2/
-        tracks/
-            track_1/
-                ->object_12
-                ->object_23
-                ->object_74
-                ->dummy_-1
-                ...
-            track_2/
-            ...
-        trees/
 
     Args:
 
@@ -513,11 +497,12 @@ class HDF5_FileHandler(object):
 
     def __init__(self, filename=None):
         """ Initialise the HDF file. """
+
         if not filename.endswith('.hdf5'):
             filename+'.hdf5'
         self.filename = filename
 
-        logging.info('Opening HDF file: {0:s}'.format(filename))
+        logger.info('Opening HDF file: {0:s}'.format(filename))
         self._hdf = h5py.File(filename, 'r+') # a -file doesn't have to exist
 
     def __del__(self):
@@ -527,12 +512,42 @@ class HDF5_FileHandler(object):
         """ Close the file properly """
         if self._hdf:
             self._hdf.close()
-            logging.info('Closing HDF file.')
+            logger.info('Closing HDF file.')
 
     @property
     def objects(self):
         """ Return the objects in the file """
-        objects = [self.new_PyTrackObject(o) for o in self._hdf['objects']]
+        # objects = [self.new_PyTrackObject(o) for o in self._hdf['objects']]
+        objects = []
+        ID = 0
+
+
+        lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
+        frms = sorted(self._hdf['frames'].keys(), key=lambda_frm)
+
+
+        for frm in frms:
+            txyz = self._hdf['frames'][frm]['coords']
+            labels = None
+
+            if 'labels' in self._hdf['frames'][frm]:
+                labels = self._hdf['frames'][frm]['labels']
+                assert txyz.shape[0] == labels.shape[0]
+
+            for o in xrange(txyz.shape[0]):
+                if labels is not None:
+                    class_label = labels[o,:]
+                else:
+                    class_label = None
+
+                # get the object type
+                object_type = txyz[o,4]
+
+                objects.append(self.new_PyTrackObject(ID, txyz[o,:], label=class_label, type=object_type))
+
+                # increment the ID counter
+                ID+=1
+
         return objects
 
     @property
@@ -548,81 +563,25 @@ class HDF5_FileHandler(object):
         tracks = [self.new_Tracklet(t) for t in self._hdf['tracks']]
         return tracks
 
-
-    def write_tracks(self, tracks):
-        """ Write the tracks to the HDF5 file """
-
-        if 'tracks' not in self._hdf:
-            self._hdf.create_group('tracks')
-        else:
-            logging.warning('Overwriting tracks in HDF5 file...')
-            del self._hdf['tracks']
-            self._hdf.create_group('tracks')
-
-        trk_grp = self._hdf['tracks']
-
-        # write out the tracks
-        for t_ID, t in enumerate(tracks):
-            trk_grp.create_dataset('track_{0:d}'.format(t_ID), data=np.array(t),
-                dtype='i4')
-
-        #TODO(arl): write out the track root, parent
-
-    def write_objects(self, objects):
-        """ Write objects to the HDF5 file """
-        raise NotImplementedError
-
-    def write_dummies(self, dummies):
-        """ Write out the dummy objects """
-        if 'dummies' not in self._hdf:
-            self._hdf.create_group('dummies')
-        else:
-            logging.warning('Overwriting dummies in HDF5 file...')
-            del self._hdf['dummies']
-            self._hdf.create_group('dummies')
-
-        dummy_grp = self._hdf['dummies']
-        for d in dummies:
-
-            # add the coordinate data in a new group for this object
-            grp = dummy_grp.create_group('object_{0:d}'.format(d.ID))
-
-            # add the data to the objects
-            this_obj = [d.t, d.x, d.y, d.z]
-            grp.create_dataset('txyz', data=np.array(this_obj), dtype='f4')
-
-
-
-    def new_PyTrackObject(self, ID):
+    def new_PyTrackObject(self, ID, txyz, label=None, type=0):
         """ Set up a new PyTrackObject quickly using data from a file """
 
-        txyz = self._hdf['objects'][ID]['txyz']
+        if label is not None:
+            class_label = label[0]
+        else:
+            class_label = 0
 
         new_object = core.PyTrackObject()
-        new_object.ID = ID_from_name(ID)
+        new_object.ID = ID
         new_object.t = txyz[0]
         new_object.x = txyz[1]
         new_object.y = txyz[2]
         new_object.z = txyz[3]
         new_object.dummy = False
-        new_object.label = 0    # TODO(arl): grab these from the classifier
+        new_object.label = class_label    # DONE(arl): from the classifier
         new_object.probability = np.zeros((1,))
+        new_object.type = int(type)
         return new_object
-
-    def new_Tracklet(self, ID):
-        """ Set up a new Tracklet quickly using data from a file """
-        # TODO(arl): this needs cleaning up!!!
-        n_obj = len(self._hdf['tracks'][ID])
-        data = np.zeros((n_obj, 4))
-
-        # traverse the softlinks and recreate the track
-        for i, o in enumerate(self._hdf['tracks'][ID]):
-            data[i,:] = self._hdf['tracks'][ID][o]
-
-        new_track = core.Tracklet(ID_from_name(ID), data)
-        return new_track
-
-
 
 
 
@@ -743,7 +702,7 @@ def import_ThunderSTORM(filename, pixels_2_nm=100.):
         to_use = ('frame', 'x [nm]', 'y [nm]', 'z [nm]')
         cols = [i for i in xrange(len(header)) if header[i] in to_use]
 
-        logging.info('Found: {0:s}'.format(', '.join([header[c] for c in cols])))
+        logger.info('Found: {0:s}'.format(', '.join([header[c] for c in cols])))
 
         objects = []
 

@@ -86,9 +86,18 @@ def _check_plot_order(order):
 
 
 
-def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
-                order='xyz', kalman=False, cmap=plt.get_cmap('viridis'),
-                labels=False, title='BayesianTracker output'):
+def plot_tracks(tracks,
+                agents=[],
+                lw=1.,
+                color_by_type = False,
+                terminii=False,
+                tail=None,
+                box=None,
+                order='xyz',
+                kalman=False,
+                cmap=plt.get_cmap('viridis'),
+                labels=False,
+                title='BayesianTracker output'):
     """ plot_tracks
 
     Plot tracks using matplotlib/matplotlib3d. Uses linecollections to speed up
@@ -102,6 +111,8 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
         box: plot a box to show the limits of the volume
         terminii: bool to plot markers at the start and end of tracks
         kalman: plot the output of the kalman filter
+        labels: bool to plot track IDs as labels
+        color_by_type: bool to plot track types in different colours
 
     Returns:
         None
@@ -121,6 +132,11 @@ def plot_tracks(tracks, agents=[], lw=1., terminii=False, tail=None, box=None,
         ax = fig.add_subplot(111, projection='3d')
     else:
         ax = fig.add_subplot(111)
+
+    # if the color by type flag is set, partition the tracks according to type:
+    if color_by_type:
+        track_types = [t.type for t in tracks]
+
 
     # use a color map
     colors_rgb = [cmap(int(i)) for i in np.linspace(0,255,16)]
@@ -199,6 +215,7 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
     lc.set_linewidth(lw)
 
     addline(ax, lc)
+
 
 
 

@@ -117,8 +117,8 @@ public:
   unsigned int lost = 0;
 
   // store the root, parent and original IDs
-  unsigned int root;
-  unsigned int parent;
+  unsigned int root = 0;
+  unsigned int parent = 0;
   unsigned int renamed_ID;
 
 

@@ -26,6 +26,7 @@ import numpy as np
 
 import utils
 import constants
+import libwrapper
 from optimise import hypothesis
 from optimise import linker
 
@@ -40,7 +41,8 @@ logger = logging.getLogger('worker_process')
 # if we don't have any handlers, set one up
 if not logger.handlers:
     # configure stream handler
-    log_formatter = logging.Formatter('[%(levelname)s][%(asctime)s] %(message)s', datefmt='%Y/%m/%d %I:%M:%S %p')
+    log_formatter = logging.Formatter('[%(levelname)s][%(asctime)s] %(message)s',
+        datefmt='%Y/%m/%d %I:%M:%S %p')
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(log_formatter)
 
@@ -60,7 +62,10 @@ def log_to_file(pth, level=None):
 
 # TODO(arl): sort this out with final packaging!
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
-print BTRACK_PATH
+
+# get a reference to the library
+lib = libwrapper.LibraryWrapper.lib
+
 
 
 
@@ -468,21 +473,6 @@ def timeit(func, *args):
     t_elapsed = time.time() - t_start
     return ret, t_elapsed
 
-def np_dbl_p():
-    """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.double, ndim=2, flags='C_CONTIGUOUS')
-
-def np_dbl_pc():
-    """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.double, ndim=2, flags='F_CONTIGUOUS')
-
-def np_uint_p():
-    """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS')
-
-def np_int_p():
-    """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags='C_CONTIGUOUS')
 
 
 
@@ -490,115 +480,7 @@ def np_int_p():
 
 
 
-class LibraryWrapper(object):
-    """ LibraryWrapper
 
-    This is a container and interface class to the btrack library. This can
-    be shared between the tracker and the optimiser to provide a uniform
-    interface.
-
-    """
-
-    lib = utils.load_library(os.path.join(BTRACK_PATH,'libs/libtracker'))
-
-    # deal with constructors/destructors
-    lib.new_interface.restype = ctypes.c_void_p
-    lib.new_interface.argtypes = [ctypes.c_bool]
-
-    lib.del_interface.restype = None
-    lib.del_interface.argtypes = [ctypes.c_void_p]
-
-    # set the motion model
-    lib.motion.restype = None
-    lib.motion.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint,
-                            np_dbl_p(), np_dbl_p(), np_dbl_p(), np_dbl_p(),
-                            np_dbl_p(), ctypes.c_double, ctypes.c_double,
-                            ctypes.c_uint, ctypes.c_double]
-
-    # set the object model
-    # lib.model.restype = None
-    # lib.model.argtypes = [ctypes.c_void_p, ctypes.c_uint, np_dbl_p(),
-    #                         np_dbl_p(), np_dbl_p()]
-
-    # append a new observation
-    lib.append.restype = None
-    lib.append.argtypes = [ctypes.c_void_p, PyTrackObject]
-
-    # run the complete tracking
-    lib.track.restype = ctypes.POINTER(PyTrackingInfo)
-    lib.track.argtypes = [ctypes.c_void_p]
-
-    # run one or more steps of the tracking, interactive mode
-    lib.step.restype = ctypes.POINTER(PyTrackingInfo)
-    lib.step.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-
-    # get an individual track length
-    lib.track_length.restype = ctypes.c_uint
-    lib.track_length.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-
-    # get a track
-    lib.get.restype = ctypes.c_uint
-    lib.get.argtypes = [ctypes.c_void_p, np_dbl_p(), ctypes.c_uint]
-
-    # get a track, by reference
-    lib.get_refs.restype = ctypes.c_uint
-    lib.get_refs.argtypes = [ctypes.c_void_p, np_int_p(), ctypes.c_uint]
-
-    # get the parent ID (i.e. pre-division)
-    lib.get_parent.restype = ctypes.c_uint
-    lib.get_parent.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-
-    # get the fate of the track
-    lib.get_fate.restype = ctypes.c_uint
-    lib.get_fate.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-
-    # get the kalman filtered position
-    lib.get_kalman_mu.restype = ctypes.c_uint
-    lib.get_kalman_mu.argtypes = [ctypes.c_void_p, np_dbl_p(), ctypes.c_uint]
-
-    # get the kalman covariance
-    lib.get_kalman_covar.restype = ctypes.c_uint
-    lib.get_kalman_covar.argtypes = [ctypes.c_void_p, np_dbl_p(), ctypes.c_uint]
-
-    # get the predicted position at each time step
-    lib.get_kalman_pred.restype = ctypes.c_uint
-    lib.get_kalman_pred.argtypes = [ctypes.c_void_p, np_dbl_p(), ctypes.c_uint]
-
-    # get the label of the object
-    lib.get_label.restype = ctypes.c_uint
-    lib.get_label.argtypes = [ctypes.c_void_p, np_uint_p(), ctypes.c_uint]
-
-    # get the imaging volume
-    lib.get_volume.restype = None
-    lib.get_volume.argtypes = [ctypes.c_void_p, np_dbl_p()]
-
-    # return a dummy object by reference
-    lib.get_dummy.restype = PyTrackObject
-    lib.get_dummy.argtypes = [ctypes.c_void_p, ctypes.c_int]
-
-    # get the number of tracks
-    lib.size.restype = ctypes.c_uint
-    lib.size.argtypes = [ctypes.c_void_p]
-
-    # calculate the hypotheses
-    lib.create_hypotheses.restype = ctypes.c_uint
-    lib.create_hypotheses.argtypes = [ctypes.c_void_p,
-        hypothesis.PyHypothesisParams,
-        ctypes.c_uint, ctypes.c_uint]
-
-    # get a hypothesis by ID
-    lib.get_hypothesis.restype = hypothesis.Hypothesis
-    lib.get_hypothesis.argtypes = [ctypes.c_void_p, ctypes.c_uint]
-
-    # merge following optimisation
-    lib.merge.restype = None
-    lib.merge.argtypes = [ctypes.c_void_p, np_uint_p(), ctypes.c_uint]
-
-
-
-
-# get a reference to the library
-lib = LibraryWrapper.lib
 
 
 

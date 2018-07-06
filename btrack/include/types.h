@@ -42,6 +42,23 @@
 const double kInfinity = std::numeric_limits<double>::infinity();
 
 
+// hypothesis and state types
+#define TYPE_Pfalse 0
+#define TYPE_Pinit 1
+#define TYPE_Pterm 2
+#define TYPE_Plink 3
+#define TYPE_Pdivn 4
+#define TYPE_Papop 5
+#define TYPE_Pdead 6
+#define TYPE_Pmrge 7
+#define TYPE_undef 999
+
+#define STATE_interphase 0
+#define STATE_prometaphase 1
+#define STATE_metaphase 2
+#define STATE_anaphase 3
+#define STATE_apoptosis 4
+#define STATE_null 5
 
 
 // Python structure for external interface

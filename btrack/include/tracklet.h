@@ -26,6 +26,10 @@
 
 #define MAX_LOST 5
 
+
+
+
+
 // Tracklet object. A container class to keep the list of track objects as well
 // as a dedicated motion and object models for the object.
 class Tracklet
@@ -120,6 +124,7 @@ public:
   unsigned int root = 0;
   unsigned int parent = 0;
   unsigned int renamed_ID;
+  unsigned int fate = TYPE_undef;
 
 
 private:

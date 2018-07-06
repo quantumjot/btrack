@@ -37,6 +37,9 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk) {
   // set the renamed ID and a flag to remove
   join_trk->renamed_ID = parent_trk->ID;
   join_trk->to_remove(true);
+
+  // set the fate of the parent track to that of the joined track
+  parent_trk->fate = join_trk->fate;
 }
 
 
@@ -69,6 +72,9 @@ void branch_tracks(const BranchHypothesis &branch) {
   child_two_trk->parent = ID;
 
   // TODO(arl): we can also set children here, this makes tree generation easier
+
+  // set the fate of the parent as 'divided'
+  parent_trk->fate = TYPE_Pdivn;
 }
 
 // take a list of hypotheses and re-organise the tracks following optimisation
@@ -96,6 +102,10 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   for (size_t i=0; i<n_hypotheses; i++) {
 
     Hypothesis h = a_hypotheses[i];
+
+    // set the fate of each track as the 'accepted' hypothesis. these will be
+    // overwritten in the link and division events
+    h.trk_ID->fate = h.hypothesis;
 
     switch (h.hypothesis) {
 
@@ -136,7 +146,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   /* Merge the tracklets.
 
     i. Traverse the list of linkages.
-    ii. Take the first tracklet, append subsequent objects to that tracklet, do not update object model
+    ii. Take the first tracklet, append subsequent objects to that tracklet,
+        do not update object model
     iii. Rename subsequent tracklets
     iv. set the parent flags for the tracks
     v. Remove merged tracks

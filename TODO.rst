@@ -29,6 +29,7 @@ Updates
 - Changed default logger to work with Impy GPU server
 - Cleaned up rendering of tracks for Jupyter notebooks
 - Added time dimension to 'volume' cropping
+- Added fate property to tracks
 
 0.2.4
 -----

@@ -26,6 +26,12 @@ import numpy as np
 import utils
 import constants
 
+from core import PyTrackObject, PyTrackingInfo
+from optimise import hypothesis
+
+
+
+
 
 # get the logger instance
 logger = logging.getLogger('worker_process')
@@ -95,6 +101,9 @@ def load_library(filename):
         raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
 
     return lib
+
+
+
 
 
 

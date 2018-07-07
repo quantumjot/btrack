@@ -26,7 +26,7 @@ import numpy as np
 
 import utils
 import constants
-import libwrapper
+
 from optimise import hypothesis
 from optimise import linker
 
@@ -63,8 +63,7 @@ def log_to_file(pth, level=None):
 # TODO(arl): sort this out with final packaging!
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
-# get a reference to the library
-lib = libwrapper.LibraryWrapper.lib
+
 
 
 
@@ -127,7 +126,7 @@ class PyTrackObject(ctypes.Structure):
 
 
 class PyTrackingInfo(ctypes.Structure):
-    """ PyTrackingStatistics
+    """ PyTrackingInfo
 
     Primitive class to store information about the tracking output.
 
@@ -483,7 +482,9 @@ def timeit(func, *args):
 
 
 
-
+# get a reference to the library
+import libwrapper
+lib = libwrapper.LibraryWrapper.lib
 
 class BayesianTracker(object):
     """ BayesianTracker
@@ -931,10 +932,11 @@ class BayesianTracker(object):
         _ = lib.get(self.__engine, trk, index)
         _ = lib.get_label(self.__engine, lbl, index)
         p = lib.get_parent(self.__engine, index)
+        f = lib.get_fate(self.__engine, index)
 
         # optional, we can grab the motion model data too
         if not self.return_kalman:
-            return Tracklet(index, trk, labels=lbl[:,1], parent=p)
+            return Tracklet(index, trk, labels=lbl[:,1], parent=p, fate=f)
 
         # otherwise grab the kalman filter data
         kal_mu = np.zeros((n, sz_mu),dtype='float')     # kalman filtered
@@ -951,7 +953,8 @@ class BayesianTracker(object):
         # return the tracklet
         # TODO(arl) make sure this is the correct ID, since we may have lost
         # some during the track merging/optimisation phase
-        return Tracklet(index, trk, kalman=kal, labels=lbl[:,1], parent=p)
+        return Tracklet(index, trk, kalman=kal, labels=lbl[:,1],
+                        parent=p, fate=f)
 
 
     def get_dummy(self, dummy_idx):

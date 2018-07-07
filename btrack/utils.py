@@ -21,9 +21,6 @@ import re
 import os
 import numpy as np
 import time
-import platform
-import ctypes
-
 import h5py
 import csv
 import json
@@ -98,41 +95,7 @@ class Labeller(object):
 
 
 
-def load_library(filename):
-    """ Return the platform for shared library loading.  Take care of loading
-    the appropriate shared library.
 
-    Args:
-        filename: filename for the library
-
-    Raises:
-        logging warning if windows is used
-    """
-
-    if not isinstance(filename, basestring):
-        raise TypeError('Filename must be a string')
-
-    lib_file, ext = os.path.splitext(filename)
-
-    system = platform.system()
-    version = platform.version()
-    release = platform.release()
-
-    if system is 'Windows':
-        logger.warning('Windows is not fully supported yet. libtracker.DLL '
-                        'must be compiled.')
-
-    file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
-
-    full_lib_file = lib_file + file_ext[system]
-
-    try:
-        lib = ctypes.cdll.LoadLibrary(full_lib_file)
-        logger.info('Loaded btrack: {0:s}'.format(full_lib_file))
-    except IOError:
-        raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
-
-    return lib
 
 
 

@@ -18,13 +18,17 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import os
+import platform
+import ctypes
+import logging
 import numpy as np
 
 import utils
 import constants
 
 
-
+# get the logger instance
+logger = logging.getLogger('worker_process')
 
 # TODO(arl): sort this out with final packaging!
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
@@ -56,7 +60,41 @@ def np_int_p():
 
 
 
+def load_library(filename):
+    """ Return the platform for shared library loading.  Take care of loading
+    the appropriate shared library.
 
+    Args:
+        filename: filename for the library
+
+    Raises:
+        logging warning if windows is used
+    """
+
+    if not isinstance(filename, basestring):
+        raise TypeError('Filename must be a string')
+
+    lib_file, ext = os.path.splitext(filename)
+
+    system = platform.system()
+    version = platform.version()
+    release = platform.release()
+
+    if system is 'Windows':
+        logger.warning('Windows is not fully supported yet. libtracker.DLL '
+                        'must be compiled.')
+
+    file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
+
+    full_lib_file = lib_file + file_ext[system]
+
+    try:
+        lib = ctypes.cdll.LoadLibrary(full_lib_file)
+        logger.info('Loaded btrack: {0:s}'.format(full_lib_file))
+    except IOError:
+        raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
+
+    return lib
 
 
 
@@ -69,7 +107,7 @@ class LibraryWrapper(object):
 
     """
 
-    lib = utils.load_library(os.path.join(BTRACK_PATH,'libs/libtracker'))
+    lib = load_library(os.path.join(BTRACK_PATH,'libs/libtracker'))
 
     # deal with constructors/destructors
     lib.new_interface.restype = ctypes.c_void_p

@@ -307,6 +307,21 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 
 
+def fate_table(tracks):
+    """ Create a fate table of all of the tracks. This is used by the MATLAB
+    exporter.
+    """
+
+    fate_table = {}
+
+    for t in tracks:
+        if t.fate_label not in fate_table.keys():
+            fate_table[t.fate_label] = [t.ID]
+        else:
+            fate_label[t.fate_label].append(t.ID)
+
+    return fate_table
+
 
 
 
@@ -377,7 +392,9 @@ def export_MATLAB(filename, tracks):
 
     from scipy.io import savemat
     np_cat = np.vstack([trk.to_array() for trk in tracks])
-    matlab_export = {"num_tracks":len(tracks), "tracks": np_cat}
+    matlab_export = { "num_tracks": len(tracks),
+                      "tracks": np_cat,
+                      "fate_table": fate_table(tracks) }
     savemat(filename, matlab_export)
 
 

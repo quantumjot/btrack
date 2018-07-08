@@ -340,6 +340,18 @@ class Tracklet(object):
     Tracklet object for storing and updating linked lists of track objects.
     Forms the data structure for an individual tracklet.
 
+    Track 'fates' are the selected hypotheses after optimization:
+
+        #define TYPE_Pfalse 0
+        #define TYPE_Pinit 1
+        #define TYPE_Pterm 2
+        #define TYPE_Plink 3
+        #define TYPE_Pdivn 4
+        #define TYPE_Papop 5
+        #define TYPE_Pdead 6
+        #define TYPE_Pmrge 7
+        #define TYPE_undef 999
+
     Args:
         ID: unique identifier
         data: trajectory
@@ -407,6 +419,18 @@ class Tracklet(object):
     @property
     def label(self):
         return [self.labeller(l) for l in self.__labels.tolist()]
+
+    @property
+    def fate_label(self):
+        """ Return a string of the fate label """
+
+        #TODO(arl): abstract this
+        f = ['false_positive', 'initializing', 'terminating', 'link',
+             'dividing', 'apoptosis', 'dead', 'merging', 'undefined']
+        if self.fate is not None:
+            return f[self.fate]
+        else:
+            return None
 
     def kalman(self, index):
         """ Return the entire Kalman filter output for one parameter """

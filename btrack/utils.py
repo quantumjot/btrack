@@ -318,7 +318,7 @@ def fate_table(tracks):
         if t.fate_label not in fate_table.keys():
             fate_table[t.fate_label] = [t.ID]
         else:
-            fate_tablel[t.fate_label].append(t.ID)
+            fate_table[t.fate_label].append(t.ID)
 
     return fate_table
 

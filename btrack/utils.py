@@ -390,12 +390,41 @@ def export_MATLAB(filename, tracks):
     if not check_track_type(tracks):
         raise TypeError('Tracks must be of type core.Tracklet')
 
+    # from scipy.io import savemat
+    # np_cat = np.vstack([trk.to_array() for trk in tracks])
+    # matlab_export = { "num_tracks": len(tracks),
+    #                   "tracks": np_cat,
+    #                   "fate_table": fate_table(tracks) }
+
     from scipy.io import savemat
-    np_cat = np.vstack([trk.to_array() for trk in tracks])
-    matlab_export = { "num_tracks": len(tracks),
-                      "tracks": np_cat,
-                      "fate_table": fate_table(tracks) }
-    savemat(filename, matlab_export)
+
+    export_track = np.zeros((1,7), dtype='float32')
+
+    # start by creating a simple list of coordinates over time
+    for trk in tracks:
+        tmp_track = np.zeros((len(trk),7))
+        tmp_track[:,0] = trk.x
+        tmp_track[:,1] = trk.y
+        tmp_track[:,2] = trk.t
+        tmp_track[:,3] = trk.ID
+        tmp_track[:,4] = trk.parent
+        tmp_track[:,5] = trk.root
+        tmp_track[:,6] = trk.label #[ class_label[l] for l in trk.label ]
+
+        export_track = np.vstack((export_track,tmp_track))
+
+    # remove the first line
+    export_track = np.delete(export_track, 0, 0)
+
+    output = {	'tracks': export_track,
+                'track_labels':['x','y','frm','ID','parentID','rootID','class_label'],
+                'class_labels':['interphase','prometaphase','metaphase','anaphase','apoptosis'],
+                'fate_table': fate_table(tracks)}
+
+
+    savemat(filename, output)
+
+    # savemat(filename, matlab_export)
 
 
 def export_HDF(filename, tracks, dummies=[]):

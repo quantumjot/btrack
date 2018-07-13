@@ -932,6 +932,8 @@ class BayesianTracker(object):
         h_array = h_array[np.newaxis,...]
         lib.merge(self.__engine, h_array, len(selected_hypotheses))
 
+        return [hypotheses[i] for i in selected_hypotheses]
+
     def __getitem__(self, index):
         """ Grab a track from the BayesianTracker object.
 

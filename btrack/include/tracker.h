@@ -48,9 +48,7 @@
 #define RESERVE_ACTIVE_TRACKS 1000
 
 
-// constants for integrating Gaussian PDF
-const double kRootTwo = std::sqrt(2.0);
-const double kRootTwoPi = std::sqrt(2.0*M_PI);
+
 
 
 

@@ -1,0 +1,8 @@
+{
+  "TrackerConfig":
+    {
+      "MotionModel": "constant_velocity.json",
+      "ObjectModel": "",
+      "HypothesisModel": "cell_hypothesis.json"
+    }
+}

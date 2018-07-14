@@ -1,0 +1,19 @@
+{
+  "HypothesisModel": {
+    "name": "cell_hypothesis",
+    "hypotheses": ["FP", "init", "term", "link", "branch", "dead"],
+    "lambda_time": 5.0,
+    "lambda_dist": 5.0,
+    "lambda_link": 5.0,
+    "lambda_branch": 5.0,
+    "eta": 1e-150,
+    "theta_dist": 5.0,
+    "theta_time": 5.0,
+    "dist_thresh": 10,
+    "time_thresh": 3,
+    "apop_thresh": 2,
+    "segmentation_miss_rate": 0.1,
+    "apoptosis_rate": 0.1,
+    "relax": false
+  }
+}

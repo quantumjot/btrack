@@ -87,7 +87,7 @@ class PyTrackObject(ctypes.Structure):
         position: 2D/3D position
         dummy: is this a real object or a dummy object (e.g. when lost)
         label: object classification
-        attributes:	object attributes, essentially metadata about object
+        attributes: object attributes, essentially metadata about object
 
     Properties:
         probability: class label probabilities
@@ -307,7 +307,7 @@ class ObjectModel(object):
             Internally:
                 Eigen::Matrix<double, s, s> emission;
                 Eigen::Matrix<double, s, s> transition;
-            	Eigen::Matrix<double, s, 1> start;
+                Eigen::Matrix<double, s, 1> start;
         """
         if not self.states:
             raise ValueError('Cannot reshape matrices as ObjectModel is '
@@ -370,12 +370,12 @@ class Tracklet(object):
         y: y position
         z: z position
         dummy: did this position arise from an actual measurement?
-        parent:	parent tracklet
+        parent:    parent tracklet
         root: root tracklet if a branching tree (ie cell division)
         motion_model: typically a reference to a Kalman filter or motion model
 
-	Notes:
-		TODO (arl) add the dummy field back, and the track merging. Also,
+    Notes:
+        TODO (arl) add the dummy field back, and the track merging. Also,
         clean up indexing into arrays.
     """
 
@@ -596,7 +596,7 @@ class BayesianTracker(object):
     """
 
     def __init__(self, verbose=True):
-    	""" Initialise the BayesianTracker C++ engine and parameters """
+        """ Initialise the BayesianTracker C++ engine and parameters """
 
         # default parameters
         self.__motion_model = None

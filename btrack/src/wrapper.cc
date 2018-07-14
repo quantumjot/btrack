@@ -27,7 +27,6 @@ InterfaceWrapper::InterfaceWrapper() {
 
 InterfaceWrapper::~InterfaceWrapper() {
   std::cout << "Deleting interface wrapper" << std::endl;
-  // delete p_manager;
 };
 
 // tracking and basic data handling

@@ -1,7 +1,7 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** (Last update: 08/07/2018)  
-*Please note, this is not the full repository (yet)*
+**WORK IN PROGRESS** (Last update: 14/07/2018)  
+*Please note, this is not the full repository, yet*
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -25,7 +25,7 @@ likelihood of each hypothesis is calculated for some or all of the tracklets
 based on heuristics. The global solution identifies a sequence of
 high-likelihood hypotheses that accounts for all observations.
 
-BayesianTracker (btrack) is part of the ImPy image processing toolbox for
+BayesianTracker (btrack) is part of the *Sequitr* image processing toolbox for
 microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 
 ---
@@ -86,6 +86,11 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 
 ### Installation
 
+*NOTE TO WINDOWS USERS*: We have not tested this on Windows. A DLL will need to be
+compiled, which requires proprietary software.
+
+*PRE-REQUISITES*: Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/src/eigen directory.
+
 You can install BayesianTracker by cloning the repo and running the setup:
 ```sh
 $ git clone https://github.com/quantumjot/BayesianTracker.git
@@ -137,7 +142,7 @@ Observations can be provided in three basic formats:
 + HDF5 for larger/more complex datasets, or
 + using your own code as a PyTrackObject.
 
-HDF5 is the *default* format for data interchange, where addtional information
+HDF5 is the *default* format for data interchange, where additional information
 such as images or metadata can also be stored.  It is structured using symbolic
 links and pointers to store references to the original data:
 

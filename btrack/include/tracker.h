@@ -39,7 +39,6 @@
 #define PROB_ASSIGN_EXP_DECAY true
 #define DYNAMIC_ACCURACY false
 #define DIMS 3
-#define DEBUG true
 #define FAST_COST_UPDATE false
 
 

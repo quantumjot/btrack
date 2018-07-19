@@ -26,7 +26,7 @@ Updates
 
 0.2.5
 -----
-- Changed default logger to work with Impy GPU server
+- Changed default logger to work with Sequitr GPU server
 - Cleaned up rendering of tracks for Jupyter notebooks
 - Added time dimension to 'volume' cropping
 - Added fate property to tracks

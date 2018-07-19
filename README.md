@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** (Last update: 14/07/2018)  
+**WORK IN PROGRESS** (Last update: 19/07/2018)  
 *Please note, this is not the full repository, yet*
 
 
@@ -86,17 +86,38 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 
 ### Installation
 
-*NOTE TO WINDOWS USERS*: We have not tested this on Windows. A DLL will need to be
-compiled, which requires proprietary software.
+*NOTE TO WINDOWS USERS*: We have not tested this on Windows. The setup
+instructions below have been tested on Ubuntu 16.04 LTS and OS X 10.13.6.
 
-*PRE-REQUISITES*: Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/src/eigen directory.
-
-You can install BayesianTracker by cloning the repo and running the setup:
+1. First clone the BayesianTracker repo:
 ```sh
 $ git clone https://github.com/quantumjot/BayesianTracker.git
-$ cd BayesianTracker
+```
+
+2. Create a conda environment (assuming you're using Anaconda!):
+```bash
+$ conda create --name btrack
+$ source activate btrack
+$ pip install --upgrade pip
+$ conda install -c conda-forge cvxopt
+$ conda install h5py
+$ conda install scipy
+```
+
+3. Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/src/eigen directory.
+
+4. Finally, use the Makefile in the btrack/src to compile the code:
+```sh
+$ cd BayesianTracker/btrack/src
+$ make
+```
+
+5. Install BayesianTracker:
+```sh
 $ python setup.py install
 ```
+
+*NOTE*: we are working on a cross-platform install script.
 
 ---
 

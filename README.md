@@ -112,11 +112,6 @@ $ cd BayesianTracker/btrack/src
 $ make
 ```
 
-5. Install BayesianTracker:
-```sh
-$ python setup.py install
-```
-
 *NOTE*: we are working on a cross-platform install script.
 
 ---

@@ -870,7 +870,8 @@ class BayesianTracker(object):
 
         stats = self.step()
         frm = 0
-        while not stats.complete and stats.error == 910:
+        # while not stats.complete and stats.error == 910:
+        while not stats.complete and stats.error not in constants.ERRORS:
             logger.info('Tracking objects in frames {0:d} to '
                 '{1:d} (of {2:d})...'.format(frm, min(frm+step_size-1,
                 self.__frame_range[1]+1), self.__frame_range[1]+1))

@@ -62,6 +62,11 @@ class MotionModel
     // get the Kalman filter prediction
     Prediction predict() const;
 
+    // get the motion vector
+    Eigen::Vector3d get_motion_vector() const {
+      return motion_vector;
+    }
+
     // return the system dimensions
     void dimensions(unsigned int* m,
                     unsigned int* s) const {
@@ -85,6 +90,9 @@ class MotionModel
     // store states
     Eigen::VectorXd x_hat;
     Eigen::VectorXd x_hat_new;
+
+    // motion vector
+    Eigen::Vector3d motion_vector;
 
     // an identity matrix
     Eigen::MatrixXd I;

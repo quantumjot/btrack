@@ -25,10 +25,17 @@ MotionModel::MotionModel( const Eigen::MatrixXd &A,
                           measurements(H.rows()), states(A.rows()),
                           x_hat(states), x_hat_new(states), I(states,states)
 {
+
+  // set the time step and the identity matrix used by the Kalman filter
   dt = 1;
   I.setIdentity();
-  initialised = true;
+
+  // fill the current prediction and motion vector with zeros
   x_hat.fill(0.0);
+  motion_vector.fill(0.0);
+
+  // set an initialised flag
+  initialised = true;
 }
 
 // setup with a new observation
@@ -63,7 +70,11 @@ void MotionModel::update(const TrackObjectPtr new_object) {
   // kalman gain and the measurement update
   K = P*H.transpose()*(H*P*H.transpose() + R).inverse();
   x_hat_new = x_hat_new + K * (new_object->position() - H*x_hat_new);
+
+  // update the motion vector, essentially the difference in position
+  motion_vector = x_hat_new.head(3) - x_hat.head(3);
+
+  // update P and the predicted state
   P = (I - K*H)*P;
   x_hat = x_hat_new;
-
 }

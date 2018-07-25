@@ -392,7 +392,7 @@ def export_MATLAB(filename, tracks):
         raise TypeError('Tracks must be of type core.Tracklet')
 
 
-    export_track = = np.vstack([trk.to_array() for trk in tracks])
+    export_track = np.vstack([trk.to_array() for trk in tracks])
 
     output = {'tracks': export_track,
               'track_labels':['x','y','frm','ID','parentID','rootID','class_label'],

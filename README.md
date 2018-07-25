@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** (Last update: 19/07/2018)  
+**WORK IN PROGRESS** (Last update: 25/07/2018)  
 *Please note, this is not the full repository, yet*
 
 

@@ -99,7 +99,8 @@ bool Tracklet::trim() {
 Prediction Tracklet::predict() const {
   Prediction p_out;
   Prediction p = motion_model.predict();
-  p_out.mu = position() + p.mu.tail(3); // add the displacement vector
+  //p_out.mu = position() + p.mu.tail(3); // add the displacement vector
+  p_out.mu = position() + motion_model.get_motion_vector();
   p_out.covar = p.covar.block(0,0,3,3);
   return p_out;
 }

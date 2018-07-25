@@ -24,6 +24,13 @@ Misc
 Updates
 =======
 
+0.2.6
+-----
+- Added get_motion_vector function to motion model to make predictions more
+  model agnostic
+
+
+
 0.2.5
 -----
 - Changed default logger to work with Sequitr GPU server

@@ -467,7 +467,16 @@ class Tracklet(object):
         """ Return a numpy array of the tracklet which can be used for MATLAB
         export. """
         # TODO(arl): add the Kalman filter output here too
-        return np.hstack((self.__data, np.ones((len(self),1))*self.ID))
+        # return np.hstack((self.__data, np.ones((len(self),1))*self.ID))
+        tmp_track = np.zeros((len(trk),7), dtype='float32')
+        tmp_track[:,0] = trk.x
+        tmp_track[:,1] = trk.y
+        tmp_track[:,2] = trk.t
+        tmp_track[:,3] = trk.ID
+        tmp_track[:,4] = trk.parent
+        tmp_track[:,5] = trk.root
+        tmp_track[:,6] = trk.label
+        return tmp_track
 
     def in_frame(self, frame):
         """ Return true or false as to whether the track is in the frame """

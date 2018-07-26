@@ -474,6 +474,23 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
                                     trk_prediction,
                                     this->accuracy);
 
+      // set the probability of assignment to zero if the track is currently
+      // in a metaphase state and the object to link to is anaphase
+      if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+        if (active[trk]->track.back()->label == STATE_metaphase &&
+            new_objects[obj]->label == STATE_anaphase) {
+
+              // set the probability of assignment to zero
+              prob_assign = 0.0;
+
+              // output a message to the user if in debug mode
+              if (DEBUG) {
+                std::cout << "Track: " << active[trk]->ID << " disallowed ";
+                std::cout << "metaphase-anaphase linkage..." << std::endl;
+              }
+            }
+      }
+
       if (PROB_ASSIGN_EXP_DECAY) {
         // apply an exponential decay according to number of lost
         // drops to 50% at max lost
@@ -625,7 +642,7 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
     if (int(best_object) != int(n_objects)){
       // push this putative linkage to the map
       map.push( best_object, LinkHypothesis(trk, prob) );
-      
+
     } else {
       // this track is probably lost, append a dummy to the trajectory
       active[trk]->append_dummy();

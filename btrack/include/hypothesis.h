@@ -206,6 +206,18 @@ extern "C" struct PyHypothesisParams {
 
 
 
+// count the number of apoptosis detections
+unsigned int count_apoptosis(const TrackletPtr a_trk);
+
+// calculate the linkage distance
+double link_distance(const TrackletPtr a_trk,
+                     const TrackletPtr a_trk_lnk);
+
+// safe log function
+double safe_log(double value);
+
+
+
 
 
 

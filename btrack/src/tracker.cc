@@ -484,10 +484,11 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
               prob_assign = 0.0;
 
               // output a message to the user if in debug mode
-              if (DEBUG) {
-                std::cout << "Track: " << active[trk]->ID << " disallowed ";
-                std::cout << "metaphase-anaphase linkage..." << std::endl;
-              }
+              // NOTE(arl): DON'T DO THIS - it gets called *millions* of times
+              // if (DEBUG) {
+                // std::cout << "Track: " << active[trk]->ID << " disallowed ";
+                // std::cout << "metaphase-anaphase linkage..." << std::endl;
+              // }
             }
       }
 

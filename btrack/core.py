@@ -27,8 +27,7 @@ import numpy as np
 import utils
 import constants
 
-from optimise import hypothesis
-from optimise import linker
+from optimise import hypothesis, optimiser
 
 from datetime import datetime
 from collections import OrderedDict
@@ -932,7 +931,7 @@ class BayesianTracker(object):
         logger.info(' - Found {0:d} hypotheses'.format(len(hypotheses)))
 
         # set up the track optimiser
-        track_linker = linker.TrackOptimiser()
+        track_linker = optimiser.TrackOptimiser()
         track_linker.hypotheses = hypotheses
         selected_hypotheses = track_linker.optimise()
 

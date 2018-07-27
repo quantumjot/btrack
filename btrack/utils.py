@@ -39,13 +39,6 @@ from scipy.io import savemat
 logger = logging.getLogger('worker_process')
 
 
-
-class TrackingError(Exception):
-    """ Raise an error from the BayesianTracker """
-
-
-
-
 class Labeller(object):
     """ Labeller
 
@@ -89,24 +82,6 @@ class Labeller(object):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def log_error(err_code):
     """ Take an error code from the tracker and log an error for the user.
 
@@ -143,11 +118,6 @@ def log_stats(stats):
     logger.info(' - Stats (Active: {0:d}, Lost: {1:d}, Conflicts '
                 'resolved: {2:d})'.format(stats['n_active'],
                 stats['n_lost'], stats['n_conflicts']))
-
-
-
-
-
 
 
 
@@ -228,12 +198,6 @@ def read_motion_model(filename):
 
 
 
-
-
-
-
-
-
 def read_object_model(filename):
     """ read_object_model
 
@@ -298,13 +262,11 @@ def read_object_model(filename):
 
 
 
-
 def crop_volume(objects, volume=constants.VOLUME):
     """ Return a list of objects that fall within a certain volume """
     axes = ['x','y','z','t']
     within = lambda o: all([getattr(o, a)>=v[0] and getattr(o, a)<=v[1] for a,v in zip(axes, volume)])
     return [o for o in objects if within(o)]
-
 
 
 
@@ -314,7 +276,6 @@ def fate_table(tracks):
     """
 
     fate_table = {}
-
     for t in tracks:
         if t.fate_label not in fate_table.keys():
             fate_table[t.fate_label] = [t.ID]
@@ -322,8 +283,6 @@ def fate_table(tracks):
             fate_table[t.fate_label].append(t.ID)
 
     return fate_table
-
-
 
 
 
@@ -363,10 +322,9 @@ def export(filename, tracks):
         raise Exception('How did we get here?')
 
 
+
 def check_track_type(tracks):
     return isinstance(tracks[0], core.Tracklet)
-
-
 
 
 
@@ -395,8 +353,10 @@ def export_MATLAB(filename, tracks):
     export_track = np.vstack([trk.to_array() for trk in tracks])
 
     output = {'tracks': export_track,
-              'track_labels':['x','y','frm','ID','parentID','rootID','class_label'],
-              'class_labels':['interphase','prometaphase','metaphase','anaphase','apoptosis'],
+              'track_labels':['x','y','frm','ID','parentID','rootID',
+                              'class_label'],
+              'class_labels':['interphase','prometaphase','metaphase',
+                              'anaphase','apoptosis'],
               'fate_table': fate_table(tracks)}
     savemat(filename, output)
 
@@ -444,15 +404,6 @@ def export_HDF(filename, tracks, dummies=[]):
 
     else:
         raise TypeError('Tracks is of an unknown format.')
-
-
-
-
-
-
-
-
-
 
 
 
@@ -578,6 +529,7 @@ def import_HDF(filename):
     return hdf_handler.objects
 
 
+
 def ID_from_name(name):
     """ Return the object ID from a name.
 
@@ -675,7 +627,7 @@ def import_JSON_observations(filename, labeller=None):
 
 
 
-def import_ThunderSTORM(filename, pixels_2_nm=100.):
+def import_ThunderSTORM(filename, pixels_2_nm=115.):
     """  Load localisation data from ThunderSTORM. """
 
     with open(filename, 'rb') as csvfile:
@@ -710,8 +662,5 @@ def import_ThunderSTORM(filename, pixels_2_nm=100.):
 
 
 
-
-
-
 if __name__ == "__main__":
-    import_HDF('/media/arl/Data/Work/test/MDCK/segmented.hdf5')
+    pass

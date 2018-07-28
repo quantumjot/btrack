@@ -26,7 +26,7 @@ import numpy as np
 import ctypes
 import json
 
-
+H_TYPES = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
 
 class Hypothesis(ctypes.Structure):
     """ Hypothesis structure
@@ -59,8 +59,7 @@ class Hypothesis(ctypes.Structure):
 
     @property
     def type(self):
-        hypothesis_types = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-        return hypothesis_types[self.hypothesis]
+        return H_TYPES[self.hypothesis]
 
     @property
     def score(self):
@@ -111,7 +110,8 @@ class PyHypothesisParams(ctypes.Structure):
                 ('apop_thresh', ctypes.c_uint),
                 ('segmentation_miss_rate', ctypes.c_double),
                 ('apoptosis_rate', ctypes.c_double),
-                ('relax', ctypes.c_bool)]
+                ('relax', ctypes.c_bool),
+                ('hypotheses_to_generate', ctypes.c_uint)]
 
     def __init__(self, name=None):
         self.name = name
@@ -152,6 +152,13 @@ def read_hypothesis_model(filename):
 
     h_params.name = params['HypothesisModel']['name']
 
+    # finally, take the hypotheses and setup a mask to generate only the
+    # specified hypotheses
+    # TODO(arl): no need to specify FP, this should be always be generated
+    hypotheses = params['HypothesisModel']['hypotheses']
+    h_bin = ''.join([str(int(h)) for h in [h in hypotheses for h in H_TYPES]])
+    h_params.hypotheses_to_generate = int(h_bin[::-1], 2)
+
     return h_params
 
 
@@ -161,5 +168,5 @@ def read_hypothesis_model(filename):
 
 
 if __name__ == '__main__':
-    p = read_hypothesis_model('../models/cell_hypothesis.json')
+    p = read_hypothesis_model('../models/MDCK_hypothesis.json')
     print p, p.eta

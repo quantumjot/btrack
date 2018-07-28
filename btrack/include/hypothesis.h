@@ -201,6 +201,7 @@ extern "C" struct PyHypothesisParams {
   double segmentation_miss_rate;
   double apoptosis_rate;
   bool relax;
+  unsigned int hypotheses_to_generate;
 };
 
 
@@ -259,6 +260,9 @@ class HypothesisEngine
     size_t size() const {
       return m_hypotheses.size();
     }
+
+    // test whether we need to generate this hypothesis
+    bool hypothesis_allowed(const unsigned int a_hypothesis_type) const;
 
     // get a hypothesis
     // TODO(arl): return a reference?

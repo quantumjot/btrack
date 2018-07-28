@@ -939,7 +939,8 @@ class BayesianTracker(object):
         h_optimise = [h.type for h in optimised]
 
         for h_type in set(h_original):
-            logger.info(' - {0:s}: {1:d} (of {2:d})'.format(h_type, h_optimise.count(h_type), h_original.count(h_type)))
+            logger.info(' - {0:s}: {1:d} (of {2:d})'.format(h_type,
+                        h_optimise.count(h_type), h_original.count(h_type)))
         logger.info(' - TOTAL: {0:d} hypotheses'.format(len(hypotheses)))
 
         # now that we have generated the optimal sequence, merge all of the

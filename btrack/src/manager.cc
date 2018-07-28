@@ -26,7 +26,8 @@ bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two)
 
 // take two tracks and merge the contents, rename the merged track and mark for
 // removal at the end
-void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk) {
+void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
+{
   if (DEBUG) std::cout << join_trk->ID << ",";
 
   // append the pointers to the objects to the parent track object
@@ -44,7 +45,8 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk) {
 
 
 // branches
-void branch_tracks(const BranchHypothesis &branch) {
+void branch_tracks(const BranchHypothesis &branch)
+{
   // makes some local pointers to the tracklets
   TrackletPtr parent_trk = std::get<0>(branch);
   TrackletPtr child_one_trk = std::get<1>(branch);
@@ -158,10 +160,12 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   unsigned int child_j;
 
   // let's try to follow the links, iterate over the link hypotheses
-  for (size_t parent_i=0; parent_i<m_links.size(); parent_i++) {
+  for (size_t parent_i=0; parent_i<m_links.size(); parent_i++)
+  {
 
     // if we have a linkage, and we haven't already used this...
-    if (!m_links[parent_i].empty() && used.count(parent_i)==0) {
+    if (!m_links[parent_i].empty() && used.count(parent_i)==0)
+    {
 
       // now follow the chain
       used.emplace(parent_i);
@@ -191,7 +195,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   // OK, now that we've merged all of the tracks, we want to set various flags
   // to show that divisions have occurred
 
-  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++) {
+  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++)
+  {
 
     if (!m_branches[parent_i].empty()){
       if (DEBUG) std::cout << "Branch: [";
@@ -212,7 +217,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 }
 
 
-void TrackManager::finalise() {
+void TrackManager::finalise()
+{
 
   if (DEBUG) std::cout << "Finalising all tracks..." << std::endl;
 
@@ -239,7 +245,8 @@ void TrackManager::finalise() {
 }
 
 
-TrackObjectPtr TrackManager::get_dummy(const int a_idx) const {
+TrackObjectPtr TrackManager::get_dummy(const int a_idx) const
+{
   // first check that we're trying to get a dummy object (ID should be neg)
   assert(a_idx<0);
   assert(!m_dummies.empty());

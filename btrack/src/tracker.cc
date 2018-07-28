@@ -154,7 +154,7 @@ unsigned int BayesianTracker::set_motion_model(
   this->prob_not_assign = prob_not_assign;
   this->accuracy = accuracy;
 
-  if (verbose) {
+  if (verbose && DEBUG) {
      std::cout << "MAX_LOST: " << this->max_lost << std::endl;
      std::cout << "ACCURACY: " << this->accuracy << std::endl;
      std::cout << "PROB_NOT_ASSIGN: " << this->prob_not_assign << std::endl;
@@ -224,12 +224,14 @@ void BayesianTracker::track_all() {
 unsigned int BayesianTracker::initialise() {
 
   // check to make sure that we've got some objects to track
-  if (objects.empty()){
+  if (objects.empty())
+  {
     std::cout << "Object queue is empty. Quitting." << std::endl;
     return ERROR_empty_queue;
   }
 
-  if (!tracks.empty()){
+  if (!tracks.empty())
+  {
     std::cout << "Tracking has already been performed. Quitting." << std::endl;
     return ERROR_no_tracks;
   }
@@ -243,19 +245,23 @@ unsigned int BayesianTracker::initialise() {
   frames = f;
 
   bool useable_frames = false;
-  for (size_t n=1; n<frames.size(); n++){
-    if ( (frames[n] - frames[n-1]) <= max_lost) {
+  for (size_t n=1; n<frames.size(); n++)
+  {
+    if ( (frames[n] - frames[n-1]) <= max_lost)
+    {
       useable_frames = true;
       continue;
     }
   }
 
-  if (!useable_frames) {
+  if (!useable_frames)
+  {
     std::cout << "No trackable frames have been found. Quitting." << std::endl;
     return ERROR_no_useable_frames;
   }
 
-  if (verbose) {
+  if (verbose && DEBUG)
+  {
     std::cout << "FRAME RANGE: " << frames.front() << "-" << frames.back();
     std::cout << std::endl;
   }
@@ -268,7 +274,8 @@ unsigned int BayesianTracker::initialise() {
   current_frame = frames.front();
 
   // set up the first tracklets based on the first set of objects
-  while ( objects[o_counter]->t == current_frame && o_counter != n_objects ) {
+  while ( objects[o_counter]->t == current_frame && o_counter != n_objects )
+  {
     // add a new tracklet
     TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
                                                   objects[o_counter],
@@ -286,7 +293,8 @@ unsigned int BayesianTracker::initialise() {
 
 
 // update the tracker by some number of steps
-void BayesianTracker::step(const unsigned int steps){
+void BayesianTracker::step(const unsigned int steps)
+{
 
   // make sure that we have steps greater than zero
   assert(steps>0);
@@ -295,10 +303,12 @@ void BayesianTracker::step(const unsigned int steps){
   unsigned int step = 0;
 
   // first check the iteration, if it is zero, initialise
-  if (current_frame == 0) {
+  if (current_frame == 0)
+  {
     // initialise!
     unsigned int ret = initialise();
-    if ( ret != SUCCESS ) {
+    if ( ret != SUCCESS )
+    {
       // return the error in a statistics structure
       statistics.error = ret;
       return;
@@ -308,7 +318,8 @@ void BayesianTracker::step(const unsigned int steps){
   }
 
 
-  while (step < steps && current_frame<frames.back()) {
+  while (step < steps && current_frame<frames.back())
+  {
 
     // update the list of active tracks
     update_active();
@@ -317,7 +328,8 @@ void BayesianTracker::step(const unsigned int steps){
     new_objects.clear();
 
     // loop over all tracks found in this frame
-    while ( objects[o_counter]->t == current_frame && o_counter != n_objects) {
+    while ( objects[o_counter]->t == current_frame && o_counter != n_objects)
+    {
       // store a reference to this object
       new_objects.push_back( objects[o_counter] );
       o_counter++;
@@ -328,9 +340,11 @@ void BayesianTracker::step(const unsigned int steps){
     size_t n_obs = new_objects.size();
 
     // if we have an empty frame, append dummies to everthing and continue
-    if (new_objects.empty()) {
+    if (new_objects.empty())
+    {
       //std::cout << "Frame " << current_frame << " is empty..." << std::endl;
-      for (size_t i=0; i<n_active; i++){
+      for (size_t i=0; i<n_active; i++)
+      {
         active[i]->append_dummy();
       }
       step++;
@@ -363,7 +377,8 @@ void BayesianTracker::step(const unsigned int steps){
   }
 
   // have we finished?
-  if (current_frame>=frames.back()){
+  if (current_frame>=frames.back())
+  {
     statistics.complete = true;
     //clean();
     tracks.finalise();
@@ -378,23 +393,27 @@ void BayesianTracker::step(const unsigned int steps){
 
 
 
-bool BayesianTracker::update_active() {
+bool BayesianTracker::update_active()
+{
 
   // TODO: MAKE INTERMEDIATE LIST OF TRACKS TO MINIMISE LOOPING OVER EVERYTHING
 
   // clear the active list
   active.clear();
 
-  for (size_t i=0, trks_size=tracks.size(); i<trks_size; i++) {
+  for (size_t i=0, trks_size=tracks.size(); i<trks_size; i++)
+  {
 
     // check to see whether we have exceeded the bounds
-    if (!volume.inside( tracks[i]->position() )){
+    if (!volume.inside( tracks[i]->position() ))
+    {
       tracks[i]->set_lost();
       continue;
     }
 
     // if the track is still active, add it to the update list
-    if (tracks[i]->active()) {
+    if (tracks[i]->active())
+    {
       active.push_back( tracks[i] );
     }
 
@@ -418,7 +437,8 @@ bool BayesianTracker::update_active() {
 // }
 
 
-void BayesianTracker::debug_output(const unsigned int frm) const {
+void BayesianTracker::debug_output(const unsigned int frm) const
+{
 
   // std::cout << "Tracking objects in Frames " << frm-100 << "-" << frm;
   // std::cout << "... " << std::endl;
@@ -457,7 +477,8 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
   Eigen::VectorXd v_posterior;
   Eigen::VectorXd v_update = Eigen::VectorXd(n_objects+1);
 
-  for (size_t trk=0; trk != n_tracks; trk++) {
+  for (size_t trk=0; trk != n_tracks; trk++)
+  {
 
     // get the trk prediction
     trk_prediction = active[trk]->predict();
@@ -467,7 +488,8 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
     v_posterior = belief.col(trk);
 
     // loop through each candidate object
-    for (size_t obj=0; obj != n_objects; obj++) {
+    for (size_t obj=0; obj != n_objects; obj++)
+    {
 
       // calculate the probability that this is the correct track
       prob_assign = probability_erf(new_objects[obj]->position(),
@@ -476,23 +498,26 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
 
       // set the probability of assignment to zero if the track is currently
       // in a metaphase state and the object to link to is anaphase
-      if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+      if (DISALLOW_METAPHASE_ANAPHASE_LINKING)
+      {
         if (active[trk]->track.back()->label == STATE_metaphase &&
-            new_objects[obj]->label == STATE_anaphase) {
+            new_objects[obj]->label == STATE_anaphase)
+        {
 
-              // set the probability of assignment to zero
-              prob_assign = 0.0;
+          // set the probability of assignment to zero
+          prob_assign = 0.0;
 
-              // output a message to the user if in debug mode
-              // NOTE(arl): DON'T DO THIS - it gets called *millions* of times
-              // if (DEBUG) {
-                // std::cout << "Track: " << active[trk]->ID << " disallowed ";
-                // std::cout << "metaphase-anaphase linkage..." << std::endl;
-              // }
-            }
+          // output a message to the user if in debug mode
+          // NOTE(arl): DON'T DO THIS - it gets called *millions* of times
+          // if (DEBUG) {
+            // std::cout << "Track: " << active[trk]->ID << " disallowed ";
+            // std::cout << "metaphase-anaphase linkage..." << std::endl;
+          // }
+        }
       }
 
-      if (PROB_ASSIGN_EXP_DECAY) {
+      if (PROB_ASSIGN_EXP_DECAY)
+      {
         // apply an exponential decay according to number of lost
         // drops to 50% at max lost
         double a = std::pow(2, -(double)active[trk]->lost/(double)max_lost);
@@ -627,20 +652,22 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
 
   // set up some space for used objects
   std::set<unsigned int> not_used;
-  for (size_t i=0; i<n_tracks; i++){
+  for (size_t i=0; i<n_tracks; i++)
+  {
     not_used.insert(not_used.end(), i);
   }
 
   // make a track map
   HypothesisMap<LinkHypothesis> map = HypothesisMap<LinkHypothesis>(n_objects);
 
-  for (size_t trk=0; trk<n_tracks; trk++) {
+  for (size_t trk=0; trk<n_tracks; trk++)
+  {
 
     // get the object with the best match for this track...
     Eigen::MatrixXf::Index best_object;
     double prob = belief.col(trk).maxCoeff(&best_object);
 
-    if (int(best_object) != int(n_objects)){
+    if (int(best_object) != int(n_objects)) {
       // push this putative linkage to the map
       map.push( best_object, LinkHypothesis(trk, prob) );
 
@@ -656,12 +683,14 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
   }
 
   // now loop through the map
-  for (size_t obj=0, map_size=map.size(); obj<map_size; obj++) {
+  for (size_t obj=0, map_size=map.size(); obj<map_size; obj++)
+  {
 
     unsigned int n_links = map[obj].size();
 
     // this is a direct correspondence, make the mapping
-    if (n_links == 1) {
+    if (n_links == 1)
+    {
       //  std::cout << map[trk].size() << std::endl;
       LinkHypothesis lnk = map[obj][0];
 
@@ -714,7 +743,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
   // get a vector of updates
   std::vector<unsigned int> to_update(not_used.begin(), not_used.end());
 
-  for (size_t i=0, update_size=to_update.size(); i<update_size; i++){
+  for (size_t i=0, update_size=to_update.size(); i<update_size; i++)
+  {
     // update these tracks
     active[ to_update[i] ]->append_dummy();
   }
@@ -731,12 +761,12 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
   statistics.n_conflicts = n_conflicts;
   statistics.n_tracks = this->size();
 
-
 }
 
 
 
-int main(int, char**){
+int main(int, char**)
+{
   //
   // BayesianTracker b;
 

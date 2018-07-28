@@ -40,13 +40,15 @@ MotionModel::MotionModel( const Eigen::MatrixXd &A,
 
 // setup with a new observation
 // DONE(arl): make this agnostic to model
-void MotionModel::setup(const TrackObjectPtr new_object) {
+void MotionModel::setup(const TrackObjectPtr new_object)
+{
   x_hat.head(3) = new_object->position();
 };
 
 
 // return a prediction of the position and (co)variance
-Prediction MotionModel::predict() const {
+Prediction MotionModel::predict() const
+{
   assert(initialised);
   Prediction p = Prediction(x_hat, P);
   return p;
@@ -54,7 +56,8 @@ Prediction MotionModel::predict() const {
 
 
   // update the model with a new observation or dummy
-void MotionModel::update(const TrackObjectPtr new_object) {
+void MotionModel::update(const TrackObjectPtr new_object)
+{
   assert(initialised);
 
   // discrete Kalman filter time update, no control...
@@ -62,7 +65,8 @@ void MotionModel::update(const TrackObjectPtr new_object) {
   P = A*P*A.transpose() + Q;
 
   // if this is a dummy object, end here. Update prediction without new data
-  if (new_object->dummy) {
+  if (new_object->dummy)
+  {
     x_hat = x_hat_new;
     return;
   }

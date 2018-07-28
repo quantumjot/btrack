@@ -49,7 +49,12 @@
 #define MAX_TRACK_LEN 150
 #define DEFAULT_LOW_PROBABILITY 1e-150
 
-
+#define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
+#define WEIGHT_METAPHASE_ANAPHASE 0.1
+#define WEIGHT_METAPHASE 2.0
+#define WEIGHT_ANAPHASE_ANAPHASE 1.0
+#define WEIGHT_ANAPHASE 2.0
+#define WEIGHT_OTHER 5.0
 
 
 // // Hash index for use with the hash cube
@@ -290,8 +295,8 @@ class HypothesisEngine
                   TrackletPtr a_trk_link,
                   float d) const;
     double P_branch(TrackletPtr a_trk,
-                    TrackletPtr a_trk_child0,
-                    TrackletPtr a_trk_child1) const;
+                    TrackletPtr a_trk_c0,
+                    TrackletPtr a_trk_c1) const;
     double P_dead(TrackletPtr a_trk,
                   const unsigned int n_dead) const;
     double P_dead(TrackletPtr a_trk) const;

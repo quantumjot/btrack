@@ -22,18 +22,21 @@
 // Essentially a way of binsorting trajectory data for easy lookup,
 // thus preventing excessive searching over non-local trajectories.
 //
-HypercubeBin::HypercubeBin( void ){
+HypercubeBin::HypercubeBin( void )
+{
   // default constructor
 }
 
-HypercubeBin::~HypercubeBin( void ){
+HypercubeBin::~HypercubeBin( void )
+{
   // default destructor
   m_cube.clear();
 }
 
 // set up a HashCube with a certain bin size
 HypercubeBin::HypercubeBin( const unsigned int bin_xyz,
-                            const unsigned int bin_n ) {
+                            const unsigned int bin_n )
+{
   // default constructor
   m_bin_size[0] = float(bin_xyz);
   m_bin_size[1] = float(bin_xyz);
@@ -43,7 +46,8 @@ HypercubeBin::HypercubeBin( const unsigned int bin_xyz,
 
 // use this to calculate the bin of a certain track
 HashIndex HypercubeBin::hash_index( TrackletPtr a_trk,
-                                    const bool a_start ) const {
+                                    const bool a_start ) const
+{
 
   // get the appropriate object from the track
   TrackObjectPtr obj;
@@ -62,7 +66,8 @@ HashIndex HypercubeBin::hash_index( TrackletPtr a_trk,
 HashIndex HypercubeBin::hash_index( const float x,
                                     const float y,
                                     const float z,
-                                    const float n ) const {
+                                    const float n ) const
+{
 
   // set up a hash index structure
   HashIndex idx;
@@ -74,7 +79,8 @@ HashIndex HypercubeBin::hash_index( const float x,
 }
 
 // add a track to the hashcube object
-void HypercubeBin::add(TrackletPtr a_trk){
+void HypercubeBin::add(TrackletPtr a_trk)
+{
   // get the index of the start (i.e. first object) of the track
   HashIndex idx = hash_index( a_trk, true );
 
@@ -84,14 +90,16 @@ void HypercubeBin::add(TrackletPtr a_trk){
   ret = m_cube.emplace( idx, trk_list );
 
   // if this key already exists, append it to the list
-  if (ret.second == false) {
+  if (ret.second == false)
+  {
     m_cube[idx].push_back(a_trk);
   }
 }
 
 // use this to get the tracks in a certain bin (+/-xyz, but only +n)
 std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
-                                            const bool a_start ) {
+                                            const bool a_start )
+{
 
   // space for the tracks to be returned
   std::vector<TrackletPtr> r_trks;
@@ -106,19 +114,23 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
   HashIndex bin_idx;
 
   // iterate over time
-  for (int n=idx.n; n<=idx.n+1; n++) {
+  for (int n=idx.n; n<=idx.n+1; n++)
+  {
     bin_idx.n = n;
 
     // iterate over z
-    for (int z=idx.z-1; z<=idx.z+1; z++) {
+    for (int z=idx.z-1; z<=idx.z+1; z++)
+    {
       bin_idx.z = z;
 
       // iterate over y
-      for (int y=idx.y-1; y<=idx.y+1; y++) {
+      for (int y=idx.y-1; y<=idx.y+1; y++)
+      {
         bin_idx.y = y;
 
         // iterate over x
-        for (int x=idx.x-1; x<=idx.x+1; x++) {
+        for (int x=idx.x-1; x<=idx.x+1; x++)
+        {
           bin_idx.x = x;
 
             // find this bin index and return the list of tracks...
@@ -128,11 +140,13 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
             if (ret == m_cube.end()) continue;
 
             // if we found something, move these into the out queue
-            for (size_t i=0; i<ret->second.size(); i++) {
+            for (size_t i=0; i<ret->second.size(); i++)
+            {
               // Note - we need to make sure that the track we return doesn't
               // start **BEFORE** the track we're searching for....
               if (ret->second[i]->track.front()->t >=
-                  a_trk->track.back()->t) {
+                  a_trk->track.back()->t)
+              {
                 r_trks.push_back( ret->second[i] );
               }
 

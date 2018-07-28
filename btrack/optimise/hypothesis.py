@@ -16,17 +16,13 @@
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
-DEFAULT_LOW_PROBABILITY = -1e5
-MAX_LOST = 5
-ID_COUNTER = 0
-DEBUG = True
-
 import os
 import numpy as np
 import ctypes
 import json
 
 H_TYPES = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
+DEFAULT_LOW_PROBABILITY = -1e5
 
 class Hypothesis(ctypes.Structure):
     """ Hypothesis structure

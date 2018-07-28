@@ -159,45 +159,7 @@ Observations can be provided in three basic formats:
 + using your own code as a PyTrackObject.
 
 HDF5 is the *default* format for data interchange, where additional information
-such as images or metadata can also be stored.  It is structured using symbolic
-links and pointers to store references to the original data:
-
-```HDF5
-frames/
-  frame_1/
-    ->object_1
-    ->object_2
-    ...
-segmented/
-  segmented_1
-  ...
-objects/
-  object_1/
-    txyz
-    label
-    probability
-    attribute_1
-    ...
-  object_2/
-  ...
-tracks/
-  track_1/
-    ->object_12
-    ->object_23
-    ->object_74
-    ...
-  track_2/
-  ...
-hypotheses/
-  hypothesis_1/
-    type
-    log_probability
-    tracks
-    ...
-  hypothesis_2/
-  ...
-trees/
-```
+such as images or metadata can also be stored.  
 
 Data can also be imported using JSON format. Here is an example of the simple JSON format:
 ```json
@@ -245,3 +207,35 @@ Or can be built using the MotionModel class.
 
 ### Object models
 To be completed.
+
+### Hypotheses
+By default, the optimizer generates 7 different hypotheses:
++ False positive (FP)
++ Initializing (init)
++ Terminating (term)
++ Link (link)
++ Branch (branch)
++ Dead (dead)
++ Merge (merge)
+
+```json
+{
+  "HypothesisModel": {
+    "name": "cell_hypothesis",
+    "hypotheses": ["FP", "init", "term", "link", "branch", "dead"],
+    "lambda_time": 5.0,
+    "lambda_dist": 5.0,
+    "lambda_link": 5.0,
+    "lambda_branch": 5.0,
+    "eta": 1e-150,
+    "theta_dist": 5.0,
+    "theta_time": 5.0,
+    "dist_thresh": 10,
+    "time_thresh": 3,
+    "apop_thresh": 2,
+    "segmentation_miss_rate": 0.1,
+    "apoptosis_rate": 0.1,
+    "relax": false
+  }
+}
+```

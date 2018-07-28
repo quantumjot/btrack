@@ -928,12 +928,19 @@ class BayesianTracker(object):
         """
         logger.info('Calculating hypotheses from tracklets...')
         hypotheses = self.hypotheses()
-        logger.info(' - Found {0:d} hypotheses'.format(len(hypotheses)))
 
         # set up the track optimiser
         track_linker = optimiser.TrackOptimiser()
         track_linker.hypotheses = hypotheses
         selected_hypotheses = track_linker.optimise()
+        optimised = [hypotheses[i] for i in selected_hypotheses]
+
+        h_original = [h.type for h in hypotheses]
+        h_optimise = [h.type for h in optimised]
+
+        for h_type in set(h_original):
+            logger.info(' - {0:s}: {1:d} (of {2:d})'.format(h_type, h_optimise.count(h_type), h_original.count(h_type)))
+        logger.info(' - TOTAL: {0:d} hypotheses'.format(len(hypotheses)))
 
         # now that we have generated the optimal sequence, merge all of the
         # tracks, delete fragments and assign divisions
@@ -941,7 +948,7 @@ class BayesianTracker(object):
         h_array = h_array[np.newaxis,...]
         lib.merge(self.__engine, h_array, len(selected_hypotheses))
 
-        return [hypotheses[i] for i in selected_hypotheses]
+        return optimised
 
     def __getitem__(self, index):
         """ Grab a track from the BayesianTracker object.

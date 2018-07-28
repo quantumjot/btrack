@@ -28,6 +28,9 @@ Updates
 -----
 - Added get_motion_vector function to motion model to make predictions more
   model agnostic
+- Added the ability to select which hypotheses are generated during optimization
+- Added more tracking statistics to logging
+- Improved track linking heuristics
 
 
 

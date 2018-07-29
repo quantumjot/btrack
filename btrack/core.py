@@ -893,7 +893,7 @@ class BayesianTracker(object):
             logger.info(' - Found {0:d} tracks in {1:d} frames (in '
                 '{2:.2f}s)'.format(self.n_tracks, 1+self.__frame_range[1],
                 stats.t_total_time))
-            logger.info(' - Inserted {0:d} dummy objects to in-fill '
+            logger.info(' - Inserted {0:d} dummy objects to fill '
                 'tracking gaps'.format(self.n_dummies))
 
 

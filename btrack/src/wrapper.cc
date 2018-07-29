@@ -19,14 +19,14 @@
 // Interface class to coordinate the tracker, hypothesis engine and optimisation
 // Also provides a simple interface for the python facing code.
 InterfaceWrapper::InterfaceWrapper() {
-  std::cout << "Instantiating interface wrapper" << std::endl;
+  std::cout << "Instantiating BTRACK interface wrapper" << std::endl;
 
   // create a track manager instance, pass it to the tracker
   tracker = BayesianTracker(true);
 };
 
 InterfaceWrapper::~InterfaceWrapper() {
-  std::cout << "Deleting interface wrapper" << std::endl;
+  std::cout << "Deleting BTRACK interface wrapper" << std::endl;
 };
 
 // tracking and basic data handling

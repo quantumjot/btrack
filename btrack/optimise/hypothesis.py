@@ -22,7 +22,7 @@ import ctypes
 import json
 
 H_TYPES = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-DEFAULT_LOW_PROBABILITY = -1e5
+
 
 class Hypothesis(ctypes.Structure):
     """ Hypothesis structure
@@ -49,24 +49,18 @@ class Hypothesis(ctypes.Structure):
                 ('parent_one_ID', ctypes.c_uint),
                 ('parent_two_ID', ctypes.c_uint)]
 
-    def __init__(self):
-        self.tracklet = None
-        self.__default_low_probability = DEFAULT_LOW_PROBABILITY
-
     @property
     def type(self):
         return H_TYPES[self.hypothesis]
 
     @property
     def score(self):
-        # NOTE(arl) is this necessary now?
-        if self.probability == -np.inf or np.isnan(self.probability):
-            print self.type, self.probability
-            return DEFAULT_LOW_PROBABILITY
-        return np.max([self.probability, DEFAULT_LOW_PROBABILITY])
+        raise DeprecationWarning('score is deprecated. Use log_likelihood now.')
 
-    def set_fate(self):
-        raise DeprecationWarning('set_fate is deprecated')
+    @property
+    def log_likelihood(self):
+        return self.probability
+
 
 
 

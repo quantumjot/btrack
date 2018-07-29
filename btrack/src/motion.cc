@@ -65,8 +65,7 @@ void MotionModel::update(const TrackObjectPtr new_object)
   P = A*P*A.transpose() + Q;
 
   // if this is a dummy object, end here. Update prediction without new data
-  if (new_object->dummy)
-  {
+  if (new_object->dummy) {
     x_hat = x_hat_new;
     return;
   }

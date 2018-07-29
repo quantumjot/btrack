@@ -133,7 +133,9 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
         }
 
         // push a branch hypothesis
-        m_branches.push(h.trk_ID->ID, BranchHypothesis(h.trk_ID, h.trk_child_one_ID, h.trk_child_two_ID));
+        m_branches.push(h.trk_ID->ID, BranchHypothesis(h.trk_ID,
+                                                       h.trk_child_one_ID,
+                                                       h.trk_child_two_ID));
         break;
 
 
@@ -160,12 +162,10 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   unsigned int child_j;
 
   // let's try to follow the links, iterate over the link hypotheses
-  for (size_t parent_i=0; parent_i<m_links.size(); parent_i++)
-  {
+  for (size_t parent_i=0; parent_i<m_links.size(); parent_i++) {
 
     // if we have a linkage, and we haven't already used this...
-    if (!m_links[parent_i].empty() && used.count(parent_i)==0)
-    {
+    if (!m_links[parent_i].empty() && used.count(parent_i)==0) {
 
       // now follow the chain
       used.emplace(parent_i);
@@ -195,10 +195,9 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   // OK, now that we've merged all of the tracks, we want to set various flags
   // to show that divisions have occurred
 
-  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++)
-  {
+  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++) {
 
-    if (!m_branches[parent_i].empty()){
+    if (!m_branches[parent_i].empty()) {
       if (DEBUG) std::cout << "Branch: [";
       branch_tracks(m_branches[parent_i][0]);
       if (DEBUG) std::cout << "]" << std::endl;
@@ -208,7 +207,13 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 
   // erase those tracks marked for removal (i.e. those that have been merged)
   if (DEBUG) std::cout << "Tracks before merge: " << m_tracks.size();
-  m_tracks.erase( std::remove_if( m_tracks.begin(), m_tracks.end(), [](const TrackletPtr &t) { return t->to_remove(); }), m_tracks.end() );
+
+  // remove the tracks if labelled to_remove
+  m_tracks.erase( std::remove_if( m_tracks.begin(), m_tracks.end(),
+                  [](const TrackletPtr &t) { return t->to_remove(); }),
+                  m_tracks.end() );
+
+  // give the user some more output                
   if (DEBUG) std::cout << ", now " << m_tracks.size() << std::endl;
 
   // now finalise everything

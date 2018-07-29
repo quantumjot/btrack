@@ -82,7 +82,7 @@ unsigned int InterfaceWrapper::get_track(double* output,
   const unsigned int N = 3+1;
 
   // NOTE: Grab the actual track
-  for (unsigned int i=0; i<n_frames; i++){
+  for (unsigned int i=0; i<n_frames; i++) {
     // frame number
     output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
     output[i*N+1] = tracker.tracks[a_ID]->track[i]->x;
@@ -99,7 +99,7 @@ unsigned int InterfaceWrapper::get_refs(int* output,
                                         const unsigned int a_ID) const
 {
   unsigned int n_frames = track_length(a_ID);
-  for (unsigned int i=0; i<n_frames; i++){
+  for (unsigned int i=0; i<n_frames; i++) {
     output[i] = tracker.tracks[a_ID]->track[i]->ID;
   }
   return n_frames;

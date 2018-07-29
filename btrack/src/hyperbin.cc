@@ -90,8 +90,7 @@ void HypercubeBin::add(TrackletPtr a_trk)
   ret = m_cube.emplace( idx, trk_list );
 
   // if this key already exists, append it to the list
-  if (ret.second == false)
-  {
+  if (ret.second == false) {
     m_cube[idx].push_back(a_trk);
   }
 }
@@ -114,23 +113,19 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
   HashIndex bin_idx;
 
   // iterate over time
-  for (int n=idx.n; n<=idx.n+1; n++)
-  {
+  for (int n=idx.n; n<=idx.n+1; n++) {
     bin_idx.n = n;
 
     // iterate over z
-    for (int z=idx.z-1; z<=idx.z+1; z++)
-    {
+    for (int z=idx.z-1; z<=idx.z+1; z++) {
       bin_idx.z = z;
 
       // iterate over y
-      for (int y=idx.y-1; y<=idx.y+1; y++)
-      {
+      for (int y=idx.y-1; y<=idx.y+1; y++) {
         bin_idx.y = y;
 
         // iterate over x
-        for (int x=idx.x-1; x<=idx.x+1; x++)
-        {
+        for (int x=idx.x-1; x<=idx.x+1; x++) {
           bin_idx.x = x;
 
             // find this bin index and return the list of tracks...
@@ -140,13 +135,11 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
             if (ret == m_cube.end()) continue;
 
             // if we found something, move these into the out queue
-            for (size_t i=0; i<ret->second.size(); i++)
-            {
+            for (size_t i=0; i<ret->second.size(); i++) {
               // Note - we need to make sure that the track we return doesn't
               // start **BEFORE** the track we're searching for....
               if (ret->second[i]->track.front()->t >=
-                  a_trk->track.back()->t)
-              {
+                  a_trk->track.back()->t) {
                 r_trks.push_back( ret->second[i] );
               }
 

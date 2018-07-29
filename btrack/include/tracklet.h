@@ -60,6 +60,12 @@ public:
   // return the length of the trajectory
   unsigned int length() const { return track.size(); };
 
+  // return the track duration
+  double duration() const {
+    assert(!track.empty());
+    return track.back()->t - track.front()->t;
+  }
+
   // return a boolean representing the status (active/inactive) of the track
   bool active() const { return lost<max_lost; };
 

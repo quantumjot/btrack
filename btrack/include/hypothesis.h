@@ -219,6 +219,11 @@ unsigned int count_apoptosis(const TrackletPtr a_trk);
 double link_distance(const TrackletPtr a_trk,
                      const TrackletPtr a_trk_lnk);
 
+
+// calculate the time between the start of new track and end of old track
+double link_time(const TrackletPtr a_trk,
+                 const TrackletPtr a_trk_lnk);
+
 // safe log function
 double safe_log(double value);
 
@@ -292,8 +297,11 @@ class HypothesisEngine
     double P_init(TrackletPtr a_trk) const;
     double P_term(TrackletPtr a_trk) const;
     double P_link(TrackletPtr a_trk,
+                  TrackletPtr a_trk_link) const;
+    double P_link(TrackletPtr a_trk,
                   TrackletPtr a_trk_link,
-                  float d) const;
+                  float d,
+                  float dt) const;
     double P_branch(TrackletPtr a_trk,
                     TrackletPtr a_trk_c0,
                     TrackletPtr a_trk_c1) const;

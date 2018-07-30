@@ -27,11 +27,15 @@ HypercubeBin::HypercubeBin( void )
   // default constructor
 }
 
+
+
 HypercubeBin::~HypercubeBin( void )
 {
   // default destructor
   m_cube.clear();
 }
+
+
 
 // set up a HashCube with a certain bin size
 HypercubeBin::HypercubeBin( const unsigned int bin_xyz,
@@ -43,6 +47,8 @@ HypercubeBin::HypercubeBin( const unsigned int bin_xyz,
   m_bin_size[2] = float(bin_xyz);
   m_bin_size[3] = float(bin_n);
 }
+
+
 
 // use this to calculate the bin of a certain track
 HashIndex HypercubeBin::hash_index( TrackletPtr a_trk,
@@ -63,6 +69,8 @@ HashIndex HypercubeBin::hash_index( TrackletPtr a_trk,
   return hash_index(obj);
 }
 
+
+
 HashIndex HypercubeBin::hash_index( const float x,
                                     const float y,
                                     const float z,
@@ -77,6 +85,8 @@ HashIndex HypercubeBin::hash_index( const float x,
   idx.n = static_cast<int> ( floor((1./ m_bin_size[3]) * n) );
   return idx;
 }
+
+
 
 // add a track to the hashcube object
 void HypercubeBin::add(TrackletPtr a_trk)
@@ -94,6 +104,8 @@ void HypercubeBin::add(TrackletPtr a_trk)
     m_cube[idx].push_back(a_trk);
   }
 }
+
+
 
 // use this to get the tracks in a certain bin (+/-xyz, but only +n)
 std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
@@ -148,7 +160,5 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
       } // y
     } // z
   } // n
-
-
   return r_trks;
 }

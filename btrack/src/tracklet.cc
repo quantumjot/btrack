@@ -64,6 +64,8 @@ void Tracklet::append(const TrackObjectPtr& new_object, bool update) {
 
 }
 
+
+
 // append a dummy object to the tracklet
 void Tracklet::append_dummy() {
   if (lost >= MAX_LOST)
@@ -86,6 +88,7 @@ void Tracklet::append_dummy() {
 }
 
 
+
 // Trim the tracklet to remove any dummy objects if the track has been lost
 bool Tracklet::trim() {
   while (track.back()->dummy) {
@@ -93,6 +96,8 @@ bool Tracklet::trim() {
   }
   return true;
 }
+
+
 
 // make a prediction about the future state of the tracklet
 // TODO(arl): make this model agnostic

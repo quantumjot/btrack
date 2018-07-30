@@ -40,6 +40,7 @@ double cheat_trivariate_PDF(const Eigen::Vector3d& x, Prediction p)
 }
 
 
+
 // we can assume that the covar matrix is diagonal from the MotionModel
 // since only position observations are made, therefore we can decompose
 // multivariate gaussian into product of univariate gaussians
@@ -123,10 +124,14 @@ BayesianTracker::BayesianTracker(bool verbose) {
   new_objects.reserve(RESERVE_NEW_OBJECTS);
 }
 
+
+
 BayesianTracker::~BayesianTracker() {
   //std::cout << "Destruction of BayesianTracker" << std::endl;
   // clean up gracefully
 }
+
+
 
 unsigned int BayesianTracker::set_motion_model(
               const unsigned int measurements,
@@ -222,6 +227,8 @@ void BayesianTracker::track_all() {
 
 }
 
+
+
 // initialise the first frame
 unsigned int BayesianTracker::initialise() {
 
@@ -285,6 +292,7 @@ unsigned int BayesianTracker::initialise() {
 
   return SUCCESS;
 }
+
 
 
 // update the tracker by some number of steps
@@ -379,9 +387,6 @@ void BayesianTracker::step(const unsigned int steps)
 
 
 
-
-
-
 bool BayesianTracker::update_active()
 {
 
@@ -437,7 +442,6 @@ void BayesianTracker::debug_output(const unsigned int frm) const
   // std::cout << " ~ Found " << num_conflicts << " conflicts..." << std::endl;
 
 }
-
 
 
 
@@ -620,6 +624,7 @@ void BayesianTracker::cost_FAST(  Eigen::Ref<Eigen::MatrixXd> belief,
   // statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
 
 }
+
 
 
 // make the cost matrix of all possible linkages

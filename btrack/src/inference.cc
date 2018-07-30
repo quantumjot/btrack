@@ -24,6 +24,8 @@ ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
   sequence.reserve(RESERVE_STATE_SEQUENCE);
 }
 
+
+
 ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
             const Eigen::MatrixXd &emission) : transition(transition),
             emission(emission), states(transition.rows())
@@ -35,6 +37,8 @@ ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
   sequence.reserve(RESERVE_STATE_SEQUENCE);
 }
 
+
+
 // run the forward pass of the model
 void ObjectModel::forward(const unsigned int observation) {
   Eigen::VectorXd update(states);
@@ -45,9 +49,12 @@ void ObjectModel::forward(const unsigned int observation) {
 }
 
 
+
 // run the backward pass of the model
 void ObjectModel::backward() {
 }
+
+
 
 // update with a new observation
 void ObjectModel::update(const TrackObjectPtr new_object) {
@@ -55,6 +62,8 @@ void ObjectModel::update(const TrackObjectPtr new_object) {
   sequence.push_back(new_object->label);
   forward( new_object->label );
 }
+
+
 
 Eigen::VectorXd ObjectModel::predict() {
   // make a prediction based on the transition matrix

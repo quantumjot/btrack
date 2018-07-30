@@ -38,12 +38,15 @@ MotionModel::MotionModel( const Eigen::MatrixXd &A,
   initialised = true;
 }
 
+
+
 // setup with a new observation
 // DONE(arl): make this agnostic to model
 void MotionModel::setup(const TrackObjectPtr new_object)
 {
   x_hat.head(3) = new_object->position();
 };
+
 
 
 // return a prediction of the position and (co)variance
@@ -53,6 +56,7 @@ Prediction MotionModel::predict() const
   Prediction p = Prediction(x_hat, P);
   return p;
 }
+
 
 
   // update the model with a new observation or dummy

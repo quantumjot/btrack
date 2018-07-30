@@ -24,6 +24,7 @@ bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two)
 }
 
 
+
 // take two tracks and merge the contents, rename the merged track and mark for
 // removal at the end
 void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
@@ -42,6 +43,7 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
   // set the fate of the parent track to that of the joined track
   parent_trk->fate = join_trk->fate;
 }
+
 
 
 // branches
@@ -78,6 +80,8 @@ void branch_tracks(const BranchHypothesis &branch)
   // set the fate of the parent as 'divided'
   parent_trk->fate = TYPE_Pdivn;
 }
+
+
 
 // take a list of hypotheses and re-organise the tracks following optimisation
 void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
@@ -213,13 +217,14 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
                   [](const TrackletPtr &t) { return t->to_remove(); }),
                   m_tracks.end() );
 
-  // give the user some more output                
+  // give the user some more output
   if (DEBUG) std::cout << ", now " << m_tracks.size() << std::endl;
 
   // now finalise everything
   finalise();
 
 }
+
 
 
 void TrackManager::finalise()
@@ -248,6 +253,7 @@ void TrackManager::finalise()
     }
   }
 }
+
 
 
 TrackObjectPtr TrackManager::get_dummy(const int a_idx) const

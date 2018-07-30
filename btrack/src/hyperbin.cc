@@ -128,26 +128,26 @@ std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
         for (int x=idx.x-1; x<=idx.x+1; x++) {
           bin_idx.x = x;
 
-            // find this bin index and return the list of tracks...
-            ret = m_cube.find(bin_idx);
+          // find this bin index and return the list of tracks...
+          ret = m_cube.find(bin_idx);
 
-            // if we didn't find anything...
-            if (ret == m_cube.end()) continue;
+          // if we didn't find anything...
+          if (ret == m_cube.end()) continue;
 
-            // if we found something, move these into the out queue
-            for (size_t i=0; i<ret->second.size(); i++) {
-              // Note - we need to make sure that the track we return doesn't
-              // start **BEFORE** the track we're searching for....
-              if (ret->second[i]->track.front()->t >=
-                  a_trk->track.back()->t) {
-                r_trks.push_back( ret->second[i] );
-              }
-
+          // if we found something, move these into the out queue
+          for (size_t i=0; i<ret->second.size(); i++) {
+            // Note - we need to make sure that the track we return doesn't
+            // start **BEFORE** the track we're searching for....
+            if (ret->second[i]->track.front()->t >=
+                a_trk->track.back()->t) {
+              r_trks.push_back( ret->second[i] );
             }
-          } // x
-        } // y
-      } // z
-    } // n
+
+          } // i
+        } // x
+      } // y
+    } // z
+  } // n
 
 
   return r_trks;

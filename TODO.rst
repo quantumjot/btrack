@@ -8,9 +8,9 @@ Python
 
 C/C++ and CUDA
 --------------
-- Autoswitch CPU/GPU for tracking
+- Add merge hypothesis
+- Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation
-- Template track object class to use different levels of precision
 - Give each track a unique hash to make sure we don't overwrite IDs
 - Test other motion model instantiation
 
@@ -19,6 +19,7 @@ Misc
 - Other motion models
 - Importer/Exporters for other data analysis packages
 - Change the track naming convention
+
 
 
 Updates
@@ -31,8 +32,7 @@ Updates
 - Added the ability to select which hypotheses are generated during optimization
 - Added more tracking statistics to logging
 - Improved track linking heuristics
-
-
+- Minor bug fixes to log likelihood calculations
 
 0.2.5
 -----

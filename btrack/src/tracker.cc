@@ -446,9 +446,9 @@ void BayesianTracker::debug_output(const unsigned int frm) const
 
 
 // make the cost matrix of all possible linkages
-void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
-                            const size_t n_tracks,
-                            const size_t n_objects )
+void BayesianTracker::cost(Eigen::Ref<Eigen::MatrixXd> belief,
+                           const size_t n_tracks,
+                           const size_t n_objects)
 {
   // start a timer
   std::clock_t t_update_start = std::clock();
@@ -492,13 +492,6 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
 
           // set the probability of assignment to zero
           prob_assign = 0.0;
-
-          // output a message to the user if in debug mode
-          // NOTE(arl): DON'T DO THIS - it gets called *millions* of times
-          // if (DEBUG) {
-            // std::cout << "Track: " << active[trk]->ID << " disallowed ";
-            // std::cout << "metaphase-anaphase linkage..." << std::endl;
-          // }
         }
       }
 
@@ -540,9 +533,9 @@ void BayesianTracker::cost(  Eigen::Ref<Eigen::MatrixXd> belief,
 
 
 // make the cost matrix of all possible linkages
-void BayesianTracker::cost_FAST(  Eigen::Ref<Eigen::MatrixXd> belief,
-                            const size_t n_tracks,
-                            const size_t n_objects )
+void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
+                                const size_t n_tracks,
+                                const size_t n_objects)
 {
   // // start a timer
   // std::clock_t t_update_start = std::clock();
@@ -679,7 +672,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
       unsigned int trk = lnk.first;
 
       if (not_used.count(trk) < 1) {
-        std::cout << "Argh!" << std::endl;
+        // TODO(arl): make this error more useful
+        std::cout << "ERROR: Exhausted potential linkages." << std::endl;
       }
       active[trk]->append( new_objects[obj] );
 
@@ -710,7 +704,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
       }
 
       if (not_used.count(trk) < 1) {
-        std::cout << "Argh!" << std::endl;
+        // TODO(arl): make this error more useful
+        std::cout << "ERROR: Exhausted potential linkages." << std::endl;
       }
 
       // update only this one

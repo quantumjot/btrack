@@ -17,9 +17,12 @@
 #include "inference.h"
 
 ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
-            const Eigen::MatrixXd &emission,
-            const Eigen::MatrixXd &start) : transition(transition),
-            emission(emission), states(transition.rows()), x_hat(start)
+                         const Eigen::MatrixXd &emission,
+                         const Eigen::MatrixXd &start) :
+                         transition(transition),
+                         emission(emission),
+                         states(transition.rows()),
+                         x_hat(start)
 {
   sequence.reserve(RESERVE_STATE_SEQUENCE);
 }
@@ -27,8 +30,10 @@ ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
 
 
 ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
-            const Eigen::MatrixXd &emission) : transition(transition),
-            emission(emission), states(transition.rows())
+                         const Eigen::MatrixXd &emission) :
+                         transition(transition),
+                         emission(emission),
+                         states(transition.rows())
 {
   // set up the start state with a uniform prior
   x_hat(states);

@@ -5,6 +5,7 @@ Python
 ------
 - Install script to run Makefile if necessary
 - Tracking metrics (MOT)
+- Properly pass softmax output to C++
 
 C/C++ and CUDA
 --------------
@@ -12,7 +13,11 @@ C/C++ and CUDA
 - Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation
 - Give each track a unique hash to make sure we don't overwrite IDs
-- Test other motion model instantiation
+- Add windows compatible __declspec(dllexport) for .DLL compilation
+
+- Test other motion model instantiation (sp. Prediction defaults to 6 states)
+- Use softmax score to weight hypothesis generation
+- Output more tracking stats back to Python
 
 Misc
 ----

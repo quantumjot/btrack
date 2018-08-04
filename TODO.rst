@@ -3,6 +3,7 @@ TODO
 
 Python
 ------
+- Migrate to Python 3
 - Install script to run Makefile if necessary
 - Tracking metrics (MOT)
 - Properly pass softmax output to C++

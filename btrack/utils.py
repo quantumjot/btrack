@@ -27,7 +27,8 @@ import json
 
 import logging
 
-import core
+# import core
+import btypes
 import constants
 
 from collections import OrderedDict
@@ -154,7 +155,7 @@ def read_motion_model(filename):
         filename: a JSON file describing the motion model.
 
     Returns:
-        model: a core.MotionModel instance for passing to BayesianTracker
+        model: a btypes.MotionModel instance for passing to BayesianTracker
 
     Notes:
         Note that the matrices are stored as 1D matrices here. In the future,
@@ -164,7 +165,7 @@ def read_motion_model(filename):
         appropriate error if there is something wrong with the model definition.
     """
     matrices = frozenset(['A','H','P','G','R'])
-    model = core.MotionModel()
+    model = btypes.MotionModel()
 
     with open(filename, 'r') as j:
         modelfile = json.load(j)
@@ -324,7 +325,7 @@ def export(filename, tracks):
 
 
 def check_track_type(tracks):
-    return isinstance(tracks[0], core.Tracklet)
+    return isinstance(tracks[0], btypes.Tracklet)
 
 
 
@@ -332,7 +333,7 @@ def export_JSON(filename, tracks):
     """ JSON Exporter for track data. """
 
     if not check_track_type(tracks):
-        raise TypeError('Tracks must be of type core.Tracklet')
+        raise TypeError('Tracks must be of type btypes.Tracklet')
 
     # make a list of all track object data, sorted by track ID
     d = {"Tracklet_"+str(trk.ID):trk.to_dict() for trk in tracks}
@@ -347,7 +348,7 @@ def export_MATLAB(filename, tracks):
     """ MATLAB Exporter for track data. """
 
     if not check_track_type(tracks):
-        raise TypeError('Tracks must be of type core.Tracklet')
+        raise TypeError('Tracks must be of type btypes.Tracklet')
 
 
     export_track = np.vstack([trk.to_array() for trk in tracks])
@@ -373,7 +374,7 @@ def export_HDF(filename, tracks, dummies=[]):
 
     Args:
         filename - a string representing the HDF5 file
-        tracks - either a list of refs or a list of core.Tracklet objects
+        tracks - either a list of refs or a list of btypes.Tracklet objects
 
     Notes:
         None
@@ -506,7 +507,7 @@ class HDF5_FileHandler(object):
         else:
             class_label = 0
 
-        new_object = core.PyTrackObject()
+        new_object = btypes.PyTrackObject()
         new_object.ID = ID
         new_object.t = txyz[0]
         new_object.x = txyz[1]
@@ -603,7 +604,7 @@ def import_JSON_observations(filename, labeller=None):
         while objects:
             ID = object_IDs.pop()
             obj = objects.pop(ID)
-            trk_obj = core.PyTrackObject()
+            trk_obj = btypes.PyTrackObject()
             trk_obj.ID = ID_from_name(ID)
             for param in obj.keys():
                 if param == 'probability':
@@ -645,7 +646,7 @@ def import_ThunderSTORM(filename, pixels_2_nm=115.):
         #make a new object
         for data in localisations:
 
-            obj = core.PyTrackObject()
+            obj = btypes.PyTrackObject()
             obj.t = int(float( data[cols[0]] ))
             obj.x = float(data[cols[1]]) / pixels_2_nm
             obj.y = float(data[cols[2]]) / pixels_2_nm

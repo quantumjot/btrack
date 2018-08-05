@@ -31,6 +31,10 @@ Misc
 Updates
 =======
 
+0.2.7
+-----
+- Moved btrack types to seperate lib to help migration to python 3
+
 0.2.6
 -----
 - Added get_motion_vector function to motion model to make predictions more

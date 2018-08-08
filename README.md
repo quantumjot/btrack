@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** 
+**WORK IN PROGRESS**
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -42,6 +42,8 @@ the following additional packages:
 + GLPK
 
 BayesianTracker is written in C++ with a C interface to Python.
+
+** There is now an experimental Python 3 compatible branch: btrack_py3 **
 
 ---
 

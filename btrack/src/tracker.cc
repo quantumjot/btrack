@@ -234,12 +234,16 @@ unsigned int BayesianTracker::initialise() {
 
   // check to make sure that we've got some objects to track
   if (objects.empty()) {
-    std::cout << "Object queue is empty. Quitting." << std::endl;
+    if (verbose) {
+      std::cout << "Object queue is empty. " << std::endl;
+    }
     return ERROR_empty_queue;
   }
 
   if (!tracks.empty()) {
-    std::cout << "Tracking has already been performed. Quitting." << std::endl;
+    if (verbose) {
+      std::cout << "Tracking has already been performed. " << std::endl;
+    }
     return ERROR_no_tracks;
   }
 
@@ -260,7 +264,9 @@ unsigned int BayesianTracker::initialise() {
   }
 
   if (!useable_frames) {
-    std::cout << "No trackable frames have been found. Quitting." << std::endl;
+    if (verbose) {
+      std::cout << "No trackable frames have been found. " << std::endl;
+    }
     return ERROR_no_useable_frames;
   }
 

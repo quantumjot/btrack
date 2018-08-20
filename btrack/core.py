@@ -256,8 +256,7 @@ class BayesianTracker(object):
 
         if 'HypothesisModel' in config:
             # set up hypothesis model
-
-            p_file = os.path.join(BTRACK_PATH,'models/', config['HypothesisModel'])
+            p_file = os.path.join(BTRACK_PATH,'models',config['HypothesisModel'])
             params = hypothesis.PyHypothesisParams.load( p_file )
             logger.info('Loading hypothesis model: {0:s}'.format(params.name))
             self.hypothesis_model = params
@@ -329,7 +328,7 @@ class BayesianTracker(object):
 
         if isinstance(new_model, basestring):
             # load from the models directory
-            model_fn = os.path.join(BTRACK_PATH,'models/',new_model)
+            model_fn = os.path.join(BTRACK_PATH,'models',new_model)
             model = utils.read_motion_model(model_fn)
         elif isinstance(new_model, btypes.MotionModel):
             # this could be a user defined model
@@ -368,7 +367,7 @@ class BayesianTracker(object):
         if isinstance(new_model, basestring):
             if not new_model: return
             # load from the models directory
-            model_fn = os.path.join(BTRACK_PATH,'models/',new_model)
+            model_fn = os.path.join(BTRACK_PATH,'models',new_model)
             model = utils.read_object_model(model_fn)
         elif isinstance(new_model, btypes.ObjectModel):
             # this could be a user defined model
@@ -629,10 +628,12 @@ class BayesianTracker(object):
 
 
 
-    def cleanup(self):
+    def cleanup(self, sigma=2.5):
         """ Clean up following tracking. Can be used to remove static objects
         and links that are greater than the maximum distance permitted """
-        raise NotImplementedError
+        dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
+        return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
+        #raise NotImplementedError
 
 
 

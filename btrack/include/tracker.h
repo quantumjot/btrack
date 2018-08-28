@@ -32,20 +32,21 @@
 #include "inference.h"
 #include "tracklet.h"
 #include "manager.h"
+#include "defs.h"
 
 
-#define PROB_NOT_ASSIGN 0.01
-#define DEFAULT_ACCURACY 2.0
-#define DISALLOW_METAPHASE_ANAPHASE_LINKING true
-#define PROB_ASSIGN_EXP_DECAY true
-#define DYNAMIC_ACCURACY false
-#define DIMS 3
-#define FAST_COST_UPDATE false
-
-
-// reserve space for objects and tracks
-#define RESERVE_NEW_OBJECTS 1000
-#define RESERVE_ACTIVE_TRACKS 1000
+// #define PROB_NOT_ASSIGN 0.01
+// #define DEFAULT_ACCURACY 2.0
+// #define DISALLOW_METAPHASE_ANAPHASE_LINKING true
+// #define PROB_ASSIGN_EXP_DECAY true
+// #define DYNAMIC_ACCURACY false
+// #define DIMS 3
+// #define FAST_COST_UPDATE false
+//
+//
+// // reserve space for objects and tracks
+// #define RESERVE_NEW_OBJECTS 1000
+// #define RESERVE_ACTIVE_TRACKS 1000
 
 
 

@@ -27,6 +27,7 @@
 #include "types.h"
 #include "tracklet.h"
 #include "hyperbin.h"
+#include "defs.h"
 
 // #define TYPE_Pfalse 0
 // #define TYPE_Pinit 1
@@ -46,15 +47,15 @@
 // #define STATE_apoptosis 4
 // #define STATE_null 5
 
-#define MAX_TRACK_LEN 150
-#define DEFAULT_LOW_PROBABILITY 1e-308
-
-#define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
-#define WEIGHT_METAPHASE_ANAPHASE 0.1
-#define WEIGHT_METAPHASE 2.0
-#define WEIGHT_ANAPHASE_ANAPHASE 1.0
-#define WEIGHT_ANAPHASE 2.0
-#define WEIGHT_OTHER 5.0
+// #define MAX_TRACK_LEN 150
+// #define DEFAULT_LOW_PROBABILITY 1e-308
+//
+// #define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
+// #define WEIGHT_METAPHASE_ANAPHASE 0.1
+// #define WEIGHT_METAPHASE 2.0
+// #define WEIGHT_ANAPHASE_ANAPHASE 1.0
+// #define WEIGHT_ANAPHASE 2.0
+// #define WEIGHT_OTHER 5.0
 
 
 // // Hash index for use with the hash cube

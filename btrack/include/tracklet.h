@@ -23,8 +23,9 @@
 #include "types.h"
 #include "motion.h"
 #include "inference.h"
+#include "defs.h"
 
-#define MAX_LOST 5
+// #define MAX_LOST 5
 
 
 

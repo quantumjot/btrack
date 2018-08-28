@@ -22,48 +22,49 @@
 #include <memory>
 #include <iostream>
 #include <limits>
+#include "defs.h"
 
 
 
-// errors
-#define SUCCESS 900
-#define ERROR_empty_queue 901
-#define ERROR_no_tracks 902
-#define ERROR_no_useable_frames 903
-#define ERROR_track_empty 904
-#define ERROR_incorrect_motion_model 905
-#define ERROR_max_lost_out_of_range 906
-#define ERROR_accuracy_out_of_range 907
-#define ERROR_prob_not_assign_out_of_range 908
-#define ERROR_not_defined 909
-#define ERROR_none 910
-
-// constants
-const double kInfinity = std::numeric_limits<double>::infinity();
-
-// constants for integrating Gaussian PDF
-const double kRootTwo = std::sqrt(2.0);
-const double kRootTwoPi = std::sqrt(2.0*M_PI);
-
-
-// hypothesis and state types
-// ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-#define TYPE_Pfalse 0
-#define TYPE_Pinit 1
-#define TYPE_Pterm 2
-#define TYPE_Plink 3
-#define TYPE_Pdivn 4
-#define TYPE_Papop 5
-#define TYPE_Pmrge 6
-#define TYPE_Pdead 666
-#define TYPE_undef 999
-
-#define STATE_interphase 0
-#define STATE_prometaphase 1
-#define STATE_metaphase 2
-#define STATE_anaphase 3
-#define STATE_apoptosis 4
-#define STATE_null 5
+// // errors
+// #define SUCCESS 900
+// #define ERROR_empty_queue 901
+// #define ERROR_no_tracks 902
+// #define ERROR_no_useable_frames 903
+// #define ERROR_track_empty 904
+// #define ERROR_incorrect_motion_model 905
+// #define ERROR_max_lost_out_of_range 906
+// #define ERROR_accuracy_out_of_range 907
+// #define ERROR_prob_not_assign_out_of_range 908
+// #define ERROR_not_defined 909
+// #define ERROR_none 910
+//
+// // constants
+// const double kInfinity = std::numeric_limits<double>::infinity();
+//
+// // constants for integrating Gaussian PDF
+// const double kRootTwo = std::sqrt(2.0);
+// const double kRootTwoPi = std::sqrt(2.0*M_PI);
+//
+//
+// // hypothesis and state types
+// // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
+// #define TYPE_Pfalse 0
+// #define TYPE_Pinit 1
+// #define TYPE_Pterm 2
+// #define TYPE_Plink 3
+// #define TYPE_Pdivn 4
+// #define TYPE_Papop 5
+// #define TYPE_Pmrge 6
+// #define TYPE_Pdead 666
+// #define TYPE_undef 999
+//
+// #define STATE_interphase 0
+// #define STATE_prometaphase 1
+// #define STATE_metaphase 2
+// #define STATE_anaphase 3
+// #define STATE_apoptosis 4
+// #define STATE_null 5
 
 
 // Python structure for external interface

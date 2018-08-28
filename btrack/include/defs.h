@@ -17,10 +17,7 @@
 #ifndef _DEFS_H_INCLUDED_
 #define _DEFS_H_INCLUDED_
 
-#include "eigen/Eigen/Dense"
-#include <vector>
-#include <memory>
-#include <iostream>
+
 #include <limits>
 
 // errors

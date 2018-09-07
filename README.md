@@ -105,7 +105,7 @@ $ conda install h5py
 $ conda install scipy
 ```
 
-3. Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/src/eigen directory.
+3. Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/include/eigen directory.
 
 4. Finally, use the Makefile in the btrack/src to compile the code:
 ```sh

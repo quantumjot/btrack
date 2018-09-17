@@ -107,6 +107,16 @@ void HypercubeBin::add(TrackletPtr a_trk)
 
 
 
+// std::vector<TrackletPtr> HypercubeBin::get( const HashIndex a_idx )
+// {
+//   // space for the tracks to be returned
+//   std::vector<TrackletPtr> r_trks;
+//
+//   return r_trks;
+// }
+
+
+
 // use this to get the tracks in a certain bin (+/-xyz, but only +n)
 std::vector<TrackletPtr> HypercubeBin::get( const TrackletPtr a_trk,
                                             const bool a_start )

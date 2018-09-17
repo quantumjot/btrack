@@ -20,6 +20,8 @@ C/C++ and CUDA
 - Use softmax score to weight hypothesis generation
 - Output more tracking stats back to Python
 
+- Add a fast update option that only evaluates local trajectories fully
+
 Misc
 ----
 - Other motion models

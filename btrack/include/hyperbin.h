@@ -78,6 +78,7 @@ public:
 
   // return tracks found in a bin
   std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
+  std::vector<TrackletPtr> get(const HashIndex a_idx);
 
 private:
   // bin size x,y,z,t

@@ -73,12 +73,16 @@ public:
                         const float z,
                         const float n ) const;
 
-  // bin sort a track in the hypercube
-  void add(TrackletPtr a_trk);
+  // bin sort a track in the hypercube, default behaviour is to add the tracks
+  // so that the bin stores the first object of the track. Use the full version
+  // with the a_start flag (set to false) to store the last known position of
+  // the track during lookup
+  void add_tracklet(TrackletPtr a_trk);
+  void add_tracklet(TrackletPtr a_trk, const bool a_start);
 
   // return tracks found in a bin
   std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
-  std::vector<TrackletPtr> get(const HashIndex a_idx);
+  std::vector<TrackletPtr> get(TrackObjectPtr a_obj);
 
 private:
   // bin size x,y,z,t

@@ -138,7 +138,7 @@ void HypothesisEngine::add_track(TrackletPtr a_trk)
   m_tracks.push_back( a_trk );
 
   // add this one to the hash cube
-  m_cube.add( a_trk );
+  m_cube.add_tracklet( a_trk );
 }
 
 

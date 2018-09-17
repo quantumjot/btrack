@@ -89,10 +89,18 @@ HashIndex HypercubeBin::hash_index( const float x,
 
 
 // add a track to the hashcube object
-void HypercubeBin::add(TrackletPtr a_trk)
+void HypercubeBin::add_tracklet( TrackletPtr a_trk )
 {
   // get the index of the start (i.e. first object) of the track
-  HashIndex idx = hash_index( a_trk, true );
+  add_tracklet(a_trk, true);
+}
+
+// add a track to the hashcube object
+void HypercubeBin::add_tracklet( TrackletPtr a_trk,
+                                 const bool a_start )
+{
+  // get the index of the start (i.e. first object) of the track?
+  HashIndex idx = hash_index( a_trk, a_start );
 
   // try to insert it
   std::pair<std::map<HashIndex,std::vector<TrackletPtr>>::iterator,bool> ret;
@@ -107,8 +115,16 @@ void HypercubeBin::add(TrackletPtr a_trk)
 
 
 
-// std::vector<TrackletPtr> HypercubeBin::get( const HashIndex a_idx )
+
+
+
+
+// std::vector<TrackletPtr> HypercubeBin::get(TrackObjectPtr a_obj)
 // {
+//
+//   // get the hash_index (either start or end of trajectory)
+//   HashIndex idx = hash_index( a_obj );
+//
 //   // space for the tracks to be returned
 //   std::vector<TrackletPtr> r_trks;
 //

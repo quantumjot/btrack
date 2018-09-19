@@ -44,6 +44,53 @@ struct HashIndex {
   }
 };
 
+
+
+
+// A 4D hash (hyper) cube object.
+//
+// Essentially a way of binsorting trajectory data for easy lookup,
+// thus preventing excessive searching over non-local trajectories.
+// This is the primitive class which can be inherited for further
+// functionality
+//
+//
+template <typename T> class HashBin
+{
+public:
+
+  // constructors and desctructors
+  HashBin();
+  ~HashBin();
+
+  // set up a hashbin with specific xyz and n sized bins
+  HashBin(const unsigned int bin_xyz,
+          const unsigned int bin_n);
+
+  // return a 4D index into the hypercube using cartesian coordinates (and time)
+  HashIndex hash_index(const float x,
+                       const float y,
+                       const float z,
+                       const float n) const;
+
+  std::vector<T> get_contents(const HashIndex a_idx);
+
+//private:
+  // bin size x,y,z,t
+  float m_bin_size[4] = {0., 0., 0., 0.};
+
+  // a map to the tracks found in a certain bin
+  std::map<HashIndex, std::vector<T>> m_cube;
+
+};
+
+
+
+
+
+
+
+
 // A 4D hash (hyper) cube object.
 //
 // Essentially a way of binsorting trajectory data for easy lookup,
@@ -92,6 +139,53 @@ private:
   std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
 };
 
+
+
+// a type to maintain the object index, object_ptr pair
+typedef std::pair<TrackObjectPtr, unsigned int> TrackObjectPtr_and_Index;
+
+
+
+class ObjectBin
+{
+public:
+  // constructors and destructors
+  ObjectBin();
+  ObjectBin(const unsigned int bin_xyz, const unsigned int bin_n);
+  ~ObjectBin();
+
+  // return a 4D index into the hypercube using an object
+  HashIndex hash_index(TrackObjectPtr a_obj) const {
+    return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
+  };
+
+  // return a 4D index into the hypercube using the object at the start or
+  // end of an exisiting track
+  HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
+
+  // return a 4D index into the hypercube using cartesian coordinates (and time)
+  HashIndex hash_index( const float x,
+                        const float y,
+                        const float z,
+                        const float n ) const;
+
+  // add an object
+  void add_object(TrackObjectPtr a_obj);
+
+  // return tracks found in a bin
+  std::vector<TrackObjectPtr_and_Index> get(TrackletPtr a_trk,
+                                            const bool a_start);
+
+private:
+  // bin size x,y,z,t
+  float m_bin_size[4] = {0., 0., 0., 0.};
+
+  // number of objects
+  unsigned int n_objects = 0;
+
+  // a map to the tracks found in a certain bin
+  std::map<HashIndex, std::vector<TrackObjectPtr_and_Index>> m_cube;
+};
 
 
 

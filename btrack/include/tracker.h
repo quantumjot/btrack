@@ -33,6 +33,7 @@
 #include "tracklet.h"
 #include "manager.h"
 #include "defs.h"
+#include "hyperbin.h"
 
 
 // #define PROB_NOT_ASSIGN 0.01
@@ -83,7 +84,7 @@ class BayesianTracker
 public:
   // Constructor
   BayesianTracker() {};
-  BayesianTracker(bool verbose);
+  BayesianTracker(const bool verbose);
 
   // Default destructor
   ~BayesianTracker();
@@ -111,6 +112,11 @@ public:
                                 double* transition_raw,
                                 double* emission_raw,
                                 double* start_raw);
+
+  // set the maximum search radius
+  void set_max_search_radius(const float search_radius) {
+    this->max_search_radius = search_radius;
+  }
 
   // add new objects
   unsigned int xyzt(const double* xyzt);
@@ -230,6 +236,7 @@ private:
   // counters for the number of lost tracks and number of conflicts
   unsigned int n_lost = 0;
   unsigned int n_conflicts = 0;
+  float max_search_radius = MAX_SEARCH_RADIUS;
 
   // set up a structure for the statistics
   PyTrackInfo statistics;

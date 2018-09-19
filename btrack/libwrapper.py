@@ -137,6 +137,9 @@ class LibraryWrapper(object):
     # lib.model.argtypes = [ctypes.c_void_p, ctypes.c_uint, np_dbl_p,
     #                         np_dbl_p, np_dbl_p]
 
+    lib.max_search_radius.restype = None
+    lib.max_search_radius.argtypes = [ctypes.c_void_p, ctypes.c_float]
+
     # append a new observation
     lib.append.restype = None
     lib.append.argtypes = [ctypes.c_void_p, PyTrackObject]

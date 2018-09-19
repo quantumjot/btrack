@@ -200,6 +200,7 @@ class BayesianTracker(object):
         self.__motion_model = None
         self.__object_model = None
         self.__frame_range = [0,0]
+        self.__max_search_radius = 100.0
         self.return_kalman = False
 
         # do not initialise until the init() has been run
@@ -261,10 +262,26 @@ class BayesianTracker(object):
             logger.info('Loading hypothesis model: {0:s}'.format(params.name))
             self.hypothesis_model = params
 
+        # set the maximum search radius
+        self.max_search_radius = 100.0
+
         self.__initialised = True
 
 
     def __len__(self): return self.n_tracks
+
+    @property
+    def max_search_radius(self):
+        return self.__max_search_radius
+    @max_search_radius.setter
+    def max_search_radius(self, max_search_radius):
+        """ Set the maximum search radius for fast cost updates """
+        assert(max_search_radius>0. and max_search_radius<=100.)
+        logger.info('Setting maximum XYZ search radius to {0:2.2f}...'
+                    .format(max_search_radius))
+        lib.max_search_radius(self.__engine, max_search_radius)
+
+
 
     @property
     def n_tracks(self):

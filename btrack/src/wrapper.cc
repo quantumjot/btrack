@@ -48,6 +48,12 @@ void InterfaceWrapper::set_motion_model(const unsigned int measurements,
                             max_lost, prob_not_assign );
 };
 
+// set the maximum search radius
+void InterfaceWrapper::set_max_search_radius(const float max_search_radius)
+{
+  tracker.set_max_search_radius(max_search_radius);
+}
+
 // append a new object to the tracker
 void InterfaceWrapper::append(const PyTrackObject a_object)
 {

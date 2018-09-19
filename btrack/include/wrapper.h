@@ -44,6 +44,9 @@ class InterfaceWrapper
                           unsigned int max_lost,
                           double prob_not_assign);
 
+    // set the maximum search radius
+    void set_max_search_radius(const float max_search_radius);
+
     // append an object to the tracker
     void append(const PyTrackObject a_object);
 

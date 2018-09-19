@@ -47,8 +47,9 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define PROB_ASSIGN_EXP_DECAY true
 #define DYNAMIC_ACCURACY false
 #define DIMS 3
-#define FAST_COST_UPDATE false
+//#define FAST_COST_UPDATE false
 #define MAX_LOST 5
+#define MAX_SEARCH_RADIUS 10
 
 
 // reserve space for objects and tracks

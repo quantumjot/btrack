@@ -63,6 +63,14 @@ extern "C" {
 
   }
 
+  void max_search_radius( InterfaceWrapper* h,
+                          const float msr ) {
+    if (DEBUG) {
+      std::cout << "Set maximum search radius to: " << msr << std::endl;
+    }
+    h->set_max_search_radius(msr);
+  }
+
 
   /* =========================================================================
   APPEND NEW OBJECT

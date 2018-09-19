@@ -104,7 +104,7 @@ double probability_erf( const Eigen::Vector3d& x,
 
 
 // set up the tracker using an existing track manager
-BayesianTracker::BayesianTracker(bool verbose) {
+BayesianTracker::BayesianTracker(const bool verbose) {
 
   // set up verbosity
   this->verbose = verbose;
@@ -543,84 +543,96 @@ void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
                                 const size_t n_tracks,
                                 const size_t n_objects)
 {
-  // // start a timer
-  // std::clock_t t_update_start = std::clock();
-  //
-  // // set up some variables for Bayesian updates
-  // Prediction trk_prediction;
-  // double prob_assign = 0.;
-  // double uniform_prior = 1. / (n_objects+1);
-  // double prior_assign, PrDP, posterior, update;
-  //
-  // // set the uniform prior
-  // belief.fill(uniform_prior);
-  //
-  // // Posterior is a misnoma here because it is initially the prior, but
-  // // becomes the posterior
-  // Eigen::VectorXd v_posterior;
-  // Eigen::VectorXd v_update = Eigen::VectorXd(n_objects+1);
-  //
-  // for (size_t trk=0; trk != n_tracks; trk++) {
-  //
-  //   // get the trk prediction
-  //   trk_prediction = active[trk]->predict();
-  //
-  //   // make space for the update
-  //   // v_posterior = belief.col(trk);
-  //   v_posterior = belief.col(trk);
-  //
-  //
-  //   // make a hashbin of all the objects
-  //   unsigned int bin_size = 30;
-  //   HashBin hashbin = HashBin( bin_size );
-  //
-  //   // loop through each candidate object
-  //   for (size_t obj=0; obj != n_objects; obj++) {
-  //     hashbin.add(new_objects[obj]);
-  //   }
-  //
-  //
-  //   // get objects
-  //   std::vector<TrackObjectPtr> local_obj = hashbin.get(active[trk]->track.back());
-  //
-  //
-  //   // loop through each candidate object
-  //   for (size_t obj=0; obj != local_obj.size(); obj++) {
-  //
-  //     // calculate the probability that this is the correct track
-  //     prob_assign = probability_erf(local_obj[obj]->position(), trk_prediction, this->accuracy);
-  //
-  //     if (PROB_ASSIGN_EXP_DECAY) {
-  //       // apply an exponential decay according to number of lost
-  //       // drops to 50% at max lost
-  //       double a = std::pow(2, -(double)active[trk]->lost/(double)max_lost);
-  //       prob_assign = a*prob_assign;
-  //     }
-  //
-  //     // now do the bayesian updates
-  //     // prior_assign = v_posterior(obj);
-  //     prior_assign = v_posterior(obj);
-  //     PrDP = prob_assign * prior_assign + prob_not_assign * (1.-prob_assign);// + 1e-99;
-  //     posterior = (prob_assign * (prior_assign / PrDP));
-  //     update = (1. + (prior_assign-posterior)/(1.-prior_assign));
-  //
-  //     v_update.fill(update);
-  //     v_update(obj) = 1.; // this means the posterior at obj will not be updated?
-  //
-  //     // do the update
-  //     v_posterior = v_posterior.array()*v_update.array();
-  //     v_posterior(obj) = posterior;
-  //
-  //   }
-  //
-  //   // now update the entire column (i.e. track)
-  //   //belief.col(trk) = belief.col(trk).cwiseProduct( v_posterior );
-  //   belief.col(trk) = v_posterior;
-  // }
-  //
-  // // set the timings
-  // double t_elapsed_ms = (std::clock() - t_update_start) / (double) (CLOCKS_PER_SEC / 1000);
-  // statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
+  // start a timer
+  std::clock_t t_update_start = std::clock();
+
+  // set up some variables for Bayesian updates
+  Prediction trk_prediction;
+  double prob_assign = 0.;
+  double uniform_prior = 1. / (n_objects+1);
+  double prior_assign, PrDP, posterior, update;
+
+  // set the uniform prior
+  belief.fill(uniform_prior);
+
+  // Posterior is a misnoma here because it is initially the prior, but
+  // becomes the posterior
+  Eigen::VectorXd v_posterior;
+  Eigen::VectorXd v_update = Eigen::VectorXd(n_objects+1);
+
+  // make a bin map of the objects
+  ObjectBin m_cube = ObjectBin(max_search_radius, 1);
+  for (size_t obj=0; obj != n_objects; obj++) {
+    m_cube.add_object(new_objects[obj]);
+  }
+
+
+  // iterate over the tracks
+  for (size_t trk=0; trk != n_tracks; trk++) {
+
+    // get the trk prediction
+    trk_prediction = active[trk]->predict();
+
+    // make space for the update
+    // v_posterior = belief.col(trk);
+    v_posterior = belief.col(trk);
+
+    // get the local objects for updating
+    std::vector<TrackObjectPtr_and_Index> local_objects;
+    local_objects = m_cube.get(active[trk], false);
+    size_t n_local_objects = local_objects.size();
+
+    // loop through each candidate object
+    for (size_t obj=0; obj != n_local_objects; obj++) {
+
+      // calculate the probability that this is the correct track
+      prob_assign = probability_erf(local_objects[obj].first->position(),
+                                    trk_prediction,
+                                    this->accuracy);
+
+      // set the probability of assignment to zero if the track is currently
+      // in a metaphase state and the object to link to is anaphase
+      if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+        if (active[trk]->track.back()->label == STATE_metaphase &&
+            local_objects[obj].first->label == STATE_anaphase) {
+
+          // set the probability of assignment to zero
+          prob_assign = 0.0;
+        }
+      }
+
+      if (PROB_ASSIGN_EXP_DECAY) {
+        // apply an exponential decay according to number of lost
+        // drops to 50% at max lost
+        double a = std::pow(2, -(double)active[trk]->lost/(double)max_lost);
+        prob_assign = a*prob_assign;
+      }
+
+      // now do the bayesian updates
+      // prior_assign = v_posterior(obj);
+      prior_assign = v_posterior(local_objects[obj].second);
+      PrDP = prob_assign * prior_assign + prob_not_assign * (1.-prob_assign);
+      posterior = (prob_assign * (prior_assign / PrDP));
+      update = (1. + (prior_assign-posterior)/(1.-prior_assign));
+
+      v_update.fill(update);
+      v_update(local_objects[obj].second) = 1.; // this means the posterior at obj will not be updated?
+
+      // do the update
+      v_posterior = v_posterior.array()*v_update.array();
+      v_posterior(local_objects[obj].second) = posterior;
+
+    }
+
+    // now update the entire column (i.e. track)
+    //belief.col(trk) = belief.col(trk).cwiseProduct( v_posterior );
+    belief.col(trk) = v_posterior;
+  }
+
+  // set the timings
+  double t_elapsed_ms = (std::clock() - t_update_start) /
+                        (double) (CLOCKS_PER_SEC / 1000);
+  statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
 
 }
 

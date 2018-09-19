@@ -29,7 +29,7 @@ microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 
 ---
 ### TODO
-+ [ ] Add a parameter for maximum local radius of searching
++ [x] Add a parameter for maximum local radius of searching
 + [ ] Finish abstract HashBin class, make the HypothesisBin and TrackBin classes
 + [ ] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
 + [ ] Cross platform install scripts

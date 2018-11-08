@@ -172,6 +172,7 @@ class BayesianTracker(object):
         volume: the imaging volume [x,y,z,t]
         frame_range: the frame range for tracking, essentially the last
             dimension of volume
+        max_search_radius: maximum search radius when using fast cost update
 
     Notes:
         TODO(arl): lower precision for tracking output?

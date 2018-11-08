@@ -616,6 +616,8 @@ void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
       update = (1. + (prior_assign-posterior)/(1.-prior_assign));
 
       v_update.fill(update);
+
+      // NOTE(arl): Is this necessary?
       v_update(local_objects[obj].second) = 1.; // this means the posterior at obj will not be updated?
 
       // do the update

@@ -577,16 +577,30 @@ class BayesianTracker(object):
         # set up some space for the output (could store as 32-bit, do we need)
         trk = np.zeros((n, sz_mu),dtype='float')
         lbl = np.zeros((n, 2),dtype='uint32')
+        children = np.zeros((2,1),dtype='int32')
 
         # get the track data
         _ = lib.get(self.__engine, trk, index)
         _ = lib.get_label(self.__engine, lbl, index)
+        _ = lib.get_children(self.__engine, children, index)
         p = lib.get_parent(self.__engine, index)
         f = lib.get_fate(self.__engine, index)
 
+        # convert the array of children to a python list
+        # TODO(arl): this is super lazy, should just make a vector for c
+        c = np.squeeze(children).tolist()
+
+        # and remove any without children: [0,0]
+        if all([i==0 for i in c]): c = []
+
         # optional, we can grab the motion model data too
         if not self.return_kalman:
-            return btypes.Tracklet(index, trk, labels=lbl[:,1], parent=p, fate=f)
+            return btypes.Tracklet(index,
+                                   trk,
+                                   labels=lbl[:,1],
+                                   parent=p,
+                                   children=c,
+                                   fate=f)
 
         # otherwise grab the kalman filter data
         kal_mu = np.zeros((n, sz_mu),dtype='float')     # kalman filtered
@@ -603,8 +617,17 @@ class BayesianTracker(object):
         # return the tracklet
         # TODO(arl) make sure this is the correct ID, since we may have lost
         # some during the track merging/optimisation phase
-        return btypes.Tracklet(index, trk, kalman=kal, labels=lbl[:,1],
-                        parent=p, fate=f)
+
+        # make a new track object and return it
+        trk = btypes.Tracklet(index,
+                              trk,
+                              kalman=kal,
+                              labels=lbl[:,1],
+                              parent=p,
+                              children=c,
+                              fate=f)
+
+        return trk
 
 
     def get_dummy(self, dummy_idx):

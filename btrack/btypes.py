@@ -339,6 +339,7 @@ class Tracklet(object):
                  kalman=None,
                  labels=None,
                  parent=None,
+                 children=[],
                  fate=None):
 
         self.ID = ID
@@ -349,6 +350,7 @@ class Tracklet(object):
 
         self.root = None
         self.parent = parent
+        self.children = children
         self.type = None
         self.fate = fate
 
@@ -442,3 +444,13 @@ class Tracklet(object):
         idx = [self.t.index(t) for t in self.t if t<=frame and t>=frame-tail]
         d = d[idx,:]
         return Tracklet(self.ID, d)
+
+
+    @staticmethod
+    def from_dict(track_params):
+        """ Create a new tracklet using data from a dictionary """
+        if not isinstance(track_params, dict):
+            raise TypeError('Tracklet.from_dict requires a dictionary.')
+
+        T = Tracklet()
+        return T

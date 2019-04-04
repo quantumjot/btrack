@@ -165,7 +165,6 @@ HashIndex HypercubeBin::hash_index( const float x,
                                     const float z,
                                     const float n ) const
 {
-
   // set up a hash index structure
   HashIndex idx;
   idx.x = static_cast<int> ( floor((1./ m_bin_size[0]) * x) );
@@ -370,7 +369,7 @@ void ObjectBin::add_object(TrackObjectPtr a_obj)
   std::pair<std::map<HashIndex,
             std::vector<TrackObjectPtr_and_Index>>::iterator,bool> ret;
 
-  std::cout << "ObjectBin size: " << n_objects << std::endl;
+  // std::cout << "ObjectBin size: " << n_objects << std::endl;
 
   std::vector<TrackObjectPtr_and_Index> obj_list = {TrackObjectPtr_and_Index(a_obj, n_objects)};
 

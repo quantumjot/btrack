@@ -86,6 +86,37 @@ public:
 
 
 
+// This should be the parent class of the HypercubeBin and ObjectBin
+template <typename T> class BinMap
+{
+public:
+  BinMap();
+  BinMap(const unsigned int bin_xyz, const unsigned int bin_n) = 0;
+  ~BinMap();
+
+  // add a generic object
+  void add_object(T a_obj);
+
+  // return a 4D index into the hypercube using an object
+  HashIndex hash_index(TrackObjectPtr a_obj) const {
+    return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
+  };
+
+  // return a 4D index into the hypercube using cartesian coordinates (and time)
+  HashIndex hash_index( const float x,
+                        const float y,
+                        const float z,
+                        const float n ) const;
+
+  private:
+    //
+  protected:
+    //
+};
+
+
+
+
 
 
 

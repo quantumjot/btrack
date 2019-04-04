@@ -111,10 +111,23 @@ unsigned int InterfaceWrapper::get_refs(int* output,
   return n_frames;
 };
 
+
+// return the ID of the parent
 unsigned int InterfaceWrapper::get_parent(const unsigned int a_ID) const {
   return tracker.tracks[a_ID]->parent;
 }
 
+
+// return the ID of the children
+unsigned int InterfaceWrapper::get_children(int* children,
+                                            const unsigned int a_ID) const
+{
+  children[0] = tracker.tracks[a_ID]->child_one;
+  children[1] = tracker.tracks[a_ID]->child_two;
+  return 2;
+}
+
+// return the fate (as assigned by the optimizer)
 unsigned int InterfaceWrapper::get_fate(const unsigned int a_ID) const {
   return tracker.tracks[a_ID]->fate;
 }

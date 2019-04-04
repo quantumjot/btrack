@@ -168,6 +168,10 @@ class LibraryWrapper(object):
     lib.get_parent.restype = ctypes.c_uint
     lib.get_parent.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # get the ID of any children
+    lib.get_children.restype = ctypes.c_uint
+    lib.get_children.argtypes = [ctypes.c_void_p, np_int_p, ctypes.c_uint]
+
     # get the fate of the track
     lib.get_fate.restype = ctypes.c_uint
     lib.get_fate.argtypes = [ctypes.c_void_p, ctypes.c_uint]

@@ -109,15 +109,21 @@ extern "C" {
     return h->get_track(output, trk);
   }
 
-  unsigned int get_refs(  InterfaceWrapper* h,
-                       int* output,
-                        const unsigned int trk ) {
+  unsigned int get_refs( InterfaceWrapper* h,
+                         int* output,
+                         const unsigned int trk ) {
     return h->get_refs(output, trk);
   }
 
   unsigned int get_parent( InterfaceWrapper* h,
                           const unsigned int trk ) {
     return h->get_parent(trk);
+  }
+
+  unsigned int get_children( InterfaceWrapper* h,
+                             int* children,
+                             const unsigned int trk  ) {
+    return h->get_children(children, trk);
   }
 
   unsigned int get_fate( InterfaceWrapper* h,

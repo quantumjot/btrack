@@ -130,6 +130,8 @@ public:
   // store the root, parent and original IDs
   unsigned int root = 0;
   unsigned int parent = 0;
+  unsigned int child_one = 0;
+  unsigned int child_two = 0;
   unsigned int renamed_ID;
   unsigned int fate = TYPE_undef;
 

@@ -158,10 +158,11 @@ def plot_tracks(tracks,
     ax.set_ylabel(order[1])
     if DIMS == 3:
         ax.set_zlabel(order[2])
+        # ax.set_zlim(0, 100)
     else:
         ax.autoscale('tight')
 
-    plt.axis('image')
+    # plt.axis('image')
     plt.title(title)
     plt.show()
 

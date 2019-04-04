@@ -76,6 +76,8 @@ void branch_tracks(const BranchHypothesis &branch)
   child_two_trk->parent = ID;
 
   // TODO(arl): we can also set children here, this makes tree generation easier
+  parent_trk->child_one = child_one_trk->ID;
+  parent_trk->child_two = child_two_trk->ID;
 
   // set the fate of the parent as 'divided'
   parent_trk->fate = TYPE_Pdivn;

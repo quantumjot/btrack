@@ -15,12 +15,11 @@ C/C++ and CUDA
 - Update belief matrix using CUDA parallelisation
 - Give each track a unique hash to make sure we don't overwrite IDs
 - Add windows compatible __declspec(dllexport) for .DLL compilation
-
 - Test other motion model instantiation (sp. Prediction defaults to 6 states)
 - Use softmax score to weight hypothesis generation
 - Output more tracking stats back to Python
 
-- Add a fast update option that only evaluates local trajectories fully
+
 
 Misc
 ----
@@ -33,9 +32,14 @@ Misc
 Updates
 =======
 
+0.2.8
+-----
+- Added children to return type
+
 0.2.7
 -----
 - Moved btrack types to seperate lib to help migration to python 3
+- Added a fast update option that only evaluates local trajectories fully
 
 0.2.6
 -----

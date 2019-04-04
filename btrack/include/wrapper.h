@@ -65,6 +65,9 @@ class InterfaceWrapper
     // get the parent ID
     unsigned int get_parent(const unsigned int a_ID) const;
 
+    // get the children IDs
+    unsigned int get_children(int* children, const unsigned int a_ID) const;
+
     // get the fate of the track
     unsigned int get_fate(const unsigned int a_ID) const;
 

@@ -42,6 +42,20 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
 
   // set the fate of the parent track to that of the joined track
   parent_trk->fate = join_trk->fate;
+
+  // set the children
+  if (join_trk->child_one != 0 &&
+      join_trk->child_two != 0 ) {
+
+      if (DEBUG) {
+        std::cout << parent_trk->ID << " -> " << "[";
+        std::cout << join_trk->child_one << ",";
+        std::cout << join_trk->child_two << std::endl;
+      }
+
+      parent_trk->child_one = join_trk->child_one;
+      parent_trk->child_two = join_trk->child_two;
+  }
 }
 
 
@@ -75,13 +89,32 @@ void branch_tracks(const BranchHypothesis &branch)
   child_one_trk->parent = ID;
   child_two_trk->parent = ID;
 
-  // TODO(arl): we can also set children here, this makes tree generation easier
+  // set the parent track children also
   parent_trk->child_one = child_one_trk->ID;
   parent_trk->child_two = child_two_trk->ID;
 
   // set the fate of the parent as 'divided'
   parent_trk->fate = TYPE_Pdivn;
 }
+
+
+
+
+// // return a pointer to a tracklet by finding the id
+// TrackletPtr TrackManager::get_track_by_ID(const unsigned int idx) {
+//
+//   unsigned int trk_ID;
+//
+//   for (size_t trk=0; trk<m_tracks.size(); trk++) {
+//     if (m_tracks[trk]->ID == idx)
+//       trk_ID = trk;
+//   }
+//
+//   //assert(m_tracks[trk_ID] == this[idx])
+//
+//   return m_tracks[trk_ID];
+// };
+
 
 
 
@@ -164,6 +197,20 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 
   */
 
+  // NOTE(arl): do the branches first?
+  // OK, now that we've merged all of the tracks, we want to set various flags
+  // to show that divisions have occurred
+
+  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++) {
+
+    if (!m_branches[parent_i].empty()) {
+      if (DEBUG) std::cout << "Branch: [";
+      branch_tracks(m_branches[parent_i][0]);
+      if (DEBUG) std::cout << "]" << std::endl;
+    }
+
+  }
+
   std::set<unsigned int> used;
   unsigned int child_j;
 
@@ -198,18 +245,7 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   }
 
 
-  // OK, now that we've merged all of the tracks, we want to set various flags
-  // to show that divisions have occurred
 
-  for (size_t parent_i=0; parent_i<m_branches.size(); parent_i++) {
-
-    if (!m_branches[parent_i].empty()) {
-      if (DEBUG) std::cout << "Branch: [";
-      branch_tracks(m_branches[parent_i][0]);
-      if (DEBUG) std::cout << "]" << std::endl;
-    }
-
-  }
 
   // erase those tracks marked for removal (i.e. those that have been merged)
   if (DEBUG) std::cout << "Tracks before merge: " << m_tracks.size();

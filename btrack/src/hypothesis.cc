@@ -209,6 +209,7 @@ void HypothesisEngine::create( void )
 
   // reserve some memory for the hypotheses (at least 5 times the number of
   // trajectories)
+  m_hypotheses.clear();
   m_hypotheses.reserve( m_num_tracks*5 );
 
   TrackletPtr trk;
@@ -285,12 +286,20 @@ void HypothesisEngine::create( void )
       // TODO(arl): limits the maximum link distance ?
       if (hypothesis_allowed(TYPE_Plink)) {
 
-        Hypothesis h_link(TYPE_Plink, trk);
-        h_link.trk_link_ID = this_trk;
-        h_link.probability = safe_log(P_link(trk, this_trk, d, dt))
-                            + 0.5*safe_log(P_TP(trk))
-                            + 0.5*safe_log(P_TP(this_trk));
-        m_hypotheses.push_back( h_link );
+        // if (trk->track.back()->label == STATE_metaphase &&
+        //     this_trk->track.front()->label == STATE_anaphase &&
+        //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+        //       // do nothing
+        // } else {
+
+          Hypothesis h_link(TYPE_Plink, trk);
+          h_link.trk_link_ID = this_trk;
+          h_link.probability = safe_log(P_link(trk, this_trk, d, dt))
+                              + 0.5*safe_log(P_TP(trk))
+                              + 0.5*safe_log(P_TP(this_trk));
+          m_hypotheses.push_back( h_link );
+
+        // }
       }
 
       // append this to conflicts
@@ -354,7 +363,6 @@ double HypothesisEngine::P_init( TrackletPtr a_trk ) const
   // Probability of a true initialisation event.  These tend to occur close to
   // the beginning of the sequence or at the periphery of the field of view as
   // objects enter.
-
 
   float dist = dist_from_border(a_trk, true);
 

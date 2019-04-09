@@ -101,6 +101,9 @@ class TrackManager
     // parent and root properties
     void merge(const std::vector<Hypothesis> &a_hypotheses);
 
+    // return a track by ID
+    // TrackletPtr get_track_by_ID(const unsigned int idx);
+
   private:
 
     // track maintenance

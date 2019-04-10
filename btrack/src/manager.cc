@@ -50,7 +50,7 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
       if (DEBUG) {
         std::cout << parent_trk->ID << " -> " << "[";
         std::cout << join_trk->child_one << ",";
-        std::cout << join_trk->child_two << std::endl;
+        std::cout << join_trk->child_two << "]" << std::endl;
       }
 
       parent_trk->child_one = join_trk->child_one;

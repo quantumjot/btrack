@@ -101,6 +101,11 @@ class TrackManager
     // parent and root properties
     void merge(const std::vector<Hypothesis> &a_hypotheses);
 
+    // split a track with certain transitions
+    void split(const TrackletPtr &a_trk,
+               const unsigned int a_label_i,
+               const unsigned int a_label_j);
+
     // return a track by ID
     // TrackletPtr get_track_by_ID(const unsigned int idx);
 

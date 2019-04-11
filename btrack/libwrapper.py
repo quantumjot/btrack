@@ -160,6 +160,10 @@ class LibraryWrapper(object):
     lib.get.restype = ctypes.c_uint
     lib.get.argtypes = [ctypes.c_void_p, np_dbl_p, ctypes.c_uint]
 
+    # get the internal ID of a track
+    lib.get_ID.restype = ctypes.c_uint
+    lib.get_ID.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+
     # get a track, by reference
     lib.get_refs.restype = ctypes.c_uint
     lib.get_refs.argtypes = [ctypes.c_void_p, np_int_p, ctypes.c_uint]
@@ -207,8 +211,8 @@ class LibraryWrapper(object):
     # calculate the hypotheses
     lib.create_hypotheses.restype = ctypes.c_uint
     lib.create_hypotheses.argtypes = [ctypes.c_void_p,
-        hypothesis.PyHypothesisParams,
-        ctypes.c_uint, ctypes.c_uint]
+                                      hypothesis.PyHypothesisParams,
+                                      ctypes.c_uint, ctypes.c_uint]
 
     # get a hypothesis by ID
     lib.get_hypothesis.restype = hypothesis.Hypothesis

@@ -56,6 +56,9 @@ class InterfaceWrapper
     // step through the tracking by n steps
     const PyTrackInfo* step(const unsigned int a_steps);
 
+    // get the internal ID of the track
+    unsigned int get_ID(const unsigned int a_ID) const;
+
     // get a track by ID, returns the number of objects in the track
     unsigned int get_track(double* output, const unsigned int a_ID) const;
 

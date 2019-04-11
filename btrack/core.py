@@ -586,6 +586,8 @@ class BayesianTracker(object):
         p = lib.get_parent(self.__engine, index)
         f = lib.get_fate(self.__engine, index)
 
+        id = lib.get_ID(self.__engine, index)
+
         # convert the array of children to a python list
         # TODO(arl): this is super lazy, should just make a vector for c
         c = np.squeeze(children).tolist()
@@ -595,7 +597,7 @@ class BayesianTracker(object):
 
         # optional, we can grab the motion model data too
         if not self.return_kalman:
-            return btypes.Tracklet(index,
+            return btypes.Tracklet(id,
                                    trk,
                                    labels=lbl[:,1],
                                    parent=p,
@@ -619,7 +621,7 @@ class BayesianTracker(object):
         # some during the track merging/optimisation phase
 
         # make a new track object and return it
-        trk = btypes.Tracklet(index,
+        trk = btypes.Tracklet(id,
                               trk,
                               kalman=kal,
                               labels=lbl[:,1],

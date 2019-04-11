@@ -276,6 +276,7 @@ void HypothesisEngine::create( void )
       // get the track
       TrackletPtr this_trk = trks_to_test[j];
 
+      // calculate the time and distance between this track and the reference
       float d = link_distance(trk, this_trk);
       float dt = link_time(trk, this_trk);
 
@@ -283,15 +284,16 @@ void HypothesisEngine::create( void )
       if (d  >= m_params.dist_thresh) continue;
       if (dt >= m_params.time_thresh || dt < 1) continue; // this was one
 
-      // TODO(arl): limits the maximum link distance ?
+      // TODO(arl): limit the maximum link distance?
       if (hypothesis_allowed(TYPE_Plink)) {
 
-        // if (trk->track.back()->label == STATE_metaphase &&
-        //     this_trk->track.front()->label == STATE_anaphase &&
-        //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-        //       // do nothing
-        // } else {
+        if (trk->track.back()->label == STATE_metaphase &&
+            this_trk->track.front()->label == STATE_anaphase &&
+            DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+              // do nothing
+        } else {
 
+          // if we allow this link, make the hypothesis
           Hypothesis h_link(TYPE_Plink, trk);
           h_link.trk_link_ID = this_trk;
           h_link.probability = safe_log(P_link(trk, this_trk, d, dt))
@@ -299,7 +301,7 @@ void HypothesisEngine::create( void )
                               + 0.5*safe_log(P_TP(this_trk));
           m_hypotheses.push_back( h_link );
 
-        // }
+        }
       }
 
       // append this to conflicts

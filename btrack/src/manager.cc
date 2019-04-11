@@ -98,22 +98,39 @@ void branch_tracks(const BranchHypothesis &branch)
 }
 
 
+// split a track to remove forbidden transitions
+void TrackManager::split(const TrackletPtr &a_trk,
+                         const unsigned int a_label_i,
+                         const unsigned int a_label_j) {
+
+  // if this is already flagged to be removed, return
+  if (a_trk->to_remove()) return;
+
+  // return if the track is too short
+  if (a_trk->track.size() < 2) return;
+
+  // iterate over the track and make a list of indices where splits
+  // should occur
+  std::vector<unsigned int> split_indices;
+
+  for (size_t i=0; i<a_trk->track.size()-1; i++) {
+    if (a_trk->track[i]->label == a_label_i &&
+        a_trk->track[i+1]->label == a_label_j) {
+          // if we satisfy the condition, push the index
+          split_indices.push_back(i+1);
+    }
+  }
+
+  // return if there is nothing to do
+  if (split_indices.empty()) return;
 
 
-// // return a pointer to a tracklet by finding the id
-// TrackletPtr TrackManager::get_track_by_ID(const unsigned int idx) {
-//
-//   unsigned int trk_ID;
-//
-//   for (size_t trk=0; trk<m_tracks.size(); trk++) {
-//     if (m_tracks[trk]->ID == idx)
-//       trk_ID = trk;
-//   }
-//
-//   //assert(m_tracks[trk_ID] == this[idx])
-//
-//   return m_tracks[trk_ID];
-// };
+  std::cout << "Residual splits need to be performed -> " << a_trk->ID << std::endl;
+
+}
+
+
+
 
 
 
@@ -245,6 +262,13 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   }
 
 
+  // TODO(arl): do a final splitting round to make sure that we haven't
+  // joined any tracks that have a METAPHASE->ANAPHASE transition
+  if (REMOVE_INCORRECTLY_JOINED_TRACKS) {
+    for (size_t i=0; i<m_tracks.size(); i++) {
+      split(m_tracks[i], STATE_metaphase, STATE_anaphase);
+    }
+  }
 
 
   // erase those tracks marked for removal (i.e. those that have been merged)

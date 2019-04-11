@@ -80,6 +80,14 @@ unsigned int InterfaceWrapper::track_length(const unsigned int a_ID) const
   return tracker.tracks[a_ID]->length();
 };
 
+// return the internal ID of the track
+unsigned int InterfaceWrapper::get_ID(const unsigned int a_ID) const
+{
+  // TODO(arl): all renamed tracks should have been removed but do we need
+  // to do a sanity check?!
+  return tracker.tracks[a_ID]->ID;
+}
+
 // get a track by ID
 unsigned int InterfaceWrapper::get_track(double* output,
                                          const unsigned int a_ID) const

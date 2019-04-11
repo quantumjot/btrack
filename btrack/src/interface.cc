@@ -14,10 +14,19 @@
 --------------------------------------------------------------------------------
 */
 
+// DLL export for Windows, not fully supported yet. Other platforms default to
+// exporting symbols for C
+#ifdef _WIN32
+  #define EXTERN_DECL __declspec(dllimport)
+#else
+  #define EXTERN_DECL extern "C"
+#endif
+
+
 
 #include "wrapper.h"
 
-extern "C" {
+EXTERN_DECL {
 
   /* =========================================================================
   CREATE AND DELETE THE INTERFACE
@@ -124,6 +133,12 @@ extern "C" {
                              int* children,
                              const unsigned int trk  ) {
     return h->get_children(children, trk);
+  }
+
+  unsigned int get_ID( InterfaceWrapper* h,
+                       const unsigned int trk ) {
+
+    return h->get_ID(trk);
   }
 
   unsigned int get_fate( InterfaceWrapper* h,

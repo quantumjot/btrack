@@ -328,6 +328,15 @@ class BayesianTracker(object):
         vol = np.zeros((3,2),dtype='float')
         lib.get_volume(self.__engine, vol)
         return [tuple(vol[i,:].tolist()) for i in xrange(3)]+[self.frame_range]
+    @volume.setter
+    def volume(self, volume):
+        """ Set the imaging volume """
+        if not isinstance(volume, tuple):
+            raise TypeError('Volume must be a tuple')
+        if len(volume) != 3 or any([len(v)!=2 for v in volume]):
+            raise ValueError('Volume must contain three tuples')
+        lib.set_volume(self.__engine, np.array(volume, dtype='float64'))
+        logger.info('Set volume to {}'.format(volume))
 
     @property
     def motion_model(self):

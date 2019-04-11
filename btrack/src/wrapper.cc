@@ -215,6 +215,12 @@ void InterfaceWrapper::get_volume(double* a_volume) const
   a_volume[5] = tracker.volume.max_xyz(2);
 };
 
+// set the imaging volume
+void InterfaceWrapper::set_volume(const double* a_volume)
+{
+  tracker.volume.set_volume(a_volume);
+}
+
 
 PyTrackObject InterfaceWrapper::get_dummy(const int a_ID)
 {

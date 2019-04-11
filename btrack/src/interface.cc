@@ -184,11 +184,15 @@ EXTERN_DECL {
   }
 
   /* =========================================================================
-  RETURN THE IMAGING VOLUME
+  RETURN OR SET THE IMAGING VOLUME
   ========================================================================= */
 
   void get_volume( InterfaceWrapper* h, double* volume ) {
     return h->get_volume(volume);
+  }
+
+  void set_volume(InterfaceWrapper* h, double* volume ) {
+    return h->set_volume(volume);
   }
 
   /* =========================================================================

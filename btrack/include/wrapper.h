@@ -91,7 +91,8 @@ class InterfaceWrapper
       return tracker.size();
     }
 
-    // get the imaging volume
+    // get/set the imaging volume
+    void set_volume(const double* a_volume);
     void get_volume(double* a_volume) const;
 
     // hypothesis generation, returns number of hypotheses found

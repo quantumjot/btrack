@@ -200,6 +200,10 @@ class LibraryWrapper(object):
     lib.get_volume.restype = None
     lib.get_volume.argtypes = [ctypes.c_void_p, np_dbl_p]
 
+    # get the imaging volume
+    lib.set_volume.restype = None
+    lib.set_volume.argtypes = [ctypes.c_void_p, np_dbl_p]
+
     # return a dummy object by reference
     lib.get_dummy.restype = PyTrackObject
     lib.get_dummy.argtypes = [ctypes.c_void_p, ctypes.c_int]

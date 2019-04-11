@@ -14,7 +14,6 @@ C/C++ and CUDA
 - Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation
 - Give each track a unique hash to make sure we don't overwrite IDs
-- Add windows compatible __declspec(dllexport) for .DLL compilation
 - Test other motion model instantiation (sp. Prediction defaults to 6 states)
 - Use softmax score to weight hypothesis generation
 - Output more tracking stats back to Python
@@ -35,6 +34,10 @@ Updates
 0.2.8
 -----
 - Added children to return type
+- Uses internal track ID for reference
+- Added a split track function, using a rule to split
+- Add windows compatible __declspec(dllexport) for .DLL compilation
+- Added set_volume function to define the imaging volume
 
 0.2.7
 -----

@@ -213,6 +213,22 @@ struct ImagingVolume
     max_xyz = max_xyz.cwiseMax( obj->position() );
   };
 
+  // set the imaging volume (note that this could be overwritten...)
+  void set_volume(const double* a_volume) {
+    assert(a_volume[0] <= a_volume[1]);
+    assert(a_volume[2] <= a_volume[3]);
+    assert(a_volume[4] <= a_volume[5]);
+    // min_xyz(0) = a_volume[0];
+    // min_xyz(1) = a_volume[2];
+    // min_xyz(2) = a_volume[4];
+    // max_xyz(0) = a_volume[1];
+    // max_xyz(1) = a_volume[3];
+    // max_xyz(2) = a_volume[5];
+    min_xyz << a_volume[0], a_volume[2], a_volume[4];
+    max_xyz << a_volume[1], a_volume[3], a_volume[5];
+
+  }
+
   // test whether an object lies within the volume
   bool inside(const Eigen::Vector3d& position) const {
     if (position(0)>= min_xyz(0) && position(0)<=max_xyz(0) &&

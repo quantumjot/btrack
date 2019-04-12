@@ -52,6 +52,7 @@ class Node(object):
     @property
     def start(self):
         return self.track.t[0]
+        
     @property
     def end(self):
         return self.track.t[-1]
@@ -222,8 +223,8 @@ class LineageTreePlotter(object):
                         y_pos.append(y-depth_mod)
 
                     # plot a linking line to the children
-                    line_list.append(([y,y_pos[-1]], [node.end,child.start]))
-                    marker_list.append((y,node.end,'go'))
+                    line_list.append(([y, y_pos[-1]], [node.end, child.start]))
+                    marker_list.append((y, node.end,'go'))
                     text_list.append((y_pos[-1],
                                       child.end-(child.end-child.start)/2.,
                                       str(child.ID), 'k'))
@@ -258,3 +259,7 @@ class LineageTreePlotter(object):
 
         # update the position for next round
         self.y = y_offset + max_x + 1
+
+
+if __name__ == "__main__":
+    pass

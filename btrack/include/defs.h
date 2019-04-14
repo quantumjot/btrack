@@ -44,7 +44,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define PROB_NOT_ASSIGN 0.01
 #define DEFAULT_ACCURACY 2.0
 #define DISALLOW_METAPHASE_ANAPHASE_LINKING true
-#define REMOVE_INCORRECTLY_JOINED_TRACKS true
+#define SPLIT_INCORRECTLY_JOINED_TRACKS true
 #define PROB_ASSIGN_EXP_DECAY true
 #define DYNAMIC_ACCURACY false
 #define DIMS 3

@@ -53,6 +53,7 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk)
         std::cout << join_trk->child_two << "]" << std::endl;
       }
 
+      // TODO(arl): raise a warning if these have already been set?
       parent_trk->child_one = join_trk->child_one;
       parent_trk->child_two = join_trk->child_two;
   }
@@ -124,7 +125,7 @@ void TrackManager::split(const TrackletPtr &a_trk,
   // return if there is nothing to do
   if (split_indices.empty()) return;
 
-
+  // TODO(arl): actually split the tracks!
   std::cout << "Residual splits need to be performed -> " << a_trk->ID << std::endl;
 
 }
@@ -264,7 +265,7 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 
   // TODO(arl): do a final splitting round to make sure that we haven't
   // joined any tracks that have a METAPHASE->ANAPHASE transition
-  if (REMOVE_INCORRECTLY_JOINED_TRACKS) {
+  if (SPLIT_INCORRECTLY_JOINED_TRACKS) {
     for (size_t i=0; i<m_tracks.size(); i++) {
       split(m_tracks[i], STATE_metaphase, STATE_anaphase);
     }
@@ -331,5 +332,4 @@ TrackObjectPtr TrackManager::get_dummy(const int a_idx) const
 
   // return the dummies
   return m_dummies[dummy_idx];
-
 }

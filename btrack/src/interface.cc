@@ -188,11 +188,11 @@ EXTERN_DECL {
   ========================================================================= */
 
   void get_volume( InterfaceWrapper* h, double* volume ) {
-    return h->get_volume(volume);
+    h->get_volume(volume);
   }
 
   void set_volume(InterfaceWrapper* h, double* volume ) {
-    return h->set_volume(volume);
+    h->set_volume(volume);
   }
 
   /* =========================================================================

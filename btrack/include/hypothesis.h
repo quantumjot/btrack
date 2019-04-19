@@ -216,6 +216,10 @@ extern "C" struct PyHypothesisParams {
 // count the number of apoptosis detections
 unsigned int count_apoptosis(const TrackletPtr a_trk);
 
+// count the number of a certain state at the end of the track
+unsigned int count_state_end_track(const TrackletPtr a_trk,
+                                   const unsigned int a_state_label);
+
 // calculate the linkage distance
 double link_distance(const TrackletPtr a_trk,
                      const TrackletPtr a_trk_lnk);

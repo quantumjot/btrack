@@ -53,30 +53,34 @@ double link_time( const TrackletPtr a_trk,
 // track
 unsigned int count_apoptosis(const TrackletPtr a_trk)
 {
+    return count_state_end_track(a_trk, STATE_apoptosis);
+}
+
+
+// generic state counting from the back of the track
+// could also be used to look for mitotic events for example
+unsigned int count_state_end_track( const TrackletPtr a_trk,
+                                    const unsigned int a_state_label )
+{
 
   // check that we have at least one observation in our track
   assert(a_trk->length()>0);
 
   int counter = a_trk->length()-1;
-  unsigned int n_apoptosis = 0;
+  unsigned int n_state = 0;
 
-  // NOTE(arl): could just count the number of apoptotic states?
-  // for (size_t i=0; i<trk->length(); i++){
-  //   if (trk->track[i]->label == STATE_apoptosis) n_apoptosis+=1;
-  // }
-
-  while (a_trk->track[counter]->label == STATE_apoptosis &&
+  while (a_trk->track[counter]->label == a_state_label &&
          counter>=0) {
 
     // increment the number of apoptoses
-    n_apoptosis++;
+    n_state++;
     counter--;
 
     // immediately exit if we have reached the end
     if (counter<0) break;
   }
 
-  return n_apoptosis;
+  return n_state;
 }
 
 

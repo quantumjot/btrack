@@ -53,35 +53,49 @@ double link_time( const TrackletPtr a_trk,
 // track
 unsigned int count_apoptosis(const TrackletPtr a_trk)
 {
-    return count_state_end_track(a_trk, STATE_apoptosis);
+    return count_state_track(a_trk, STATE_apoptosis, COUNT_STATE_FROM_BACK);
 }
 
 
-// generic state counting from the back of the track
+// generic state counting from the back/or front of the track
 // could also be used to look for mitotic events for example
-unsigned int count_state_end_track( const TrackletPtr a_trk,
-                                    const unsigned int a_state_label )
+unsigned int count_state_track( const TrackletPtr a_trk,
+                                const unsigned int a_state_label,
+                                const bool a_from_back )
 {
 
   // check that we have at least one observation in our track
   assert(a_trk->length()>0);
 
-  int counter = a_trk->length()-1;
+  // set the counter, direction and state_counter
+  int counter;
+  int counter_dir;
   unsigned int n_state = 0;
 
+  // if counting from the back, start at the back and reverse the direction
+  if (a_from_back == COUNT_STATE_FROM_BACK) {
+    counter = a_trk->length()-1;
+    counter_dir = -1;
+  } else {
+    counter = 0;
+    counter_dir = 1;
+  }
+
+
   while (a_trk->track[counter]->label == a_state_label &&
-         counter>=0) {
+         counter>=0 && counter<a_trk->length()) {
 
     // increment the number of apoptoses
     n_state++;
-    counter--;
+    counter+=counter_dir;
 
     // immediately exit if we have reached the end
-    if (counter<0) break;
+    if (counter<0 || counter>=a_trk->length()) break;
   }
 
   return n_state;
 }
+
 
 
 
@@ -484,6 +498,21 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
 
 
 // DIVISION PROBABILITY
+// Different possible branches:
+//
+// State | Parent    | Child1   | Child2   | Weight
+//       | Metaphase | Anaphase | Anaphase | WEIGHT_METAPHASE_ANAPHASE_ANAPHASE
+//       | Metaphase | Anaphase |    -     | WEIGHT_METAPHASE_ANAPHASE
+//       | Metaphase |    -     | Anaphase | WEIGHT_METAPHASE_ANAPHASE
+//       | Metaphase |    -     |    -     | WEIGHT_METAPHASE
+//       |     -     \ Anaphase | Anaphase | WEIGHT_ANAPHASE_ANAPHASE
+//       |     -     | Anaphase |    -     | WEIGHT_ANAPHASE
+//       |     -     |    -     | Anaphase | WEIGHT_ANAPHASE
+//       |     -     |    -     |    -     | Based on prob that tracks are dead
+//
+// NOTE/TODO(arl): need to penalise making brances to (already) dead tracks,
+// since cells fragment in apoptosis
+
 double HypothesisEngine::P_branch(TrackletPtr a_trk,
                                   TrackletPtr a_trk_c0,
                                   TrackletPtr a_trk_c1) const

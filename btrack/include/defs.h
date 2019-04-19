@@ -88,5 +88,8 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define WEIGHT_ANAPHASE 2.0
 #define WEIGHT_OTHER 5.0
 
+#define COUNT_STATE_FROM_BACK true
+#define COUNT_STATE_FROM_FRONT false
+
 
 #endif

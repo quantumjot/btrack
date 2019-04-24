@@ -135,6 +135,13 @@ HypothesisEngine::HypothesisEngine( const unsigned int a_start_frame,
     std::cout << " - P_merge: " << hypothesis_allowed(TYPE_Pmrge) << std::endl;
   }
 
+  // should do some parameter checking here
+  assert(m_params.segmentation_miss_rate >= 0.0 &&
+         m_params.segmentation_miss_rate <= 1.0);
+
+  assert(m_params.apoptosis_rate >= 0.0 &&
+         m_params.apoptosis_rate <= 1.0);
+
   // set up a HashCube
   m_cube = HypercubeBin(m_params.dist_thresh, m_params.time_thresh);
 }
@@ -451,7 +458,7 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
   // want to discount this by how close it is to the border of the field of
   // view - this is to make sure this is a genuine apoptosis and not just a
   // track leaving the field of view
-  
+
   float dist = dist_from_border(a_trk, false);
   float discount = 1.0 - std::exp(-dist/m_params.lambda_dist);
 
@@ -459,10 +466,12 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
   // observations, perhaps the fraction of the track length that is apoptotic
   // is more appropriate?
 
+  float p_apoptosis = 0.;
+
   if (USE_ABSOLUTE_APOPTOSIS_COUNTS) {
-    float p_apoptosis = 1.0 - std::pow(m_params.apoptosis_rate, n_apoptosis)
+    p_apoptosis = 1.0 - std::pow(m_params.apoptosis_rate, n_apoptosis);
   } else {
-    float p_apoptosis = (float) n_apoptosis / (float) a_trk->length();
+    p_apoptosis = static_cast<float>(n_apoptosis) / static_cast<float>(a_trk->length());
   }
 
 

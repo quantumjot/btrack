@@ -88,8 +88,16 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define WEIGHT_ANAPHASE 2.0
 #define WEIGHT_OTHER 5.0
 
+
+// definitions to use for countins states in the hypothesis engine
 #define COUNT_STATE_FROM_BACK true
 #define COUNT_STATE_FROM_FRONT false
+
+// flag for defining apoptosis
+// setting this to true means that the p_apoptosis scales with the absolute
+// numer of apoptotic counts, if set to false, the algorithm uses the fraction
+// of the length of the tracklet that is apoptotic
+#define USE_ABSOLUTE_APOPTOSIS_COUNTS true
 
 
 #endif

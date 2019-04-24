@@ -449,10 +449,24 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
                                 const unsigned int n_apoptosis ) const
 {
   // want to discount this by how close it is to the border of the field of
-  // view
+  // view - this is to make sure this is a genuine apoptosis and not just a
+  // track leaving the field of view
+  
   float dist = dist_from_border(a_trk, false);
   float discount = 1.0 - std::exp(-dist/m_params.lambda_dist);
-  return (1.0 - std::pow(m_params.apoptosis_rate, n_apoptosis)) * discount;
+
+  // TODO(arl): rather than calculate the probability as the number of apoptotic
+  // observations, perhaps the fraction of the track length that is apoptotic
+  // is more appropriate?
+
+  if (USE_ABSOLUTE_APOPTOSIS_COUNTS) {
+    float p_apoptosis = 1.0 - std::pow(m_params.apoptosis_rate, n_apoptosis)
+  } else {
+    float p_apoptosis = (float) n_apoptosis / (float) a_trk->length();
+  }
+
+
+  return p_apoptosis * discount;
 }
 
 double HypothesisEngine::P_dead( TrackletPtr a_trk ) const

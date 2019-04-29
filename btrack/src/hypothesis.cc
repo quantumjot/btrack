@@ -474,6 +474,9 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
     p_apoptosis = static_cast<float>(n_apoptosis) / static_cast<float>(a_trk->length());
   }
 
+  // sanity check
+  assert(p_apoptosis>=0. && p_apoptosis<=1.);
+
 
   return p_apoptosis * discount;
 }
@@ -523,12 +526,13 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
 // DIVISION PROBABILITY
 // Different possible branches:
 //
-// State | Parent    | Child1   | Child2   | Weight
+// State |   Parent  |  Child1  |  Child2  | Weight
+// ------|-----------|----------|----------|------------------------------------
 //       | Metaphase | Anaphase | Anaphase | WEIGHT_METAPHASE_ANAPHASE_ANAPHASE
 //       | Metaphase | Anaphase |    -     | WEIGHT_METAPHASE_ANAPHASE
 //       | Metaphase |    -     | Anaphase | WEIGHT_METAPHASE_ANAPHASE
 //       | Metaphase |    -     |    -     | WEIGHT_METAPHASE
-//       |     -     \ Anaphase | Anaphase | WEIGHT_ANAPHASE_ANAPHASE
+//       |     -     | Anaphase | Anaphase | WEIGHT_ANAPHASE_ANAPHASE
 //       |     -     | Anaphase |    -     | WEIGHT_ANAPHASE
 //       |     -     |    -     | Anaphase | WEIGHT_ANAPHASE
 //       |     -     |    -     |    -     | Based on prob that tracks are dead

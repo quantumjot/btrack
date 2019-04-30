@@ -329,9 +329,23 @@ def check_track_type(tracks):
 
 
 
+
+def export_single_track_JSON(filename, track):
+    """ export a single track as a JSON file """
+
+    if not isinstance(filename, basestring):
+        raise TypeError('Filename must be a string')
+
+    if not isinstance(track, btypes.Tracklet):
+        raise TypeError('Tracks must be of type btypes.Tracklet')
+
+    json_export = track.to_dict()
+    with open(filename, 'w') as json_file:
+        json.dump(json_export, json_file, indent=2)
+
+
 def export_JSON(filename, tracks):
     """ JSON Exporter for track data. """
-
     if not check_track_type(tracks):
         raise TypeError('Tracks must be of type btypes.Tracklet')
 
@@ -341,6 +355,32 @@ def export_JSON(filename, tracks):
 
     with open(filename, 'w') as json_file:
         json.dump(json_export, json_file, indent=2, separators=(',', ': '))
+
+
+def export_all_tracks_JSON(export_dir, tracks, cell_type=None):
+    """ export all tracks as individual JSON files """
+
+    assert(cell_type in ['GFP','RFP','iRFP','Phase',None])
+    filenames = []
+
+    logger.info('Writing out JSON files to dir: {}'.format(export_dir))
+    for track in tracks:
+        fn = "track_{}_{}.json".format(track.ID, cell_type)
+        track_fn = os.path.join(export_dir, fn)
+        export_single_track_JSON(track_fn, track)
+
+        filenames.append(fn)
+
+    file_stats_fn = "tracks_{}.json".format(cell_type)
+    file_stats = {}
+    file_stats[str(cell_type)] = {"path": export_dir,
+                                  "files": filenames}
+
+    logger.info('Writing out JSON file list to: {}'.format(file_stats_fn))
+    with open(os.path.join(export_dir, file_stats_fn), 'w') as filelist:
+        json.dump(file_stats, filelist, indent=2, separators=(',', ': '))
+
+
 
 
 

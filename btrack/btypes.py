@@ -413,11 +413,19 @@ class Tracklet(object):
         export. This is an ordered dictionary for nicer JSON output.
         """
         # TODO(arl): add the Kalman filter output here too
-        trk_tuple = (('ID',self.ID), ('length',len(self)), ('root',self.root),
-            ('parent',self.parent), ('x',self.x),( 'y',self.y), ('z',self.z),
-            ('t',self.t),('label',self.label),('fate',self.fate))
+        trk_tuple = (('ID', self.ID),
+                     ('length', len(self)),
+                     ('root', self.root),
+                     ('parent', self.parent),
+                     ('children', self.children),
+                     ('label', self.label),
+                     ('fate', self.fate),
+                     ('x', self.x),
+                     ('y', self.y),
+                     ('z', self.z),
+                     ('t', self.t))
 
-        return OrderedDict( trk_tuple )
+        return OrderedDict(trk_tuple)
 
     def to_array(self):
         """ Return a numpy array of the tracklet which can be used for MATLAB

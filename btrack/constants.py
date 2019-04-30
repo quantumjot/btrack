@@ -1,4 +1,4 @@
-__version__ = '0.2.8'
+__version__ = '0.2.9'
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1

@@ -31,6 +31,12 @@ Misc
 Updates
 =======
 
+0.2.9
+-----
+- Changed default apoptosis hypothesis calculation to reflect relative number of observations
+- Removed lineage tree generation (now part of Sequitr)
+- Improved JSON export
+
 0.2.8
 -----
 - Added children to return type

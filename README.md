@@ -31,7 +31,7 @@ microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 ### TODO
 + [x] Add a parameter for maximum local radius of searching
 + [ ] Finish abstract HashBin class, make the HypothesisBin and TrackBin classes
-+ [ ] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
++ [x] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
 + [ ] Cross platform install scripts
 + [ ] Improve documentation
 + [ ] Migrate to Python 3

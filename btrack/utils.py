@@ -395,15 +395,13 @@ def export_all_tracks_JSON(export_dir,
         with zipfile.ZipFile(full_zip_fn, 'w') as zip:
             for fn in filenames:
                 src_json_file = os.path.join(export_dir, fn)
-                zip.write(src_json_file)
+                zip.write(src_json_file, arcname=fn)
                 os.remove(src_json_file)
-
-        # change the filenames to reflect the zip archive
-        filenames = [zip_fn+"/"+f for f in filenames]
 
     file_stats_fn = "tracks_{}.json".format(cell_type)
     file_stats = {}
     file_stats[str(cell_type)] = {"path": export_dir,
+                                  "zipped": as_zip_archive,
                                   "files": filenames}
 
     logger.info('Writing out JSON file list to: {}'.format(file_stats_fn))

@@ -357,8 +357,25 @@ def export_JSON(filename, tracks):
         json.dump(json_export, json_file, indent=2, separators=(',', ': '))
 
 
-def export_all_tracks_JSON(export_dir, tracks, cell_type=None):
-    """ export all tracks as individual JSON files """
+def export_all_tracks_JSON(export_dir,
+                           tracks,
+                           cell_type=None,
+                           as_zip_archive=True):
+
+    """ export_all_tracks_JSON
+
+    Export all tracks as individual JSON files.
+
+    Args:
+        export_dir: the directory to export the tracks to
+        tracks: a list of Track objects
+        cell_type: a string representing the object (cell) type
+        as_zip_archive: a boolean to enable saving to a zip archive
+
+    Returns:
+        None
+
+    """
 
     assert(cell_type in ['GFP','RFP','iRFP','Phase',None])
     filenames = []
@@ -368,8 +385,21 @@ def export_all_tracks_JSON(export_dir, tracks, cell_type=None):
         fn = "track_{}_{}.json".format(track.ID, cell_type)
         track_fn = os.path.join(export_dir, fn)
         export_single_track_JSON(track_fn, track)
-
         filenames.append(fn)
+
+    # make a zip archive of the files
+    if as_zip_archive:
+        import zipfile
+        zip_fn = "tracks_{}.zip".format(cell_type)
+        full_zip_fn = os.path.join(export_dir, zip_fn)
+        with zipfile.ZipFile(full_zip_fn, 'w') as zip:
+            for fn in filenames:
+                src_json_file = os.path.join(export_dir, fn)
+                zip.write(src_json_file)
+                os.remove(src_json_file)
+
+        # change the filenames to reflect the zip archive
+        filenames = [zip_fn+"/"+f for f in filenames]
 
     file_stats_fn = "tracks_{}.json".format(cell_type)
     file_stats = {}

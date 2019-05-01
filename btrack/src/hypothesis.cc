@@ -593,6 +593,9 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
     } else {
       // in this case, none of the criteria are satisfied
       weight = WEIGHT_OTHER + 10.*P_dead(a_trk_c0) + 10.*P_dead(a_trk_c1);
+
+      // return here if none of the criteria are satisfied
+      return std::exp(-weight/(2.*m_params.lambda_branch));
     }
   }
 
@@ -604,6 +607,5 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   // same side (worst case). Error function will scale these from ~0. to ~1.
   // meaning that the ideal case minimises the delta_g
   delta_g = weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
-
   return std::exp(-delta_g/(2.*m_params.lambda_branch));
 }

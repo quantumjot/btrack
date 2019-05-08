@@ -68,7 +68,7 @@ void Tracklet::append(const TrackObjectPtr& new_object, bool update) {
 
 // append a dummy object to the tracklet
 void Tracklet::append_dummy() {
-  if (lost >= MAX_LOST)
+  if (lost > max_lost)
     return;
 
   // get the predicted new position

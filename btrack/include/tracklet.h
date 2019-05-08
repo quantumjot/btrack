@@ -68,7 +68,7 @@ public:
   }
 
   // return a boolean representing the status (active/inactive) of the track
-  bool active() const { return lost<max_lost; };
+  bool active() const { return lost<=max_lost; };
 
   // trim trailing dummy objects - should only be called when the tracking is
   // finished

@@ -334,7 +334,7 @@ void BayesianTracker::step(const unsigned int steps)
   }
 
 
-  while (step < steps && current_frame<frames.back()) {
+  while (step < steps && current_frame < frames.back()) {
 
     // update the list of active tracks
     update_active();
@@ -369,7 +369,6 @@ void BayesianTracker::step(const unsigned int steps)
 
     // now do the Bayesian updates
     belief.setZero(n_obs+1, n_active);
-
 
     // do we want to do a fast update?
     if (FAST_COST_UPDATE) {
@@ -530,7 +529,6 @@ void BayesianTracker::cost(Eigen::Ref<Eigen::MatrixXd> belief,
       // do the update
       v_posterior = v_posterior.array()*v_update.array();
       v_posterior(obj) = posterior;
-
     }
 
     // now update the entire column (i.e. track)
@@ -673,10 +671,11 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
     Eigen::MatrixXf::Index best_object;
     double prob = belief.col(trk).maxCoeff(&best_object);
 
+    // since we're using zero-indexing, n_objects is equivalent to the index of
+    // the last object + 1, i.e. the column for the lost hypothesis...
     if (int(best_object) != int(n_objects)) {
       // push this putative linkage to the map
       map.push( best_object, LinkHypothesis(trk, prob) );
-
     } else {
       // this track is probably lost, append a dummy to the trajectory
       active[trk]->append_dummy();
@@ -704,6 +703,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
         // TODO(arl): make this error more useful
         std::cout << "ERROR: Exhausted potential linkages." << std::endl;
       }
+
+      // append the new object onto the track
       active[trk]->append( new_objects[obj] );
 
       // update the statistics
@@ -719,7 +720,7 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
                                                     this->motion_model );
       tracks.push_back( trk );
 
-    } else if ( n_links > 1) {
+    } else if (n_links > 1) {
       // conflict, get the best one
       n_conflicts++;
 

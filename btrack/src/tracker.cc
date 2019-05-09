@@ -207,7 +207,7 @@ unsigned int BayesianTracker::append(const PyTrackObject& new_object){
   frames_set.insert( p->t );
 
   // set this flag to true
-  initialised = true;
+  // initialised = true;
   return SUCCESS;
 }
 
@@ -231,6 +231,10 @@ void BayesianTracker::track_all() {
 
 // initialise the first frame
 unsigned int BayesianTracker::initialise() {
+
+  // if we have already initialised, return early
+  if (initialised)
+    return SUCCESS;
 
   // check to make sure that we've got some objects to track
   if (objects.empty()) {
@@ -279,7 +283,7 @@ unsigned int BayesianTracker::initialise() {
   n_objects = objects.size();
   o_counter = 0;
 
-
+  // set the current frame of the tracker
   current_frame = frames.front();
 
   // set up the first tracklets based on the first set of objects
@@ -295,6 +299,9 @@ unsigned int BayesianTracker::initialise() {
 
   // add one to the iteration
   current_frame++;
+
+  // set the initialised flag
+  initialised = true;
 
   return SUCCESS;
 }
@@ -312,7 +319,9 @@ void BayesianTracker::step(const unsigned int steps)
   unsigned int step = 0;
 
   // first check the iteration, if it is zero, initialise
-  if (current_frame == 0) {
+  // TODO(arl): we don't necessarily start on frame zero?
+  //if (current_frame == 0) {
+  if (!initialised) {
     // initialise!
     unsigned int ret = initialise();
     if ( ret != SUCCESS ) {

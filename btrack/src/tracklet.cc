@@ -68,29 +68,45 @@ void Tracklet::append(const TrackObjectPtr& new_object, bool update) {
 
 // append a dummy object to the tracklet
 void Tracklet::append_dummy() {
-  if (lost > max_lost)
+
+  if (lost > max_lost) {
+    // NOTE(arl): this should never happen
     return;
+  }
+
+  if (DEBUG) {
+    std::cout << "Adding dummy to track: " << this->ID;
+    std::cout << " in frame: " << this->track.back()->t + 1 << std::endl;
+  }
 
   // get the predicted new position
   Prediction p = this->predict();
 
-  // make a dummy track object by copying the last observation
-  TrackObjectPtr dummy = std::make_shared<TrackObject>( *(this->track.back()) );
-  dummy->dummy = true;
-  dummy->x = p.mu(0);
-  dummy->y = p.mu(1);
-  dummy->z = p.mu(2);
-  dummy->t = dummy->t+1; // NOTE(arl): is this valid assumption?
-  dummy->ID = 0;
+  // make a new dummy track object and populate with the prediction
+  TrackObject dummy;
+  dummy.ID = 0;
+  dummy.x = p.mu(0);
+  dummy.y = p.mu(1);
+  dummy.z = p.mu(2);
+  dummy.t = this->track.back()->t + 1; // NOTE(arl): is this valid assumption?
+  dummy.label = this->track.back()->label;
+  dummy.dummy = true;
+
+  // make a shared pointer to this new obejct
+  TrackObjectPtr dummy_ptr = std::make_shared<TrackObject>(dummy);
 
   // append the dummy to the track
-  this->append( dummy );
+  this->append( dummy_ptr );
 }
 
 
 
 // Trim the tracklet to remove any dummy objects if the track has been lost
 bool Tracklet::trim() {
+  // return false if we don't need to trim
+  if (!track.back()->dummy) return false;
+
+  // else iterate over and remove dummies at the end of the track
   while (track.back()->dummy) {
     track.pop_back();
   }

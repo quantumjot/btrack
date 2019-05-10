@@ -606,6 +606,7 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   // sides of the parent, to 1, where the daughters are close in space on the
   // same side (worst case). Error function will scale these from ~0. to ~1.
   // meaning that the ideal case minimises the delta_g
+  //delta_g = weight + weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
   delta_g = weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
   return std::exp(-delta_g/(2.*m_params.lambda_branch));
 }

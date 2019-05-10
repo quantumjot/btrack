@@ -1,0 +1,5 @@
+cvxopt>=1.1.9
+h5py>=2.7.0
+matplotlib>=2.0.2
+numpy>=1.14.2
+scipy>=1.0.0

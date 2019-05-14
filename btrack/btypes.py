@@ -283,7 +283,12 @@ class ObjectModel(object):
 
 
 
-
+def dcol(header):
+    """ return the index of the column for a Tracklet attribute """
+    column_order = ('t','x','y','z')
+    if header in column_order:
+        return column_order.index(header)
+    return None
 
 
 
@@ -362,19 +367,23 @@ class Tracklet(object):
         return self.__data.shape[0]
 
     @property
-    def x(self): return self.__data[:,1].tolist()
+    def x(self): return self.__data[:,dcol('x')].tolist()
     @property
-    def y(self): return self.__data[:,2].tolist()
+    def y(self): return self.__data[:,dcol('y')].tolist()
     @property
-    def z(self): return self.__data[:,3].tolist()
+    def z(self): return self.__data[:,dcol('z')].tolist()
     @property
-    def t(self): return self.__data[:,0].tolist()
+    def t(self): return self.__data[:,dcol('t')].tolist()
     @property
     def dummy(self): return self.__dummy
 
     @property
     def label(self):
         return [self.labeller(l) for l in self.__labels.tolist()]
+    @label.setter
+    def label(self, labels):
+        assert(len(labels)==len(self))
+        self.__labels = labels
 
     @property
     def fate_label(self):
@@ -455,10 +464,19 @@ class Tracklet(object):
 
 
     @staticmethod
-    def from_dict(track_params):
+    def from_dict(params):
         """ Create a new tracklet using data from a dictionary """
-        if not isinstance(track_params, dict):
+        if not isinstance(params, dict):
             raise TypeError('Tracklet.from_dict requires a dictionary.')
 
-        T = Tracklet()
+        # populate the data array
+        cols = ('t','x','y','z')
+        data = np.zeros((len(params['t']),4))
+        for col in cols:
+            data[:,dcol(col)] = params[col]
+
+        to_set = list(set(params.keys())-set(cols))
+        T = Tracklet(params['ID'], data)
+        for k in to_set:
+            setattr(T, k, params[k])
         return T

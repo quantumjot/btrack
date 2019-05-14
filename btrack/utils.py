@@ -408,7 +408,49 @@ def export_all_tracks_JSON(export_dir,
     with open(os.path.join(export_dir, file_stats_fn), 'w') as filelist:
         json.dump(file_stats, filelist, indent=2, separators=(',', ': '))
 
+def import_all_tracks_JSON(folder, cell_type='GFP'):
+    """ import_all_tracks_JSON
 
+    import all of the tracks as Tracklet objects, for further analysis.
+
+    Args:
+        folder: the directory where the tracks are
+
+    Returns:
+        tracks: a list of Tracklet objects
+    """
+
+    file_stats_fn = os.path.join(folder, "tracks_{}.json".format(cell_type))
+    if not os.path.exists(file_stats_fn):
+        raise IOError('Tracking data file not found: {}'.format(file_stats_fn))
+
+    with open(file_stats_fn, 'r') as json_file:
+        track_files = json.load(json_file)
+
+    tracks = []
+    # check to see whether this is a zipped file
+    as_zipped = track_files[cell_type]['zipped']
+    if as_zipped:
+        import zipfile
+        zip_fn = os.path.join(folder,"tracks_{}.zip".format(cell_type))
+        with zipfile.ZipFile(zip_fn, 'r') as zipped_tracks:
+            for track_fn in track_files[cell_type]['files']:
+                track_file = zipped_tracks.read(track_fn)
+                d = json.loads(track_file)
+                d['cell_type'] = cell_type
+                d['filename'] = track_fn
+                tracks.append(btypes.Tracklet.from_dict(d))
+        return tracks
+
+    # iterate over the track files and create Track objects
+    for track_fn in track_files[cell_type]['files']:
+        with open(os.path.join(folder, track_fn), 'r') as track_file:
+            d = json.load(track_file)
+            d['cell_type'] = cell_type
+            d['filename'] = track_fn
+            tracks.append(btypes.Tracklet.from_dict(d))
+
+    return tracks
 
 
 

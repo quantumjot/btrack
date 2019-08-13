@@ -27,44 +27,13 @@ high-likelihood hypotheses that accounts for all observations.
 BayesianTracker (btrack) is part of the *Sequitr* image processing toolbox for
 microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
 
----
-### TODO
-+ [x] Add a parameter for maximum local radius of searching
-+ [ ] Finish abstract HashBin class, make the HypothesisBin and TrackBin classes
-+ [x] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
-+ [ ] Cross platform install scripts
-+ [ ] Improve documentation
-+ [ ] Migrate to Python 3
+### Tracking mammalian cells in time-lapse microscopy experiments
 
----
-
-### Dependencies
-
-BayesianTracker has been tested with Python 2.7+ on OS X and Linux, and requires
-the following additional packages:
-
-+ Numpy
-+ Scipy
-+ h5py
-+ CVXOPT
-+ Eigen
-+ GLPK
-
-BayesianTracker is written in C++ with a C interface to Python.
-
-** There is now an experimental Python 3 compatible branch: btrack_py3 **
-
----
-
-### Examples
-
-We developed BayesianTracker to enable us to track individual molecules or
-cells in large populations over very long periods of time, reconstruct lineages
-and study cell movement or sub-cellular protein localisation. We have provided
-several examples in the notebooks folder.  Below is an example of tracking
-cells:
+We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. We have provided several examples in the notebooks folder.  Below is an example of tracking cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
+
+[![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)
 
 ---
 ### Citation
@@ -91,6 +60,24 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
   journal = {Molecular Biology of the Cell}
 }
 ```
+
+
+
+### Dependencies
+
+BayesianTracker has been tested with Python 2.7+ on OS X and Linux, and requires
+the following additional packages:
+
++ Numpy
++ Scipy
++ h5py
++ CVXOPT
++ Eigen
++ GLPK
+
+BayesianTracker is written in C++ with a C interface to Python.
+
+** There is now an experimental Python 3 compatible branch: btrack_py3 **
 
 ---
 
@@ -249,3 +236,14 @@ By default, the optimizer generates 7 different hypotheses:
   }
 }
 ```
+
+---
+### TODO
++ [x] Add a parameter for maximum local radius of searching
++ [ ] Finish abstract HashBin class, make the HypothesisBin and TrackBin classes
++ [x] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
++ [ ] Cross platform install scripts
++ [ ] Improve documentation
++ [ ] Migrate to Python 3
+
+---

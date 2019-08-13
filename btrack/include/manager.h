@@ -84,7 +84,7 @@ class TrackManager
     }
 
     // reserve space for new tracks
-    inline void reserve(const unsigned int a_reserve){
+    inline void reserve(const unsigned int a_reserve) {
       m_tracks.reserve(a_reserve);
     }
 

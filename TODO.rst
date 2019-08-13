@@ -31,6 +31,11 @@ Misc
 Updates
 =======
 
+0.2.10
+------
+- Simplified model configuration format
+- Allowed a second user model directory, to supplement core models
+
 0.2.9
 -----
 - Changed default apoptosis hypothesis calculation to reflect relative number of observations

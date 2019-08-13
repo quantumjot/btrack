@@ -1,8 +1,69 @@
 {
   "TrackerConfig":
     {
-      "MotionModel": "constant_velocity.json",
-      "ObjectModel": "",
-      "HypothesisModel": "cell_hypothesis.json"
+      "MotionModel":
+        {
+          "name": "ConstantVelocity",
+          "dt": 1.0,
+          "measurements": 3,
+          "states": 6,
+          "accuracy": 1.0,
+          "prob_not_assign": 0.1,
+          "max_lost": 5,
+          "A": {
+            "matrix": [1,0,0,1,0,0,
+                      0,1,0,0,1,0,
+                      0,0,1,0,0,1,
+                      0,0,0,1,0,0,
+                      0,0,0,0,1,0,
+                      0,0,0,0,0,1]
+          },
+          "H": {
+            "matrix": [1,0,0,0,0,0,
+                      0,1,0,0,0,0,
+                      0,0,1,0,0,0]
+          },
+          "P": {
+            "sigma": 1.0,
+            "matrix": [1,0,0,0,0,0,
+                      0,1,0,0,0,0,
+                      0,0,1,0,0,0,
+                      0,0,0,1,0,0,
+                      0,0,0,0,1,0,
+                      0,0,0,0,0,1]
+          },
+          "G": {
+            "sigma": 1.0,
+            "matrix": [1,1,1,1,1,1]
+
+          },
+          "R": {
+            "sigma": 1.0,
+            "matrix": [1,0,0,
+                      0,1,0,
+                      0,0,1]
+          }
+        },
+      "ObjectModel":
+        {},
+      "HypothesisModel":
+        {
+          "name": "cell_hypothesis",
+          "hypotheses": ["FP", "init", "term", "link", "branch", "dead"],
+          "lambda_time": 5.0,
+          "lambda_dist": 5.0,
+          "lambda_link": 5.0,
+          "lambda_branch": 5.0,
+          "eta": 1e-150,
+          "theta_dist": 5.0,
+          "theta_time": 5.0,
+          "dist_thresh": 10,
+          "time_thresh": 3,
+          "apop_thresh": 2,
+          "segmentation_miss_rate": 0.1,
+          "apoptosis_rate": 0.1,
+          "relax": false
+        }
+      }
     }
 }

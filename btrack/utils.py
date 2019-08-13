@@ -122,7 +122,8 @@ def log_stats(stats):
 
 
 
-def read_motion_model(filename):
+# def read_motion_model(filename):
+def read_motion_model(config):
     """ read_motion_model
 
     Read in a motion model description file and return a dictionary containing
@@ -167,30 +168,30 @@ def read_motion_model(filename):
     matrices = frozenset(['A','H','P','G','R'])
     model = btypes.MotionModel()
 
-    with open(filename, 'r') as j:
-        modelfile = json.load(j)
+    # with open(filename, 'r') as j:
+    #     config = json.load(j)
 
-        if 'MotionModel' not in modelfile.keys():
-            raise ValueError('Not a valid motion model file')
+    if 'MotionModel' not in config.keys():
+        raise ValueError('Not a valid motion model file')
 
-        m = modelfile['MotionModel']
+    m = config['MotionModel']
 
-        # set some standard params
-        model.name = m['name'].encode('utf-8')
-        model.dt = m['dt']
-        model.measurements = m['measurements']
-        model.states = m['states']
-        model.accuracy = m['accuracy']
-        model.prob_not_assign = m['prob_not_assign']
-        model.max_lost = m['max_lost']
+    # set some standard params
+    model.name = m['name'].encode('utf-8')
+    model.dt = m['dt']
+    model.measurements = m['measurements']
+    model.states = m['states']
+    model.accuracy = m['accuracy']
+    model.prob_not_assign = m['prob_not_assign']
+    model.max_lost = m['max_lost']
 
-        for matrix in matrices:
-            if 'sigma' in m[matrix]:
-                sigma = m[matrix]['sigma']
-            else:
-                sigma = 1.0
-            m_data = np.matrix(m[matrix]['matrix'],dtype='float')
-            setattr(model, matrix, m_data*sigma)
+    for matrix in matrices:
+        if 'sigma' in m[matrix]:
+            sigma = m[matrix]['sigma']
+        else:
+            sigma = 1.0
+        m_data = np.matrix(m[matrix]['matrix'],dtype='float')
+        setattr(model, matrix, m_data*sigma)
 
     # call the reshape function to set the matrices to the correct shapes
     model.reshape()
@@ -199,7 +200,8 @@ def read_motion_model(filename):
 
 
 
-def read_object_model(filename):
+# def read_object_model(filename):
+def read_object_model(config):
     """ read_object_model
 
     Read in a object model description file and return a dictionary containing
@@ -234,27 +236,25 @@ def read_object_model(filename):
         appropriate error if there is something wrong with the model definition.
     """
 
+    # with open(filename, 'r') as j:
+    #     config = json.load(j)
+
+    m = config['ObjectModel']
+    if not m: return None
+
     matrices = frozenset(['transition','emission','start'])
     model = core.ObjectModel()
 
-    if not os.path.exists(filename):
-        return None
+    if 'ObjectModel' not in config.keys():
+        raise ValueError('Not a valid object model file')
 
-    with open(filename, 'r') as j:
-        modelfile = json.load(j)
+    # set some standard params
+    model.name = m['name'].encode('utf-8')
+    model.states = m['states']
 
-        if 'ObjectModel' not in modelfile.keys():
-            raise ValueError('Not a valid object model file')
-
-        m = modelfile['ObjectModel']
-
-        # set some standard params
-        model.name = m['name'].encode('utf-8')
-        model.states = m['states']
-
-        for matrix in matrices:
-            m_data = np.matrix(m[matrix]['matrix'],dtype='float')
-            setattr(model, matrix, m_data)
+    for matrix in matrices:
+        m_data = np.matrix(m[matrix]['matrix'],dtype='float')
+        setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes
     model.reshape()

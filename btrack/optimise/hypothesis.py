@@ -115,7 +115,8 @@ class PyHypothesisParams(ctypes.Structure):
 
 
 
-def read_hypothesis_model(filename):
+# def read_hypothesis_model(filename):
+def read_hypothesis_model(config):
     """ read_hypothesis_model
 
     Read in a set of hypothesis parameters from a JSON description file.  The
@@ -133,19 +134,19 @@ def read_hypothesis_model(filename):
     h_params = PyHypothesisParams()
     fields = [f[0] for f in h_params._fields_]
 
-    with open(filename, 'r') as json_file:
-        params = json.load(json_file)
+    # with open(filename, 'r') as json_file:
+    #     config = json.load(json_file)
 
-    for p in params['HypothesisModel']:
+    for p in config['HypothesisModel']:
         if p in fields:
-            setattr(h_params, p, params['HypothesisModel'][p])
+            setattr(h_params, p, config['HypothesisModel'][p])
 
-    h_params.name = params['HypothesisModel']['name']
+    h_params.name = config['HypothesisModel']['name']
 
     # finally, take the hypotheses and setup a mask to generate only the
     # specified hypotheses
     # TODO(arl): no need to specify FP, this should be always be generated
-    hypotheses = params['HypothesisModel']['hypotheses']
+    hypotheses = config['HypothesisModel']['hypotheses']
     h_bin = ''.join([str(int(h)) for h in [h in hypotheses for h in H_TYPES]])
     h_params.hypotheses_to_generate = int(h_bin[::-1], 2)
 

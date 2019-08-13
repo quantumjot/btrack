@@ -35,6 +35,13 @@ from collections import OrderedDict
 import itertools
 
 
+
+# TODO(arl): sort this out with final packaging!
+BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+MODELS_DIR = os.path.join(BTRACK_PATH, "models")
+
+
+
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
@@ -60,30 +67,6 @@ def log_to_file(pth, level=None):
 
 
 
-# TODO(arl): sort this out with final packaging!
-BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -93,6 +76,34 @@ def timeit(func, *args):
     ret = func(*args)
     t_elapsed = time.time() - t_start
     return ret, t_elapsed
+
+
+
+
+def load_config(filename):
+    """ Load a tracking configuration file """
+    models_dir = [MODELS_DIR, constants.ALTERNATIVE_MODEL_DIR]
+    pth = [p for p in models_dir if os.path.exists(os.path.join(p, filename))]
+    if not pth:
+        logger.error("Configurations file {} not found".format(filename))
+
+    with open(os.path.join(pth[-1], filename), 'r') as config_file:
+        config = json.load(config_file)
+
+    if "TrackerConfig" not in config:
+        logger.error("Configuration file is malformed.")
+        raise Exception("Tracking config is malformed")
+
+    config = config["TrackerConfig"]
+
+    logger.info("Loading configuration file: {}".format(filename))
+    t_config = {"MotionModel": utils.read_motion_model(config),
+                "ObjectModel": utils.read_object_model(config),
+                "HypothesisModel": hypothesis.read_hypothesis_model(config)}
+
+    return t_config
+
+
 
 
 
@@ -222,46 +233,22 @@ class BayesianTracker(object):
 
     def configure_from_file(self, filename):
         """ Configure the tracker from a configuration file """
-
-        if not filename.endswith('.json'):
-            filename+='.json'
-
-        with open(os.path.join(BTRACK_PATH,'models/',filename), 'r') as cfg_file:
-            config = json.load(cfg_file)
-
-        if 'TrackerConfig' not in config:
-            raise AttributeError('Configuration file is incorrectly specified')
-
-        # configure the tracker from the file
-        self.configure( config['TrackerConfig'] )
+        config = load_config(filename)
+        self.configure(config)
 
 
     def configure(self, config):
         """ Configure the tracker with a motion model, an object model and
-        hypothesis generation_parameters. The configuration should be
-        specified as follows:
-
-            config = {'MotionModel':'cell_motion.json',
-                      'ObjectModel':'cell_object.json',
-                      'HypothesisModel':'cell_hypothesis.json'}
-
+        hypothesis generation_parameters.
         """
 
         if not isinstance(config, dict):
             raise TypeError('configuration must be a dictionary')
 
-        if 'MotionModel' in config:
-            self.motion_model = config['MotionModel']
-
-        if 'ObjectModel' in config:
-            self.object_model = config['ObjectModel']
-
-        if 'HypothesisModel' in config:
-            # set up hypothesis model
-            p_file = os.path.join(BTRACK_PATH,'models',config['HypothesisModel'])
-            params = hypothesis.PyHypothesisParams.load( p_file )
-            logger.info('Loading hypothesis model: {0:s}'.format(params.name))
-            self.hypothesis_model = params
+        # store the models locally
+        self.motion_model = config.get("MotionModel", None)
+        self.object_model = config.get("ObjectModel", None)
+        self.hypothesis_model = config.get("HypothesisModel", None)
 
         # set the maximum search radius
         self.max_search_radius = 100.0
@@ -353,11 +340,7 @@ class BayesianTracker(object):
             TypeError is cannot determine the type of motion model
         """
 
-        if isinstance(new_model, basestring):
-            # load from the models directory
-            model_fn = os.path.join(BTRACK_PATH,'models',new_model)
-            model = utils.read_motion_model(model_fn)
-        elif isinstance(new_model, btypes.MotionModel):
+        if isinstance(new_model, btypes.MotionModel):
             # this could be a user defined model
             # TODO(arl): model parsing
             model = new_model
@@ -391,20 +374,15 @@ class BayesianTracker(object):
             TypeError if cannot determine the type of motion model
         """
 
-        if isinstance(new_model, basestring):
-            if not new_model: return
-            # load from the models directory
-            model_fn = os.path.join(BTRACK_PATH,'models',new_model)
-            model = utils.read_object_model(model_fn)
-        elif isinstance(new_model, btypes.ObjectModel):
+        if isinstance(new_model, btypes.ObjectModel):
             # this could be a user defined model
             # TODO(arl): model parsing
             model = new_model
+        elif new_model is None:
+            return
         else:
             raise TypeError('Object model needs to be defined in /models/ or'
             'provided as a ObjectModel object')
-
-        if model is None: return
 
         self.__object_model = model
         logger.info('Loading object model: {0:s}'.format(model.name))
@@ -685,7 +663,7 @@ class BayesianTracker(object):
         and links that are greater than the maximum distance permitted """
         dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
         return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
-        #raise NotImplementedError
+
 
 
 

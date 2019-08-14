@@ -15,7 +15,7 @@ states) of each of the objects in the field of view.  We assign new observations
 to the growing tracklets (linking) by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible linkages.
 
-[![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker.png)](http://lowe.cs.ucl.ac.uk)
+[![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker.png)](http://lowe.cs.ucl.ac.uk)  
 *Example of tracking objects in 3D space*
 
 The tracklets are then assembled into tracks by using multiple hypothesis
@@ -34,10 +34,10 @@ https://github.com/quantumjot/CellTracking/tree/master/notebooks
 
 We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. Below is an example of tracking cells:
 
-[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
+[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
 *Video of tracking*
 
-[![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)
+[![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)  
 *Automated lineage tree reconstruction*
 
 

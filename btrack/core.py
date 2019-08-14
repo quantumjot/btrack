@@ -85,7 +85,7 @@ def load_config(filename):
     models_dir = [MODELS_DIR, constants.ALTERNATIVE_MODEL_DIR]
     pth = [p for p in models_dir if os.path.exists(os.path.join(p, filename))]
     if not pth:
-        logger.error("Configurations file {} not found".format(filename))
+        logger.error("Configuration file {} not found".format(filename))
 
     with open(os.path.join(pth[-1], filename), 'r') as config_file:
         config = json.load(config_file)

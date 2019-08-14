@@ -25,15 +25,22 @@ based on heuristics. The global solution identifies a sequence of
 high-likelihood hypotheses that accounts for all observations.
 
 BayesianTracker (btrack) is part of the *Sequitr* image processing toolbox for
-microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/
+microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/cellx.html
 
-### Tracking mammalian cells in time-lapse microscopy experiments
+See examples of use in:  
+https://github.com/quantumjot/CellTracking/tree/master/notebooks
 
-We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. We have provided several examples in the notebooks folder.  Below is an example of tracking cells:
+### Example: Tracking mammalian cells in time-lapse microscopy experiments
+
+We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. Below is an example of tracking cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
+*Video of tracking*
 
 [![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)
+*Automated lineage tree reconstruction*
+
+
 
 ---
 ### Citation
@@ -61,7 +68,7 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 }
 ```
 
-
+---
 
 ### Dependencies
 

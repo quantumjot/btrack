@@ -367,7 +367,7 @@ void HypothesisEngine::create( void )
 
 
 
-// FALSE POSITIVE TRAJECTORY
+// FALSE POSITIVE HYPOTHESIS
 double HypothesisEngine::P_FP( TrackletPtr a_trk ) const
 {
   unsigned int len_track = static_cast<unsigned int>(1.+a_trk->duration());
@@ -376,7 +376,7 @@ double HypothesisEngine::P_FP( TrackletPtr a_trk ) const
 
 
 
-// TRUE POSITIVE TRAJECTORY
+// TRUE POSITIVE HYPOTHESIS
 double HypothesisEngine::P_TP( TrackletPtr a_trk ) const
 {
   return 1.0 - P_FP(a_trk);
@@ -384,7 +384,7 @@ double HypothesisEngine::P_TP( TrackletPtr a_trk ) const
 
 
 
-// INITIALISATION PROBABILITY
+// INITIALISATION HYPOTHESIS
 double HypothesisEngine::P_init( TrackletPtr a_trk ) const
 {
   // Probability of a true initialisation event.  These tend to occur close to
@@ -418,7 +418,7 @@ double HypothesisEngine::P_init( TrackletPtr a_trk ) const
 
 
 
-// TERMINATION PROBABILITY
+// TERMINATION HYPOTHESIS
 double HypothesisEngine::P_term( TrackletPtr a_trk ) const
 {
   // Probability of termination event.  Similar to initialisation, except that
@@ -450,8 +450,17 @@ double HypothesisEngine::P_term( TrackletPtr a_trk ) const
 }
 
 
+// EXTRUSION HYPOTHESIS
+double HypothesisEngine::P_extrude( TrackletPtr a_trk ) const
+{
+  // Probability of an extrusion event, similar to a termination event.
+  // TODO(arl): implement this
+  return m_params.eta;
+}
 
-// APOPTOSIS PROBABILITY
+
+
+// APOPTOSIS HYPOTHESIS
 double HypothesisEngine::P_dead(TrackletPtr a_trk,
                                 const unsigned int n_apoptosis ) const
 {
@@ -477,7 +486,6 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
   // sanity check
   assert(p_apoptosis>=0. && p_apoptosis<=1.);
 
-
   return p_apoptosis * discount;
 }
 
@@ -489,7 +497,7 @@ double HypothesisEngine::P_dead( TrackletPtr a_trk ) const
 
 
 
-// LINKING PROBABILITY
+// LINKING HYPOTHESIS
 double HypothesisEngine::P_link(TrackletPtr a_trk,
                                 TrackletPtr a_trk_lnk) const
 {
@@ -523,7 +531,7 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
 
 
 
-// DIVISION PROBABILITY
+// DIVISION HYPOTHESIS
 // Different possible branches:
 //
 // State |   Parent  |  Child1  |  Child2  | Weight
@@ -606,7 +614,7 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   // sides of the parent, to 1, where the daughters are close in space on the
   // same side (worst case). Error function will scale these from ~0. to ~1.
   // meaning that the ideal case minimises the delta_g
-  //delta_g = weight + weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
+
   delta_g = weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
   return std::exp(-delta_g/(2.*m_params.lambda_branch));
 }

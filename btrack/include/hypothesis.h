@@ -244,7 +244,7 @@ double safe_log(double value);
 // Hypothesis generation for global track optimisation. Uses the tracks from
 // BayesianTracker to generate hypotheses.
 //
-// Generates six different hypotheses, based on the track data provided:
+// Generates these different hypotheses, based on the track data provided:
 //
 //   1. P_FP: a false positive trajectory (probably very short)
 //   2. P_init: an initialising trajectory near the edge of the screen or
@@ -255,6 +255,7 @@ double safe_log(double value);
 //      one-to-one mapping
 //   5. P_branch: a division event where two new trajectories initialise
 //   6. P_dead: an apoptosis event
+//   7. P_extrude: a cell extrusion event. A cell is removed from the tissue.
 
 class HypothesisEngine
 {
@@ -301,23 +302,31 @@ class HypothesisEngine
     // calculation of probabilities
     double P_TP(TrackletPtr a_trk) const;
     double P_FP(TrackletPtr a_trk) const;
+
     double P_init(TrackletPtr a_trk) const;
+
     double P_term(TrackletPtr a_trk) const;
+
     double P_link(TrackletPtr a_trk,
                   TrackletPtr a_trk_link) const;
     double P_link(TrackletPtr a_trk,
                   TrackletPtr a_trk_link,
                   float d,
                   float dt) const;
+
     double P_branch(TrackletPtr a_trk,
                     TrackletPtr a_trk_c0,
                     TrackletPtr a_trk_c1) const;
+
     double P_dead(TrackletPtr a_trk,
                   const unsigned int n_dead) const;
     double P_dead(TrackletPtr a_trk) const;
+
     double P_merge(TrackletPtr a_trk_m0,
                    TrackletPtr a_trk_m1,
                    TrackletPtr a_trk) const;
+
+    double P_extrude(TrackletPtr a_trk) const;
 
     // calculate the distance of a track from the border of the imaging volume
     float dist_from_border( TrackletPtr a_trk, bool a_start ) const;

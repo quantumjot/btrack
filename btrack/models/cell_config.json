@@ -49,7 +49,7 @@
       "HypothesisModel":
         {
           "name": "cell_hypothesis",
-          "hypotheses": ["FP", "init", "term", "link", "branch", "dead"],
+          "hypotheses": ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"],
           "lambda_time": 5.0,
           "lambda_dist": 5.0,
           "lambda_link": 5.0,

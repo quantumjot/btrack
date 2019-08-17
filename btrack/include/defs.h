@@ -73,7 +73,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define TYPE_Pdivn    4
 #define TYPE_Papop    5
 #define TYPE_Pmrge    6
-#define TYPE_Pextrude 7
+#define TYPE_Pextr    7
 #define TYPE_Pdead    666
 #define TYPE_undef    999
 

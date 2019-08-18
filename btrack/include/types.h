@@ -239,6 +239,11 @@ struct ImagingVolume
       return false;
     }
   }
+
+  // test whether a dataset is 2D, i.e. all z-values are the same
+  bool is_2D(void) const {
+    return (min_xyz(2) == max_xyz(2));
+  }
 };
 
 

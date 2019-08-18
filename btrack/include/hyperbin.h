@@ -73,6 +73,7 @@ public:
                        const float z,
                        const float n) const;
 
+  // get the contents of a bin
   std::vector<T> get_contents(const HashIndex a_idx);
 
 //private:
@@ -135,6 +136,12 @@ public:
   HypercubeBin();
   HypercubeBin(const unsigned int bin_xyz, const unsigned int bin_n);
   ~HypercubeBin();
+
+  // is the hypercube empty?
+  bool empty() const { return m_cube.empty(); };
+
+  // clear the map
+  void clear() { m_cube.clear(); };
 
   // return a 4D index into the hypercube using the object at the start or
   // end of an exisiting track

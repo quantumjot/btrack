@@ -274,6 +274,10 @@ class HypothesisEngine
     void create();
     //void log_error(Hypothesis *h);
 
+    // reset the hypothesis engine
+    void reset();
+    void clear(){ reset(); };
+
     // return the number of hypotheses
     size_t size() const {
       return m_hypotheses.size();

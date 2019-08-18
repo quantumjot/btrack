@@ -265,7 +265,7 @@ class BayesianTracker(object):
     def max_search_radius(self, max_search_radius):
         """ Set the maximum search radius for fast cost updates """
         assert(max_search_radius>0. and max_search_radius<=100.)
-        logger.info('Setting maximum XYZ search radius to {0:2.2f}...'
+        logger.info('Setting maximum XYZ search radius to {0:2.2f}px...'
                     .format(max_search_radius))
         lib.max_search_radius(self.__engine, max_search_radius)
 
@@ -443,8 +443,8 @@ class BayesianTracker(object):
         """ Run the actual tracking algorithm """
 
         if not self.__initialised:
-            logger.info('Using default parameters')
-            self.configure({'MotionModel':'constant_velocity.json'})
+            logger.error('Tracker has not been configured')
+            return
 
         logger.info('Starting tracking... ')
         ret, tm = timeit( lib.track,  self.__engine )
@@ -465,8 +465,9 @@ class BayesianTracker(object):
 
         # TODO(arl): this needs cleaning up to have some decent output
         if not self.__initialised:
-            logger.info('Using default parameters')
-            self.configure({'MotionModel':'constant_velocity.json'})
+            logger.error('Tracker has not been configured')
+            return
+
 
         logger.info('Starting tracking... ')
 
@@ -520,6 +521,9 @@ class BayesianTracker(object):
         TODO(arl): need to check whether optimiser parameters have been
         specified
         """
+
+        logger.info('Loading hypothesis model: {0:s}'.format(self.hypothesis_model.name))
+
         logger.info('Calculating hypotheses from tracklets...')
         hypotheses = self.hypotheses()
 

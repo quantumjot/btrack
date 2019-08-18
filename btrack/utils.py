@@ -175,6 +175,7 @@ def read_motion_model(config):
         raise ValueError('Not a valid motion model file')
 
     m = config['MotionModel']
+    if not m: return None
 
     # set some standard params
     model.name = m['name'].encode('utf-8')

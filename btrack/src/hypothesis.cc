@@ -124,6 +124,12 @@ HypothesisEngine::HypothesisEngine( const unsigned int a_start_frame,
   // tell the user which hypotheses are going to be created
   // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
 
+  if (!m_tracks.empty() || !m_cube.empty()) {
+    std::cout << "Resetting hypothesis engine." << std::endl;
+    // empty the tracks
+    reset();
+  }
+
   if (DEBUG) {
     std::cout << "Hypotheses to generate: " << std::endl;
     std::cout << " - P_FP: " << hypothesis_allowed(TYPE_Pfalse) << std::endl;
@@ -147,11 +153,19 @@ HypothesisEngine::HypothesisEngine( const unsigned int a_start_frame,
 }
 
 
+// reset the engine
+void HypothesisEngine::reset( void )
+{
+  // clear the tracks and the hashcube
+  m_tracks.clear();
+  m_cube.clear();
+}
+
+
 
 HypothesisEngine::~HypothesisEngine( void )
 {
-  // default destructor
-  m_tracks.clear();
+  reset();
 }
 
 
@@ -207,7 +221,8 @@ float HypothesisEngine::dist_from_border( TrackletPtr a_trk,
   // NOTE(arl): what if we have zero dimensions?
   for (unsigned short dim=0; dim<3; dim++) {
 
-    // skip a dimension if it does not exist
+    // skip a dimension if it does not exist, for example, in a 2D dataset
+    // all z values will be zero (or at least, the same)
     if (volume.min_xyz[dim] == volume.max_xyz[dim]) continue;
 
     min_this_dim = std::min(xyz[dim]-volume.min_xyz[dim],
@@ -283,7 +298,7 @@ void HypothesisEngine::create( void )
     unsigned int n_apoptosis = count_apoptosis(trk);
 
     if (hypothesis_allowed(TYPE_Papop) &&
-        n_apoptosis > m_params.apop_thresh) {
+        n_apoptosis >= m_params.apop_thresh) {
 
       Hypothesis h_apoptosis(TYPE_Papop, trk);
       h_apoptosis.probability = safe_log(P_dead(trk, n_apoptosis))
@@ -468,8 +483,9 @@ double HypothesisEngine::P_dead(TrackletPtr a_trk,
   // view - this is to make sure this is a genuine apoptosis and not just a
   // track leaving the field of view
 
-  float dist = dist_from_border(a_trk, false);
-  float discount = 1.0 - std::exp(-dist/m_params.lambda_dist);
+  // float dist = dist_from_border(a_trk, false);
+  // float discount = 1.0 - std::exp(-dist/m_params.lambda_dist);
+  float discount = 1.0;
 
   // TODO(arl): rather than calculate the probability as the number of apoptotic
   // observations, perhaps the fraction of the track length that is apoptotic

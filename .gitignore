@@ -1,7 +1,7 @@
 btrack/include/eigen/*
 resources/*
 notebooks/*
-removed/*
+btrack/removed/*
 
 *.DS_store
 *.o

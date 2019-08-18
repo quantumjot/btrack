@@ -35,6 +35,7 @@ Updates
 ------
 - Simplified model configuration format
 - Allowed a second user model directory, to supplement core models
+- Added install scripts
 
 0.2.9
 -----

@@ -159,5 +159,4 @@ def read_hypothesis_model(config):
 
 
 if __name__ == '__main__':
-    p = read_hypothesis_model('../models/MDCK_hypothesis.json')
-    print p, p.eta
+    pass

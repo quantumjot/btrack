@@ -68,7 +68,7 @@ unsigned int count_state_track( const TrackletPtr a_trk,
   assert(a_trk->length()>0);
 
   // set the counter, direction and state_counter
-  int counter;
+  unsigned int counter;
   int counter_dir;
   unsigned int n_state = 0;
 
@@ -126,7 +126,6 @@ HypothesisEngine::HypothesisEngine( const unsigned int a_start_frame,
 
   if (!m_tracks.empty() || !m_cube.empty()) {
     std::cout << "Resetting hypothesis engine." << std::endl;
-    // empty the tracks
     reset();
   }
 
@@ -201,7 +200,7 @@ bool HypothesisEngine::hypothesis_allowed(const unsigned int a_hypothesis_type) 
 
 
 float HypothesisEngine::dist_from_border( TrackletPtr a_trk,
-                                          bool a_start=true ) const
+                                          bool a_start ) const
 {
   // Calculate the distance from the border of the field of view
   float min_dist, min_this_dim;
@@ -411,14 +410,13 @@ double HypothesisEngine::P_init( TrackletPtr a_trk ) const
   double prob[2] = {0.0, 0.0};
   bool init = false;
 
-
   if (a_trk->track.front()->t < m_frame_range[0]+m_params.theta_time) {
     prob[0] = std::exp(-(a_trk->track.front()->t-(float)m_frame_range[0]+1.0) /
               m_params.lambda_time);
     init = true;
   }
 
-  if ( dist < m_params.theta_dist || m_params.relax ) {
+  if (dist < m_params.theta_dist || m_params.relax) {
     prob[1] = std::exp(-dist/m_params.lambda_dist);
     init = true;
   }
@@ -450,7 +448,7 @@ double HypothesisEngine::P_term( TrackletPtr a_trk ) const
     term = true;
   }
 
-  if ( dist < m_params.theta_dist || m_params.relax ) {
+  if (dist < m_params.theta_dist || m_params.relax) {
     prob[1] = std::exp(-dist/m_params.lambda_dist);
     term = true;
   }
@@ -461,7 +459,6 @@ double HypothesisEngine::P_term( TrackletPtr a_trk ) const
 
   // default return
   return m_params.eta;
-
 }
 
 
@@ -537,12 +534,14 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
       return m_params.eta ;
     }
   }
-  // make sure that we're looking forward in time
+
+  // make sure that we're looking forward in time, this should never be needed
   assert(dt>0.0);
 
   // DONE(arl): need to penalise longer times between tracks, dt acts as
   // a linear scaling penalty - scale the distance linearly by time
-  return std::exp(-(d*dt)/m_params.lambda_link);
+  // return std::exp(-(d*dt)/m_params.lambda_link);
+  return std::exp(-d/m_params.lambda_link);
 }
 
 

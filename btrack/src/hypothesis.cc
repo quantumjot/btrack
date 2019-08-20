@@ -407,6 +407,12 @@ double HypothesisEngine::P_init( TrackletPtr a_trk ) const
 
   float dist = dist_from_border(a_trk, true);
 
+  // NOTE(arl): if we have 'relax' on, then this hypothesis will be generated
+  // regardless of whether the cell is at the periphery of the FOV or not.
+  // Therefore, we should clamp the distance to the maximum value, so as not
+  // to penalize cells at the centre of the FOV
+  dist = std::min(dist, static_cast<float>(m_params.theta_dist));
+
   double prob[2] = {0.0, 0.0};
   bool init = false;
 
@@ -438,6 +444,12 @@ double HypothesisEngine::P_term( TrackletPtr a_trk ) const
   // we use the final location/time of the tracklet.
 
   float dist = dist_from_border(a_trk, false);
+
+  // NOTE(arl): if we have 'relax' on, then this hypothesis will be generated
+  // regardless of whether the cell is at the periphery of the FOV or not.
+  // Therefore, we should clamp the distance to the maximum value, so as not
+  // to penalize cells at the centre of the FOV
+  dist = std::min(dist, static_cast<float>(m_params.theta_dist));
 
   double prob[2] = {0.0, 0.0};
   bool term = false;

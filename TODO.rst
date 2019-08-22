@@ -4,7 +4,6 @@ TODO
 Python
 ------
 - Migrate to Python 3
-- Install script to run Makefile if necessary
 - Tracking metrics (MOT)
 - Properly pass softmax output to C++
 
@@ -30,6 +29,13 @@ Misc
 
 Updates
 =======
+
+0.2.11
+------
+- Cleaned repo structure for deployment
+- Add a git clone of eigen during installation (if required)
+- Tested install and compilation scripts on linux
+- Changed model loading to user defined directory
 
 0.2.10
 ------

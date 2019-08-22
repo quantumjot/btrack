@@ -98,25 +98,28 @@ instructions below have been tested on Ubuntu 16.04 LTS and OS X 10.13.6.
 $ git clone https://github.com/quantumjot/BayesianTracker.git
 ```
 
-2. Create a conda environment (assuming you're using Anaconda!):
+2. (Optional, but advised) Create a conda environment:
 ```bash
-$ conda create --name btrack
+$ conda create --name btrack python=2.7
 $ source activate btrack
-$ pip install --upgrade pip
-$ conda install -c conda-forge cvxopt
-$ conda install h5py
-$ conda install scipy
 ```
 
-3. Download Eigen (https://github.com/eigenteam/eigen-git-mirror) and add this to the /btrack/include/eigen directory.
-
-4. Finally, use the Makefile in the btrack/src to compile the code:
-```sh
-$ cd BayesianTracker/btrack/src
-$ make
+3. Install the tracker
+```
+$ cd BayesianTracker
+$ pip install .
 ```
 
-*NOTE*: we are working on a cross-platform install script.
+If all goes well, you should be able to import BayesianTracker:
+```python
+import btrack
+```
+
+should return:
+```
+[INFO][2019/08/22 10:26:11 AM] btrack (v0.2.11) library imported
+[INFO][2019/08/22 10:26:11 AM] Loaded btrack: <your python site-packages>/btrack/libs/libtracker.so
+```
 
 ---
 

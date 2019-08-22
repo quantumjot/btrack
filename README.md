@@ -210,11 +210,6 @@ Motion models can be written as simple JSON files which can be imported into the
 
 Or can be built using the MotionModel class.
 
-
-
-### Object models
-To be completed.
-
 ### Hypotheses
 By default, the optimizer generates 7 different hypotheses:
 + False positive (FP)
@@ -246,14 +241,3 @@ By default, the optimizer generates 7 different hypotheses:
   }
 }
 ```
-
----
-### TODO
-+ [x] Add a parameter for maximum local radius of searching
-+ [ ] Finish abstract HashBin class, make the HypothesisBin and TrackBin classes
-+ [x] Complete FAST_COST_UPDATE code to minimize non-local look-ups for improved performance
-+ [ ] Cross platform install scripts
-+ [ ] Improve documentation
-+ [ ] Migrate to Python 3
-
----

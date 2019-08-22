@@ -70,28 +70,15 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 
 ---
 
-### Dependencies
-
-BayesianTracker has been tested with Python 2.7+ on OS X and Linux, and requires
-the following additional packages:
-
-+ Numpy
-+ Scipy
-+ h5py
-+ CVXOPT
-+ Eigen
-+ GLPK
-
-BayesianTracker is written in C++ with a C interface to Python.
-
-** There is now an experimental Python 3 compatible branch: btrack_py3 **
-
----
-
 ### Installation
+
+BayesianTracker has been tested with Python 2.7+ on OS X and Linux.
+The tracker and hypothesis engine are mostly written in C++ with a C interface to Python.
 
 *NOTE TO WINDOWS USERS*: We have not tested this on Windows. The setup
 instructions below have been tested on Ubuntu 16.04 LTS and OS X 10.13.6.
+
+*NOTE* Python 3 works, we're just lazy.
 
 1. First clone the BayesianTracker repo:
 ```sh

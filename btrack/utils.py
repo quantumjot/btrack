@@ -522,6 +522,8 @@ def export_HDF(filename, tracks, dummies=[]):
 class HDF5_FileHandler(object):
     """ HDF5_FileHandler
 
+    DEPRECATION: Need to update this loader
+
     Generic HDF5 file hander for reading and writing datasets. This is
     inter-operable between segmentation, tracking and analysis code.
 
@@ -551,6 +553,7 @@ class HDF5_FileHandler(object):
 
         logger.info('Opening HDF file: {0:s}'.format(filename))
         self._hdf = h5py.File(filename, 'r+') # a -file doesn't have to exist
+        # self._hdf = h5py.File(filename, 'r+', rdcc_nbytes=constants.HDF_CHUNK_CACHE)
 
     def __del__(self):
         self.close()

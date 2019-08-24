@@ -16,3 +16,4 @@ EXPORT_FORMATS = frozenset(['.json','.mat','.hdf5'])
 NEW_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
                 '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 VOLUME = ((0,1024), (0,1024), (-100,100))
+HDF_CHUNK_CACHE = 100*1024*1024

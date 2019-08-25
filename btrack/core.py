@@ -206,7 +206,6 @@ class BayesianTracker(object):
         competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
         Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
     """
-
     def __init__(self, verbose=True):
         """ Initialise the BayesianTracker C++ engine and parameters """
 
@@ -227,6 +226,7 @@ class BayesianTracker(object):
     def __enter__(self):
         logger.info('Starting BayesianTracker session')
         return self
+
 
     def __exit__(self, exc_type, exc_value, traceback):
         logger.info('Ending BayesianTracker session')
@@ -260,6 +260,7 @@ class BayesianTracker(object):
 
     def __len__(self): return self.n_tracks
 
+
     @property
     def max_search_radius(self):
         return self.__max_search_radius
@@ -272,21 +273,24 @@ class BayesianTracker(object):
         lib.max_search_radius(self.__engine, max_search_radius)
 
 
-
     @property
     def n_tracks(self):
         """ Return the number of tracks found """
         return lib.size( self.__engine )
+
+
     @property
     def n_dummies(self):
         """ Return the number of dummy objects (negative ID) """
         return len([d for d in itertools.chain.from_iterable(self.refs) if d<0])
+
 
     @property
     def tracks(self):
         """ Return a sorted list of tracks, default is to sort by increasing
         length """
         return self.__sort( [self[i] for i in xrange(self.n_tracks)] )
+
 
     @property
     def refs(self):
@@ -309,6 +313,7 @@ class BayesianTracker(object):
         """ Return a sorted list of tracks """
         return sorted(tracks, key=lambda t:len(t), reverse=True)
 
+
     @property
     def volume(self):
         """ Return the imaging volume in the format xyzt. This is effectively
@@ -326,6 +331,7 @@ class BayesianTracker(object):
             raise ValueError('Volume must contain three tuples')
         lib.set_volume(self.__engine, np.array(volume, dtype='float64'))
         logger.info('Set volume to {}'.format(volume))
+
 
     @property
     def motion_model(self):
@@ -394,8 +400,6 @@ class BayesianTracker(object):
             model.transition, model.start )
 
 
-
-
     @property
     def frame_range(self):
         return self.__frame_range
@@ -406,8 +410,6 @@ class BayesianTracker(object):
         if frame_range[1] < frame_range[0]:
             raise ValueError('Frame range must be low->high')
         self.__frame_range = frame_range
-
-
 
 
     def append(self, objects):
@@ -431,6 +433,7 @@ class BayesianTracker(object):
         """ Pass in a numpy array of data """
         raise NotImplementedError
 
+
     def __stats(self, info_ptr):
         """ Cast the info pointer back to an object """
 
@@ -438,7 +441,6 @@ class BayesianTracker(object):
             raise TypeError('Stats requires the pointer to the object')
 
         return info_ptr.contents
-
 
 
     def track(self):
@@ -462,6 +464,7 @@ class BayesianTracker(object):
         # can log the statistics as well
         utils.log_stats(stats.to_dict())
 
+
     def track_interactive(self, step_size=100):
         """ Run the tracking in an interactive mode """
 
@@ -469,7 +472,6 @@ class BayesianTracker(object):
         if not self.__initialised:
             logger.error('Tracker has not been configured')
             return
-
 
         logger.info('Starting tracking... ')
 
@@ -494,12 +496,12 @@ class BayesianTracker(object):
                 'tracking gaps'.format(self.n_dummies))
 
 
-
     def step(self, n_steps=1):
         """ Run an iteration (or more) of the tracking. Mostly for
         interactive mode tracking """
         if not self.__initialised: return None
         return self.__stats(lib.step( self.__engine, n_steps ))
+
 
     def hypotheses(self, params=None):
         """ Calculate and return hypotheses using the hypothesis engine """
@@ -550,6 +552,7 @@ class BayesianTracker(object):
         lib.merge(self.__engine, h_array, len(selected_hypotheses))
 
         return optimised
+
 
     def __getitem__(self, index):
         """ Grab a track from the BayesianTracker object.
@@ -634,11 +637,13 @@ class BayesianTracker(object):
         """
         return lib.get_dummy(self.__engine, dummy_idx)
 
+
     def get_fate(self, index):
         """ Return the fate of the track. The fates can be used to sort tracks
         by type, for example by tracks that terminate in division or apoptosis.
         """
         return lib.get_fate(self.__engine, index)
+
 
     @property
     def dummies(self):
@@ -646,6 +651,14 @@ class BayesianTracker(object):
         d_idx = [d for d in itertools.chain.from_iterable(self.refs) if d<0]
         d_idx = sorted(d_idx, reverse=True)
         return [self.get_dummy(idx) for idx in d_idx]
+
+
+    def cleanup(self, sigma=2.5):
+        """ Clean up following tracking. Can be used to remove static objects
+        and links that are greater than the maximum distance permitted """
+        dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
+        return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
+
 
     def export(self, filename):
         """ Export the track data in the appropriate format for subsequent
@@ -655,20 +668,13 @@ class BayesianTracker(object):
 
         TODO(arl): Make sure that we are working with an exisiting HDF5 file!
         """
-        # log the output
-        logger.info('Exporting {0:d} tracks to file...'.format(self.n_tracks))
-        if not filename.endswith('hdf5'):
-            utils.export(filename, self.tracks)
-        else:
-            utils.export_HDF(filename, self.refs, dummies=self.dummies)
-
-
-
-    def cleanup(self, sigma=2.5):
-        """ Clean up following tracking. Can be used to remove static objects
-        and links that are greater than the maximum distance permitted """
-        dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
-        return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
+        raise DeprecationWarning("Export is deprecated")
+        # # log the output
+        # logger.info('Exporting {0:d} tracks to file...'.format(self.n_tracks))
+        # if not filename.endswith('hdf5'):
+        #     utils.export(filename, self.tracks)
+        # else:
+        #     utils.export_HDF(filename, self.refs, dummies=self.dummies)
 
 
 

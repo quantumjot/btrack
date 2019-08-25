@@ -21,7 +21,6 @@ import re
 import os
 import numpy as np
 import time
-import h5py
 import csv
 import json
 
@@ -272,7 +271,11 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 
 
-
+def import_HDF(filename):
+    """ Import the HDF data. """
+    import dataio
+    hdf_handler = dataio.HDF5_FileHandler(filename)
+    return hdf_handler.objects
 
 
 

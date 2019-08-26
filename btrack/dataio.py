@@ -20,11 +20,8 @@ __email__ = "code@arlowe.co.uk"
 import re
 import os
 import numpy as np
-import time
 import h5py
-import csv
 import json
-
 import logging
 
 # import core
@@ -288,7 +285,48 @@ def export_HDF(filename, tracks, dummies=[]):
 
 
 
-class HDF5_FileHandler_LEGACY(object):
+
+class HDFHandler(object):
+    def __init__(self, filename):
+        self. filename = filename
+        logger.info('Opening HDF file: {0:s}'.format(self.filename))
+        self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
+        self._ID = 0
+
+    def __del__(self): self.close()
+
+    def close(self):
+        if not self._hdf: return
+        logger.info('Closing HDF file: {0:s}'.format(self.filename))
+        self._hdf.close()
+
+    def new_PyTrackObject(self, txyz, label=None, obj_type=0):
+        """ Set up a new PyTrackObject quickly using data from a file """
+
+        if label is not None:
+            class_label = label[0].astype('int')
+            probability = label[1:].astype('float32')
+        else:
+            class_label = 0
+            probability = np.zeros((1,))
+
+        new_object = btypes.PyTrackObject()
+        new_object.ID = self._ID
+        new_object.t = txyz[0].astype('int')
+        new_object.x = txyz[1]
+        new_object.y = txyz[2]
+        new_object.z = txyz[3]
+        new_object.dummy = False
+        new_object.label = class_label    # DONE(arl): from the classifier
+        new_object.probability = probability
+        new_object.type = int(obj_type)
+
+        self._ID += 1
+        return new_object
+
+
+
+class HDF5_FileHandler_LEGACY(HDFHandler):
     """ HDF5_FileHandler
 
     DEPRECATED: Very slow.
@@ -307,28 +345,15 @@ class HDF5_FileHandler_LEGACY(object):
     """
 
     def __init__(self, filename=None):
-        """ Initialise the HDF file. """
-        self.filename = filename
-
-        logger.warning('HDF5_FileHandler_LEGACY has been deprecated.')
-        logger.info('Opening HDF file: {0:s}'.format(filename))
-        self._hdf = h5py.File(filename, 'r+') # a -file doesn't have to exist
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        """ Close the file properly """
-        if self._hdf:
-            self._hdf.close()
-            logger.info('Closing HDF file.')
+        HDFHandler.__init__(self, filename)
+        logger.warning('Using LEGACY HDF reader. This will be deprecated.')
+        logger.warning('The new reader has significant performance gains.')
 
     @property
     def objects(self):
         """ Return the objects in the file """
-        # objects = [self.new_PyTrackObject(o) for o in self._hdf['objects']]
         objects = []
-        ID = 0
+        self._ID = 0
 
         lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
         frms = sorted(self._hdf['frames'].keys(), key=lambda_frm)
@@ -350,48 +375,14 @@ class HDF5_FileHandler_LEGACY(object):
                 # get the object type
                 object_type = txyz[o,4]
 
-                objects.append(self.new_PyTrackObject(ID, txyz[o,:], label=class_label, type=object_type))
-
-                # increment the ID counter
-                ID+=1
+                objects.append(self.new_PyTrackObject(txyz[o,:], label=class_label, type=object_type))
 
         return objects
 
-    @property
-    def dummies(self):
-        """ Return the dummy objects in the file """
-        if 'dummies' not in self._hdf: return []
-        dummies = [self.new_PyTrackObject(o) for o in self._hdf['dummies']]
-        return dummies
-
-    @property
-    def tracks(self):
-        """ Return the tracks in the file """
-        tracks = [self.new_Tracklet(t) for t in self._hdf['tracks']]
-        return tracks
-
-    def new_PyTrackObject(self, ID, txyz, label=None, type=0):
-        """ Set up a new PyTrackObject quickly using data from a file """
-
-        if label is not None:
-            class_label = label[0]
-        else:
-            class_label = 0
-
-        new_object = btypes.PyTrackObject()
-        new_object.ID = ID
-        new_object.t = txyz[0]
-        new_object.x = txyz[1]
-        new_object.y = txyz[2]
-        new_object.z = txyz[3]
-        new_object.dummy = False
-        new_object.label = class_label    # DONE(arl): from the classifier
-        new_object.probability = np.zeros((1,))
-        new_object.type = int(type)
-        return new_object
 
 
-class HDF5_FileHandler(object):
+
+class HDF5_FileHandler(HDFHandler):
     """ HDF5_FileHandler
 
     Generic HDF5 file hander for reading and writing datasets. This is
@@ -415,37 +406,21 @@ class HDF5_FileHandler(object):
     """
 
     def __init__(self, filename=None):
-        """ Initialise the HDF file. """
-        self.filename = filename
-
-        logger.info('Opening HDF file: {0:s}'.format(self.filename))
-        self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
-
-    def __del__(self):
-        self.close()
-
-    def close(self):
-        """ Close the file properly """
-        if self._hdf:
-            self._hdf.close()
-            logger.info('Closing HDF file: {}'.format(self.filename))
+        HDFHandler.__init__(self, filename)
 
     @property
     def objects(self):
         """ Return the objects in the file """
-        # objects = [self.new_PyTrackObject(o) for o in self._hdf['objects']]
         objects = []
         self._ID = 0
 
         for ci, c in enumerate(self._hdf['objects'].keys()):
-            grp = self._hdf['objects'][c]
-
             # read the whole dataset into memory
             # NOTE(arl): the final slice [:] reads the whole file in one go,
             # since we are unlikely to have more objects than memory and we
             # need to load them all anyway.
-            txyz = grp['coords'][:]
-            labels = grp['labels'][:]
+            txyz = self._hdf['objects'][c]['coords'][:]
+            labels = self._hdf['objects'][c]['labels'][:]
             n_obj = txyz.shape[0]
             logger.info('Loading {} {}...'.format(c, txyz.shape))
             obj = [self.new_PyTrackObject(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in range(n_obj)]
@@ -461,25 +436,3 @@ class HDF5_FileHandler(object):
     def tracks(self):
         """ Return the tracks in the file """
         pass
-
-    def new_PyTrackObject(self, txyz, label=None, obj_type=0):
-        """ Set up a new PyTrackObject quickly using data from a file """
-
-        if label is not None:
-            class_label = label[0]
-        else:
-            class_label = 0
-
-        new_object = btypes.PyTrackObject()
-        new_object.ID = self._ID
-        new_object.t = txyz[0].astype('int')
-        new_object.x = txyz[1]
-        new_object.y = txyz[2]
-        new_object.z = txyz[3]
-        new_object.dummy = False
-        new_object.label = class_label    # DONE(arl): from the classifier
-        new_object.probability = np.zeros((1,))
-        new_object.type = int(obj_type)
-
-        self._ID += 1
-        return new_object

@@ -668,7 +668,7 @@ class BayesianTracker(object):
 
         TODO(arl): Make sure that we are working with an exisiting HDF5 file!
         """
-        raise DeprecationWarning("Export is deprecated")
+        raise DeprecationWarning("Export is deprecated. Use utils.export")
         # # log the output
         # logger.info('Exporting {0:d} tracks to file...'.format(self.n_tracks))
         # if not filename.endswith('hdf5'):

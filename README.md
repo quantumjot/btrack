@@ -30,6 +30,9 @@ microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/cel
 See examples of use in:  
 https://github.com/quantumjot/CellTracking/tree/master/notebooks
 
+See the wiki for more information on installation, configuration and use:
+https://github.com/quantumjot/BayesianTracker/wiki
+
 ### Example: Tracking mammalian cells in time-lapse microscopy experiments
 
 We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. Below is an example of tracking cells:

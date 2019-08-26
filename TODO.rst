@@ -30,6 +30,11 @@ Misc
 Updates
 =======
 
+0.2.12
+------
+- Improved HDF reader for performance
+- Added back ability to write tracks to HDF file
+
 0.2.11
 ------
 - Cleaned repo structure for deployment

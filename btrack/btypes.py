@@ -64,17 +64,22 @@ class PyTrackObject(ctypes.Structure):
                 ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
-        self.__raw_probability = None
+        super(PyTrackObject, self).__init__()
+        self._raw_probability = None
 
     @property
     def probability(self):
-        return self.__raw_probability
+        return self._raw_probability
+        
     @probability.setter
     def probability(self, probability):
         if not isinstance(probability, np.ndarray):
             raise TypeError('.probability should be a numpy array')
-        self.__raw_probability = probability
-        self.prob = probability.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
+        self._raw_probability = probability
+
+    @property
+    def state(self):
+        return constants.States(self.label)
 
 
 
@@ -122,10 +127,11 @@ class PyTrackingInfo(ctypes.Structure):
         stats = {k:getattr(self, k) for k,typ in PyTrackingInfo._fields_}
         return stats
 
-
-
-
-
+    @property
+    def tracker_active(self):
+        """ return the current status """
+        no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
+        return no_error and not self.complete
 
 
 
@@ -228,12 +234,6 @@ class MotionModel(object):
 
 
 
-
-
-
-
-
-
 class ObjectModel(object):
     """ ObjectModel
 
@@ -274,22 +274,6 @@ class ObjectModel(object):
     def load(filename):
         """ Load a model from file """
         return utils.read_object_model(filename)
-
-
-
-
-
-
-
-
-
-def dcol(header):
-    """ return the index of the column for a Tracklet attribute """
-    column_order = ('t','x','y','z')
-    if header in column_order:
-        return column_order.index(header)
-    return None
-
 
 
 
@@ -341,17 +325,13 @@ class Tracklet(object):
     def __init__(self,
                  ID,
                  data,
-                 kalman=None,
-                 labels=None,
                  parent=None,
                  children=[],
-                 fate=None):
+                 fate=constants.Fates.UNDEFINED):
 
         self.ID = ID
-        self.__data = data
-        self.__kalman = kalman
-        self.__labels = labels
-        self.__dummy = None
+        self._data = data
+        self._kalman = None
 
         self.root = None
         self.parent = parent
@@ -359,63 +339,48 @@ class Tracklet(object):
         self.type = None
         self.fate = fate
 
-        # labeller is a function to convert an integer label to a string or
-        # other type if required. default is to return the original integer
-        self.labeller = utils.Labeller()
-
     def __len__(self):
-        return self.__data.shape[0]
+        return len(self._data)
 
     @property
-    def x(self): return self.__data[:,dcol('x')].tolist()
+    def x(self): return [o.x for o in self._data]
     @property
-    def y(self): return self.__data[:,dcol('y')].tolist()
+    def y(self): return [o.y for o in self._data]
     @property
-    def z(self): return self.__data[:,dcol('z')].tolist()
+    def z(self): return [o.z for o in self._data]
     @property
-    def t(self): return self.__data[:,dcol('t')].tolist()
+    def t(self): return [o.t for o in self._data]
     @property
-    def dummy(self): return self.__dummy
+    def dummy(self): return [o.dummy for o in self._data]
 
     @property
     def label(self):
-        return [self.labeller(l) for l in self.__labels.tolist()]
-    @label.setter
-    def label(self, labels):
-        assert(len(labels)==len(self))
-        self.__labels = labels
+        return [o.state.name for o in self._data]
 
     @property
-    def fate_label(self):
-        """ Return a string of the fate label """
+    def softmax(self):
+        return [o.probability for o in self._data]
 
-        #TODO(arl): abstract this
-        f = ['false_positive', 'initializing', 'terminating', 'link',
-             'dividing', 'apoptosis', 'dead', 'merging', 'undefined']
-        if self.fate is not None:
-            return f[self.fate]
-        else:
-            return None
-
-    def kalman(self, index):
-        """ Return the entire Kalman filter output for one parameter """
-        #TODO(arl): get the kalman attribute by name
-        return self.__kalman[:,index]
-        #raise DeprecationWarning("Use mu() and covar() instead.")
+    @property
+    def kalman(self): return self._kalman
+    @kalman.setter
+    def kalman(self, data):
+        assert(isinstance(data, np.ndarray))
+        self._kalman = data
 
     def mu(self, index):
         """ Return the Kalman filter mu. Note that we are only returning the mu
          for the positions (e.g. 3x1) """
-        return np.matrix(self.__kalman[index,1:4]).reshape(3,1)
+        return np.matrix(self._kalman[index,1:4]).reshape(3,1)
 
     def covar(self, index):
         """ Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3) """
-        return np.matrix(self.__kalman[index,4:13]).reshape(3,3)
+        return np.matrix(self._kalman[index,4:13]).reshape(3,3)
 
     def predicted(self, index):
         """ Return the motion model prediction for the given timestep. """
-        return np.matrix(self.__kalman[index,13:]).reshape(3,1)
+        return np.matrix(self._kalman[index,13:]).reshape(3,1)
 
     def to_dict(self):
         """ Return a dictionary of the tracklet which can be used for JSON
@@ -442,26 +407,23 @@ class Tracklet(object):
         # TODO(arl): add the Kalman filter output here too
         # return np.hstack((self.__data, np.ones((len(self),1))*self.ID))
         tmp_track = np.zeros((len(trk),7), dtype='float32')
-        tmp_track[:,0] = trk.x
-        tmp_track[:,1] = trk.y
-        tmp_track[:,2] = trk.t
-        tmp_track[:,3] = trk.ID
-        tmp_track[:,4] = trk.parent
-        tmp_track[:,5] = trk.root
-        tmp_track[:,6] = trk.label
+        tmp_track[:,0] = self.x
+        tmp_track[:,1] = self.y
+        tmp_track[:,2] = self.t
+        tmp_track[:,3] = self.ID
+        tmp_track[:,4] = self.parent
+        tmp_track[:,5] = self.root
+        tmp_track[:,6] = self.label
         return tmp_track
 
     def in_frame(self, frame):
         """ Return true or false as to whether the track is in the frame """
-        return self.__data[0,0]<=frame and self.__data[-1,0]>=frame
+        return self.t[0]<=frame and self.t[-1]>=frame
 
     def trim(self, frame, tail=75):
         """ Trim the tracklet and return one with the trimmed data """
-        d = self.__data.copy()
-        idx = [self.t.index(t) for t in self.t if t<=frame and t>=frame-tail]
-        d = d[idx,:]
+        d = [o for o in self._data if o.t<=frame and o.t>=frame-tail]
         return Tracklet(self.ID, d)
-
 
     @staticmethod
     def from_dict(params):
@@ -469,14 +431,15 @@ class Tracklet(object):
         if not isinstance(params, dict):
             raise TypeError('Tracklet.from_dict requires a dictionary.')
 
-        # populate the data array
-        cols = ('t','x','y','z')
-        data = np.zeros((len(params['t']),4))
-        for col in cols:
-            data[:,dcol(col)] = params[col]
-
-        to_set = list(set(params.keys())-set(cols))
-        T = Tracklet(params['ID'], data)
-        for k in to_set:
-            setattr(T, k, params[k])
-        return T
+        raise NotImplementedError
+        # # populate the data array
+        # cols = ('t','x','y','z')
+        # data = np.zeros((len(params['t']),4))
+        # for col in cols:
+        #     data[:,dcol(col)] = params[col]
+        #
+        # to_set = list(set(params.keys())-set(cols))
+        # T = Tracklet(params['ID'], data)
+        # for k in to_set:
+        #     setattr(T, k, params[k])
+        # return T

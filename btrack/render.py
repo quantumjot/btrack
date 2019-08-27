@@ -169,7 +169,7 @@ def plot_tracks(tracks,
 
 
 def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
-                   terminii=False, lw=1.):
+                   terminii=False, lw=1., use_alpha=False):
     """ render_tracks
 
     Render the tracks on a given set of axes using matplotlib/matplotlib3d.
@@ -196,6 +196,7 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
         p_order = [getattr(track, order[i]) for i in xrange(DIMS)]
         segments = zip(*p_order)
         t_color = colors_rgb[track.ID % (len(colors_rgb)-1)]
+
         lines.append(segments)
         clrs.append(t_color)
 

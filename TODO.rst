@@ -34,6 +34,9 @@ Updates
 ------
 - Improved HDF reader for performance
 - Added back ability to write tracks to HDF file
+- Changed tracklet base type to refer to pointers to original objects
+- Better handling of object metadata with new Tracklet class
+- Added enumetated States, Fates and Errors to python lib
 
 0.2.11
 ------

@@ -292,6 +292,7 @@ class HDFHandler(object):
         logger.info('Opening HDF file: {0:s}'.format(self.filename))
         self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
         self._ID = 0
+        self._states = list(constants.States)
 
     def __del__(self): self.close()
 
@@ -307,7 +308,7 @@ class HDFHandler(object):
             class_label = label[0].astype('int')
             probability = label[1:].astype('float32')
         else:
-            class_label = 0
+            class_label = constants.States.UNDEFINED.value
             probability = np.zeros((1,))
 
         new_object = btypes.PyTrackObject()
@@ -317,7 +318,7 @@ class HDFHandler(object):
         new_object.y = txyz[2]
         new_object.z = txyz[3]
         new_object.dummy = False
-        new_object.label = class_label    # DONE(arl): from the classifier
+        new_object.label = class_label          # from the classifier
         new_object.probability = probability
         new_object.type = int(obj_type)
 

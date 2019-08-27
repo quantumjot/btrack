@@ -52,7 +52,7 @@ class InstallTracker(install):
 
 
 setup(name='BayesianTracker',
-      version='0.2.11',
+      version='0.2.12',
       description='BayesianTracker is a simple Python/C++ based framework for multi-object tracking',
       author='Alan R. Lowe',
       author_email='a.lowe@ucl.ac.uk',

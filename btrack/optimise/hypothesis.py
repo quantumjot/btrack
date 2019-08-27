@@ -21,6 +21,8 @@ import numpy as np
 import ctypes
 import json
 
+import constants
+
 H_TYPES = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
 
 
@@ -51,7 +53,8 @@ class Hypothesis(ctypes.Structure):
 
     @property
     def type(self):
-        return H_TYPES[self.hypothesis]
+        # return H_TYPES[self.hypothesis]
+        return constants.Fates(self.hypothesis)
 
     @property
     def score(self):

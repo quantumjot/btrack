@@ -39,63 +39,14 @@ from scipy.io import savemat
 logger = logging.getLogger('worker_process')
 
 
-class Labeller(object):
-    """ Labeller
-
-    A class to enable coding and decoding of labels from classification.
-
-    Args:
-        labels: a tuple of labels
-
-    Methods:
-        decode: return an integer representation of the label
-        encode: return the string? representation of the label
-
-    Notes:
-        None
-    """
-    def __init__(self, labels=()):
-        self.labels = labels
-
-    @property
-    def labels(self):
-        return self.__labels
-    @labels.setter
-    def labels(self, labels):
-        if not isinstance(labels, tuple):
-            raise TypeError('Labeller requires a tuple of labels')
-
-        # make sure that we don't have duplicates, but retain order
-        labels = list(OrderedDict((x, True) for x in labels).keys())
-        self.__labels = labels
-
-    def __call__(self, label): return self.decode(label)
-
-    def decode(self, label):
-        """ Return an index to a label """
-        if not self.labels: return label
-        return self.labels.index(label)
-
-    def encode(self, label):
-        if not self.labels: return label
-        return self.labels[index]
-
 
 
 def log_error(err_code):
-    """ Take an error code from the tracker and log an error for the user.
-
-    #define SUCCESS 900
-    #define ERROR_empty_queue 901
-    #define ERROR_no_tracks 902
-    #define ERROR_no_useable_frames 903
-
-    """
-
-    if err_code in constants.ERRORS:
-        logger.error('ERROR: {0:s}'.format(constants.ERRORS[err_code]))
+    """ Take an error code from the tracker and log an error for the user. """
+    error = constants.Errors(err_code)
+    if error != constants.Errors.SUCCESS and error != constants.Errors.NO_ERROR:
+        logger.error('ERROR: {0:s}'.format(error))
         return True
-
     return False
 
 
@@ -167,9 +118,6 @@ def read_motion_model(config):
     matrices = frozenset(['A','H','P','G','R'])
     model = btypes.MotionModel()
 
-    # with open(filename, 'r') as j:
-    #     config = json.load(j)
-
     if 'MotionModel' not in config.keys():
         raise ValueError('Not a valid motion model file')
 
@@ -235,9 +183,6 @@ def read_object_model(config):
         TODO(arl): More parsing of the data/reshaping arrays. Raise an
         appropriate error if there is something wrong with the model definition.
     """
-
-    # with open(filename, 'r') as j:
-    #     config = json.load(j)
 
     m = config['ObjectModel']
     if not m: return None

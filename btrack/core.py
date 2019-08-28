@@ -559,10 +559,6 @@ class BayesianTracker(object):
 
     def __getitem__(self, idx):
         """ Grab a track from the BayesianTracker object. """
-        # get the size of the Kalman arrays
-        sz_mu = self.motion_model.measurements + 1
-        sz_cov = self.motion_model.measurements**2 + 1
-
         # get the track length
         n = lib.track_length(self._engine, idx)
 
@@ -603,6 +599,10 @@ class BayesianTracker(object):
         trk = btypes.Tracklet(trk_id, track, parent=p, children=c, fate=f)
 
         if not self.return_kalman: return trk
+
+        # get the size of the Kalman arrays
+        sz_mu = self.motion_model.measurements + 1
+        sz_cov = self.motion_model.measurements**2 + 1
 
         # otherwise grab the kalman filter data
         kal_mu = np.zeros((n, sz_mu),dtype='float')     # kalman filtered

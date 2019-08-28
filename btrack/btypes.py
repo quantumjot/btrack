@@ -70,7 +70,7 @@ class PyTrackObject(ctypes.Structure):
     @property
     def probability(self):
         return self._raw_probability
-        
+
     @probability.setter
     def probability(self, probability):
         if not isinstance(probability, np.ndarray):
@@ -393,7 +393,7 @@ class Tracklet(object):
                      ('parent', self.parent),
                      ('children', self.children),
                      ('label', self.label),
-                     ('fate', self.fate),
+                     ('fate', self.fate.name),
                      ('x', self.x),
                      ('y', self.y),
                      ('z', self.z),

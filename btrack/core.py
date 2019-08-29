@@ -82,12 +82,16 @@ def timeit(func, *args):
 
 def load_config(filename):
     """ Load a tracking configuration file """
-    # models_dir = [MODELS_DIR, constants.ALTERNATIVE_MODEL_DIR]
-    # pth = [p for p in models_dir if os.path.exists(os.path.join(p, filename))]
-    # if not pth:
     if not os.path.exists(filename):
-        logger.error("Configuration file {} not found".format(filename))
-        raise IOError("Configuration file {} not found".format(filename))
+        # check whether it exists in the user model directory
+        _, fn = os.path.split(filename)
+        local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
+
+        if not os.path.exists(local_filename):
+            logger.error("Configuration file {} not found".format(filename))
+            raise IOError("Configuration file {} not found".format(filename))
+        else:
+            filename = local_filename
 
     with open(filename, 'r') as config_file:
         config = json.load(config_file)

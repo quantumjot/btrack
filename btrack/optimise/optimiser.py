@@ -151,6 +151,7 @@ class TrackOptimiser(object):
                 # an apoptosis event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk,counter] = 1
+                # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
                 continue
 
             elif h.type == constants.Fates.LINK:

@@ -24,7 +24,6 @@ import logging
 import numpy as np
 
 import utils
-import constants
 
 from btypes import PyTrackObject, PyTrackingInfo
 from optimise import hypothesis

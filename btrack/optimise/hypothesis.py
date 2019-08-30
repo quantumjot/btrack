@@ -21,7 +21,7 @@ import numpy as np
 import ctypes
 import json
 
-import constants
+from btrack import constants
 
 H_TYPES = ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
 

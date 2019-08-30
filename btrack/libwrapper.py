@@ -76,7 +76,7 @@ def load_library(filename):
         logging warning if windows is used
     """
 
-    if not isinstance(filename, basestring):
+    if not isinstance(filename, str):
         raise TypeError('Filename must be a string')
 
     lib_file, ext = os.path.splitext(filename)

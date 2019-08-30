@@ -122,7 +122,7 @@ def load_config(filename):
 
 
 # get a reference to the library
-import libwrapper
+from . import libwrapper
 lib = libwrapper.LibraryWrapper.lib
 
 class BayesianTracker(object):
@@ -301,7 +301,7 @@ class BayesianTracker(object):
         """ Return tracks as a list of IDs (essentially pointers) to the
         original objects. Use this to write out HDF5 tracks. """
         tracks = []
-        for i in xrange(self.n_tracks):
+        for i in range(self.n_tracks):
             # get the track length
             n = lib.track_length(self._engine, i)
 

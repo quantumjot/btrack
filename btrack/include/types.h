@@ -180,9 +180,7 @@ struct Prediction
 };
 
 
-// template <typename btrack_float> struct test_s {
-// 	btrack_float x;
-// };
+
 
 
 
@@ -312,6 +310,7 @@ template <typename T> class HypothesisMap
     // empty flag, reset to false if we add a hypothesis
     bool m_empty = true;
 };
+
 
 
 

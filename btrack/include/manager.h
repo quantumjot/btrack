@@ -93,6 +93,9 @@ class TrackManager
       return m_tracks.empty();
     }
 
+    // build trees from the data
+    void build_trees();
+
     // finalise the track output, giving dummy objects their unique (orthogonal)
     // IDs for later retrieval, and any other cleanup required.
     void finalise();
@@ -125,5 +128,29 @@ class TrackManager
     HypothesisMap<JoinHypothesis> m_links;
     HypothesisMap<BranchHypothesis> m_branches;
 };
+
+
+// Lineage tree node, used for building trees
+class LineageTreeNode
+{
+  public:
+    LineageTreeNode() {};
+    ~LineageTreeNode() {};
+
+    LineageTreeNode(TrackletPtr a_track) {
+      m_track = a_track;
+    };
+
+    bool has_children(void) const {
+      return m_track->has_children();
+    };
+
+    TrackletPtr m_track;
+
+    LineageTreeNode* m_left;
+    LineageTreeNode* m_right;
+};
+
+
 
 #endif

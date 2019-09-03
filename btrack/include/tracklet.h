@@ -98,12 +98,19 @@ public:
   }
 
   // check to see whether this should be removed;
-  bool to_remove() {
+  bool to_remove() const {
     return remove_flag;
   }
 
+  // set a flag to remove this track
   void to_remove(bool a_remove) {
     remove_flag = a_remove;
+  }
+
+
+  // does this track have children
+  bool has_children() const {
+    return (child_one != child_two);
   }
 
 

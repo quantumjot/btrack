@@ -283,16 +283,57 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   // give the user some more output
   if (DEBUG) std::cout << ", now " << m_tracks.size() << std::endl;
 
+  // build the lineage trees
+  build_trees();
+
   // now finalise everything
   finalise();
 
 }
 
 
-
-void TrackManager::finalise()
+// build lineage trees
+void TrackManager::build_trees(void)
 {
+  // do nothing yet.
+  return;
 
+  // make a set of used tracks
+  std::set<TrackletPtr> used;
+
+  for (size_t i=0; i<m_tracks.size(); i++) {
+
+    // has this track already been used?
+    if (used.count(m_tracks[i]) < 1) {
+
+      // create a new node and associate the track with it
+      LineageTreeNode root = LineageTreeNode(m_tracks[i]);
+
+      // check to see whether the track has children, if so, traverse the tree
+      if (root.has_children())
+      {
+        // start a queue
+        std::vector<LineageTreeNode> queue;
+        queue.push_back(root);
+
+        while (!queue.empty())
+        {
+          // pass
+        }
+      }
+
+    }
+
+  }
+}
+
+
+
+
+// finalise the tracks by trimming them to length and making a list of the
+// dummy objects used
+void TrackManager::finalise(void)
+{
   if (DEBUG) std::cout << "Finalising all tracks..." << std::endl;
 
   // set the global dummy ID counter here

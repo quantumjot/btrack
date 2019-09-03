@@ -219,7 +219,10 @@ class LineageTree(object):
             raise TypeError('Tracks should be of type Track')
 
         # sort the tracks by the starting frame
-        self.tracks = sorted(tracks, key=lambda trk:trk.t[0], reverse=False)
+        # self.tracks = sorted(tracks, key=lambda trk:trk.t[0], reverse=False)
+        tracks.sort(key=lambda trk:trk.t[0], reverse=False)
+        self.tracks = tracks
+
 
     def get_track_by_ID(self, ID):
         """ return the track object with the corresponding ID """

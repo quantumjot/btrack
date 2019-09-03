@@ -30,6 +30,12 @@ Misc
 Updates
 =======
 
+0.2.13
+------
+- Added track lineage tree creation
+- Simplified code for conversion to Python 3
+
+
 0.2.12
 ------
 - Improved HDF reader for performance

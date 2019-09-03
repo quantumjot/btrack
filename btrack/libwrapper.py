@@ -25,7 +25,8 @@ import numpy as np
 
 import utils
 
-from btypes import PyTrackObject, PyTrackingInfo
+from btypes import PyTrackObject
+from btypes import PyTrackingInfo
 from optimise import hypothesis
 
 

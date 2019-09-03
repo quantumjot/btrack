@@ -28,7 +28,9 @@ import utils
 import constants
 import btypes
 
-from optimise import hypothesis, optimiser
+from btrack.optimise import hypothesis
+from btrack.optimise import optimiser
+from btrack.optimise import lineage
 
 from datetime import datetime
 from collections import OrderedDict
@@ -632,19 +634,13 @@ class BayesianTracker(object):
 
     def export(self, filename):
         """ Export the track data in the appropriate format for subsequent
-        analysis. Note that the HDF5 format is intended to store references to
-        objects, rather than the tracks themselves, so we need to deal with
-        that differently here...
-
-        TODO(arl): Make sure that we are working with an exisiting HDF5 file!
-        """
+        analysis. """
         raise DeprecationWarning("Export is deprecated. Use utils.export")
-        # # log the output
-        # logger.info('Exporting {0:d} tracks to file...'.format(self.n_tracks))
-        # if not filename.endswith('hdf5'):
-        #     utils.export(filename, self.tracks)
-        # else:
-        #     utils.export_HDF(filename, self.refs, dummies=self.dummies)
+
+    def build_trees(self, update_tracks=True):
+        """ Build lineage trees and update the track relationships """
+        tree = lineage.LineageTree(self.tracks)
+        return tree.create(update_tracks=update_tracks)
 
 
 

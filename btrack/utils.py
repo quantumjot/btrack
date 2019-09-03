@@ -226,6 +226,13 @@ def import_HDF(filename):
     return hdf_handler.objects
 
 
+def build_trees(tracks, update_tracks=True):
+    """ Build lineage trees and update the track relationships """
+    from btrack.optimise import lineage
+    tree = lineage.LineageTree(tracks)
+    return tree.create(update_tracks=update_tracks)
+
+
 
 
 

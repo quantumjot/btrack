@@ -637,10 +637,7 @@ class BayesianTracker(object):
         analysis. """
         raise DeprecationWarning("Export is deprecated. Use utils.export")
 
-    def build_trees(self, update_tracks=True):
-        """ Build lineage trees and update the track relationships """
-        tree = lineage.LineageTree(self.tracks)
-        return tree.create(update_tracks=update_tracks)
+
 
 
 

@@ -9,13 +9,13 @@ Python
 
 C/C++ and CUDA
 --------------
+- Finish adding lineage tree creation in TrackManager
 - Add merge hypothesis
 - Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation
 - Give each track a unique hash to make sure we don't overwrite IDs
 - Test other motion model instantiation (sp. Prediction defaults to 6 states)
 - Use softmax score to weight hypothesis generation
-- Output more tracking stats back to Python
 
 
 

@@ -91,7 +91,8 @@ $ git clone https://github.com/quantumjot/BayesianTracker.git
 2. (Optional, but advised) Create a conda environment:
 ```bash
 $ conda create --name btrack python=2.7
-$ source activate btrack
+$ conda activate btrack
+$ conda install pip
 ```
 
 3. Install the tracker

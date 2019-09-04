@@ -9,6 +9,7 @@ Python
 
 C/C++ and CUDA
 --------------
+- Return lineage trees to python
 - Add merge hypothesis
 - Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation

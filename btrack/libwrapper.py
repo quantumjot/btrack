@@ -172,6 +172,10 @@ class LibraryWrapper(object):
     lib.get_parent.restype = ctypes.c_uint
     lib.get_parent.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # get the root ID (i.e. the root ID of this lineage tree)
+    lib.get_root.restype = ctypes.c_uint
+    lib.get_root.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+
     # get the ID of any children
     lib.get_children.restype = ctypes.c_uint
     lib.get_children.argtypes = [ctypes.c_void_p, np_int_p, ctypes.c_uint]

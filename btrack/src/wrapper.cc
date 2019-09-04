@@ -126,6 +126,12 @@ unsigned int InterfaceWrapper::get_parent(const unsigned int a_ID) const {
 }
 
 
+// return the ID of the root
+unsigned int InterfaceWrapper::get_root(const unsigned int a_ID) const {
+  return tracker.tracks[a_ID]->root;
+}
+
+
 // return the ID of the children
 unsigned int InterfaceWrapper::get_children(int* children,
                                             const unsigned int a_ID) const

@@ -129,6 +129,11 @@ EXTERN_DECL {
     return h->get_parent(trk);
   }
 
+  unsigned int get_root( InterfaceWrapper* h,
+                          const unsigned int trk ) {
+    return h->get_root(trk);
+  }
+
   unsigned int get_children( InterfaceWrapper* h,
                              int* children,
                              const unsigned int trk  ) {

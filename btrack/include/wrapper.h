@@ -68,6 +68,9 @@ class InterfaceWrapper
     // get the parent ID
     unsigned int get_parent(const unsigned int a_ID) const;
 
+    // get the root ID
+    unsigned int get_root(const unsigned int a_ID) const;
+
     // get the children IDs
     unsigned int get_children(int* children, const unsigned int a_ID) const;
 

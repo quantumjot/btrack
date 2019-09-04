@@ -9,7 +9,6 @@ Python
 
 C/C++ and CUDA
 --------------
-- Finish adding lineage tree creation in TrackManager
 - Add merge hypothesis
 - Prediction class defaults to six states, make this model agnostic
 - Update belief matrix using CUDA parallelisation
@@ -32,6 +31,7 @@ Updates
 
 0.2.13
 ------
+- Added lineage tree creation to TrackManager in C++ lib
 - Added track lineage tree creation
 - Simplified code for conversion to Python 3
 

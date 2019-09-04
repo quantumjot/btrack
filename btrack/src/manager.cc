@@ -99,6 +99,9 @@ void branch_tracks(const BranchHypothesis &branch)
 }
 
 
+
+
+
 // split a track to remove forbidden transitions
 void TrackManager::split(const TrackletPtr &a_trk,
                          const unsigned int a_label_i,
@@ -132,6 +135,22 @@ void TrackManager::split(const TrackletPtr &a_trk,
 
 
 
+
+
+
+TrackletPtr TrackManager::get_track_by_ID(const unsigned int a_ID) const
+{
+  for (size_t i=0; i<size(); i++) {
+    if (m_tracks[i]->ID == a_ID) {
+      std::cout << "ID: " << a_ID << " --> index: " << i << std::endl;
+      return m_tracks[i];
+    }
+  }
+
+  // what happens if this ID is not found?!
+  std::cout << "Track ID: " << a_ID << " not found." << std::endl;
+  throw std::runtime_error("Track not found.");
+}
 
 
 
@@ -262,7 +281,6 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
     }
   }
 
-
   // TODO(arl): do a final splitting round to make sure that we haven't
   // joined any tracks that have a METAPHASE->ANAPHASE transition
   if (SPLIT_INCORRECTLY_JOINED_TRACKS) {
@@ -270,7 +288,6 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
       split(m_tracks[i], STATE_metaphase, STATE_anaphase);
     }
   }
-
 
   // erase those tracks marked for removal (i.e. those that have been merged)
   if (DEBUG) std::cout << "Tracks before merge: " << m_tracks.size();
@@ -292,39 +309,69 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 }
 
 
+
+
 // build lineage trees
 void TrackManager::build_trees(void)
 {
   // do nothing yet.
-  return;
+  // return;
 
   // make a set of used tracks
-  std::set<TrackletPtr> used;
+  std::set<unsigned int> used;
 
   for (size_t i=0; i<m_tracks.size(); i++) {
 
     // has this track already been used?
-    if (used.count(m_tracks[i]) < 1) {
+    if (used.count(m_tracks[i]->ID) < 1) {
 
       // create a new node and associate the track with it
-      LineageTreeNode root = LineageTreeNode(m_tracks[i]);
+      LineageTreeNode root_node = LineageTreeNode(m_tracks[i]);
 
       // check to see whether the track has children, if so, traverse the tree
-      if (root.has_children())
+      if (root_node.has_children())
       {
         // start a queue
         std::vector<LineageTreeNode> queue;
-        queue.push_back(root);
+        queue.push_back(root_node);
 
         while (!queue.empty())
         {
-          // pass
-        }
-      }
+          // get the first item and erase it (i.e. pop front)
+          LineageTreeNode node = queue[0];
+          queue.erase(queue.begin());
 
-    }
+          if (node.has_children()) {
 
-  }
+            // get the tracks by ID
+            TrackletPtr track_left = get_track_by_ID(node.m_track->child_one);
+            TrackletPtr track_right = get_track_by_ID(node.m_track->child_two);
+
+            LineageTreeNode left_node = LineageTreeNode(track_left);
+            LineageTreeNode right_node = LineageTreeNode(track_right);
+
+            queue.push_back(left_node);
+            queue.push_back(right_node);
+
+            // update the tracks with the correct root note ID
+            track_left->root = root_node.m_track->ID;
+            track_right->root = root_node.m_track->ID;
+
+            // flag these as used
+            used.insert(track_left->ID);
+            used.insert(track_right->ID);
+
+          } // has_children
+
+        } // queue empty
+      } // root has_children
+
+    // push this onto the vector of trees
+    m_trees.push_back(root_node);
+
+    } // is track already used?
+
+  } // i
 }
 
 
@@ -357,6 +404,7 @@ void TrackManager::finalise(void)
     }
   }
 }
+
 
 
 

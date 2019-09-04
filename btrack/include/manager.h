@@ -51,6 +51,25 @@ void merge_tracks(const MergeHypothesis &merge);
 
 
 
+// Lineage tree node, used for building trees
+class LineageTreeNode
+{
+  public:
+    LineageTreeNode() {};
+    ~LineageTreeNode() {};
+
+    LineageTreeNode(TrackletPtr a_track) {
+      m_track = a_track;
+    };
+
+    bool has_children(void) const {
+      return m_track->has_children();
+    };
+
+    TrackletPtr m_track;
+};
+
+
 
 
 // A track manager class, behaves as if a simple vector of TrackletPtrs, but
@@ -74,6 +93,9 @@ class TrackManager
     inline TrackletPtr operator[] (const unsigned int idx) const {
       return m_tracks[idx];
     };
+
+    // return track by ID
+    TrackletPtr get_track_by_ID(const unsigned int a_ID) const;
 
     // return a dummy object by index
     TrackObjectPtr get_dummy(const int idx) const;
@@ -109,9 +131,6 @@ class TrackManager
                const unsigned int a_label_i,
                const unsigned int a_label_j);
 
-    // return a track by ID
-    // TrackletPtr get_track_by_ID(const unsigned int idx);
-
   private:
 
     // track maintenance
@@ -120,6 +139,9 @@ class TrackManager
 
     // a vector of tracklet objects
     std::vector<TrackletPtr> m_tracks;
+
+    // set upsome space for the trees, should we want these later
+    std::vector<LineageTreeNode> m_trees;
 
     // a vector of dummy objects
     std::vector<TrackObjectPtr> m_dummies;
@@ -130,26 +152,7 @@ class TrackManager
 };
 
 
-// Lineage tree node, used for building trees
-class LineageTreeNode
-{
-  public:
-    LineageTreeNode() {};
-    ~LineageTreeNode() {};
 
-    LineageTreeNode(TrackletPtr a_track) {
-      m_track = a_track;
-    };
-
-    bool has_children(void) const {
-      return m_track->has_children();
-    };
-
-    TrackletPtr m_track;
-
-    LineageTreeNode* m_left;
-    LineageTreeNode* m_right;
-};
 
 
 

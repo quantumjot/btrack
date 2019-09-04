@@ -603,6 +603,7 @@ class BayesianTracker(object):
 
         # make a new track object and return it
         trk = btypes.Tracklet(trk_id, track, parent=p, children=c, fate=f)
+        trk.root = lib.get_root(self._engine, idx)
 
         if not self.return_kalman: return trk
 

@@ -108,7 +108,7 @@ import btrack
 
 should return:
 ```
-[INFO][2019/08/22 10:26:11 AM] btrack (v0.2.11) library imported
+[INFO][2019/08/22 10:26:11 AM] btrack (v0.2.x) library imported
 [INFO][2019/08/22 10:26:11 AM] Loaded btrack: <your python site-packages>/btrack/libs/libtracker.so
 ```
 

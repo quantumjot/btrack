@@ -136,6 +136,13 @@ unsigned int InterfaceWrapper::get_root(const unsigned int a_ID) const {
 unsigned int InterfaceWrapper::get_children(int* children,
                                             const unsigned int a_ID) const
 {
+
+  // if the track has no children, return zero
+  if (!tracker.tracks[a_ID]->has_children()){
+    return 0;
+  }
+
+  // otherwise return the IDs of the children
   children[0] = tracker.tracks[a_ID]->child_one;
   children[1] = tracker.tracks[a_ID]->child_two;
   return 2;

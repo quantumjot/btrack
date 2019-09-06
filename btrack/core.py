@@ -308,9 +308,9 @@ class BayesianTracker(object):
             n = lib.track_length(self._engine, i)
 
             # set up some space for the output and  get the track data
-            refs = np.zeros((1,n),dtype='int32')
+            refs = np.zeros((n,),dtype='int32')
             _ = lib.get_refs(self._engine, refs, i)
-            tracks.append(refs.tolist()[0])
+            tracks.append(refs.tolist())
 
         return self._sort(tracks)
 
@@ -569,26 +569,26 @@ class BayesianTracker(object):
         n = lib.track_length(self._engine, idx)
 
         # set up some space for the output
-        children = np.zeros((2,1), dtype='int32')    # pointers to children
-        refs = np.zeros((1,n), dtype='int32')        # pointers to objects
+        children = np.zeros((2,), dtype='int32')    # pointers to children
+        refs = np.zeros((n,), dtype='int32')        # pointers to objects
 
         # get the track data
         _ = lib.get_refs(self._engine, refs, idx)
-        _ = lib.get_children(self._engine, children, idx)
+        nc = lib.get_children(self._engine, children, idx)
         p = lib.get_parent(self._engine, idx)
         f = constants.Fates( lib.get_fate(self._engine, idx) )
 
         # get the track ID
         trk_id = lib.get_ID(self._engine, idx)
 
-        # convert the array of children to a python list, and remove any without
-        # children: [0,0]
-        c = np.squeeze(children).tolist()
-        if all([i==0 for i in c]): c = []
+        # convert the array of children to a python list
+        if nc > 0:
+            c = children.tolist()
+        else:
+            c = []
 
         # now build the track from the references
-        refs = np.squeeze(refs).tolist()
-        if not isinstance(refs, list): refs = [refs]
+        refs = refs.tolist()
         dummies = [lib.get_dummy(self._engine, d) for d in refs if d<0]
 
         track = []
@@ -621,7 +621,6 @@ class BayesianTracker(object):
         _ = lib.get_kalman_pred(self._engine, kal_pred, index)
 
         # cat the data [mu(0),...,mu(n),cov(0,0),...cov(n,n), pred(0),..]
-        # add it to the track object
         trk.kalman = np.hstack((kal_mu, kal_cov[:,1:], kal_pred[:,1:]))
         return trk
 

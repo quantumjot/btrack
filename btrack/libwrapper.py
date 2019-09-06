@@ -31,13 +31,12 @@ from optimise import hypothesis
 
 
 
-
-
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
 # TODO(arl): sort this out with final packaging!
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+
 
 
 def numpy_pointer_decorator(func):
@@ -63,6 +62,11 @@ def np_uint_p():
 def np_int_p():
     """ Temporary function. Will remove in final release """
     return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags='C_CONTIGUOUS')
+
+@numpy_pointer_decorator
+def np_int_vec_p():
+    """ Temporary function. Will remove in final release """
+    return np.ctypeslib.ndpointer(dtype=np.int32, ndim=1) #, flags='C_CONTIGUOUS')
 
 
 
@@ -101,9 +105,6 @@ def load_library(filename):
         raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
 
     return lib
-
-
-
 
 
 
@@ -166,7 +167,7 @@ class LibraryWrapper(object):
 
     # get a track, by reference
     lib.get_refs.restype = ctypes.c_uint
-    lib.get_refs.argtypes = [ctypes.c_void_p, np_int_p, ctypes.c_uint]
+    lib.get_refs.argtypes = [ctypes.c_void_p, np_int_vec_p, ctypes.c_uint]
 
     # get the parent ID (i.e. pre-division)
     lib.get_parent.restype = ctypes.c_uint
@@ -178,7 +179,7 @@ class LibraryWrapper(object):
 
     # get the ID of any children
     lib.get_children.restype = ctypes.c_uint
-    lib.get_children.argtypes = [ctypes.c_void_p, np_int_p, ctypes.c_uint]
+    lib.get_children.argtypes = [ctypes.c_void_p, np_int_vec_p, ctypes.c_uint]
 
     # get the fate of the track
     lib.get_fate.restype = ctypes.c_uint

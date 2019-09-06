@@ -136,9 +136,8 @@ unsigned int InterfaceWrapper::get_root(const unsigned int a_ID) const {
 unsigned int InterfaceWrapper::get_children(int* children,
                                             const unsigned int a_ID) const
 {
-
   // if the track has no children, return zero
-  if (!tracker.tracks[a_ID]->has_children()){
+  if (!tracker.tracks[a_ID]->has_children()) {
     return 0;
   }
 
@@ -285,7 +284,7 @@ void InterfaceWrapper::merge( unsigned int* a_hypotheses,
   // add all of the hypotheses
   for (size_t i=0; i<n_hypotheses; i++) {
     unsigned int idx = a_hypotheses[i];
-    merges.push_back( h_engine.m_hypotheses[idx] );
+    merges.push_back(h_engine.m_hypotheses[idx]);
   }
 
   // now run the merging

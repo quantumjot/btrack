@@ -67,6 +67,10 @@ class LineageTreeNode
     };
 
     TrackletPtr m_track;
+
+    // pointers to left and right nodes
+    LineageTreeNode* m_left;
+    LineageTreeNode* m_right;
 };
 
 

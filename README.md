@@ -120,9 +120,10 @@ BayesianTracker can be used simply as follows:
 
 ```python
 import btrack
+from btrack.utils import import_HDF
 
 # NOTE(arl):  This should be from your image segmentation code
-objects = utils.import_HDF('/home/arl/Documents/objects.hdf5')
+objects = import_HDF('/home/arl/Documents/objects.hdf5')
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
@@ -139,13 +140,25 @@ with btrack.BayesianTracker() as tracker:
   # generate hypotheses and run the global optimiser
   tracker.optimize()
 
-  # get the tracks
-  track_zero = tracker[0]
+  # get the tracks as a python list
   tracks = tracker.tracks
+```
 
-  # export them
-  # NOTE(arl): the HDF5 format stores references to the original objects
-  tracker.export('/home/arl/Documents/objects.hdf5')
+Tracks themselves are python objects with properties:
+
+```python
+# get the first track
+track_zero = tracks[0]
+
+# print all of the x positions in the track
+print(track_zero.x)
+
+# print the fate of the track
+print(track_zero.fate)
+
+# print the length of the track
+print len(track_zero)
+
 ```
 
 There are many additional options, including the ability to define object models.

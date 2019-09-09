@@ -150,14 +150,23 @@ Tracks themselves are python objects with properties:
 # get the first track
 track_zero = tracks[0]
 
-# print all of the x positions in the track
+# print the length of the track
+print(len(track_zero))
+
+# print all of the xyzt positions in the track
 print(track_zero.x)
+print(track_zero.y)
+print(track_zero.z)
+print(track_zero.t)
 
 # print the fate of the track
 print(track_zero.fate)
 
-# print the length of the track
-print len(track_zero)
+# print the track ID, root node, parent node and children
+print(track_zero.ID)
+print(track_zero.root)
+print(track_zero.parent)
+print(track_zero.children)
 
 ```
 

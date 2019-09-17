@@ -390,12 +390,13 @@ class HDF5_FileHandler(HDFHandler):
     inter-operable between segmentation, tracking and analysis code.
 
     Basic format of the HDF file is:
-        frames/
-            frame_1/
+        objects/
+            gfp/
                 coords
                 labels
-                dummies
-            frame_2/
+            rfp/
+                coords
+                labels
             ...
 
     Args:

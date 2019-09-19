@@ -285,6 +285,16 @@ def export_HDF(filename, tracks, dummies=[]):
 
 
 
+def hdf_loader_delegator(filename):
+    with h5py.File(filename, 'r') as h:
+        if 'objects' in h.keys():
+            handler = HDF5_FileHandler
+        else:
+            handler = HDF5_FileHandler_LEGACY
+    return handler(filename)
+
+
+
 
 class HDFHandler(object):
     def __init__(self, filename):

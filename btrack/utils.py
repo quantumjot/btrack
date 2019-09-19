@@ -219,10 +219,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 def import_HDF(filename):
     """ Import the HDF data. """
     import dataio
-    try:
-        hdf_handler = dataio.HDF5_FileHandler(filename)
-    except:
-        hdf_handler = dataio.HDF5_FileHandler_LEGACY(filename)
+    hdf_handler = dataio.hdf_loader_delegator(filename)
     return hdf_handler.objects
 
 

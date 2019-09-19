@@ -386,7 +386,7 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
                 # get the object type
                 object_type = txyz[o,4]
 
-                objects.append(self.new_PyTrackObject(txyz[o,:], label=class_label, type=object_type))
+                objects.append(self.new_PyTrackObject(txyz[o,:], label=class_label, obj_type=object_type))
 
         return objects
 

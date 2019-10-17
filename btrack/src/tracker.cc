@@ -509,6 +509,16 @@ void BayesianTracker::cost(Eigen::Ref<Eigen::MatrixXd> belief,
         }
       }
 
+      // disallow incorrect linking
+      if (DISALLOW_PROMETAPHASE_ANAPHASE_LINKING) {
+        if (active[trk]->track.back()->label == STATE_prometaphase &&
+            new_objects[obj]->label == STATE_anaphase) {
+
+          // set the probability of assignment to zero
+          prob_assign = 0.0;
+        }
+      }
+
       if (PROB_ASSIGN_EXP_DECAY) {
         // apply an exponential decay according to number of lost
         // drops to 50% at max lost

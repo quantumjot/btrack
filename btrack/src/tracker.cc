@@ -420,6 +420,8 @@ bool BayesianTracker::update_active()
     // if the track is still active, add it to the update list
     if (tracks[i]->active()) {
       active.push_back( tracks[i] );
+    } else {
+      tracks[i]->trim();   // remove dummies if this track is lost
     }
 
   }

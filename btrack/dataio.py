@@ -294,26 +294,12 @@ def hdf_loader_delegator(filename):
     return handler(filename)
 
 
+class _PyTrackObjectFactory(object):
+    def __init__(self):
+        self.reset()
 
-
-class HDFHandler(object):
-    def __init__(self, filename):
-        self. filename = filename
-        logger.info('Opening HDF file: {0:s}'.format(self.filename))
-        self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
-        self._ID = 0
-        self._states = list(constants.States)
-
-    def __del__(self): self.close()
-
-    def close(self):
-        if not self._hdf: return
-        logger.info('Closing HDF file: {0:s}'.format(self.filename))
-        self._hdf.close()
-
-    def new_PyTrackObject(self, txyz, label=None, obj_type=0):
-        """ Set up a new PyTrackObject quickly using data from a file """
-
+    def get(self, txyz, label=None, obj_type=0):
+        """ get an instatiated object """
         if label is not None:
             class_label = label[0].astype('int')
             probability = label[1:].astype('float32')
@@ -334,6 +320,33 @@ class HDFHandler(object):
 
         self._ID += 1
         return new_object
+
+    def reset(self):
+        self._ID = 0
+
+# instatiate the factory
+ObjectFactory = _PyTrackObjectFactory()
+
+
+class HDFHandler(object):
+    def __init__(self, filename):
+        self. filename = filename
+        logger.info('Opening HDF file: {0:s}'.format(self.filename))
+        self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
+        self._ID = 0
+        self._states = list(constants.States)
+
+    def __del__(self): self.close()
+
+    def close(self):
+        if not self._hdf: return
+        logger.info('Closing HDF file: {0:s}'.format(self.filename))
+        self._hdf.close()
+
+    def new_PyTrackObject(self, txyz, label=None, obj_type=0):
+        """ Set up a new PyTrackObject quickly using data from a file """
+        raise DeprecationWarning("Use 'get' function instead")
+
 
 
 
@@ -386,7 +399,9 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
                 # get the object type
                 object_type = txyz[o,4]
 
-                objects.append(self.new_PyTrackObject(txyz[o,:], label=class_label, obj_type=object_type))
+                objects.append(ObjectFactory.get(txyz[o,:],
+                                                 label=class_label,
+                                                 obj_type=object_type))
 
         return objects
 
@@ -435,7 +450,7 @@ class HDF5_FileHandler(HDFHandler):
             labels = self._hdf['objects'][c]['labels'][:]
             n_obj = txyz.shape[0]
             logger.info('Loading {} {}...'.format(c, txyz.shape))
-            obj = [self.new_PyTrackObject(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in range(n_obj)]
+            obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in range(n_obj)]
             objects += obj
         return objects
 
@@ -448,3 +463,13 @@ class HDF5_FileHandler(HDFHandler):
     def tracks(self):
         """ Return the tracks in the file """
         pass
+
+
+def import_JSON(filename):
+    """ generic JSON importer for localisations from other software """
+    with open(filename, 'r') as json_file:
+        data = json.load(json_file)
+
+
+if __name__ == "__main__":
+    pass

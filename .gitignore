@@ -1,7 +1,7 @@
 btrack/include/eigen/*
-resources/*
+btrack/__pycache__/*
+btrack/optimise/__pycache__/*
 notebooks/*
-btrack/removed/*
 *.DS_store
 *.o
 *.so

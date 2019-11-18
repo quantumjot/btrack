@@ -29,7 +29,7 @@ from mpl_toolkits.mplot3d.art3d import Line3DCollection
 from itertools import product, combinations
 from matplotlib.axes import Axes
 
-import constants
+from . import constants
 
 def _draw_cube(ax, box):
     """ draw_cube
@@ -49,8 +49,8 @@ def _draw_cube(ax, box):
     edges = combinations(np.array(list(product(box[0],box[1],box[2]))), 2)
 
     for s, e in edges:
-        if any([np.sum(np.abs(s-e))==box[d][1]-box[d][0] for d in xrange(3)]):
-            ax.plot(*zip(s,e), linestyle=':', color='b')
+        if any([np.sum(np.abs(s-e))==box[d][1]-box[d][0] for d in range(3)]):
+            ax.plot(*list(zip(s,e)), linestyle=':', color='b')
 
 
 
@@ -68,7 +68,7 @@ def _check_plot_order(order):
         DIMS: the number of plotting dimensions if the plot order is properly
             specified, otherwise raises a ValueError
     """
-    if not isinstance(order, basestring):
+    if not isinstance(order, str):
         raise ValueError('Order must be specified as a string, e.g. xyz')
 
     # check that the string contains plottable axes
@@ -193,8 +193,8 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
 
         if len(track) < 2: continue
 
-        p_order = [getattr(track, order[i]) for i in xrange(DIMS)]
-        segments = zip(*p_order)
+        p_order = [getattr(track, order[i]) for i in range(DIMS)]
+        segments = list(zip(*p_order))
         t_color = colors_rgb[track.ID % (len(colors_rgb)-1)]
 
         lines.append(segments)
@@ -203,7 +203,7 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
         # plot text labels on the tracks
         if labels:
             # set up the plotting arguments
-            l_args = [getattr(track, order[i])[-1] for i in xrange(DIMS)]
+            l_args = [getattr(track, order[i])[-1] for i in range(DIMS)]
             l_args = l_args + [str(track.ID), None]
             # plot the text label with an outline
             ax.text(*l_args, color='k',

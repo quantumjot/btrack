@@ -20,8 +20,8 @@ __email__ = "a.lowe@ucl.ac.uk"
 import ctypes
 import numpy as np
 
-import utils
-import constants
+from . import utils
+from . import constants
 
 # from datetime import datetime
 from collections import OrderedDict

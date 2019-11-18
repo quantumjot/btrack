@@ -24,9 +24,9 @@ import ctypes
 import logging
 import numpy as np
 
-import utils
-import constants
-import btypes
+from . import utils
+from . import constants
+from . import btypes
 
 from btrack.optimise import hypothesis
 from btrack.optimise import optimiser
@@ -59,7 +59,7 @@ if not logger.handlers:
     logger.setLevel(logging.DEBUG)
 
 
-logger.info('btrack (v{0:s}) library imported'.format(constants.__version__))
+logger.info('btrack (v{}) library imported'.format(constants.__version__))
 
 
 def log_to_file(pth, level=None):
@@ -274,7 +274,7 @@ class BayesianTracker(object):
     def max_search_radius(self, max_search_radius):
         """ Set the maximum search radius for fast cost updates """
         assert(max_search_radius>0. and max_search_radius<=100.)
-        logger.info('Setting maximum XYZ search radius to {0:2.2f}px...'
+        logger.info('Setting maximum XYZ search radius to {}px...'
                     .format(max_search_radius))
         lib.max_search_radius(self._engine, max_search_radius)
 
@@ -295,7 +295,7 @@ class BayesianTracker(object):
     def tracks(self):
         """ Return a sorted list of tracks, default is to sort by increasing
         length """
-        return self._sort( [self[i] for i in xrange(self.n_tracks)] )
+        return self._sort( [self[i] for i in range(self.n_tracks)] )
 
 
     @property
@@ -327,7 +327,7 @@ class BayesianTracker(object):
         """
         vol = np.zeros((3,2),dtype='float')
         lib.get_volume(self._engine, vol)
-        return [tuple(vol[i,:].tolist()) for i in xrange(3)]+[self.frame_range]
+        return [tuple(vol[i,:].tolist()) for i in range(3)]+[self.frame_range]
     @volume.setter
     def volume(self, volume):
         """ Set the imaging volume """
@@ -362,7 +362,7 @@ class BayesianTracker(object):
             'provided as a MotionModel object')
 
         self._motion_model = model
-        logger.info('Loading motion model: {0:s}'.format(model.name))
+        logger.info('Loading motion model: {}'.format(model.name))
 
         # need to populate fields in the C++ library
         lib.motion( self._engine, model.measurements, model.states, model.A,
@@ -397,7 +397,7 @@ class BayesianTracker(object):
             'provided as a ObjectModel object')
 
         self._object_model = model
-        logger.info('Loading object model: {0:s}'.format(model.name))
+        logger.info('Loading object model: {}'.format(model.name))
 
         # need to populate fields in the C++ library
         lib.model( self._engine, model.states, model.emission,
@@ -465,7 +465,7 @@ class BayesianTracker(object):
         stats = self._stats(ret)
 
         if not utils.log_error(stats.error):
-            logger.info('SUCCESS. Found {0:d} tracks in {1:d} frames (in '
+            logger.info('SUCCESS. Found {} tracks in {} frames (in '
                 '{2:.2f}s)'.format(self.n_tracks, 1+self._frame_range[1],
                 tm))
 
@@ -488,8 +488,8 @@ class BayesianTracker(object):
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
-            logger.info('Tracking objects in frames {0:d} to '
-                '{1:d} (of {2:d})...'.format(frm, min(frm+step_size-1,
+            logger.info('Tracking objects in frames {} to '
+                '{} (of {})...'.format(frm, min(frm+step_size-1,
                 self._frame_range[1]+1), self._frame_range[1]+1))
 
             stats = self.step(step_size)
@@ -498,10 +498,10 @@ class BayesianTracker(object):
 
         if not utils.log_error(stats.error):
             logger.info('SUCCESS.')
-            logger.info(' - Found {0:d} tracks in {1:d} frames (in '
-                '{2:.2f}s)'.format(self.n_tracks, 1+self._frame_range[1],
+            logger.info(' - Found {} tracks in {} frames (in '
+                '{}s)'.format(self.n_tracks, 1+self._frame_range[1],
                 stats.t_total_time))
-            logger.info(' - Inserted {0:d} dummy objects to fill '
+            logger.info(' - Inserted {} dummy objects to fill '
                 'tracking gaps'.format(self.n_dummies))
 
 
@@ -522,7 +522,7 @@ class BayesianTracker(object):
             self.hypothesis_model, self.frame_range[0], self.frame_range[1])
 
         # now get all of the hypotheses
-        h = [lib.get_hypothesis(self._engine, h) for h in xrange(n_hypotheses)]
+        h = [lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
         return h
 
 
@@ -535,7 +535,7 @@ class BayesianTracker(object):
         specified
         """
 
-        logger.info('Loading hypothesis model: {0:s}'.format(self.hypothesis_model.name))
+        logger.info('Loading hypothesis model: {}'.format(self.hypothesis_model.name))
 
         logger.info('Calculating hypotheses from tracklets...')
         hypotheses = self.hypotheses()
@@ -550,9 +550,9 @@ class BayesianTracker(object):
         h_optimise = [h.type for h in optimised]
 
         for h_type in set(h_original):
-            logger.info(' - {0:s}: {1:d} (of {2:d})'.format(h_type,
+            logger.info(' - {}: {} (of {})'.format(h_type,
                         h_optimise.count(h_type), h_original.count(h_type)))
-        logger.info(' - TOTAL: {0:d} hypotheses'.format(len(hypotheses)))
+        logger.info(' - TOTAL: {} hypotheses'.format(len(hypotheses)))
 
         # now that we have generated the optimal sequence, merge all of the
         # tracks, delete fragments and assign divisions

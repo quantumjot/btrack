@@ -1,3 +1,3 @@
 # __all__ = ['core','utils','constants','render']
 
-from core import *
+from .core import *

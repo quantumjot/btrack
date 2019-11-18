@@ -75,13 +75,11 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 
 ### Installation
 
-BayesianTracker has been tested with Python 2.7+ on OS X and Linux.
+BayesianTracker has been tested with Python 3.7 on OS X and Linux.
 The tracker and hypothesis engine are mostly written in C++ with a C interface to Python.
 
 *NOTE TO WINDOWS USERS*: We have not tested this on Windows. The setup
-instructions below have been tested on Ubuntu 16.04 LTS and OS X 10.13.6.
-
-*NOTE* Python 3 works, we're just lazy.
+instructions below have been tested on Ubuntu 18.04 LTS and OS X 10.13.6.
 
 1. First clone the BayesianTracker repo:
 ```sh
@@ -90,7 +88,7 @@ $ git clone https://github.com/quantumjot/BayesianTracker.git
 
 2. (Optional, but advised) Create a conda environment:
 ```bash
-$ conda create --name btrack python=2.7
+$ conda create --name btrack python=3.7
 $ conda activate btrack
 $ conda install pip
 ```
@@ -108,7 +106,7 @@ import btrack
 
 should return:
 ```
-[INFO][2019/08/22 10:26:11 AM] btrack (v0.2.x) library imported
+[INFO][2019/08/22 10:26:11 AM] btrack (v0.3.x) library imported
 [INFO][2019/08/22 10:26:11 AM] Loaded btrack: <your python site-packages>/btrack/libs/libtracker.so
 ```
 

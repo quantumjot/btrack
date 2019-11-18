@@ -3,7 +3,6 @@ TODO
 
 Python
 ------
-- Migrate to Python 3
 - Tracking metrics (MOT)
 - Properly pass softmax output to C++
 
@@ -17,8 +16,6 @@ C/C++ and CUDA
 - Test other motion model instantiation (sp. Prediction defaults to 6 states)
 - Use softmax score to weight hypothesis generation
 
-
-
 Misc
 ----
 - Other motion models
@@ -29,6 +26,10 @@ Misc
 
 Updates
 =======
+
+0.3.0
+-----
+- Migrated to Python 3.7
 
 0.2.13
 ------

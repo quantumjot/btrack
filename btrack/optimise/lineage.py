@@ -139,7 +139,7 @@ def export_tree_to_json(tree, filename):
 
     #TODO(arl): proper type checking here
     assert(isinstance(tree, dict))
-    assert(isinstance(filename, basestring))
+    assert(isinstance(filename, str))
 
     with open(filename, 'w') as json_file:
         json.dump(tree, json_file, indent=2, separators=(',', ': '))
@@ -166,7 +166,7 @@ def create_and_export_trees_to_json(export_dir,
     json_trees = [tree_to_dict(t) for t in lineage_tree.trees]
 
     if ignore_single_tracks:
-        json_trees = [t for t in json_trees if 'children' in t.keys()]
+        json_trees = [t for t in json_trees if 'children' in list(t.keys())]
 
     # now write out the trees
     with open(trees_file, 'w') as json_file:
@@ -241,8 +241,8 @@ class LineageTree(object):
                 # TODO(arl): confirm that this is a root node, i.e. the parent
                 # ID should be the same as the track ID or None
                 if trk.ID != trk.parent and trk.parent not in (0, None):
-                    print "Error with trk {}".format(trk.ID)
-                    print trk.ID, trk.parent
+                    print("Error with trk {}".format(trk.ID))
+                    print(trk.ID, trk.parent)
 
                 root = LineageTreeNode(track=trk, root=True)
                 used.append(trk)

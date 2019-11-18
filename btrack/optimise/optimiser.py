@@ -17,7 +17,7 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
-import hypothesis
+from . import hypothesis
 
 from btrack.constants import Fates
 

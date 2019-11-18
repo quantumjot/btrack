@@ -23,11 +23,11 @@ import ctypes
 import logging
 import numpy as np
 
-import utils
+from . import utils
 
-from btypes import PyTrackObject
-from btypes import PyTrackingInfo
-from optimise import hypothesis
+from .btypes import PyTrackObject
+from .btypes import PyTrackingInfo
+from .optimise import hypothesis
 
 
 

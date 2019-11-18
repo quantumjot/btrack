@@ -25,8 +25,8 @@ import json
 import logging
 
 # import core
-import btypes
-import constants
+from . import btypes
+from . import constants
 
 from collections import OrderedDict
 from scipy.io import savemat
@@ -44,7 +44,7 @@ def fate_table(tracks):
 
     fate_table = {}
     for t in tracks:
-        if t.fate_label not in fate_table.keys():
+        if t.fate_label not in list(fate_table.keys()):
             fate_table[t.fate_label] = [t.ID]
         else:
             fate_table[t.fate_label].append(t.ID)
@@ -66,7 +66,7 @@ def export(filename, tracks):
 
     """
 
-    if not isinstance(filename, basestring):
+    if not isinstance(filename, str):
         raise TypeError('Filename must be a string')
 
     # try to infer the file format from the extension
@@ -100,7 +100,7 @@ def check_track_type(tracks):
 def export_single_track_JSON(filename, track):
     """ export a single track as a JSON file """
 
-    if not isinstance(filename, basestring):
+    if not isinstance(filename, str):
         raise TypeError('Filename must be a string')
 
     if not isinstance(track, btypes.Tracklet):
@@ -118,7 +118,7 @@ def export_JSON(filename, tracks):
 
     # make a list of all track object data, sorted by track ID
     d = {"Tracklet_"+str(trk.ID):trk.to_dict() for trk in tracks}
-    json_export = OrderedDict(sorted(d.items(), key=lambda t: t[1]['ID']))
+    json_export = OrderedDict(sorted(list(d.items()), key=lambda t: t[1]['ID']))
 
     with open(filename, 'w') as json_file:
         json.dump(json_export, json_file, indent=2, separators=(',', ': '))
@@ -265,8 +265,8 @@ def export_HDF(filename, tracks, dummies=[]):
         if not os.path.exists(filename):
             raise IOError('HDF5 file does not exist: {0:s}'.format(filename))
 
-        if not isinstance(tracks[0][0], (int, long)):
-            print type(tracks[0][0]), tracks[0][0]
+        if not isinstance(tracks[0][0], int):
+            print(type(tracks[0][0]), tracks[0][0])
             raise TypeError('Track references should be integers')
 
 
@@ -278,7 +278,7 @@ def export_HDF(filename, tracks, dummies=[]):
 
     elif check_track_type(tracks):
         # we have a list of tracklet objects
-        print 'oops!'
+        print('oops!')
 
     else:
         raise TypeError('Tracks is of an unknown format.')
@@ -287,7 +287,7 @@ def export_HDF(filename, tracks, dummies=[]):
 
 def hdf_loader_delegator(filename):
     with h5py.File(filename, 'r') as h:
-        if 'objects' in h.keys():
+        if 'objects' in list(h.keys()):
             handler = HDF5_FileHandler
         else:
             handler = HDF5_FileHandler_LEGACY
@@ -380,7 +380,7 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
         self._ID = 0
 
         lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
-        frms = sorted(self._hdf['frames'].keys(), key=lambda_frm)
+        frms = sorted(list(self._hdf['frames'].keys()), key=lambda_frm)
 
         for frm in frms:
             txyz = self._hdf['frames'][frm]['coords']
@@ -390,7 +390,7 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
                 labels = self._hdf['frames'][frm]['labels']
                 assert txyz.shape[0] == labels.shape[0]
 
-            for o in xrange(txyz.shape[0]):
+            for o in range(txyz.shape[0]):
                 if labels is not None:
                     class_label = labels[o,:]
                 else:
@@ -449,6 +449,7 @@ class HDF5_FileHandler(HDFHandler):
             txyz = self._hdf['objects'][c]['coords'][:]
             labels = self._hdf['objects'][c]['labels'][:]
             n_obj = txyz.shape[0]
+            assert(txyz.shape[0] == labels.shape[0])
             logger.info('Loading {} {}...'.format(c, txyz.shape))
             obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in range(n_obj)]
             objects += obj

@@ -27,8 +27,8 @@ import json
 import logging
 
 # import core
-import btypes
-import constants
+from . import btypes
+from . import constants
 
 from collections import OrderedDict
 from scipy.io import savemat
@@ -118,7 +118,7 @@ def read_motion_model(config):
     matrices = frozenset(['A','H','P','G','R'])
     model = btypes.MotionModel()
 
-    if 'MotionModel' not in config.keys():
+    if 'MotionModel' not in list(config.keys()):
         raise ValueError('Not a valid motion model file')
 
     m = config['MotionModel']
@@ -190,7 +190,7 @@ def read_object_model(config):
     matrices = frozenset(['transition','emission','start'])
     model = core.ObjectModel()
 
-    if 'ObjectModel' not in config.keys():
+    if 'ObjectModel' not in list(config.keys()):
         raise ValueError('Not a valid object model file')
 
     # set some standard params
@@ -218,7 +218,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 def import_HDF(filename):
     """ Import the HDF data. """
-    import dataio
+    from . import dataio
     hdf_handler = dataio.hdf_loader_delegator(filename)
     return hdf_handler.objects
 

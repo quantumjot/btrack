@@ -48,7 +48,6 @@ def fate_table(tracks):
             fate_table[t.fate_label] = [t.ID]
         else:
             fate_table[t.fate_label].append(t.ID)
-
     return fate_table
 
 

@@ -89,6 +89,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define WEIGHT_ANAPHASE_ANAPHASE 1.0
 #define WEIGHT_ANAPHASE 2.0
 #define WEIGHT_OTHER 5.0
+#define PENALTY_METAPHASE_ANAPHASE_LINKING 10.0
 
 
 // definitions to use for countins states in the hypothesis engine

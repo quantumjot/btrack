@@ -326,11 +326,11 @@ void HypothesisEngine::create( void )
       // TODO(arl): limit the maximum link distance?
       if (hypothesis_allowed(TYPE_Plink)) {
 
-        if (trk->track.back()->label == STATE_metaphase &&
-            this_trk->track.front()->label == STATE_anaphase &&
-            DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-              // do nothing
-        } else {
+        // if (trk->track.back()->label == STATE_metaphase &&
+        //     this_trk->track.front()->label == STATE_anaphase &&
+        //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+        //       // do nothing
+        // } else {
 
           // if we allow this link, make the hypothesis
           Hypothesis h_link(TYPE_Plink, trk);
@@ -340,7 +340,7 @@ void HypothesisEngine::create( void )
                               + 0.5*safe_log(P_TP(this_trk));
           m_hypotheses.push_back( h_link );
 
-        }
+        // }
       }
 
       // append this to conflicts
@@ -539,21 +539,33 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
                                 float dt) const
 {
 
+  // make sure that we're looking forward in time, this should never be needed
+  assert(dt>0.0);
+
+  // // try to not link metaphase to anaphase
+  // if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+  //   if (a_trk->track.back()->label == STATE_metaphase &&
+  //       a_trk_lnk->track.front()->label == STATE_anaphase) {
+  //
+  //     std::cout << a_trk->ID << " -> " << a_trk_lnk->ID << " forbidden M->A" << std::endl;
+  //     return m_params.eta;
+  //   }
+  // }
+
+  float link_penalty = 1.0;
+
   // try to not link metaphase to anaphase
   if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
     if (a_trk->track.back()->label == STATE_metaphase &&
         a_trk_lnk->track.front()->label == STATE_anaphase) {
-      return m_params.eta ;
+      link_penalty = PENALTY_METAPHASE_ANAPHASE_LINKING;
     }
   }
-
-  // make sure that we're looking forward in time, this should never be needed
-  assert(dt>0.0);
 
   // DONE(arl): need to penalise longer times between tracks, dt acts as
   // a linear scaling penalty - scale the distance linearly by time
   // return std::exp(-(d*dt)/m_params.lambda_link);
-  return std::exp(-d/m_params.lambda_link);
+  return std::exp(-(d*link_penalty)/m_params.lambda_link);
 }
 
 

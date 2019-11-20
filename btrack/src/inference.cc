@@ -37,7 +37,7 @@ ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
 {
   // set up the start state with a uniform prior
   x_hat(states);
-  x_hat.fill(1.0/(double)states);;
+  x_hat.fill(1.0/(double)states);
 
   sequence.reserve(RESERVE_STATE_SEQUENCE);
 }

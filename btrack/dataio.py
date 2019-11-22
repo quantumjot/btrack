@@ -335,6 +335,12 @@ class HDFHandler(object):
         self._ID = 0
         self._states = list(constants.States)
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def __del__(self): self.close()
 
     def close(self):
@@ -376,7 +382,6 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
     def objects(self):
         """ Return the objects in the file """
         objects = []
-        self._ID = 0
 
         lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
         frms = sorted(list(self._hdf['frames'].keys()), key=lambda_frm)
@@ -423,12 +428,10 @@ class HDF5_FileHandler(HDFHandler):
                 labels
             ...
 
-    Args:
-
-    Members:
-
     Notes:
-
+        NOTE(arl): the final slice [:] reads the whole file in one go,
+        since we are unlikely to have more objects than memory and we
+        need to load them all anyway.
     """
 
     def __init__(self, filename=None):
@@ -438,13 +441,8 @@ class HDF5_FileHandler(HDFHandler):
     def objects(self):
         """ Return the objects in the file """
         objects = []
-        self._ID = 0
-
         for ci, c in enumerate(self._hdf['objects'].keys()):
             # read the whole dataset into memory
-            # NOTE(arl): the final slice [:] reads the whole file in one go,
-            # since we are unlikely to have more objects than memory and we
-            # need to load them all anyway.
             txyz = self._hdf['objects'][c]['coords'][:]
             labels = self._hdf['objects'][c]['labels'][:]
             n_obj = txyz.shape[0]

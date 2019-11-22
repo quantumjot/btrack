@@ -332,7 +332,6 @@ class HDFHandler(object):
         self. filename = filename
         logger.info('Opening HDF file: {0:s}'.format(self.filename))
         self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
-        self._ID = 0
         self._states = list(constants.States)
 
     def __enter__(self):

@@ -19,12 +19,12 @@ NVCC = nvcc
 # If your compiler is a bit older you may need to change -std=c++11 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
 GDBFLAGS = -g3 -O0 -ggdb
-CXXFLAGS = -Wall -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false -Iinclude
+CXXFLAGS = -Wall -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false -I"./btrack/include"
 LDFLAGS = -shared $(XLDFLAGS)
 
 EXE = tracker
-SRC_DIR = ./src
-OBJ_DIR = ./obj
+SRC_DIR = ./btrack/src
+OBJ_DIR = ./btrack/obj
 SRC = $(wildcard $(SRC_DIR)/*.cc)
 OBJ = $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
@@ -33,7 +33,7 @@ OBJ = $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 all: $(EXE)
 
 $(EXE): $(OBJ)
-	$(CXX) $(LDFLAGS) -o ./libs/libtracker.$(EXT) $^
+	$(CXX) $(LDFLAGS) -o ./btrack/libs/libtracker.$(EXT) $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@

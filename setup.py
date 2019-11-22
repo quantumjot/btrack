@@ -4,9 +4,10 @@ import os
 import sys
 import subprocess
 
+from setuptools import setup
 from setuptools.command.install import install
-from distutils.command.build import build
-from distutils.core import setup
+# from setuptools.command.build import build
+
 
 cwd = os.getcwd()
 
@@ -21,38 +22,34 @@ def check_eigen_installed():
     sig_file = "signature_of_eigen3_matrix_library"
     eigen_dst = os.path.join(cwd, "btrack", "include", "eigen")
     eigen_signature = os.path.join(eigen_dst, sig_file)
-    if not os.path.exists(eigen_signature):
-        # try to clone it
-        clone_eigen = ["git", "clone", EIGEN_GIT, eigen_dst]
-        if subprocess.call(clone_eigen) != 0:
-            sys.exit(-1)
+    # if not os.path.exists(eigen_signature):
+    #     # try to clone it
+    #     clone_eigen = ["git", "clone", EIGEN_GIT, eigen_dst]
+    #     if subprocess.call(clone_eigen) != 0:
+    #         sys.exit(-1)
 
-class BuildTracker(build):
+class BuildTracker(install):
     def run(self):
         # check for eigen
         check_eigen_installed()
 
-        # run the build
-        build.run(self)
+        # make the local libs and obj folder
+        if not os.path.exists('./btrack/libs'):
+            os.makedirs('./btrack/libs')
+        if not os.path.exists('./btrack/obj'):
+            os.makedirs('./btrack/obj')
 
         # run the build scripts
-        build_sh = os.path.join(cwd, "btrack", "bin", "build_tracker.sh")
-        os.system("chmod +x {}".format(build_sh))
-        os.system("sh {}".format(build_sh))
+        make_BT = ["make"]
+        if subprocess.call(make_BT) != 0:
+            sys.exit(-1)
 
-
-# TODO(arl): finish this!
-class InstallTracker(install):
-    def run(self):
+        # run the build
         install.run(self)
-        # install btrack executables
-        # self.copy_tree(self.build_lib, self.install_lib)
-        # print self.build_lib, self.install_lib
-
 
 
 setup(name='BayesianTracker',
-      version='0.2.13',
+      version='0.3.0',
       description='BayesianTracker is a simple Python/C++ based framework for multi-object tracking',
       author='Alan R. Lowe',
       author_email='a.lowe@ucl.ac.uk',
@@ -61,5 +58,4 @@ setup(name='BayesianTracker',
       package_data={'btrack': ['libs/libtracker.so', 'libs/libtracker.dylib']},
       install_requires=get_install_required(),
       license='LICENSE.md',
-      cmdclass={'build': BuildTracker,
-                'install': InstallTracker})
+      cmdclass={'install': BuildTracker})

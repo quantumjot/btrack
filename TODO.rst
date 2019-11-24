@@ -30,6 +30,7 @@ Updates
 0.3.0
 -----
 - Migrated to Python 3.7
+- Updated (cleaned) Makefile for easier installation
 
 0.2.13
 ------

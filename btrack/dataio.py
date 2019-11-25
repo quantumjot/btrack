@@ -52,42 +52,6 @@ def fate_table(tracks):
 
 
 
-def export(filename, tracks):
-    """ export
-
-    Generic exporter of track data. Infers file type from extension and writes
-    appropriate file type.
-
-    Args:
-        filename: full path to output file. If no extension is specified, use
-            JSON by default.
-        tracks: a list of Tracklet objects to write out.
-
-    """
-
-    if not isinstance(filename, str):
-        raise TypeError('Filename must be a string')
-
-    # try to infer the file format from the extension
-    _, fmt = os.path.splitext(filename)
-
-    if not fmt:
-        fmt = '.json'
-        filename = filename+fmt
-
-    if fmt not in constants.EXPORT_FORMATS:
-        raise ValueError('Export format not recognised')
-
-    if fmt == '.json':
-        export_JSON(filename, tracks)
-    elif fmt == '.mat':
-        export_MATLAB(filename, tracks)
-    elif fmt == '.hdf5':
-        export_HDF(filename, tracks)
-    else:
-        raise Exception('How did we get here?')
-
-
 
 
 def check_track_type(tracks):
@@ -227,7 +191,6 @@ def export_MATLAB(filename, tracks):
     if not check_track_type(tracks):
         raise TypeError('Tracks must be of type btypes.Tracklet')
 
-
     export_track = np.vstack([trk.to_array() for trk in tracks])
 
     output = {'tracks': export_track,
@@ -268,28 +231,20 @@ def export_HDF(filename, tracks, dummies=[]):
             print(type(tracks[0][0]), tracks[0][0])
             raise TypeError('Track references should be integers')
 
-
         with HDF5FileHandler(filename) as hdf
             hdf.write_tracks(tracks)
             if dummies:
                 h.write_dummies(dummies)
 
     elif check_track_type(tracks):
-        # we have a list of tracklet objects
-        print('oops!')
+        raise NotImplementedError('Track export to new HDF file not supported')
 
     else:
         raise TypeError('Tracks is of an unknown format.')
 
 
 
-def hdf_loader_delegator(filename):
-    with h5py.File(filename, 'r') as h:
-        if 'objects' in list(h.keys()):
-            handler = HDF5FileHandler
-        else:
-            handler = HDF5FileHandler_LEGACY
-    return handler(filename)
+
 
 
 class _PyTrackObjectFactory(object):
@@ -348,62 +303,6 @@ class HDFHandler(object):
         """ Set up a new PyTrackObject quickly using data from a file """
         raise DeprecationWarning("Use 'get' function instead")
 
-
-
-
-class HDF5FileHandler_LEGACY(HDFHandler):
-    """ HDF5FileHandler
-
-    DEPRECATED: Very slow.
-
-    Generic HDF5 file hander for reading and writing datasets. This is
-    inter-operable between segmentation, tracking and analysis code.
-
-    Basic format of the HDF file is:
-        frames/
-            frame_1/
-                coords
-                labels
-                dummies
-            frame_2/
-            ...
-    """
-
-    def __init__(self, filename=None):
-        HDFHandler.__init__(self, filename)
-        logger.warning('Using LEGACY HDF reader. This will be deprecated.')
-        logger.warning('The new reader has significant performance gains.')
-
-    @property
-    def objects(self):
-        """ Return the objects in the file """
-        objects = []
-
-        lambda_frm = lambda f: int(re.search('([0-9]+)', f).group(0))
-        frms = sorted(list(self._hdf['frames'].keys()), key=lambda_frm)
-
-        for frm in frms:
-            txyz = self._hdf['frames'][frm]['coords']
-            labels = None
-
-            if 'labels' in self._hdf['frames'][frm]:
-                labels = self._hdf['frames'][frm]['labels']
-                assert txyz.shape[0] == labels.shape[0]
-
-            for o in range(txyz.shape[0]):
-                if labels is not None:
-                    class_label = labels[o,:]
-                else:
-                    class_label = None
-
-                # get the object type
-                object_type = txyz[o,4]
-
-                objects.append(ObjectFactory.get(txyz[o,:],
-                                                 label=class_label,
-                                                 obj_type=object_type))
-
-        return objects
 
 
 

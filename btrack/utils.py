@@ -219,8 +219,10 @@ def crop_volume(objects, volume=constants.VOLUME):
 def import_HDF(filename):
     """ Import the HDF data. """
     from . import dataio
-    hdf_handler = dataio.hdf_loader_delegator(filename)
-    return hdf_handler.objects
+    with dataio.HDF5FileHandler(filename) as hdf:
+        objects = hdf.objects
+    return objects
+
 
 
 def build_trees(tracks, update_tracks=True):

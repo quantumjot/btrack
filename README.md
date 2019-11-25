@@ -96,7 +96,8 @@ $ conda install pip
 3. Install the tracker
 ```
 $ cd BayesianTracker
-$ pip install .
+$ chmod +x build.sh
+$ ./build.sh
 ```
 
 If all goes well, you should be able to import BayesianTracker:

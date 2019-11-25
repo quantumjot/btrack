@@ -232,7 +232,7 @@ def export_MATLAB(filename, tracks):
 
 
 
-def export_HDF(filename, tracks, dummies=[]):
+def export_HDF(filename, obj_type, tracks, dummies=None):
     """ HDF exporter for large datasets.
 
     This needs to deal with two different scenarios:
@@ -260,10 +260,10 @@ def export_HDF(filename, tracks, dummies=[]):
             print(type(tracks[0][0]), tracks[0][0])
             raise TypeError('Track references should be integers')
 
-        with HDF5FileHandler(filename) as hdf:
-            hdf.write_tracks(tracks)
+        with HDF5FileHandler(filename, read_write='a') as hdf:
+            hdf.write_tracks(tracks, obj_type=obj_type)
             if dummies:
-                h.write_dummies(dummies)
+                hdf.write_dummies(dummies, obj_type=obj_type)
 
     elif check_track_type(tracks):
         raise NotImplementedError('Track export to new HDF file not supported')
@@ -280,15 +280,15 @@ def export_HDF(filename, tracks, dummies=[]):
 
 
 class HDFHandler(object):
-    def __init__(self, filename):
+    def __init__(self, filename, read_write='r'):
         self. filename = filename
         logger.info('Opening HDF file: {0:s}'.format(self.filename))
-        self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
+        self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
 
     @property
     def object_types(self):
-        return self._hdf['coords'].keys()
+        return list(self._hdf['objects'].keys())
 
     def __enter__(self):
         return self
@@ -338,8 +338,8 @@ class HDF5FileHandler(HDFHandler):
         need to load them all anyway.
     """
 
-    def __init__(self, filename=None):
-        HDFHandler.__init__(self, filename)
+    def __init__(self, filename=None, read_write='r'):
+        HDFHandler.__init__(self, filename, read_write=read_write)
 
     @property
     def objects(self):
@@ -369,9 +369,14 @@ class HDF5FileHandler(HDFHandler):
     def write_dummies(self, dummies, obj_type=None):
         """ Write dummy objects to HDF file """
         assert(obj_type in self.object_types)
+        grp = self._hdf['tracks'][obj_type]
+        o = self.object_types.index(obj_type) + 1
+        txyz = np.stack([[d.t, d.x, d.y, d.z, o] for d in dummies], axis=0)
+        grp.create_dataset('dummies', data=txyz, dtype='float32')
 
     def write_tracks(self, tracks, obj_type=None):
         """ Write tracks to HDF file """
+        print(obj_type, self.object_types)
         assert(obj_type in self.object_types)
         hdf_tracks = np.concatenate(tracks, axis=0)
 
@@ -382,9 +387,12 @@ class HDF5FileHandler(HDFHandler):
             else: offset = 0
             hdf_frame_map[i,:] = np.array([0, len(track)]) + offset
 
-
         if 'tracks' not in self._hdf:
             self._hdf.create_group('tracks')
+
+        if obj_type in self._hdf['tracks']:
+            logger.warning('Removing {} from HDF file. '.format(obj_type))
+            del self._hdf['tracks'][obj_type]
 
         grp = self._hdf['tracks'].create_group(obj_type)
         grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')

@@ -319,6 +319,8 @@ void HypothesisEngine::create( void )
       float d = link_distance(trk, this_trk);
       float dt = link_time(trk, this_trk);
 
+      assert(d>0);
+
       // if we exceed these continue
       if (d  >= m_params.dist_thresh) continue;
       if (dt >= m_params.time_thresh || dt < 1) continue; // this was one
@@ -353,7 +355,7 @@ void HypothesisEngine::create( void )
 
     // iterate through the conflicts and put division hypotheses into the
     // list, including links to the children
-    for (unsigned int p=0; p<conflicts.size(); p++) {
+    for (unsigned int p=0; p<conflicts.size()-1; p++) {
       // get the first putative child
       TrackletPtr child_one = conflicts[p];
 

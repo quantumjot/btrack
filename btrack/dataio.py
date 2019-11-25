@@ -269,11 +269,10 @@ def export_HDF(filename, tracks, dummies=[]):
             raise TypeError('Track references should be integers')
 
 
-        h = HDF5_FileHandler(filename)
-        h.write_tracks(tracks)
-        if dummies:
-            h.write_dummies(dummies)
-        h.close()
+        with HDF5FileHandler(filename) as hdf
+            hdf.write_tracks(tracks)
+            if dummies:
+                h.write_dummies(dummies)
 
     elif check_track_type(tracks):
         # we have a list of tracklet objects
@@ -287,9 +286,9 @@ def export_HDF(filename, tracks, dummies=[]):
 def hdf_loader_delegator(filename):
     with h5py.File(filename, 'r') as h:
         if 'objects' in list(h.keys()):
-            handler = HDF5_FileHandler
+            handler = HDF5FileHandler
         else:
-            handler = HDF5_FileHandler_LEGACY
+            handler = HDF5FileHandler_LEGACY
     return handler(filename)
 
 
@@ -340,8 +339,6 @@ class HDFHandler(object):
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-    def __del__(self): self.close()
-
     def close(self):
         if not self._hdf: return
         logger.info('Closing HDF file: {0:s}'.format(self.filename))
@@ -354,8 +351,8 @@ class HDFHandler(object):
 
 
 
-class HDF5_FileHandler_LEGACY(HDFHandler):
-    """ HDF5_FileHandler
+class HDF5FileHandler_LEGACY(HDFHandler):
+    """ HDF5FileHandler
 
     DEPRECATED: Very slow.
 
@@ -411,8 +408,8 @@ class HDF5_FileHandler_LEGACY(HDFHandler):
 
 
 
-class HDF5_FileHandler(HDFHandler):
-    """ HDF5_FileHandler
+class HDF5FileHandler(HDFHandler):
+    """ HDF5FileHandler
 
     Generic HDF5 file hander for reading and writing datasets. This is
     inter-operable between segmentation, tracking and analysis code.
@@ -422,9 +419,15 @@ class HDF5_FileHandler(HDFHandler):
             gfp/
                 coords
                 labels
+                map
+                tracks
+                dummies
             rfp/
                 coords
                 labels
+                map
+                tracks
+                dummies
             ...
 
     Notes:
@@ -459,6 +462,14 @@ class HDF5_FileHandler(HDFHandler):
     @property
     def tracks(self):
         """ Return the tracks in the file """
+        pass
+
+    def write_dummies(self, dummies):
+        """ Write dummy objects to HDF file """
+        pass
+
+    def write_tracks(self, tracks):
+        """ Write tracks to HDF file """
         pass
 
 

@@ -174,29 +174,7 @@ There are many additional options, including the ability to define object models
 Observations can be provided in three basic formats:
 + a simple JSON file
 + HDF5 for larger/more complex datasets, or
-+ using your own code as a PyTrackObject.
++ using your own code as a `PyTrackObject`.
 
 HDF5 is the *default* format for data interchange, where additional information
 such as images or metadata can also be stored.  
-
-Data can also be imported using JSON format. Here is an example of the simple JSON format:
-```json
-{
-  "Object_203622": {
-    "x": 554.29737483861709,
-    "y": 1199.362071438818,
-    "z": 0.0,
-    "t": 862,
-    "label": "interphase",
-    "states": 5,
-    "probability": [
-      0.996992826461792,
-      0.0021888131741434336,
-      0.0006106126820668578,
-      0.000165432647918351,
-      4.232166247675195e-05
-    ],
-    "dummy": false
-  }
-}
-```

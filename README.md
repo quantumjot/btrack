@@ -1,6 +1,6 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS**
+**WORK IN PROGRESS** :microscope::computer:
 
 
 BayesianTracker is a multi object tracking algorithm, specifically used to
@@ -71,6 +71,8 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 }
 ```
 
+You can also --> :star: :wink:
+
 ---
 
 ### Installation
@@ -93,7 +95,7 @@ $ conda activate btrack
 $ conda install pip
 ```
 
-3. Install the tracker
+3. Compile and install the tracker:
 ```
 $ cd BayesianTracker
 $ chmod +x build.sh
@@ -110,6 +112,8 @@ should return:
 [INFO][2019/08/22 10:26:11 AM] btrack (v0.3.x) library imported
 [INFO][2019/08/22 10:26:11 AM] Loaded btrack: <your python site-packages>/btrack/libs/libtracker.so
 ```
+
+
 
 ---
 

@@ -207,10 +207,10 @@ def fate_table(tracks):
 
     fate_table = {}
     for t in tracks:
-        if t.fate_label not in list(fate_table.keys()):
-            fate_table[t.fate_label] = [t.ID]
+        if t.fate not in list(fate_table.keys()):
+            fate_table[t.fate] = [t.ID]
         else:
-            fate_table[t.fate_label].append(t.ID)
+            fate_table[t.fate].append(t.ID)
     return fate_table
 
 
@@ -359,12 +359,12 @@ class HDF5FileHandler(HDFHandler):
     @property
     def dummies(self):
         """ Return the dummy objects in the file """
-        pass
+        raise NotImplementedError
 
     @property
     def tracks(self):
         """ Return the tracks in the file """
-        pass
+        raise NotImplementedError
 
     def write_dummies(self, dummies, obj_type=None):
         """ Write dummy objects to HDF file """

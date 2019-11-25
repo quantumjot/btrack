@@ -397,14 +397,14 @@ class Tracklet(object):
         export. """
         # TODO(arl): add the Kalman filter output here too
         # return np.hstack((self.__data, np.ones((len(self),1))*self.ID))
-        tmp_track = np.zeros((len(trk),7), dtype='float32')
+        tmp_track = np.zeros((len(self),7), dtype='float32')
         tmp_track[:,0] = self.x
         tmp_track[:,1] = self.y
         tmp_track[:,2] = self.t
         tmp_track[:,3] = self.ID
         tmp_track[:,4] = self.parent
         tmp_track[:,5] = self.root
-        tmp_track[:,6] = self.label
+        tmp_track[:,6] = [constants.States[l].value for l in self.label]
         return tmp_track
 
     def in_frame(self, frame):

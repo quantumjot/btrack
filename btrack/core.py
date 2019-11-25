@@ -315,6 +315,12 @@ class BayesianTracker(object):
         return self._sort(tracks)
 
 
+    @property
+    def dummies(self):
+        """ Return a list of dummy objects """
+        return [lib.get_dummy(self._engine, -(i+1)) for i in range( self.n_dummies)]
+
+
     def _sort(self, tracks):
         """ Return a sorted list of tracks """
         return sorted(tracks, key=lambda t:len(t), reverse=True)

@@ -37,27 +37,43 @@ from scipy.io import savemat
 logger = logging.getLogger('worker_process')
 
 
-def fate_table(tracks):
-    """ Create a fate table of all of the tracks. This is used by the MATLAB
-    exporter.
-    """
+class _PyTrackObjectFactory(object):
+    def __init__(self):
+        self.reset()
 
-    fate_table = {}
-    for t in tracks:
-        if t.fate_label not in list(fate_table.keys()):
-            fate_table[t.fate_label] = [t.ID]
+    def get(self, txyz, label=None, obj_type=0):
+        """ get an instatiated object """
+        if label is not None:
+            class_label = label[0].astype('int')
+            probability = label[1:].astype('float32')
         else:
-            fate_table[t.fate_label].append(t.ID)
-    return fate_table
+            class_label = constants.States.UNDEFINED.value
+            probability = np.zeros((1,))
 
+        new_object = btypes.PyTrackObject()
+        new_object.ID = self._ID
+        new_object.t = txyz[0].astype('int')
+        new_object.x = txyz[1]
+        new_object.y = txyz[2]
+        new_object.z = txyz[3]
+        new_object.dummy = False
+        new_object.label = class_label          # from the classifier
+        new_object.probability = probability
+        new_object.type = int(obj_type)
 
+        self._ID += 1
+        return new_object
+
+    def reset(self):
+        self._ID = 0
+
+# instatiate the factory
+ObjectFactory = _PyTrackObjectFactory()
 
 
 
 def check_track_type(tracks):
     return isinstance(tracks[0], btypes.Tracklet)
-
-
 
 
 def export_single_track_JSON(filename, track):
@@ -184,6 +200,19 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
     return tracks
 
 
+def fate_table(tracks):
+    """ Create a fate table of all of the tracks. This is used by the MATLAB
+    exporter.
+    """
+
+    fate_table = {}
+    for t in tracks:
+        if t.fate_label not in list(fate_table.keys()):
+            fate_table[t.fate_label] = [t.ID]
+        else:
+            fate_table[t.fate_label].append(t.ID)
+    return fate_table
+
 
 def export_MATLAB(filename, tracks):
     """ MATLAB Exporter for track data. """
@@ -231,7 +260,7 @@ def export_HDF(filename, tracks, dummies=[]):
             print(type(tracks[0][0]), tracks[0][0])
             raise TypeError('Track references should be integers')
 
-        with HDF5FileHandler(filename) as hdf
+        with HDF5FileHandler(filename) as hdf:
             hdf.write_tracks(tracks)
             if dummies:
                 h.write_dummies(dummies)
@@ -247,38 +276,7 @@ def export_HDF(filename, tracks, dummies=[]):
 
 
 
-class _PyTrackObjectFactory(object):
-    def __init__(self):
-        self.reset()
 
-    def get(self, txyz, label=None, obj_type=0):
-        """ get an instatiated object """
-        if label is not None:
-            class_label = label[0].astype('int')
-            probability = label[1:].astype('float32')
-        else:
-            class_label = constants.States.UNDEFINED.value
-            probability = np.zeros((1,))
-
-        new_object = btypes.PyTrackObject()
-        new_object.ID = self._ID
-        new_object.t = txyz[0].astype('int')
-        new_object.x = txyz[1]
-        new_object.y = txyz[2]
-        new_object.z = txyz[3]
-        new_object.dummy = False
-        new_object.label = class_label          # from the classifier
-        new_object.probability = probability
-        new_object.type = int(obj_type)
-
-        self._ID += 1
-        return new_object
-
-    def reset(self):
-        self._ID = 0
-
-# instatiate the factory
-ObjectFactory = _PyTrackObjectFactory()
 
 
 class HDFHandler(object):
@@ -287,6 +285,10 @@ class HDFHandler(object):
         logger.info('Opening HDF file: {0:s}'.format(self.filename))
         self._hdf = h5py.File(filename, 'r') # a -file doesn't have to exist
         self._states = list(constants.States)
+
+    @property
+    def object_types(self):
+        return self._hdf['coords'].keys()
 
     def __enter__(self):
         return self
@@ -319,15 +321,16 @@ class HDF5FileHandler(HDFHandler):
                 coords
                 labels
                 map
-                tracks
-                dummies
             rfp/
                 coords
                 labels
                 map
+            ...
+        tracks/
+            gfp/
                 tracks
                 dummies
-            ...
+                map
 
     Notes:
         NOTE(arl): the final slice [:] reads the whole file in one go,
@@ -342,7 +345,7 @@ class HDF5FileHandler(HDFHandler):
     def objects(self):
         """ Return the objects in the file """
         objects = []
-        for ci, c in enumerate(self._hdf['objects'].keys()):
+        for ci, c in enumerate(self.object_types):
             # read the whole dataset into memory
             txyz = self._hdf['objects'][c]['coords'][:]
             labels = self._hdf['objects'][c]['labels'][:]
@@ -363,13 +366,29 @@ class HDF5FileHandler(HDFHandler):
         """ Return the tracks in the file """
         pass
 
-    def write_dummies(self, dummies):
+    def write_dummies(self, dummies, obj_type=None):
         """ Write dummy objects to HDF file """
-        pass
+        assert(obj_type in self.object_types)
 
-    def write_tracks(self, tracks):
+    def write_tracks(self, tracks, obj_type=None):
         """ Write tracks to HDF file """
-        pass
+        assert(obj_type in self.object_types)
+        hdf_tracks = np.concatenate(tracks, axis=0)
+
+        hdf_frame_map = np.zeros((len(tracks),2), dtype=np.int32)
+        for i, track in enumerate(tracks):
+            if i > 0:
+                offset = hdf_frame_map[i-1,1]
+            else: offset = 0
+            hdf_frame_map[i,:] = np.array([0, len(track)]) + offset
+
+
+        if 'tracks' not in self._hdf:
+            self._hdf.create_group('tracks')
+
+        grp = self._hdf['tracks'].create_group(obj_type)
+        grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')
+        grp.create_dataset('map', data=hdf_frame_map, dtype='int32')
 
 
 def import_JSON(filename):

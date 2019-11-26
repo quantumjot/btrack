@@ -302,6 +302,8 @@ void HypothesisEngine::create( void )
     // if we have conflicts, this may mean divisions have occurred
     if (conflicts.size() < 2) continue;
 
+    // std::cout << "Conflicts: " << conflicts.size() << std::endl;
+
     // iterate through the conflicts and put division hypotheses into the
     // list, including links to the children
     for (unsigned int p=0; p<conflicts.size()-1; p++) {
@@ -314,6 +316,9 @@ void HypothesisEngine::create( void )
 
         // calculate the division hypothesis
         hypothesis_branch(trk, trk_c0, trk_c1);
+
+        // std::cout << trk->ID << " --> [" << trk_c0->ID << ", " << trk_c1->ID << "]" << std::endl;
+        // std::cout << link_distance(trk, trk_c0) << " - " << link_distance(trk, trk_c1) << std::endl;
 
       } // q
     } // p
@@ -678,7 +683,7 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   double dot_product = d_c0.normalized().transpose() * d_c1.normalized();
 
   // initialise variables
-  double delta_g;
+  double daughter_angle;
   double weight;
 
   // parent is metaphase
@@ -720,14 +725,13 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
     }
   }
 
-
   // weighted angle between the daughter cells and the parent
   // use an erf as the weighting function
   // dot product scales between -1 (ideal) where the daughters are on opposite
   // sides of the parent, to 1, where the daughters are close in space on the
   // same side (worst case). Error function will scale these from ~0. to ~1.
-  // meaning that the ideal case minimises the delta_g
+  // meaning that the ideal case minimises the weight
+  daughter_angle = 1.0 - (( 1.-std::erf(dot_product*3.) ) / 2.0);
 
-  delta_g = weight * ((1.-std::erf(dot_product / (3.*kRootTwo)))/2.0);
-  return std::exp(-delta_g/(2.*m_params.lambda_branch));
+  return std::exp(-(weight*daughter_angle)/(2.*m_params.lambda_branch));
 }

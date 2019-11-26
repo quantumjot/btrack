@@ -280,13 +280,16 @@ void HypothesisEngine::create( void )
       // get the track
       TrackletPtr this_trk = trks_to_test[j];
 
+      // make sure we don't check against the same track!
+      if (trk->ID == this_trk->ID) continue;
+
       // calculate the time and distance between this track and the reference
       float d = link_distance(trk, this_trk);
       float dt = link_time(trk, this_trk);
 
       // if we exceed these continue
-      if (d  >= m_params.dist_thresh) continue;
-      if (dt >= m_params.time_thresh || dt < 1) continue; // this was one
+      if (d  > m_params.dist_thresh) continue;
+      if (dt > m_params.time_thresh || dt < 1) continue; // this was one
 
       // calculate the linkage hypothesis
       hypothesis_link(trk, this_trk);

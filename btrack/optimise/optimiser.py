@@ -27,6 +27,9 @@ from cvxopt import matrix, spmatrix
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
+INIT_FATES = (Fates.INITIALIZE, Fates.INITIALIZE_BORDER, Fates.INITIALIZE_FRONT)
+TERM_FATES = (Fates.TERMINATE, Fates.TERMINATE_BORDER, Fates.TERMINATE_BACK)
+
 class TrackOptimiser(object):
     """ TrackOptimiser
 
@@ -134,14 +137,14 @@ class TrackOptimiser(object):
                 A[N+trk,counter] = 1
                 continue
 
-            elif h.type == Fates.INITIALIZE:
+            elif h.type in INIT_FATES:
                 # an initialisation, therefore we only present this in the
                 # second half of the A matrix
                 trk = trk_idx(h.ID)
                 A[N+trk,counter] = 1
                 continue
 
-            elif h.type == Fates.TERMINATE:
+            elif h.type in TERM_FATES:
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk,counter] = 1

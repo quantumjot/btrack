@@ -259,51 +259,16 @@ void HypothesisEngine::create( void )
     // get the test track
     trk = m_tracks[i];
 
-    // false positive hypothesis calculated for everything
-    Hypothesis h_fp(TYPE_Pfalse, trk);
-    h_fp.probability = safe_log( P_FP( trk ) );
-    m_hypotheses.push_back( h_fp );
+    // calculate the false positive hypothesis
+    hypothesis_false_positive(trk);
 
-    // distance from the frame border
-    float d_start = dist_from_border( trk, true );
-    float d_stop = dist_from_border( trk, false );
+    // calculate initialization and termination hypotheses
+    hypothesis_init(trk);
+    hypothesis_term(trk);
 
-    // now calculate the initialisation
-    if (hypothesis_allowed(TYPE_Pinit)) {
-      if (m_params.relax ||
-          trk->track.front()->t < m_frame_range[0]+m_params.theta_time ||
-          d_start < m_params.theta_dist ) {
+    // calculate the death hypotheis
+    hypothesis_dead(trk);
 
-        Hypothesis h_init(TYPE_Pinit, trk);
-        h_init.probability = safe_log(P_init(trk)) + 0.5*safe_log(P_TP(trk));
-        m_hypotheses.push_back( h_init );
-      }
-    }
-
-    // termination?
-    if (hypothesis_allowed(TYPE_Pterm)) {
-      if (m_params.relax ||
-          trk->track.back()->t > m_frame_range[1]-m_params.theta_time ||
-          d_stop < m_params.theta_dist) {
-
-        Hypothesis h_term(TYPE_Pterm, trk);
-        h_term.probability = safe_log(P_term(trk)) + 0.5*safe_log(P_TP(trk));
-        m_hypotheses.push_back( h_term );
-      }
-    }
-
-    // NEW apoptosis detection hypothesis
-    // modify this for apoptosis
-    unsigned int n_apoptosis = count_apoptosis(trk);
-
-    if (hypothesis_allowed(TYPE_Papop) &&
-        n_apoptosis >= m_params.apop_thresh) {
-
-      Hypothesis h_apoptosis(TYPE_Papop, trk);
-      h_apoptosis.probability = safe_log(P_dead(trk, n_apoptosis))
-                                + 0.5*safe_log(P_TP(trk));
-      m_hypotheses.push_back( h_apoptosis );
-    }
 
     // manage conflicts
     std::vector<TrackletPtr> conflicts;
@@ -319,31 +284,12 @@ void HypothesisEngine::create( void )
       float d = link_distance(trk, this_trk);
       float dt = link_time(trk, this_trk);
 
-      assert(d>0);
-
       // if we exceed these continue
       if (d  >= m_params.dist_thresh) continue;
       if (dt >= m_params.time_thresh || dt < 1) continue; // this was one
 
-      // TODO(arl): limit the maximum link distance?
-      if (hypothesis_allowed(TYPE_Plink)) {
-
-        // if (trk->track.back()->label == STATE_metaphase &&
-        //     this_trk->track.front()->label == STATE_anaphase &&
-        //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-        //       // do nothing
-        // } else {
-
-          // if we allow this link, make the hypothesis
-          Hypothesis h_link(TYPE_Plink, trk);
-          h_link.trk_link_ID = this_trk;
-          h_link.probability = safe_log(P_link(trk, this_trk, d, dt))
-                              + 0.5*safe_log(P_TP(trk))
-                              + 0.5*safe_log(P_TP(this_trk));
-          m_hypotheses.push_back( h_link );
-
-        // }
-      }
+      // calculate the linkage hypothesis
+      hypothesis_link(trk, this_trk);
 
       // append this to conflicts
       conflicts.push_back( this_trk );
@@ -357,28 +303,170 @@ void HypothesisEngine::create( void )
     // list, including links to the children
     for (unsigned int p=0; p<conflicts.size()-1; p++) {
       // get the first putative child
-      TrackletPtr child_one = conflicts[p];
+      TrackletPtr trk_c0 = conflicts[p];
 
       for (unsigned int q=p+1; q<conflicts.size(); q++) {
         // get the second putative child
-        TrackletPtr child_two = conflicts[q];
+        TrackletPtr trk_c1 = conflicts[q];
 
-        if (hypothesis_allowed(TYPE_Pdivn)) {
+        // calculate the division hypothesis
+        hypothesis_branch(trk, trk_c0, trk_c1);
 
-          Hypothesis h_divn(TYPE_Pdivn, trk);
-          h_divn.trk_child_one_ID = child_one;
-          h_divn.trk_child_two_ID = child_two;
-          h_divn.probability = safe_log(P_branch(trk, child_one, child_two))
-                              + 0.5*safe_log(P_TP(trk))
-                              + 0.5*safe_log(P_TP(child_one))
-                              + 0.5*safe_log(P_TP(child_two));
-          m_hypotheses.push_back( h_divn );
-        }
       } // q
     } // p
 
   }
 
+}
+
+// HYPOTHESES
+void HypothesisEngine::hypothesis_false_positive( TrackletPtr a_trk )
+{
+  // false positive hypothesis calculated for everything
+  Hypothesis h_fp(TYPE_Pfalse, a_trk);
+  h_fp.probability = safe_log( P_FP( a_trk ) );
+  m_hypotheses.push_back( h_fp );
+}
+
+void HypothesisEngine::hypothesis_init( TrackletPtr a_trk )
+{
+
+  // distance from the frame border
+  float d_start = dist_from_border( a_trk, true );
+  // float d_stop = dist_from_border( trk, false );
+
+  // now calculate the initialisation
+  if (hypothesis_allowed(TYPE_Pinit)) {
+    if (m_params.relax ||
+        a_trk->track.front()->t < m_frame_range[0]+m_params.theta_time ||
+        d_start < m_params.theta_dist ) {
+
+      // calculate the probabilities
+      double prob_init_border = P_init_border(a_trk);
+      double prob_init_front = P_init_front(a_trk);
+
+      // take the highest likelihood hypothesis
+      // double prob_init = std::max(prob_init_border, prob_init_front);
+      //short int best_hypothesis = std::argmax(prob_init_border, prob_init_front);
+
+      if (prob_init_border > prob_init_front) {
+        Hypothesis h_init(TYPE_Pinit_border, a_trk);
+        h_init.probability = safe_log(prob_init_border)
+                             + 0.5*safe_log(P_TP(a_trk));
+        m_hypotheses.push_back( h_init );
+        return;
+
+      } else {
+        Hypothesis h_init(TYPE_Pinit_front, a_trk);
+        h_init.probability = safe_log(prob_init_front)
+                             + 0.5*safe_log(P_TP(a_trk));
+        m_hypotheses.push_back( h_init );
+        return;
+      }
+
+
+    }
+  }
+}
+
+void HypothesisEngine::hypothesis_term( TrackletPtr a_trk )
+{
+  // Probability of termination event.  Similar to initialisation, except that
+  // we use the final location/time of the tracklet.
+
+  // distance from the frame border
+  // float d_start = dist_from_border( a_trk, true );
+  float d_stop = dist_from_border( a_trk, false );
+
+  // now calculate the termination
+  if (hypothesis_allowed(TYPE_Pterm)) {
+    if (m_params.relax ||
+        a_trk->track.back()->t > m_frame_range[1]-m_params.theta_time ||
+        d_stop < m_params.theta_dist) {
+
+      // calculate the probabilities
+      double prob_term_border = P_term_border(a_trk);
+      double prob_term_back = P_term_back(a_trk);
+
+      // take the highest likelihood hypothesis
+      // double prob_term = std::max(prob_term_border, prob_term_back);
+
+      if (prob_term_border > prob_term_back) {
+        Hypothesis h_term(TYPE_Pterm_border, a_trk);
+        h_term.probability = safe_log(prob_term_border)
+                             + 0.5*safe_log(P_TP(a_trk));
+        m_hypotheses.push_back( h_term );
+        return;
+
+      } else {
+        Hypothesis h_term(TYPE_Pterm_back, a_trk);
+        h_term.probability = safe_log(prob_term_back)
+                             + 0.5*safe_log(P_TP(a_trk));
+        m_hypotheses.push_back( h_term );
+        return;
+      }
+    }
+  }
+}
+
+
+void HypothesisEngine::hypothesis_dead( TrackletPtr a_trk )
+{
+  // NEW apoptosis detection hypothesis
+  unsigned int n_apoptosis = count_apoptosis(a_trk);
+
+  if (hypothesis_allowed(TYPE_Papop) &&
+      n_apoptosis >= m_params.apop_thresh) {
+
+    Hypothesis h_apoptosis(TYPE_Papop, a_trk);
+    h_apoptosis.probability = safe_log(P_dead(a_trk, n_apoptosis))
+                              + 0.5*safe_log(P_TP(a_trk));
+    m_hypotheses.push_back( h_apoptosis );
+  }
+}
+
+void HypothesisEngine::hypothesis_link( TrackletPtr a_trk,
+                                        TrackletPtr a_trk_lnk )
+{
+  if (hypothesis_allowed(TYPE_Plink)) {
+
+    // calculate distances in space and time
+    float d = link_distance(a_trk, a_trk_lnk);
+    float dt = link_time(a_trk, a_trk_lnk);
+
+    // if (trk->track.back()->label == STATE_metaphase &&
+    //     this_trk->track.front()->label == STATE_anaphase &&
+    //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+    //       // do nothing
+    // } else {
+
+    // if we allow this link, make the hypothesis
+    Hypothesis h_link(TYPE_Plink, a_trk);
+    h_link.trk_link_ID = a_trk_lnk;
+    h_link.probability = safe_log(P_link(a_trk, a_trk_lnk, d, dt))
+                        + 0.5*safe_log(P_TP(a_trk))
+                        + 0.5*safe_log(P_TP(a_trk_lnk));
+    m_hypotheses.push_back( h_link );
+
+    // }
+  }
+}
+
+void HypothesisEngine::hypothesis_branch( TrackletPtr a_trk,
+                                          TrackletPtr a_trk_c0,
+                                          TrackletPtr a_trk_c1 )
+{
+  if (hypothesis_allowed(TYPE_Pdivn)) {
+
+    Hypothesis h_divn(TYPE_Pdivn, a_trk);
+    h_divn.trk_child_one_ID = a_trk_c0;
+    h_divn.trk_child_two_ID = a_trk_c1;
+    h_divn.probability = safe_log(P_branch(a_trk, a_trk_c0, a_trk_c1))
+                        + 0.5*safe_log(P_TP(a_trk))
+                        + 0.5*safe_log(P_TP(a_trk_c0))
+                        + 0.5*safe_log(P_TP(a_trk_c1));
+    m_hypotheses.push_back( h_divn );
+  }
 }
 
 
@@ -399,14 +487,9 @@ double HypothesisEngine::P_TP( TrackletPtr a_trk ) const
 }
 
 
-
-// INITIALISATION HYPOTHESIS
-double HypothesisEngine::P_init( TrackletPtr a_trk ) const
+// INITIALIZATION HYPOTHESES
+double HypothesisEngine::P_init_border( TrackletPtr a_trk ) const
 {
-  // Probability of a true initialisation event.  These tend to occur close to
-  // the beginning of the sequence or at the periphery of the field of view as
-  // objects enter.
-
   float dist = dist_from_border(a_trk, true);
 
   // NOTE(arl): if we have 'relax' on, then this hypothesis will be generated
@@ -415,36 +498,27 @@ double HypothesisEngine::P_init( TrackletPtr a_trk ) const
   // to penalize cells at the centre of the FOV
   dist = std::min(dist, static_cast<float>(m_params.theta_dist));
 
-  double prob[2] = {0.0, 0.0};
-  bool init = false;
-
-  if (a_trk->track.front()->t < m_frame_range[0]+m_params.theta_time) {
-    prob[0] = std::exp(-(a_trk->track.front()->t-(float)m_frame_range[0]+1.0) /
-              m_params.lambda_time);
-    init = true;
-  }
-
   if (dist < m_params.theta_dist || m_params.relax) {
-    prob[1] = std::exp(-dist/m_params.lambda_dist);
-    init = true;
+    return std::exp(-dist/m_params.lambda_dist);
+  } else {
+    return m_params.eta;
   }
+}
 
-  if (init) {
-    return std::max(prob[0], prob[1]);
+double HypothesisEngine::P_init_front( TrackletPtr a_trk ) const
+{
+  if (a_trk->track.front()->t < m_frame_range[0]+m_params.theta_time) {
+    return std::exp(-(a_trk->track.front()->t-(float)m_frame_range[0]+1.0) /
+                    m_params.lambda_time);
+  } else {
+    return m_params.eta;
   }
-
-  // default return
-  return m_params.eta;
 }
 
 
-
 // TERMINATION HYPOTHESIS
-double HypothesisEngine::P_term( TrackletPtr a_trk ) const
+double HypothesisEngine::P_term_border( TrackletPtr a_trk ) const
 {
-  // Probability of termination event.  Similar to initialisation, except that
-  // we use the final location/time of the tracklet.
-
   float dist = dist_from_border(a_trk, false);
 
   // NOTE(arl): if we have 'relax' on, then this hypothesis will be generated
@@ -453,26 +527,21 @@ double HypothesisEngine::P_term( TrackletPtr a_trk ) const
   // to penalize cells at the centre of the FOV
   dist = std::min(dist, static_cast<float>(m_params.theta_dist));
 
-  double prob[2] = {0.0, 0.0};
-  bool term = false;
-
-  if (m_frame_range[1]-a_trk->track.back()->t < m_params.theta_time) {
-    prob[0] = std::exp(-((float)m_frame_range[1]-a_trk->track.back()->t) /
-              m_params.lambda_time );
-    term = true;
-  }
-
   if (dist < m_params.theta_dist || m_params.relax) {
-    prob[1] = std::exp(-dist/m_params.lambda_dist);
-    term = true;
+    return std::exp(-dist/m_params.lambda_dist);
+  } else {
+    return m_params.eta;
   }
+}
 
-  if (term) {
-    return std::max(prob[0], prob[1]);
+double HypothesisEngine::P_term_back( TrackletPtr a_trk ) const
+{
+  if (m_frame_range[1]-a_trk->track.back()->t < m_params.theta_time) {
+    return std::exp(-((float)m_frame_range[1]-a_trk->track.back()->t) /
+                    m_params.lambda_time );
+  } else {
+    return m_params.eta;
   }
-
-  // default return
-  return m_params.eta;
 }
 
 

@@ -303,13 +303,29 @@ class HypothesisEngine
     ImagingVolume volume;
 
   private:
+
+    // create hypotheses
+    void hypothesis_false_positive(TrackletPtr a_trk);
+    void hypothesis_init(TrackletPtr a_trk);
+    void hypothesis_term(TrackletPtr a_trk);
+    void hypothesis_dead(TrackletPtr a_trk);
+    void hypothesis_link(TrackletPtr a_trk,
+                         TrackletPtr a_trk_lnk);
+    void hypothesis_branch(TrackletPtr a_trk,
+                           TrackletPtr a_trk_c0,
+                           TrackletPtr a_trk_c1);
+
+
+
     // calculation of probabilities
     double P_TP(TrackletPtr a_trk) const;
     double P_FP(TrackletPtr a_trk) const;
 
-    double P_init(TrackletPtr a_trk) const;
+    double P_init_border(TrackletPtr a_trk) const;
+    double P_init_front(TrackletPtr a_trk) const;
 
-    double P_term(TrackletPtr a_trk) const;
+    double P_term_border(TrackletPtr a_trk) const;
+    double P_term_back(TrackletPtr a_trk) const;
 
     double P_link(TrackletPtr a_trk,
                   TrackletPtr a_trk_link) const;

@@ -67,16 +67,20 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 
 // hypothesis and state types
 // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-#define TYPE_Pfalse   0
-#define TYPE_Pinit    1
-#define TYPE_Pterm    2
-#define TYPE_Plink    3
-#define TYPE_Pdivn    4
-#define TYPE_Papop    5
-#define TYPE_Pmrge    6
-#define TYPE_Pextr    7
-#define TYPE_Pdead    666
-#define TYPE_undef    999
+#define TYPE_Pfalse       0
+#define TYPE_Pinit        1
+#define TYPE_Pterm        2
+#define TYPE_Plink        3
+#define TYPE_Pdivn        4
+#define TYPE_Papop        5
+#define TYPE_Pmrge        6
+#define TYPE_Pextr        7
+#define TYPE_Pinit_border 10
+#define TYPE_Pinit_front  11
+#define TYPE_Pterm_border 20
+#define TYPE_Pterm_back   21
+#define TYPE_Pdead        666
+#define TYPE_undef        999
 
 
 // hypothesis generation

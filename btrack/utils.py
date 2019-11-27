@@ -223,6 +223,11 @@ def import_HDF(filename):
         objects = hdf.objects
     return objects
 
+def import_JSON(filename):
+    """ Import JSON data """
+    from . import dataio
+    return dataio.import_JSON(filename)
+
 
 
 def build_trees(tracks, update_tracks=True):

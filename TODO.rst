@@ -31,13 +31,16 @@ Updates
 -----
 - Migrated to Python 3.7
 - Updated (cleaned) Makefile for easier installation
+- Simplified hypothesis generation
+- Added extra feedback to user including different hypotheses for intialization and termination of tracks
+- Tracks can be appended to HDF input files
+- Bug fixes to MATLAB exporter
 
 0.2.13
 ------
 - Added lineage tree creation to TrackManager in C++ lib
 - Added track lineage tree creation
 - Simplified code for conversion to Python 3
-
 
 0.2.12
 ------
@@ -71,7 +74,7 @@ Updates
 - Added children to return type
 - Uses internal track ID for reference
 - Added a split track function, using a rule to split
-- Add windows compatible __declspec(dllexport) for .DLL compilation
+- Add windows compatible __declspec(dllexport) for .DLL compilation (not tested)
 - Added set_volume function to define the imaging volume
 
 0.2.7

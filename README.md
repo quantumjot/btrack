@@ -89,14 +89,13 @@ $ git clone https://github.com/quantumjot/BayesianTracker.git
 ```
 
 2. (Optional, but advised) Create a conda environment:
-```bash
-$ conda create --name btrack python=3.7
+```sh
+$ conda env create -f environment.yml
 $ conda activate btrack
-$ conda install pip
 ```
 
 3. Compile and install the tracker:
-```
+```sh
 $ cd BayesianTracker
 $ chmod +x build.sh
 $ ./build.sh
@@ -183,3 +182,5 @@ Observations can be provided in three basic formats:
 
 HDF5 is the *default* format for data interchange, where additional information
 such as images or metadata can also be stored.  
+
+More detail in the wiki.

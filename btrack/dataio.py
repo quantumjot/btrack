@@ -403,6 +403,12 @@ def import_JSON(filename):
     """ generic JSON importer for localisations from other software """
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
+    objects = []
+    for obj in data:
+        txyz = [float(obj[k]) for k in ['t','x','y','z']]
+        objects.append(ObjectFactory.get(txyz))
+    return objects
+
 
 
 if __name__ == "__main__":

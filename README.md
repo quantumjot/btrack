@@ -90,7 +90,7 @@ $ git clone https://github.com/quantumjot/BayesianTracker.git
 
 2. (Optional, but advised) Create a conda environment:
 ```sh
-$ conda env create -f environment.yml
+$ conda env create -f ./BayesianTracker/environment.yml
 $ conda activate btrack
 ```
 

@@ -622,9 +622,9 @@ class BayesianTracker(object):
         kal_cov = np.zeros((n, sz_cov),dtype='float')   # kalman covariance
         kal_pred = np.zeros((n, sz_mu),dtype='float')   # motion model predict
 
-        n_kal = lib.get_kalman_mu(self._engine, kal_mu, index)
-        _ = lib.get_kalman_covar(self._engine, kal_cov, index)
-        _ = lib.get_kalman_pred(self._engine, kal_pred, index)
+        n_kal = lib.get_kalman_mu(self._engine, kal_mu, idx)
+        _ = lib.get_kalman_covar(self._engine, kal_cov, idx)
+        _ = lib.get_kalman_pred(self._engine, kal_pred, idx)
 
         # cat the data [mu(0),...,mu(n),cov(0,0),...cov(n,n), pred(0),..]
         trk.kalman = np.hstack((kal_mu, kal_cov[:,1:], kal_pred[:,1:]))

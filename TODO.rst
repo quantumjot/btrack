@@ -35,6 +35,7 @@ Updates
 - Added extra feedback to user including different hypotheses for intialization and termination of tracks
 - Tracks can be appended to HDF input files
 - Bug fixes to MATLAB exporter
+- Fixed bug with sample config and when returning intermediate output of Kalman filter
 
 0.2.13
 ------

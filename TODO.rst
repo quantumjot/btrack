@@ -27,12 +27,19 @@ Misc
 Updates
 =======
 
+0.3.1
+-----
+- Added new states {NULL, DUMMY} to PyTrackObject
+- Changed default dummy insertion behavior, now given a DUMMY state
+- Added VERSION.txt for quick update of version numbers
+- Small update to Python packaging
+
 0.3.0
 -----
 - Migrated to Python 3.7
 - Updated (cleaned) Makefile for easier installation
 - Simplified hypothesis generation
-- Added extra feedback to user including different hypotheses for intialization and termination of tracks
+- Added extra feedback to user including different hypotheses for initialization and termination of tracks
 - Tracks can be appended to HDF input files
 - Bug fixes to MATLAB exporter
 - Fixed bug with sample config and when returning intermediate output of Kalman filter

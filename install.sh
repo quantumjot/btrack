@@ -4,10 +4,8 @@ mkdir ./btrack/libs
 mkdir ./btrack/obj
 
 # clone Eigen
-if [ -e ./btrack/include/eigen/signature_of_eigen3_matrix_library ]
+if [ ! -e ./btrack/include/eigen/signature_of_eigen3_matrix_library ]
 then
-  echo "Eigen already exists."
-else
   git clone https://github.com/eigenteam/eigen-git-mirror.git ./btrack/include/eigen
 fi
 

@@ -88,8 +88,9 @@ void Tracklet::append_dummy() {
   dummy.x = p.mu(0);
   dummy.y = p.mu(1);
   dummy.z = p.mu(2);
-  dummy.t = this->track.back()->t + 1; // NOTE(arl): is this valid assumption?
-  dummy.label = this->track.back()->label;
+  dummy.t = this->track.back()->t + 1; // NOTE(arl): valid assumption?
+  //dummy.label = this->track.back()->label; // NOTE(arl): valid assumption?
+  dummy.label = STATE_dummy;
   dummy.dummy = true;
 
   // make a shared pointer to this new obejct

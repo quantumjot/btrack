@@ -25,6 +25,7 @@ import numpy as np
 
 from . import utils
 
+from .constants import BTRACK_PATH
 from .btypes import PyTrackObject
 from .btypes import PyTrackingInfo
 from .optimise import hypothesis
@@ -35,7 +36,7 @@ from .optimise import hypothesis
 logger = logging.getLogger('worker_process')
 
 # TODO(arl): sort this out with final packaging!
-BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+# BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 

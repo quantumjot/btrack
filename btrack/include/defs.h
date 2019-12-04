@@ -64,6 +64,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define STATE_anaphase 3
 #define STATE_apoptosis 4
 #define STATE_null 5
+#define STATE_dummy 99
 
 // hypothesis and state types
 // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']

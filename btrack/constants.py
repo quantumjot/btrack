@@ -1,6 +1,14 @@
+import os
 import enum
 
-__version__ = '0.3.0'
+BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+
+def get_version():
+    with open(os.path.join(BTRACK_PATH, "VERSION.txt") ,"r") as ver:
+        version = ver.readline()
+    return version.rstrip()
+
+__version__ = get_version()
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1
@@ -51,3 +59,5 @@ class States(enum.Enum):
     METAPHASE = 2
     ANAPHASE = 3
     APOPTOSIS = 4
+    NULL = 5
+    DUMMY = 99

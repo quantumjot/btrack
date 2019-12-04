@@ -81,7 +81,7 @@ BayesianTracker has been tested with Python 3.7 on OS X and Linux.
 The tracker and hypothesis engine are mostly written in C++ with a C interface to Python.
 
 *NOTE TO WINDOWS USERS*: We have not tested this on Windows. The setup
-instructions below have been tested on Ubuntu 18.04 LTS and OS X 10.13.6.
+instructions below have been tested on Ubuntu 18.04 LTS and OS X 10.15.1.
 
 1. First clone the BayesianTracker repo:
 ```sh
@@ -97,8 +97,8 @@ $ conda activate btrack
 3. Compile and install the tracker:
 ```sh
 $ cd BayesianTracker
-$ chmod +x build.sh
-$ ./build.sh
+$ chmod +x install.sh
+$ ./install.sh
 ```
 
 If all goes well, you should be able to import BayesianTracker:
@@ -125,13 +125,13 @@ import btrack
 from btrack.utils import import_HDF
 
 # NOTE(arl):  This should be from your image segmentation code
-objects = import_HDF('/home/arl/Documents/objects.hdf5')
+objects = import_HDF('/path/to/your/objects.hdf5')
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
 
   # configure the tracker using a config file
-  tracker.configure_from_file('cells_config.json')
+  tracker.configure_from_file('/path/to/your/models/cell_config.json')
 
   # append the objects to be tracked
   tracker.append(objects)

@@ -47,7 +47,7 @@ class _PyTrackObjectFactory(object):
             class_label = label[0].astype('int')
             probability = label[1:].astype('float32')
         else:
-            class_label = constants.States.UNDEFINED.value
+            class_label = constants.States.NULL.value
             probability = np.zeros((1,))
 
         new_object = btypes.PyTrackObject()

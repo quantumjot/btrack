@@ -38,9 +38,9 @@ import itertools
 
 
 
-# TODO(arl): sort this out with final packaging!
-BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
-MODELS_DIR = os.path.join(BTRACK_PATH, "models")
+# # TODO(arl): sort this out with final packaging!
+# BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+# MODELS_DIR = os.path.join(BTRACK_PATH, "models")
 
 
 
@@ -443,11 +443,6 @@ class BayesianTracker(object):
         self._objects = objects
 
 
-    def xyzt(self, array):
-        """ Pass in a numpy array of data """
-        raise NotImplementedError
-
-
     def _stats(self, info_ptr):
         """ Cast the info pointer back to an object """
 
@@ -637,11 +632,6 @@ class BayesianTracker(object):
         dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
         return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
 
-
-    def export(self, filename):
-        """ Export the track data in the appropriate format for subsequent
-        analysis. """
-        raise DeprecationWarning("Export is deprecated. Use utils.export")
 
 
 

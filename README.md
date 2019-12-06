@@ -184,4 +184,4 @@ HDF5 is the *default* format for data interchange, where additional information
 such as images or metadata can also be stored.  
 
 More detail in the wiki:
-https://github.com/quantumjot/BayesianTracker/wiki
+https://github.com/quantumjot/BayesianTracker/wiki/3.-Importing-data

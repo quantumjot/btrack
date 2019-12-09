@@ -29,7 +29,7 @@ import logging
 # import core
 from . import btypes
 from . import constants
-from optimise import hypothesis
+from .optimise import hypothesis
 
 from collections import OrderedDict
 from scipy.io import savemat

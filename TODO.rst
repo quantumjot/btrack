@@ -33,6 +33,8 @@ Updates
 - Changed default dummy insertion behavior, now given a DUMMY state
 - Added VERSION.txt for quick update of version numbers
 - Small update to Python packaging
+- Cleaned repo structure, moved load_config to utils
+- Fixed bug with default class labels in ObjectFactory
 
 0.3.0
 -----

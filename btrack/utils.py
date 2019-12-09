@@ -29,6 +29,7 @@ import logging
 # import core
 from . import btypes
 from . import constants
+from optimise import hypothesis
 
 from collections import OrderedDict
 from scipy.io import savemat
@@ -38,6 +39,35 @@ from scipy.io import savemat
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
+
+def load_config(filename):
+    """ Load a tracking configuration file """
+    if not os.path.exists(filename):
+        # check whether it exists in the user model directory
+        _, fn = os.path.split(filename)
+        local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
+
+        if not os.path.exists(local_filename):
+            logger.error("Configuration file {} not found".format(filename))
+            raise IOError("Configuration file {} not found".format(filename))
+        else:
+            filename = local_filename
+
+    with open(filename, 'r') as config_file:
+        config = json.load(config_file)
+
+    if "TrackerConfig" not in config:
+        logger.error("Configuration file is malformed.")
+        raise Exception("Tracking config is malformed")
+
+    config = config["TrackerConfig"]
+
+    logger.info("Loading configuration file: {}".format(filename))
+    t_config = {"MotionModel": read_motion_model(config),
+                "ObjectModel": read_object_model(config),
+                "HypothesisModel": hypothesis.read_hypothesis_model(config)}
+
+    return t_config
 
 
 

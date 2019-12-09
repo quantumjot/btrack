@@ -27,8 +27,9 @@ import numpy as np
 from . import utils
 from . import constants
 from . import btypes
+from . import libwrapper
 
-from btrack.optimise import hypothesis
+# from btrack.optimise import hypothesis
 from btrack.optimise import optimiser
 from btrack.optimise import lineage
 
@@ -37,12 +38,8 @@ from collections import OrderedDict
 import itertools
 
 
-
-# # TODO(arl): sort this out with final packaging!
-# BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
-# MODELS_DIR = os.path.join(BTRACK_PATH, "models")
-
-
+# get a reference to the library
+lib = libwrapper.LibraryWrapper.lib
 
 # get the logger instance
 logger = logging.getLogger('worker_process')
@@ -62,70 +59,12 @@ if not logger.handlers:
 logger.info('btrack (v{}) library imported'.format(constants.__version__))
 
 
-def log_to_file(pth, level=None):
-    """ Set the logging to output to a directory """
-    raise NotImplementedError
 
 
 
 
 
 
-
-def timeit(func, *args):
-    """ Temporary function. Will remove in final release """
-    t_start = time.time()
-    ret = func(*args)
-    t_elapsed = time.time() - t_start
-    return ret, t_elapsed
-
-
-
-
-def load_config(filename):
-    """ Load a tracking configuration file """
-    if not os.path.exists(filename):
-        # check whether it exists in the user model directory
-        _, fn = os.path.split(filename)
-        local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
-
-        if not os.path.exists(local_filename):
-            logger.error("Configuration file {} not found".format(filename))
-            raise IOError("Configuration file {} not found".format(filename))
-        else:
-            filename = local_filename
-
-    with open(filename, 'r') as config_file:
-        config = json.load(config_file)
-
-    if "TrackerConfig" not in config:
-        logger.error("Configuration file is malformed.")
-        raise Exception("Tracking config is malformed")
-
-    config = config["TrackerConfig"]
-
-    logger.info("Loading configuration file: {}".format(filename))
-    t_config = {"MotionModel": utils.read_motion_model(config),
-                "ObjectModel": utils.read_object_model(config),
-                "HypothesisModel": hypothesis.read_hypothesis_model(config)}
-
-    return t_config
-
-
-
-
-
-
-
-
-
-
-
-
-
-# get a reference to the library
-from . import libwrapper
-lib = libwrapper.LibraryWrapper.lib
 
 class BayesianTracker(object):
     """ BayesianTracker
@@ -149,7 +88,7 @@ class BayesianTracker(object):
     This class is a wrapper for the C++ implementation of the BayesianTracker.
 
     Data can be passed in in the following formats:
-        - impy TrackObject
+        - btrack PyTrackObject (defined in btypes)
         - Optional JSON files using loaders
         - HDF
 
@@ -172,12 +111,12 @@ class BayesianTracker(object):
 
     Members:
         append(): append an object (or list of objects)
-        xyzt(): set an entire array of data
         track(): run the tracking algorithm
         track_interactive(): run the tracking in interactive mode
-        export(): export the data to a JSON format
-        cleanup(): clean up the tracks according to some metrics
         optimise(): run the optimiser
+        cleanup(): clean up the tracks according to some metrics
+
+        configure_from_file(): pass a json configuration file
 
     Args:
         motion_model: a motion model to make motion predictions
@@ -187,7 +126,8 @@ class BayesianTracker(object):
     Properties:
         n_tracks: number of found tracks
         tracks: the tracks themselves
-        refs: the tracks (by refernce)
+        refs: the tracks (by reference)
+        dummies: the dummy objects inserted by the tracker
         volume: the imaging volume [x,y,z,t]
         frame_range: the frame range for tracking, essentially the last
             dimension of volume
@@ -244,7 +184,7 @@ class BayesianTracker(object):
 
     def configure_from_file(self, filename):
         """ Configure the tracker from a configuration file """
-        config = load_config(filename)
+        config = utils.load_config(filename)
         self.configure(config)
 
 
@@ -460,15 +400,14 @@ class BayesianTracker(object):
             return
 
         logger.info('Starting tracking... ')
-        ret, tm = timeit( lib.track,  self._engine )
+        # ret, tm = timeit( lib.track,  self._engine )
+        ret = lib.track(self._engine)
 
         # get the statistics
         stats = self._stats(ret)
 
         if not utils.log_error(stats.error):
-            logger.info('SUCCESS. Found {} tracks in {} frames (in '
-                '{2:.2f}s)'.format(self.n_tracks, 1+self._frame_range[1],
-                tm))
+            logger.info('SUCCESS. Found {} tracks in {} frames'.format(self.n_tracks, 1+self._frame_range[1]))
 
         # can log the statistics as well
         utils.log_stats(stats.to_dict())
@@ -536,7 +475,7 @@ class BayesianTracker(object):
         specified
         """
 
-        logger.info('Loading hypothesis model: {}'.format(self.hypothesis_model.name))
+        logger.info(f'Loading hypothesis model: {self.hypothesis_model.name}')
 
         logger.info('Calculating hypotheses from tracklets...')
         hypotheses = self.hypotheses()
@@ -613,9 +552,9 @@ class BayesianTracker(object):
         sz_cov = self.motion_model.measurements**2 + 1
 
         # otherwise grab the kalman filter data
-        kal_mu = np.zeros((n, sz_mu),dtype='float')     # kalman filtered
-        kal_cov = np.zeros((n, sz_cov),dtype='float')   # kalman covariance
-        kal_pred = np.zeros((n, sz_mu),dtype='float')   # motion model predict
+        kal_mu = np.zeros((n, sz_mu), dtype='float')     # kalman filtered
+        kal_cov = np.zeros((n, sz_cov), dtype='float')   # kalman covariance
+        kal_pred = np.zeros((n, sz_mu), dtype='float')   # motion model predict
 
         n_kal = lib.get_kalman_mu(self._engine, kal_mu, idx)
         _ = lib.get_kalman_covar(self._engine, kal_cov, idx)

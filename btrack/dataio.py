@@ -277,20 +277,18 @@ def export_LBEP(filename, obj_type, tracks):
     """ export the LBEP table described here:
     https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf
 
-
     > L -a unique label of the track (label of markers, 16-bit positive value)
     > B -a zero-based temporal index of the frame in which the track begins
     > E -a zero-based temporal index of the frame in which the track ends
     > P -label of the parent track (0 is used when no parent is defined)
-
     """
     if not filename.endswith('.txt'): filename+='.txt'
     with open(filename, 'w') as lbep_file:
         logger.info(f'Writing LBEP file: {filename}...')
         for track in tracks:
             l = track.ID
-            b = track.n[0]
-            e = track.n[-1]
+            b = track.t[0]
+            e = track.t[-1]
             p = track.parent
             lbep_file.write(f'{l} {b} {e} {p}\n')
 

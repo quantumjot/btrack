@@ -273,7 +273,7 @@ def export_HDF(filename, obj_type, tracks, dummies=None):
 
 
 
-def export_LBEP(filename, obj_type, tracks):
+def export_LBEP(filename, tracks):
     """ export the LBEP table described here:
     https://public.celltrackingchallenge.net/documents/Naming%20and%20file%20content%20conventions.pdf
 

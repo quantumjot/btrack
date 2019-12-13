@@ -282,6 +282,7 @@ def export_LBEP(filename, tracks):
     > E -a zero-based temporal index of the frame in which the track ends
     > P -label of the parent track (0 is used when no parent is defined)
     """
+    tracks.sort(key=lambda t: t.ID)
     if not filename.endswith('.txt'): filename+='.txt'
     with open(filename, 'w') as lbep_file:
         logger.info(f'Writing LBEP file: {filename}...')

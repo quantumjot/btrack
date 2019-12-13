@@ -3,8 +3,6 @@ TODO
 
 Python
 ------
-- Tracking metrics (MOT)
-- Properly pass softmax output to C++
 
 C/C++ and CUDA
 --------------
@@ -19,8 +17,6 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
-- Importer/Exporters for other data analysis packages
-- Change the track naming convention
 
 
 
@@ -30,11 +26,12 @@ Updates
 0.3.1
 -----
 - Added new states {NULL, DUMMY} to PyTrackObject
-- Changed default dummy insertion behavior, now given a DUMMY state
+- Changed default dummy insertion behavior, now given a DUMMY state (removed)
 - Added VERSION.txt for quick update of version numbers
 - Small update to Python packaging
 - Cleaned repo structure, moved load_config to utils
 - Fixed bug with default class labels in ObjectFactory
+- Added an LBEP exporter for future integration with Napari?
 
 0.3.0
 -----

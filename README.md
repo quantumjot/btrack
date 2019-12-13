@@ -1,12 +1,13 @@
 # Bayesian Tracker
 
-**WORK IN PROGRESS** :microscope::computer:
+**WORK IN PROGRESS** :microscope::computer:  
+http://lowe.cs.ucl.ac.uk/cellx.html
 
 
-BayesianTracker is a multi object tracking algorithm, specifically used to
-reconstruct trajectories in crowded fields. Here, we use a probabilistic network
-of information to perform the trajectory linking. This method uses spatial
-information as well as appearance information for track linking.
+BayesianTracker (btrack) is a multi object tracking algorithm, specifically
+used to reconstruct trajectories in crowded fields. Here, we use a
+probabilistic network of information to perform the trajectory linking. This
+method uses spatial information as well as appearance information for track linking.
 
 The tracking algorithm assembles reliable sections of track that do not
 contain splitting events (tracklets). Each new tracklet initiates a
@@ -24,14 +25,9 @@ likelihood of each hypothesis is calculated for some or all of the tracklets
 based on heuristics. The global solution identifies a sequence of
 high-likelihood hypotheses that accounts for all observations.
 
-BayesianTracker (btrack) is part of the *Sequitr* image processing toolbox for
-microscopy data analysis. For more information see: http://lowe.cs.ucl.ac.uk/cellx.html
 
-See examples of use in:  
-https://github.com/quantumjot/CellTracking/tree/master/notebooks
 
-See the wiki for more information on installation, configuration and use:
-https://github.com/quantumjot/BayesianTracker/wiki
+
 
 ### Example: Tracking mammalian cells in time-lapse microscopy experiments
 
@@ -170,6 +166,13 @@ print(track_zero.root)
 print(track_zero.parent)
 print(track_zero.children)
 
+```
+
+Tracks can also be exported in the LBEP format:
+```python
+from btrack.utils import export_LBEP
+
+export_LBEP('/path/to/your/res_track.txt', tracks)
 ```
 
 There are many additional options, including the ability to define object models.

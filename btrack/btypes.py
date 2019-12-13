@@ -423,14 +423,3 @@ class Tracklet(object):
             raise TypeError('Tracklet.from_dict requires a dictionary.')
 
         raise NotImplementedError
-        # # populate the data array
-        # cols = ('t','x','y','z')
-        # data = np.zeros((len(params['t']),4))
-        # for col in cols:
-        #     data[:,dcol(col)] = params[col]
-        #
-        # to_set = list(set(params.keys())-set(cols))
-        # T = Tracklet(params['ID'], data)
-        # for k in to_set:
-        #     setattr(T, k, params[k])
-        # return T

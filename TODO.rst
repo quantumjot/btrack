@@ -32,6 +32,7 @@ Updates
 - Cleaned repo structure, moved load_config to utils
 - Fixed bug with default class labels in ObjectFactory
 - Added an LBEP exporter for future integration with Napari?
+- Unified data export methods, now use tracker.export()
 
 0.3.0
 -----

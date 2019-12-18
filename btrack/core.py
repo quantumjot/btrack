@@ -29,9 +29,11 @@ from . import constants
 from . import btypes
 from . import libwrapper
 
+from .dataio import export_delegator
+
 # from btrack.optimise import hypothesis
-from btrack.optimise import optimiser
-from btrack.optimise import lineage
+from .optimise import optimiser
+from .optimise import lineage
 
 from datetime import datetime
 from collections import OrderedDict
@@ -259,6 +261,17 @@ class BayesianTracker(object):
     def dummies(self):
         """ Return a list of dummy objects """
         return [lib.get_dummy(self._engine, -(i+1)) for i in range( self.n_dummies)]
+
+
+    @property
+    def lbep(self):
+        """ Return an LBEP list
+        > L - a unique label of the track (label of markers, 16-bit positive)
+        > B - a zero-based temporal index of the frame in which the track begins
+        > E - a zero-based temporal index of the frame in which the track ends
+        > P - label of the parent track (0 is used when no parent is defined)
+        """
+        return [(t.ID, t.t[0], t.t[-1], t.parent) for t in self.tracks]
 
 
     def _sort(self, tracks):
@@ -570,6 +583,10 @@ class BayesianTracker(object):
         and links that are greater than the maximum distance permitted """
         dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
         return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
+
+    def export(self, filename, obj_type=None):
+        """ export tracks using the appropriate exporter """
+        export_delegator(filename, self, obj_type=obj_type)
 
 
 

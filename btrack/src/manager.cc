@@ -129,7 +129,7 @@ void TrackManager::split(const TrackletPtr &a_trk,
   if (split_indices.empty()) return;
 
   // TODO(arl): actually split the tracks!
-  std::cout << "Residual splits need to be performed -> " << a_trk->ID << std::endl;
+  // std::cout << "Residual splits need to be performed -> " << a_trk->ID << std::endl;
 
 }
 

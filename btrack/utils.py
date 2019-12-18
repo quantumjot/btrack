@@ -237,13 +237,11 @@ def read_object_model(config):
     return model
 
 
-
 def crop_volume(objects, volume=constants.VOLUME):
     """ Return a list of objects that fall within a certain volume """
     axes = ['x','y','z','t']
     within = lambda o: all([getattr(o, a)>=v[0] and getattr(o, a)<=v[1] for a,v in zip(axes, volume)])
     return [o for o in objects if within(o)]
-
 
 
 def import_HDF(filename):
@@ -259,16 +257,11 @@ def import_JSON(filename):
     return dataio.import_JSON(filename)
 
 
-
 def build_trees(tracks, update_tracks=True):
     """ Build lineage trees and update the track relationships """
     from btrack.optimise import lineage
     tree = lineage.LineageTree(tracks)
     return tree.create(update_tracks=update_tracks)
-
-
-
-
 
 
 

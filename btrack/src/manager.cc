@@ -18,9 +18,16 @@
 
 #include "manager.h"
 
-bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two)
+bool compare_hypothesis_time(const Hypothesis &hypothesis_i,
+                             const Hypothesis &hypothesis_j)
 {
-  return h_one.trk_ID->track[0]->t < h_two.trk_ID->track[0]->t;
+  return hypothesis_i.trk_ID->track[0]->t < hypothesis_j.trk_ID->track[0]->t;
+}
+
+bool compare_track_start_time(const TrackletPtr &trk_i,
+                              const TrackletPtr &trk_j)
+{
+    return trk_i->track[0]->t < trk_j->track[0]->t;
 }
 
 
@@ -319,6 +326,9 @@ void TrackManager::build_trees(void)
 
   // make a set of used tracks
   std::set<unsigned int> used;
+
+  // sort the tracks in time order
+  std::sort(m_tracks.begin(), m_tracks.end(), compare_track_start_time);
 
   for (size_t i=0; i<m_tracks.size(); i++) {
 

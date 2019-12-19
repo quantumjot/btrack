@@ -270,8 +270,9 @@ class BayesianTracker(object):
         > B - a zero-based temporal index of the frame in which the track begins
         > E - a zero-based temporal index of the frame in which the track ends
         > P - label of the parent track (0 is used when no parent is defined)
+        > R - label of the root track
         """
-        return [(t.ID, t.t[0], t.t[-1], t.parent) for t in self.tracks]
+        return [(t.ID, t.t[0], t.t[-1], t.parent, t.root) for t in self.tracks]
 
 
     def _sort(self, tracks):
@@ -282,7 +283,7 @@ class BayesianTracker(object):
     @property
     def volume(self):
         """ Return the imaging volume in the format xyzt. This is effectively
-        the range of each dimension: [(xlo,xhi),...,(zlo,zhi),(tlo,thi)]
+        the range of each dimension: [(xlo,xhi), ..., (zlo,zhi), (tlo,thi)]
         """
         vol = np.zeros((3,2),dtype='float')
         lib.get_volume(self._engine, vol)
@@ -293,7 +294,7 @@ class BayesianTracker(object):
         if not isinstance(volume, tuple):
             raise TypeError('Volume must be a tuple')
         if len(volume) != 3 or any([len(v)!=2 for v in volume]):
-            raise ValueError('Volume must contain three tuples')
+            raise ValueError('Volume must contain three tuples (xyz)')
         lib.set_volume(self._engine, np.array(volume, dtype='float64'))
         logger.info('Set volume to {}'.format(volume))
 

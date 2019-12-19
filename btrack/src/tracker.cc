@@ -292,7 +292,7 @@ unsigned int BayesianTracker::initialise() {
     TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
                                                   objects[o_counter],
                                                   max_lost,
-                                                  this->motion_model);
+                                                  this->motion_model );
     tracks.push_back( trk );
     o_counter++;
   }

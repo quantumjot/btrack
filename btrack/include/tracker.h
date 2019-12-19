@@ -194,6 +194,8 @@ private:
   unsigned int max_lost = MAX_LOST;
 
   // provide a global ID counter for new tracks
+  // NOTE(arl): because the increment is before the return, all tracks will
+  // be numbered 1 and upward.
   inline unsigned int get_new_ID() {
     new_ID++; return new_ID;
   };

@@ -270,7 +270,7 @@ def export_LBEP(filename, tracks):
 
 
 
-class HDFHandler(object):
+class _HDFHandler(object):
     def __init__(self, filename, read_write='r'):
         self.filename = filename
         logger.info('Opening HDF file: {0:s}'.format(self.filename))
@@ -300,7 +300,7 @@ class HDFHandler(object):
 
 
 
-class HDF5FileHandler(HDFHandler):
+class HDF5FileHandler(_HDFHandler):
     """ HDF5FileHandler
 
     Generic HDF5 file hander for reading and writing datasets. This is
@@ -314,6 +314,8 @@ class HDF5FileHandler(HDFHandler):
         K - number of tracks
 
     Basic format of the HDF file is:
+        segmentation/
+            images          - (J x h x w) uint8 images of the segmentation
         objects/
             obj_type_1/
                 coords      - (I x 5) [t, x, y, z, object_type]
@@ -337,7 +339,7 @@ class HDF5FileHandler(HDFHandler):
     """
 
     def __init__(self, filename=None, read_write='r'):
-        HDFHandler.__init__(self, filename, read_write=read_write)
+        _HDFHandler.__init__(self, filename, read_write=read_write)
 
     @property
     def objects(self):
@@ -374,6 +376,7 @@ class HDF5FileHandler(HDFHandler):
         dummies = tracker.dummies
         lbep_table = np.stack(tracker.lbep, axis=0).astype(np.int32)
 
+        # sanity check
         assert(lbep_table.shape[0] == len(tracks))
 
         logger.info(f'Writing tracks to HDF file: {self.filename}')

@@ -379,6 +379,10 @@ void TrackManager::build_trees(void)
     // push this onto the vector of trees
     m_trees.push_back(root_node);
 
+    // NOTE(arl): this is probably unnecessary, but we will do it anyway
+    // add this to the used list
+    used.insert(m_tracks[i]->ID);
+
     } // is track already used?
 
   } // i

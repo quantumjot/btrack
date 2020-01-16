@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <set>
 #include <ctime>
+#include <fstream>
 
 #include "types.h"
 #include "motion.h"
@@ -246,6 +247,12 @@ private:
 
 
 
+// utils to write out belief matrix to CSV files
+const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
+                                       Eigen::DontAlignCols, ", ", "\n");
+
+void write_belief_matrix_to_CSV(std::string a_filename,
+                                Eigen::Ref<Eigen::MatrixXd> a_belief);
 
 
 

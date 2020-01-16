@@ -83,7 +83,15 @@ double probability_erf( const Eigen::Vector3d& x,
 
 
 
-
+// void write_belief_matrix_to_CSV(std::string a_filename,
+//                                 Eigen::Ref<Eigen::MatrixXd> a_belief)
+// {
+//   std::cout << a_filename << std::endl;
+//   std::ofstream belief_file;
+//   belief_file.open(a_filename);
+//   belief_file << a_belief.format(CSVFormat);
+//   belief_file.close();
+// }
 
 
 
@@ -377,6 +385,13 @@ void BayesianTracker::step(const unsigned int steps)
         cost(belief, n_active, n_obs);
     }
 
+    // if (WRITE_BELIEF_MATRIX) {
+    //   std::stringstream belief_filename;
+    //   belief_filename << "/home/arl/Desktop/belief/belief_";
+    //   belief_filename << current_frame << ".csv";
+    //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
+    // }
+
     // now that we have the complete belief matrix, we want to associate
     // do naive linking
     link(belief, n_active, n_obs);
@@ -388,7 +403,7 @@ void BayesianTracker::step(const unsigned int steps)
   }
 
   // have we finished?
-  if (current_frame>=frames.back())
+  if (current_frame >= frames.back())
   {
     statistics.complete = true;
     //clean();

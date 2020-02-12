@@ -326,14 +326,14 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
       TrackletPtr child_j = get_track_by_ID(m_tracks[i]->child_two);
 
       if (child_i->parent != parent_ID) {
-        std::cout << "Mislabeled parent ID " << child_i->ID;
-        std::cout << "->" << parent_ID << std::endl;
+        // std::cout << "Mislabeled parent ID " << child_i->ID;
+        // std::cout << "->" << parent_ID << std::endl;
         child_i->parent = parent_ID;
       }
 
       if (child_j->parent != parent_ID) {
-        std::cout << "Mislabeled parent ID " << child_j->ID;
-        std::cout << "->" << parent_ID << std::endl;
+        // std::cout << "Mislabeled parent ID " << child_j->ID;
+        // std::cout << "->" << parent_ID << std::endl;
         child_j->parent = parent_ID;
       }
 

@@ -288,6 +288,13 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
     }
   }
 
+  // // Sanity check, have we used all the possible joins?
+  // for (size_t parent_i=0; parent_i<m_links.size(); parent_i++) {
+  //   if (used.count(parent_i) == 0) {
+  //     std::cout << "Parent track: " << m_links[parent_i][0].first << "not used!" << std::endl;
+  //   }
+  // }
+
   // TODO(arl): do a final splitting round to make sure that we haven't
   // joined any tracks that have a METAPHASE->ANAPHASE transition
   if (SPLIT_INCORRECTLY_JOINED_TRACKS) {
@@ -306,6 +313,32 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
 
   // give the user some more output
   if (DEBUG) std::cout << ", now " << m_tracks.size() << std::endl;
+
+  // check that forward and reverse traversal of the trees is correct
+  for (size_t i=0; i<m_tracks.size(); i++) {
+    if (m_tracks[i]->has_children()){
+
+      unsigned int parent_ID = m_tracks[i]->ID;
+
+      // get pointers to the children and do a reverse look-up to check the
+      // parent ID matches, if not, rename it
+      TrackletPtr child_i = get_track_by_ID(m_tracks[i]->child_one);
+      TrackletPtr child_j = get_track_by_ID(m_tracks[i]->child_two);
+
+      if (child_i->parent != parent_ID) {
+        std::cout << "Mislabeled parent ID " << child_i->ID;
+        std::cout << "->" << parent_ID << std::endl;
+        child_i->parent = parent_ID;
+      }
+
+      if (child_j->parent != parent_ID) {
+        std::cout << "Mislabeled parent ID " << child_j->ID;
+        std::cout << "->" << parent_ID << std::endl;
+        child_j->parent = parent_ID;
+      }
+
+    }
+  }
 
   // build the lineage trees
   build_trees();

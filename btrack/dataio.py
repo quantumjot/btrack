@@ -328,6 +328,7 @@ class HDF5FileHandler(_HDFHandler):
                 dummies     - similar to coords, but for dummy objects
                 map         - (K x 2) [start_index, end_index] -> tracks array
                 LBEPR       - (K x 5) [L, B, E, P, R]
+                fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
     Notes:
@@ -410,6 +411,10 @@ class HDF5FileHandler(_HDFHandler):
         # write out the LBEP table
         logger.info(f'Writing LBEPR to HDF file: {self.filename}')
         grp.create_dataset('LBEPR', data=lbep_table, dtype='int32')
+
+        # write out cell fates
+        fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
+        grp.create_dataset('fates', data=fate_table, dtype='int32')
 
 
 

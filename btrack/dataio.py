@@ -413,6 +413,7 @@ class HDF5FileHandler(_HDFHandler):
         grp.create_dataset('LBEPR', data=lbep_table, dtype='int32')
 
         # write out cell fates
+        logger.info(f'Writing track fates to HDF file: {self.filename}')
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset('fates', data=fate_table, dtype='int32')
 

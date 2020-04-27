@@ -23,6 +23,11 @@ Misc
 Updates
 =======
 
+0.3.2
+-----
+- Added a generic filtering option when retrieving objects from HDF files
+- Fixes some small bugs and updated documentation
+
 0.3.1
 -----
 - Added new states {NULL, DUMMY} to PyTrackObject

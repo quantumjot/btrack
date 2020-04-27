@@ -298,8 +298,6 @@ class _HDFHandler(object):
 
 
 
-
-
 class HDF5FileHandler(_HDFHandler):
     """ HDF5FileHandler
 
@@ -312,6 +310,11 @@ class HDF5FileHandler(_HDFHandler):
         I - number of objects
         J - number of frames
         K - number of tracks
+
+
+    Added generic filtering to object retrieval, e.g.
+        obj = handler.filtered_objects('flag==1')
+        retrieves all objects if there is an object['flag'] == 1
 
     Basic format of the HDF file is:
         segmentation/
@@ -345,15 +348,33 @@ class HDF5FileHandler(_HDFHandler):
     @property
     def objects(self):
         """ Return the objects in the file """
+        return self.filtered_objects()
+
+    def filtered_objects(self, f_expr=None):
+        """ return a filtered list of objects based on metadata.
+        f_expr should be of the format 'flag==1'
+        """
         objects = []
         for ci, c in enumerate(self.object_types):
             # read the whole dataset into memory
             txyz = self._hdf['objects'][c]['coords'][:]
             labels = self._hdf['objects'][c]['labels'][:]
+
+            # note that this doesn't do much error checking at the moment
+            if f_expr is not None:
+                assert(isinstance(f_expr), str)
+                pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
+                m = re.match(pattern, fexpr)
+                feval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
+                data = self._hdf['objects'][c][m['name']][:]
+                idx = [i for i, x in enumerate(data) if eval(feval)]
+            else:
+                idx = range(n_obj)
+
             n_obj = txyz.shape[0]
             assert(txyz.shape[0] == labels.shape[0])
             logger.info('Loading {} {}...'.format(c, txyz.shape))
-            obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in range(n_obj)]
+            obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in idx]
             objects += obj
         return objects
 

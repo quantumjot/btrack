@@ -132,8 +132,11 @@ with btrack.BayesianTracker() as tracker:
   # append the objects to be tracked
   tracker.append(objects)
 
-  # track them
-  tracker.track()
+  # set the volume (Z axis volume is set very large for 2D data)
+  tracker.volume=((0,1200),(0,1600),(-1e5,1e5))
+
+  # track them (in interactive mode)
+  tracker.track_interactive(step=100)
 
   # generate hypotheses and run the global optimiser
   tracker.optimize()

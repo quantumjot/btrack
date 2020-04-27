@@ -480,6 +480,7 @@ class BayesianTracker(object):
         return h
 
 
+    def optimize(self): return self.optimise()
     def optimise(self):
         """ Optimise the tracks. This generates the hypotheses for track merges,
         branching etc, runs the optimiser and then performs track merging,

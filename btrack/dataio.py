@@ -364,10 +364,10 @@ class HDF5FileHandler(_HDFHandler):
             if f_expr is not None:
                 assert(isinstance(f_expr, str))
                 pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
-                m = re.match(pattern, fexpr)
-                feval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
+                m = re.match(pattern, f_expr)
+                f_eval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
                 data = self._hdf['objects'][c][m['name']][:]
-                idx = [i for i, x in enumerate(data) if eval(feval)]
+                idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
                 idx = range(n_obj)
 

@@ -244,11 +244,11 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def import_HDF(filename):
+def import_HDF(filename, filter_using=None):
     """ Import the HDF data. """
     from . import dataio
     with dataio.HDF5FileHandler(filename) as hdf:
-        objects = hdf.objects
+        objects = hdf.filtered_objects(f_expr=filter_using)
     return objects
 
 def import_JSON(filename):

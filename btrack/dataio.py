@@ -373,7 +373,7 @@ class HDF5FileHandler(_HDFHandler):
 
             n_obj = txyz.shape[0]
             assert(txyz.shape[0] == labels.shape[0])
-            logger.info('Loading {} {}...'.format(c, txyz.shape))
+            logger.info(f'Loading {c} {txyz.shape} ({len(idx)} filtered, {f_expr})...')
             obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in idx]
             objects += obj
         return objects

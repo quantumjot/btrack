@@ -19,6 +19,11 @@ Misc
 - Other motion models
 
 
+Thanks
+======
+- Thanks to Giulia V and Kristina U for helpful suggestions.
+
+
 
 Updates
 =======

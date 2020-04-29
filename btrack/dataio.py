@@ -311,7 +311,6 @@ class HDF5FileHandler(_HDFHandler):
         J - number of frames
         K - number of tracks
 
-
     Added generic filtering to object retrieval, e.g.
         obj = handler.filtered_objects('flag==1')
         retrieves all objects if there is an object['flag'] == 1
@@ -359,6 +358,7 @@ class HDF5FileHandler(_HDFHandler):
             # read the whole dataset into memory
             txyz = self._hdf['objects'][c]['coords'][:]
             labels = self._hdf['objects'][c]['labels'][:]
+            idx = range(txyz.shape[0])      # default filtering uses all objects
 
             # note that this doesn't do much error checking at the moment
             if f_expr is not None:
@@ -366,14 +366,15 @@ class HDF5FileHandler(_HDFHandler):
                 pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
                 m = re.match(pattern, f_expr)
                 f_eval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
-                data = self._hdf['objects'][c][m['name']][:]
-                idx = [i for i, x in enumerate(data) if eval(f_eval)]
-            else:
-                idx = range(n_obj)
 
-            n_obj = txyz.shape[0]
+                if m['name'] in self._hdf['objects'][c]:
+                    data = self._hdf['objects'][c][m['name']][:]
+                    idx = [i for i, x in enumerate(data) if eval(f_eval)]
+                else:
+                    logger.warning(f'Cannot filter objects by {m["name"]}')
+
             assert(txyz.shape[0] == labels.shape[0])
-            logger.info(f'Loading {c} {txyz.shape} ({len(idx)} filtered, {f_expr})...')
+            logger.info(f'Loading {c} {txyz.shape} ({len(idx)} filtered: {f_expr})...')
             obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in idx]
             objects += obj
         return objects

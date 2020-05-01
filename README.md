@@ -97,22 +97,23 @@ $ chmod +x install.sh
 $ ./install.sh
 ```
 
-If all goes well, you should be able to import BayesianTracker:
-```python
-import btrack
-```
+---
+### Usage in Colab notebooks
 
-should return:
-```
-[INFO][2019/08/22 10:26:11 AM] btrack (v0.3.x) library imported
-[INFO][2019/08/22 10:26:11 AM] Loaded btrack: <your python site-packages>/btrack/libs/libtracker.so
-```
+If you do not want to install a local copy, you can run the tracker in a Colab notebook. Please note that these examples are work in progress and may change:
 
+| Status        | Notebook                                     | Link |
+| ------------- | -------------------------------------------- | ---- |
+| *In progress* | Loading your own data                        | N/A
+| *In progress* | Basic object tracking with bTrack            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
+| *In progress* | Advanced object tracking with bTrack (2D/3D) | N/A
+| *In progress* | Advanced configuration options               | N/A
+| Complete      | How to install *bTrack* in your own notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
 
 
 ---
 
-### Usage
+### Usage from Python
 
 BayesianTracker can be used simply as follows:
 

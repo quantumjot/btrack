@@ -121,7 +121,7 @@ import btrack
 from btrack.utils import import_HDF
 
 # NOTE(arl):  This should be from your image segmentation code
-objects = import_HDF('/path/to/your/objects.hdf5')
+objects = import_HDF('/path/to/your/objects.hdf5', filter_using=None)
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
@@ -136,7 +136,7 @@ with btrack.BayesianTracker() as tracker:
   tracker.volume=((0,1200),(0,1600),(-1e5,1e5))
 
   # track them (in interactive mode)
-  tracker.track_interactive(step=100)
+  tracker.track_interactive(step_size=100)
 
   # generate hypotheses and run the global optimiser
   tracker.optimize()

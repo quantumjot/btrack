@@ -8,7 +8,7 @@ def get_version():
         version = ver.readline()
     return version.rstrip()
 
-__version__ = get_version()
+# __version__ = get_version()
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1

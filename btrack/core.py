@@ -39,6 +39,7 @@ from datetime import datetime
 from collections import OrderedDict
 import itertools
 
+__version__ = constants.get_version()
 
 # get a reference to the library
 lib = libwrapper.LibraryWrapper.lib
@@ -58,7 +59,7 @@ if not logger.handlers:
     logger.setLevel(logging.DEBUG)
 
 
-logger.info('btrack (v{}) library imported'.format(constants.__version__))
+logger.info('btrack (v{}) library imported'.format(__version__))
 
 
 

@@ -104,10 +104,11 @@ If you do not want to install a local copy, you can run the tracker in a Colab n
 
 | Status        | Notebook                                     | Link |
 | ------------- | -------------------------------------------- | ---- |
-| *In progress* | Loading your own data                        | N/A
+| *In progress* | Loading your own data                        | -
 | *In progress* | Basic object tracking with bTrack            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
-| *In progress* | Advanced object tracking with bTrack (2D/3D) | N/A
-| *In progress* | Advanced configuration options               | N/A
+| *In progress* | Advanced data import                         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1V2TtJ5FGqSILTuThSRg5j9crsBsorUmy)|
+| *In progress* | Advanced object tracking with bTrack (2D/3D) | -
+| *In progress* | Advanced configuration options               | -
 | Complete      | How to install *bTrack* in your own notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
 
 

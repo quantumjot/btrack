@@ -43,7 +43,7 @@ class _PyTrackObjectFactory(object):
 
     def get(self, txyz, label=None, obj_type=0):
         """ get an instatiated object """
-        assert(isinstance(txyz), np.ndarray)
+        assert(isinstance(txyz, np.ndarray))
         if label is not None:
             if isinstance(label, int):
                 class_label = label
@@ -452,10 +452,10 @@ def import_JSON(filename):
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
     objects = []
-    for obj in data:
-        txyz = [float(obj[k]) for k in ['t','x','y','z']]
-        objects.append(ObjectFactory.get(txyz))
-        # TODO(arl): append extra metadata here
+    for ID, _obj in data.items():
+        txyz = np.array([_obj[k] for k in ['t','x','y','z']])
+        obj = ObjectFactory.get(txyz, label=int(_obj['label']))
+        objects.append(obj)
     return objects
 
 

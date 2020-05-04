@@ -446,7 +446,6 @@ class HDF5FileHandler(_HDFHandler):
 
 
 
-
 def import_JSON(filename):
     """ generic JSON importer for localisations from other software """
     with open(filename, 'r') as json_file:
@@ -458,6 +457,10 @@ def import_JSON(filename):
         objects.append(obj)
     return objects
 
+
+
+def import_CSV(filename):
+    raise NotImplementedError
 
 
 if __name__ == "__main__":

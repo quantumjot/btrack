@@ -81,7 +81,9 @@ class PyTrackObject(ctypes.Structure):
     def state(self):
         return constants.States(self.label)
 
-
+    def to_dict(self):
+        to_return = [k,_ for k in self._fields_ if k is not 'prob']
+        return OrderedDict([(k,getattr(self, k)) for k in to_return)
 
 
 class PyTrackingInfo(ctypes.Structure):

@@ -1,4 +1,4 @@
-# Bayesian Tracker
+# Bayesian Tracker (bTrack)
 
 **WORK IN PROGRESS** :microscope::computer:  
 http://lowe.cs.ucl.ac.uk/cellx.html

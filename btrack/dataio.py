@@ -450,6 +450,7 @@ def import_JSON(filename):
     for obj in data:
         txyz = [float(obj[k]) for k in ['t','x','y','z']]
         objects.append(ObjectFactory.get(txyz))
+        # TODO(arl): append extra metadata here
     return objects
 
 

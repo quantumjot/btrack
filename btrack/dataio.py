@@ -43,9 +43,14 @@ class _PyTrackObjectFactory(object):
 
     def get(self, txyz, label=None, obj_type=0):
         """ get an instatiated object """
+        assert(isinstance(txyz), np.ndarray)
         if label is not None:
-            class_label = label[0].astype('int')
-            probability = label[1:].astype('float32')
+            if isinstance(label, int):
+                class_label = label
+                probability = np.zeros((1,))
+            else:
+                class_label = label[0].astype('int')
+                probability = label[1:].astype('float32')
         else:
             class_label = constants.States.NULL.value
             probability = np.zeros((1,))

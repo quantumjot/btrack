@@ -429,13 +429,15 @@ class HDF5FileHandler:
 
         TODO(arl): return Tracklet objects rather than a table of tracks
         """
-        logger.info('Loading tracks...')
-        ret = {k:[] for k in self.object_types}
-        for ci, c in enumerate(self.object_types):
+        dummies = []
+        ret = {k:[] for k in self._hdf['tracks']}
+        for ci, c in enumerate(ret.keys()):
+            logger.info(f'Loading tracks: {c}...')
             track_map = self._hdf['tracks'][c]['map'][:]
             txyz = self._hdf['objects'][c]['coords'][:]
             track_refs = self._hdf['tracks'][c]['tracks'][:]
-            dummies = self._hdf['tracks'][c]['dummies'][:]
+            if 'dummies' in self._hdf['tracks'][c]:
+                dummies = self._hdf['tracks'][c]['dummies'][:]
 
             def get_txyz(ref):
                 if ref>=0:

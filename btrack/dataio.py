@@ -431,10 +431,10 @@ class HDF5FileHandler:
         """
         ret = {k:[] for k in self.object_types}
         for ci, c in enumerate(self.object_types):
-            track_map = self.hdf['tracks'][c]['map'][:]
-            txyz = self.hdf['objects'][c]['coords'][:]
-            track_refs = self.hdf['tracks'][c]['tracks'][:]
-            dummies = self.hdf['tracks'][c]['dummies'][:]
+            track_map = self._hdf['tracks'][c]['map'][:]
+            txyz = self._hdf['objects'][c]['coords'][:]
+            track_refs = self._hdf['tracks'][c]['tracks'][:]
+            dummies = self._hdf['tracks'][c]['dummies'][:]
 
             def get_txyz(ref):
                 if ref>=0:
@@ -456,12 +456,12 @@ class HDF5FileHandler:
     @property
     def segmentation(self):
         print(f'Loading segmentation...')
-        return self.hdf['segmentation']['images'][:]
+        return self._hdf['segmentation']['images'][:]
 
     @property
     def lbep(self):
         print('Loading LBEPR tables...')
-        return {k:self.hdf['tracks'][k]['LBEPR'][:] for k in self.object_types}
+        return {k:self._hdf['tracks'][k]['LBEPR'][:] for k in self.object_types}
 
 
 

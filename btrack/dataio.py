@@ -429,6 +429,7 @@ class HDF5FileHandler:
 
         TODO(arl): return Tracklet objects rather than a table of tracks
         """
+        logger.info('Loading tracks...')
         ret = {k:[] for k in self.object_types}
         for ci, c in enumerate(self.object_types):
             track_map = self._hdf['tracks'][c]['map'][:]
@@ -455,12 +456,12 @@ class HDF5FileHandler:
 
     @property
     def segmentation(self):
-        print(f'Loading segmentation...')
+        logger.info(f'Loading segmentation...')
         return self._hdf['segmentation']['images'][:]
 
     @property
     def lbep(self):
-        print('Loading LBEPR tables...')
+        logger.info('Loading LBEPR tables...')
         return {k:self._hdf['tracks'][k]['LBEPR'][:] for k in self.object_types}
 
 

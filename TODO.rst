@@ -30,7 +30,7 @@ Updates
 
 0.3.3
 -----
-- Improved HDF loader to allow recovery of tracks
+- Improved HDF loader to allow recovery of tracks and trees into native format
 - Fixed JSON loader
 - Added example tracking data to the repository
 - Bug fix to ObjectFactory

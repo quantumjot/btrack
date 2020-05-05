@@ -434,6 +434,7 @@ class HDF5FileHandler:
             logger.info(f'Loading tracks: {c}...')
             track_map = self._hdf['tracks'][c]['map'][:]
             track_refs = self._hdf['tracks'][c]['tracks'][:]
+            lbep = self._hdf['tracks'][c]['LBEPR'][:]
 
             # if there are dummies, make new dummy objects
             if 'dummies' in self._hdf['tracks'][c]:
@@ -453,6 +454,8 @@ class HDF5FileHandler:
                 idx = slice(*track_map[i,:].tolist())
                 refs = track_refs[idx]
                 track = btypes.Tracklet(i, list(map(get_txyz, refs)))
+                track.parent = lbep[i,3]    # set the parent and root of tree
+                track.root = lbep[i,4]
                 tracks.append(track)
 
             ret.append(tracks)
@@ -467,7 +470,7 @@ class HDF5FileHandler:
     @property
     def lbep(self):
         logger.info('Loading LBEPR tables...')
-        return [self._hdf['tracks'][k]['LBEPR'][:] for k in self.object_types]
+        return [self._hdf['tracks'][k]['LBEPR'][:] for k in self._hdf['tracks']]
 
 
 

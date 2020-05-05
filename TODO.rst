@@ -28,6 +28,13 @@ Thanks
 Updates
 =======
 
+0.3.3
+-----
+- Improved HDF loader to allow recovery of tracks
+- Fixed JSON loader
+- Added example tracking data to the repository
+- Bug fix to ObjectFactory
+
 0.3.2
 -----
 - Added a generic filtering option when retrieving objects from HDF files

@@ -426,33 +426,36 @@ class HDF5FileHandler:
     @property
     def tracks(self):
         """ Return the tracks in the file
-
-        TODO(arl): return Tracklet objects rather than a table of tracks
+        TODO(arl): recover lineage information from tracker
         """
-        dummies = []
-        ret = {k:[] for k in self._hdf['tracks']}
-        for ci, c in enumerate(ret.keys()):
+        dummies, ret = [], []
+
+        for ci, c in enumerate(self._hdf['tracks'].keys()):
             logger.info(f'Loading tracks: {c}...')
             track_map = self._hdf['tracks'][c]['map'][:]
-            txyz = self._hdf['objects'][c]['coords'][:]
             track_refs = self._hdf['tracks'][c]['tracks'][:]
+
+            # if there are dummies, make new dummy objects
             if 'dummies' in self._hdf['tracks'][c]:
                 dummies = self._hdf['tracks'][c]['dummies'][:]
+                dobj = [ObjectFactory.get(dummies[i,:]) for i in range(dummies.shape[0])]
+                for d in dobj: d.dummy = True
+
+            # TODO(arl): this needs to be stored in the HDF folder
+            obj = self.filtered_objects(f_expr='area>=50')
 
             def get_txyz(ref):
-                if ref>=0:
-                    return txyz[ref,:]
-                else:
-                    return dummies[abs(ref)-1,:]
+                if ref>=0: return obj[ref]
+                return dobj[abs(ref)-1] # references are -ve for dummies
 
             tracks = []
             for i in range(track_map.shape[0]):
                 idx = slice(*track_map[i,:].tolist())
                 refs = track_refs[idx]
-                track = np.stack(map(get_txyz, refs), axis=0)
-                tracks.append(track[:,0:])
+                track = btypes.Tracklet(i, list(map(get_txyz, refs)))
+                tracks.append(track)
 
-            ret[c] = tracks
+            ret.append(tracks)
 
         return ret
 
@@ -464,7 +467,7 @@ class HDF5FileHandler:
     @property
     def lbep(self):
         logger.info('Loading LBEPR tables...')
-        return {k:self._hdf['tracks'][k]['LBEPR'][:] for k in self.object_types}
+        return [self._hdf['tracks'][k]['LBEPR'][:] for k in self.object_types]
 
 
 

@@ -418,7 +418,4 @@ class Tracklet(object):
     @staticmethod
     def from_dict(params):
         """ Create a new tracklet using data from a dictionary """
-        if not isinstance(params, dict):
-            raise TypeError('Tracklet.from_dict requires a dictionary.')
-
         raise NotImplementedError

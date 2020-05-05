@@ -275,31 +275,7 @@ def export_LBEP(filename, tracks):
 
 
 
-class _HDFHandler(object):
-    def __init__(self, filename, read_write='r'):
-        self.filename = filename
-        logger.info('Opening HDF file: {0:s}'.format(self.filename))
-        self._hdf = h5py.File(filename, read_write)
-        self._states = list(constants.States)
-
-    @property
-    def object_types(self):
-        return list(self._hdf['objects'].keys())
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        self.close()
-
-    def close(self):
-        if not self._hdf: return
-        logger.info('Closing HDF file: {0:s}'.format(self.filename))
-        self._hdf.close()
-
-
-
-class HDF5FileHandler(_HDFHandler):
+class HDF5FileHandler:
     """ HDF5FileHandler
 
     Generic HDF5 file hander for reading and writing datasets. This is
@@ -342,8 +318,26 @@ class HDF5FileHandler(_HDFHandler):
         NOTE(arl): should dummies be moved to coords?
     """
 
-    def __init__(self, filename=None, read_write='r'):
-        _HDFHandler.__init__(self, filename, read_write=read_write)
+    def __init__(self, filename, read_write='r'):
+        self.filename = filename
+        logger.info('Opening HDF file: {0:s}'.format(self.filename))
+        self._hdf = h5py.File(filename, read_write)
+        self._states = list(constants.States)
+
+    @property
+    def object_types(self):
+        return list(self._hdf['objects'].keys())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
+    def close(self):
+        if not self._hdf: return
+        logger.info('Closing HDF file: {0:s}'.format(self.filename))
+        self._hdf.close()
 
     @property
     def objects(self):
@@ -485,6 +479,7 @@ def import_JSON(filename):
 
 
 def import_CSV(filename):
+    """ import from a CSV file """
     raise NotImplementedError
 
 

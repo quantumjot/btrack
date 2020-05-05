@@ -34,6 +34,7 @@ Updates
 - Fixed JSON loader
 - Added example tracking data to the repository
 - Bug fix to ObjectFactory
+- Provided better sample configuration file
 
 0.3.2
 -----

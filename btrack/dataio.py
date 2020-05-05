@@ -297,10 +297,6 @@ class _HDFHandler(object):
         logger.info('Closing HDF file: {0:s}'.format(self.filename))
         self._hdf.close()
 
-    def new_PyTrackObject(self, txyz, label=None, obj_type=0):
-        """ Set up a new PyTrackObject quickly using data from a file """
-        raise DeprecationWarning("Use 'get' function instead")
-
 
 
 class HDF5FileHandler(_HDFHandler):
@@ -384,17 +380,6 @@ class HDF5FileHandler(_HDFHandler):
             objects += obj
         return objects
 
-    @property
-    def dummies(self):
-        """ Return the dummy objects in the file """
-        raise NotImplementedError
-
-    @property
-    def tracks(self):
-        """ Return the tracks in the file """
-        raise NotImplementedError
-
-
     def write_tracks(self, tracker, obj_type=None):
         """ Write tracks to HDF file """
         logger.info(self.object_types)
@@ -443,6 +428,46 @@ class HDF5FileHandler(_HDFHandler):
         logger.info(f'Writing track fates to HDF file: {self.filename}')
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset('fates', data=fate_table, dtype='int32')
+
+    @property
+    def tracks(self):
+        """ Return the tracks in the file
+
+        TODO(arl): return Tracklet objects rather than a table of tracks
+        """
+        ret = {k:[] for k in self.object_types}
+        for ci, c in enumerate(self.object_types):
+            track_map = self.hdf['tracks'][c]['map'][:]
+            txyz = self.hdf['objects'][c]['coords'][:]
+            track_refs = self.hdf['tracks'][c]['tracks'][:]
+            dummies = self.hdf['tracks'][c]['dummies'][:]
+
+            def get_txyz(ref):
+                if ref>=0:
+                    return txyz[ref,:]
+                else:
+                    return dummies[abs(ref)-1,:]
+
+            tracks = []
+            for i in range(track_map.shape[0]):
+                idx = slice(*track_map[i,:].tolist())
+                refs = track_refs[idx]
+                track = np.stack(map(get_txyz, refs), axis=0)
+                tracks.append(track[:,0:])
+
+            ret[c] = tracks
+
+        return ret
+
+    @property
+    def segmentation(self):
+        print(f'Loading segmentation...')
+        return self.hdf['segmentation']['images'][:]
+
+    @property
+    def lbep(self):
+        print('Loading LBEPR tables...')
+        return {k:self.hdf['tracks'][k]['LBEPR'][:] for k in self.object_types}
 
 
 

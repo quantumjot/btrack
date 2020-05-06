@@ -352,7 +352,11 @@ class HDF5FileHandler:
         for ci, c in enumerate(self.object_types):
             # read the whole dataset into memory
             txyz = self._hdf['objects'][c]['coords'][:]
-            labels = self._hdf['objects'][c]['labels'][:]
+            if 'labels' not in self._hdf['objects'][c]:
+                logger.warning('Labels missing from objects in HDF file')
+                labels = np.zeros((txyz.shape[0], 6))
+            else:
+                labels = self._hdf['objects'][c]['labels'][:]
             idx = range(txyz.shape[0])      # default filtering uses all objects
 
             # note that this doesn't do much error checking at the moment

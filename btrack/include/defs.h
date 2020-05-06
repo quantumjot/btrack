@@ -52,6 +52,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define MAX_LOST 5
 #define MAX_SEARCH_RADIUS 10
 #define WRITE_BELIEF_MATRIX false
+#define RESOLVE_CONFLICTS true
 
 
 // reserve space for objects and tracks

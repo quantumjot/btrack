@@ -703,6 +703,7 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
     if (int(best_object) != int(n_objects)) {
       // push this putative linkage to the map
       map.push( best_object, LinkHypothesis(trk, prob) );
+
     } else {
       // this track is probably lost, append a dummy to the trajectory
       active[trk]->append_dummy();
@@ -768,7 +769,7 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
       // update only this one
       active[trk]->append( new_objects[obj] );
 
-      // since we've found a correspondence for this one, remove from
+      // since we've found a correspondence for this one, remove from set
       not_used.erase(trk);
     }
   }

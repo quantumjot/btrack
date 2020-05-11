@@ -238,7 +238,7 @@ class BayesianTracker(object):
     def tracks(self):
         """ Return a sorted list of tracks, default is to sort by increasing
         length """
-        return self._sort( [self[i] for i in range(self.n_tracks)] )
+        return [self[i] for i in range(self.n_tracks)]
 
 
     @property
@@ -255,7 +255,7 @@ class BayesianTracker(object):
             _ = lib.get_refs(self._engine, refs, i)
             tracks.append(refs.tolist())
 
-        return self._sort(tracks)
+        return tracks
 
 
     @property

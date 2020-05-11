@@ -238,11 +238,8 @@ class LineageTree(object):
         for trk in self.tracks:
             if trk not in used:
 
-                # TODO(arl): confirm that this is a root node, i.e. the parent
-                # ID should be the same as the track ID or None
-                if trk.ID != trk.parent and trk.parent not in (0, None):
-                    print("Error with trk {}".format(trk.ID))
-                    print(trk.ID, trk.parent)
+                if not trk.is_root:
+                    continue
 
                 root = LineageTreeNode(track=trk, root=True)
                 used.append(trk)

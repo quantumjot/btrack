@@ -430,7 +430,7 @@ class HDF5FileHandler:
     @property
     def tracks(self):
         """ Return the tracks in the file
-        TODO(arl): recover lineage information from tracker
+        TODO(arl): recover lineage information from tracker (sp. children field)
         """
         dummies, ret = [], []
 
@@ -458,7 +458,7 @@ class HDF5FileHandler:
             for i in range(track_map.shape[0]):
                 idx = slice(*track_map[i,:].tolist())
                 refs = track_refs[idx]
-                track = btypes.Tracklet(i, list(map(get_txyz, refs)))
+                track = btypes.Tracklet(lbep[i,0], list(map(get_txyz, refs)))
                 track.parent = lbep[i,3]    # set the parent and root of tree
                 track.root = lbep[i,4]
                 track.fate = constants.Fates(fates[i]) # restore the track fate

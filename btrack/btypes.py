@@ -356,6 +356,10 @@ class Tracklet(object):
         return [o.probability for o in self._data]
 
     @property
+    def is_root(self):
+        return self.parent == 0 or self.parent == None
+
+    @property
     def kalman(self): return self._kalman
     @kalman.setter
     def kalman(self, data):
@@ -418,8 +422,3 @@ class Tracklet(object):
         """ Trim the tracklet and return one with the trimmed data """
         d = [o for o in self._data if o.t<=frame and o.t>=frame-tail]
         return Tracklet(self.ID, d)
-
-    @staticmethod
-    def from_dict(params):
-        """ Create a new tracklet using data from a dictionary """
-        raise NotImplementedError

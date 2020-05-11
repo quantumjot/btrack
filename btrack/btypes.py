@@ -348,6 +348,10 @@ class Tracklet(object):
         return [o.state.name for o in self._data]
 
     @property
+    def state(self):
+        return [o.state.value for o in self._data]
+
+    @property
     def softmax(self):
         return [o.probability for o in self._data]
 

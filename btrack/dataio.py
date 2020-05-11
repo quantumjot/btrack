@@ -439,6 +439,7 @@ class HDF5FileHandler:
             track_map = self._hdf['tracks'][c]['map'][:]
             track_refs = self._hdf['tracks'][c]['tracks'][:]
             lbep = self._hdf['tracks'][c]['LBEPR'][:]
+            fates = self._hdf['tracks'][c]['fates'][:]
 
             # if there are dummies, make new dummy objects
             if 'dummies' in self._hdf['tracks'][c]:
@@ -460,6 +461,7 @@ class HDF5FileHandler:
                 track = btypes.Tracklet(i, list(map(get_txyz, refs)))
                 track.parent = lbep[i,3]    # set the parent and root of tree
                 track.root = lbep[i,4]
+                track.fate = constants.Fates(fates[i]) # restore the track fate
                 tracks.append(track)
 
             ret.append(tracks)

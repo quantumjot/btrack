@@ -117,6 +117,16 @@ If you do not want to install a local copy, you can run the tracker in a Colab n
 
 ---
 
+### Usage with Napari
+
+You can visualize the output using our plugin for the open source image viewer [Napari](https://github.com/napari/napari). We provide example code here:
+
+| Status        | Notebook                                     | Link |
+| ------------- | -------------------------------------------- | ---- |
+| *In progress* | Visualizing bTrack output with Napari        | -
+
+---
+
 ### Usage from Python
 
 BayesianTracker can be used simply as follows:

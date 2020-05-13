@@ -4,7 +4,7 @@
 http://lowe.cs.ucl.ac.uk/cellx.html
 
 
-BayesianTracker (btrack) is a multi object tracking algorithm, specifically
+BayesianTracker (`btrack`) is a multi object tracking algorithm, specifically
 used to reconstruct trajectories in crowded fields. Here, we use a
 probabilistic network of information to perform the trajectory linking. This
 method uses spatial information as well as appearance information for track linking.
@@ -120,11 +120,11 @@ If you do not want to install a local copy, you can run the tracker in a Colab n
 
 ### Usage with Napari
 
-You can visualize the output using our plugin for the open source image viewer [Napari](https://github.com/napari/napari). We provide example code here:
+You can visualize the output using our plugin (called `arboretum`) for the open source image viewer [`Napari`](https://github.com/napari/napari). We provide example code here:
 
 | Status        | Notebook                                     | Link |
 | ------------- | -------------------------------------------- | ---- |
-| *In progress* | Visualizing bTrack output with Napari        | -
+| *In progress* | Visualizing bTrack output using arboretum  | [GitHub](https://github.com/quantumjot/arboretum)
 
 ---
 

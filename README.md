@@ -93,12 +93,13 @@ $ conda env create -f ./BayesianTracker/environment.yml
 $ conda activate btrack
 ```
 
-3. Compile and install the tracker:
+3. Install the tracker:
 ```sh
 $ cd BayesianTracker
-$ chmod +x install.sh
-$ ./install.sh
+$ pip install .
 ```
+
+*NOTE* (Optional): You can compile from source using the `build.sh` script.
 
 ---
 ### Usage in Colab notebooks

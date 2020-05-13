@@ -28,6 +28,11 @@ Thanks
 Updates
 =======
 
+0.3.4
+-----
+- Store library version in shared lib
+- Preparations for pip package
+
 0.3.3
 -----
 - Improved HDF loader to allow recovery of tracks and trees into native format

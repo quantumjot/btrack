@@ -4,6 +4,4 @@ btrack/optimise/__pycache__
 notebooks
 *.DS_store
 *.o
-*.so
-*.dylib
 *.pyc

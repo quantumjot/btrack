@@ -21,4 +21,6 @@ setup(name='btrack',
       package_data={'btrack': ['libs/libtracker*', 'VERSION.txt']},
       include_package_data=True,
       install_requires=get_install_required(),
-      license='LICENSE.md')
+      python_requires='>=3.6',
+      license='LICENSE.md',
+      classifiers=['Topic :: Scientific/Engineering'])

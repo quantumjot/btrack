@@ -17,8 +17,15 @@
 #ifndef _DEFS_H_INCLUDED_
 #define _DEFS_H_INCLUDED_
 
-
+#include <iostream>
 #include <limits>
+
+// store some information about the compilation
+static uint v_major = VERSION_MAJOR;
+static uint v_minor = VERSION_MINOR;
+static uint v_build = VERSION_BUILD;
+static std::string build_date = __DATE__;
+static std::string build_time = __TIME__;
 
 // errors
 #define SUCCESS 900

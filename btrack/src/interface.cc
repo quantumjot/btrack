@@ -22,6 +22,7 @@
   #define EXTERN_DECL extern "C"
 #endif
 
+
 #include "wrapper.h"
 
 EXTERN_DECL {
@@ -51,6 +52,13 @@ EXTERN_DECL {
   CHECK SHARED LIB VERSION NUMBER
   ========================================================================= */
 
+  bool check_library_version( InterfaceWrapper* h,
+                              const uint8_t a_major,
+                              const uint8_t a_minor,
+                              const uint8_t a_build ) {
+                                
+    return h->check_library_version(a_major, a_minor, a_build);
+  }
 
   /* =========================================================================
   MOTION MODEL SETTINGS

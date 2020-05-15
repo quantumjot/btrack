@@ -13,7 +13,6 @@
 # Created:  14/08/2014
 #-------------------------------------------------------------------------------
 
-
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
@@ -57,13 +56,6 @@ if not logger.handlers:
 
     logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
-
-
-logger.info('btrack (v{}) library imported'.format(__version__))
-
-
-
-
 
 
 
@@ -158,12 +150,13 @@ class BayesianTracker(object):
     def __init__(self, verbose=True):
         """ Initialise the BayesianTracker C++ engine and parameters """
 
-        # default parameters
+        # default parameters and space for stored objects
         self._motion_model = None
         self._object_model = None
         self._frame_range = [0,0]
         self._max_search_radius = np.inf
         self.return_kalman = False
+        self._objects = []
 
         # do not initialise until the init() has been run
         self._initialised = False
@@ -171,8 +164,12 @@ class BayesianTracker(object):
         # get an instance of the engine
         self._engine = lib.new_interface(verbose)
 
-        # store a list of objects
-        self._objects = []
+        # sanity check library version
+        version_tuple = constants.get_version_tuple()
+        if not lib.check_library_version(self._engine, *version_tuple):
+            logger.warning(f'btrack (v{__version__}) shared library mismatch.')
+        else:
+            logger.info(f'btrack (v{__version__}) library imported')
 
 
     def __enter__(self):

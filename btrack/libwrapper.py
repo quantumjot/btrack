@@ -127,6 +127,10 @@ class LibraryWrapper(object):
     lib.del_interface.restype = None
     lib.del_interface.argtypes = [ctypes.c_void_p]
 
+    # check the version number
+    lib.check_library_version.restype = ctypes.c_bool
+    lib.check_library_version.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
+
     # set the motion model
     lib.motion.restype = None
     lib.motion.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint,

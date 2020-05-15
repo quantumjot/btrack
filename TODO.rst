@@ -28,6 +28,10 @@ Thanks
 Updates
 =======
 
+0.3.5
+-----
+- Sanity check to ensure shared library has same version as python wrapper
+
 0.3.4
 -----
 - Store library version in shared lib

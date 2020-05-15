@@ -31,6 +31,21 @@ InterfaceWrapper::~InterfaceWrapper() {
   std::cout << "Deleting BTRACK interface wrapper" << std::endl;
 };
 
+
+// sanity check that this is the correct verion of the shared library
+bool InterfaceWrapper::check_library_version(const uint8_t a_major,
+                                             const uint8_t a_minor,
+                                             const uint8_t a_build ) const
+{
+  if (a_major==v_major && a_minor==v_minor && a_build==v_build){
+    return true;
+  }
+
+  // throw an error or let python deal with it?
+  //throw std::runtime_error("Library version number mismatch.");
+  return false;
+}
+
 // tracking and basic data handling
 void InterfaceWrapper::set_motion_model(const unsigned int measurements,
                                         const unsigned int states,

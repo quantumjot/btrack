@@ -3,12 +3,15 @@ import enum
 
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
+
 def get_version():
     with open(os.path.join(BTRACK_PATH, "VERSION.txt") ,"r") as ver:
-        version = ver.readline()
+        version = ver.readline().rstrip()
     return version.rstrip()
 
-# __version__ = get_version()
+def get_version_tuple():
+    return tuple([int(v) for v in get_version().split(".")])
+
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1

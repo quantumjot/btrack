@@ -31,6 +31,11 @@ class InterfaceWrapper
     InterfaceWrapper();
     virtual ~InterfaceWrapper();
 
+    // check that this is the correct version of the shared lib
+    bool check_library_version( const uint8_t a_major,
+                                const uint8_t a_minor,
+                                const uint8_t a_build ) const;
+
     // tracking and basic data handling
     void set_motion_model(const unsigned int measurements,
                           const unsigned int states,

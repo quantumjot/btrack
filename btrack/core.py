@@ -61,7 +61,7 @@ if not logger.handlers:
 
 
 
-class BayesianTracker(object):
+class BayesianTracker:
     """ BayesianTracker
 
     BayesianTracker is a multi object tracking algorithm, specifically

@@ -35,7 +35,9 @@ high-likelihood hypotheses that accounts for all observations.
 
 ### Example: Tracking mammalian cells in time-lapse microscopy experiments
 
-We developed BayesianTracker to enable us to track cells in large populations over very long periods of time, reconstruct lineages and study cell movement or sub-cellular protein localisation. Below is an example of tracking cells:
+We developed BayesianTracker to enable us to track cells in large populations
+over very long periods of time, reconstruct lineages and study cell movement or
+sub-cellular protein localisation. Below is an example of tracking cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
 *Video of tracking*
@@ -124,7 +126,7 @@ You can visualize the output using our plugin (called `arboretum`) for the open 
 
 | Status        | Notebook                                     | Link |
 | ------------- | -------------------------------------------- | ---- |
-| *In progress* | Visualizing bTrack output using arboretum  | [GitHub](https://github.com/quantumjot/arboretum)
+| *In progress* | Visualizing bTrack output using arboretum    | [GitHub](https://github.com/quantumjot/arboretum)
 
 ---
 

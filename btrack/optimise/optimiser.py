@@ -30,7 +30,7 @@ logger = logging.getLogger('worker_process')
 INIT_FATES = (Fates.INITIALIZE, Fates.INITIALIZE_BORDER, Fates.INITIALIZE_FRONT)
 TERM_FATES = (Fates.TERMINATE, Fates.TERMINATE_BORDER, Fates.TERMINATE_BACK)
 
-class TrackOptimiser(object):
+class TrackOptimiser:
     """ TrackOptimiser
 
     TrackOptimiser takes a list of tracklets, as producing by a tracking

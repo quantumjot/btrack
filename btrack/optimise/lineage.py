@@ -26,8 +26,7 @@ from btrack import btypes
 from btrack import dataio
 
 
-
-class LineageTreeNode(object):
+class LineageTreeNode:
     """ LineageTreeNode
 
     Node object to store tree structure and underlying track data
@@ -193,7 +192,7 @@ def linearise_tree(root_node):
 
 
 
-class LineageTree(object):
+class LineageTree:
     """ LineageTree
 
     Build a lineage tree from track objects.

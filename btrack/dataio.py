@@ -37,7 +37,7 @@ from scipy.io import savemat
 logger = logging.getLogger('worker_process')
 
 
-class _PyTrackObjectFactory(object):
+class _PyTrackObjectFactory:
     def __init__(self):
         self.reset()
 
@@ -157,7 +157,7 @@ def export_all_tracks_JSON(export_dir,
 
     logger.info(f'Writing out JSON files to dir: {export_dir}')
     for track in tracks:
-        fn = "track_{}_{}.json".format(track.ID, cell_type)
+        fn = f"track_{track.ID}_{cell_type}.json")
         track_fn = os.path.join(export_dir, fn)
         export_single_track_JSON(track_fn, track)
         filenames.append(fn)
@@ -165,7 +165,7 @@ def export_all_tracks_JSON(export_dir,
     # make a zip archive of the files
     if as_zip_archive:
         import zipfile
-        zip_fn = "tracks_{}.zip".format(cell_type)
+        zip_fn = f"tracks_{cell_type}.zip"
         full_zip_fn = os.path.join(export_dir, zip_fn)
         with zipfile.ZipFile(full_zip_fn, 'w') as zip:
             for fn in filenames:
@@ -173,13 +173,13 @@ def export_all_tracks_JSON(export_dir,
                 zip.write(src_json_file, arcname=fn)
                 os.remove(src_json_file)
 
-    file_stats_fn = "tracks_{}.json".format(cell_type)
+    file_stats_fn = f"tracks_{cell_type}.json"
     file_stats = {}
     file_stats[str(cell_type)] = {"path": export_dir,
                                   "zipped": as_zip_archive,
                                   "files": filenames}
 
-    logger.info('Writing out JSON file list to: {}'.format(file_stats_fn))
+    logger.info(f'Writing out JSON file list to: {file_stats_fn}')
     with open(os.path.join(export_dir, file_stats_fn), 'w') as filelist:
         json.dump(file_stats, filelist, indent=2, separators=(',', ': '))
 
@@ -196,9 +196,9 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
         tracks: a list of Tracklet objects
     """
 
-    file_stats_fn = os.path.join(folder, "tracks_{}.json".format(cell_type))
+    file_stats_fn = os.path.join(folder, f"tracks_{cell_type}.json")
     if not os.path.exists(file_stats_fn):
-        raise IOError('Tracking data file not found: {}'.format(file_stats_fn))
+        raise IOError(f'Tracking data file not found: {file_stats_fn}')
 
     with open(file_stats_fn, 'r') as json_file:
         track_files = json.load(json_file)
@@ -208,7 +208,7 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
     as_zipped = track_files[cell_type]['zipped']
     if as_zipped:
         import zipfile
-        zip_fn = os.path.join(folder,"tracks_{}.zip".format(cell_type))
+        zip_fn = os.path.join(folder, f"tracks_{cell_type}.zip")
         with zipfile.ZipFile(zip_fn, 'r') as zipped_tracks:
             for track_fn in track_files[cell_type]['files']:
                 track_file = zipped_tracks.read(track_fn)
@@ -320,7 +320,7 @@ class HDF5FileHandler:
 
     def __init__(self, filename, read_write='r'):
         self.filename = filename
-        logger.info('Opening HDF file: {0:s}'.format(self.filename))
+        logger.info(f'Opening HDF file: {self.filename}')
         self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
 
@@ -336,7 +336,7 @@ class HDF5FileHandler:
 
     def close(self):
         if not self._hdf: return
-        logger.info('Closing HDF file: {0:s}'.format(self.filename))
+        logger.info(f'Closing HDF file: {self.filename}')
         self._hdf.close()
 
     @property
@@ -404,7 +404,7 @@ class HDF5FileHandler:
             self._hdf.create_group('tracks')
 
         if obj_type in self._hdf['tracks']:
-            logger.warning('Removing {} from HDF file. '.format(obj_type))
+            logger.warning(f'Removing {obj_type} from HDF file. ')
             del self._hdf['tracks'][obj_type]
 
         grp = self._hdf['tracks'].create_group(obj_type)

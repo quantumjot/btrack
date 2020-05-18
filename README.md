@@ -79,10 +79,12 @@ You can also --> :star: :wink:
 ### Installation
 
 BayesianTracker has been tested with Python 3.7 on OS X and Linux.
-The tracker and hypothesis engine are mostly written in C++ with a C interface to Python.
+The tracker and hypothesis engine are mostly written in C++ with a C interface
+to Python.
 
-*NOTE TO WINDOWS USERS*: We have not tested this on Windows. The setup
-instructions below have been tested on Ubuntu 18.04 LTS and OS X 10.15.1.
+*NOTE TO WINDOWS USERS*: We have not tested this on Windows, although the
+following works on the Ubuntu shell for Win10. The setup instructions below have
+ been tested on Ubuntu 18.04 LTS and OS X 10.15.
 
 1. First clone the BayesianTracker repo:
 ```sh

@@ -157,7 +157,7 @@ def export_all_tracks_JSON(export_dir,
 
     logger.info(f'Writing out JSON files to dir: {export_dir}')
     for track in tracks:
-        fn = f"track_{track.ID}_{cell_type}.json")
+        fn = f"track_{track.ID}_{cell_type}.json"
         track_fn = os.path.join(export_dir, fn)
         export_single_track_JSON(track_fn, track)
         filenames.append(fn)

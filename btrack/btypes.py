@@ -134,7 +134,7 @@ class PyTrackingInfo(ctypes.Structure):
 
 
 
-class MotionModel(object):
+class MotionModel:
     """ MotionModel
 
     Kalman filter:
@@ -233,7 +233,7 @@ class MotionModel(object):
 
 
 
-class ObjectModel(object):
+class ObjectModel:
     """ ObjectModel
 
     This is a class to deal with state transitions in the object, essentially
@@ -276,7 +276,7 @@ class ObjectModel(object):
 
 
 
-class Tracklet(object):
+class Tracklet:
     """ Tracklet
 
     Tracklet object for storing and updating linked lists of track objects.
@@ -369,16 +369,16 @@ class Tracklet(object):
     def mu(self, index):
         """ Return the Kalman filter mu. Note that we are only returning the mu
          for the positions (e.g. 3x1) """
-        return np.matrix(self._kalman[index,1:4]).reshape(3,1)
+        return np.matrix(self.kalman[index,1:4]).reshape(3,1)
 
     def covar(self, index):
         """ Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3) """
-        return np.matrix(self._kalman[index,4:13]).reshape(3,3)
+        return np.matrix(self.kalman[index,4:13]).reshape(3,3)
 
     def predicted(self, index):
         """ Return the motion model prediction for the given timestep. """
-        return np.matrix(self._kalman[index,13:]).reshape(3,1)
+        return np.matrix(self.kalman[index,13:]).reshape(3,1)
 
     def to_dict(self):
         """ Return a dictionary of the tracklet which can be used for JSON
@@ -411,7 +411,7 @@ class Tracklet(object):
         tmp_track[:,3] = self.ID
         tmp_track[:,4] = self.parent
         tmp_track[:,5] = self.root
-        tmp_track[:,6] = [constants.States[l].value for l in self.label]
+        tmp_track[:,6] = self.state
         return tmp_track
 
     def in_frame(self, frame):

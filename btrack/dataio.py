@@ -449,6 +449,7 @@ class HDF5FileHandler:
 
             # TODO(arl): this needs to be stored in the HDF folder
             obj = self.filtered_objects(f_expr='area>=50')
+            obj = [o for o in obj if o.type==ci]
 
             def get_txyz(ref):
                 if ref>=0: return obj[ref]

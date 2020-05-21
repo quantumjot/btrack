@@ -344,12 +344,18 @@ class HDF5FileHandler:
         """ Return the objects in the file """
         return self.filtered_objects()
 
-    def filtered_objects(self, f_expr=None):
+    def filtered_objects(self, f_expr=None, obj_types=None):
         """ return a filtered list of objects based on metadata.
         f_expr should be of the format 'flag==1'
         """
         objects = []
-        for ci, c in enumerate(self.object_types):
+        if obj_types is None:
+            obj_types = self.object_types
+        else:
+            assert(isinstance(obj_types, list))
+            assert(all([o in self.object_types for o in obj_types]))
+
+        for ci, c in enumerate(obj_types):
             # read the whole dataset into memory
             txyz = self._hdf['objects'][c]['coords'][:]
             if 'labels' not in self._hdf['objects'][c]:
@@ -378,7 +384,7 @@ class HDF5FileHandler:
             objects += obj
         return objects
 
-    def write_tracks(self, tracker, obj_type=None):
+    def write_tracks(self, tracker, obj_type=None, f_expr=None):
         """ Write tracks to HDF file """
         logger.info(self.object_types)
         assert(obj_type in self.object_types)
@@ -410,6 +416,10 @@ class HDF5FileHandler:
         grp = self._hdf['tracks'].create_group(obj_type)
         grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')
         grp.create_dataset('map', data=hdf_frame_map, dtype='uint32')
+
+        # if we have used the f_expr we can save it as an attribute here
+        if f_expr is not None and isinstance(f_expr, str):
+            grp.attrs['f_expr'] = u'{f_expr}'
 
         # write out dummies
         if dummies:
@@ -448,8 +458,11 @@ class HDF5FileHandler:
                 for d in dobj: d.dummy = True
 
             # TODO(arl): this needs to be stored in the HDF folder
-            obj = self.filtered_objects(f_expr='area>=50')
-            obj = [o for o in obj if o.type==ci]
+            if 'f_expr' in self._hdf['tracks'][c].attrs:
+                f_expr = self._hdf['tracks'][c].attrs['f_expr']
+                obj = self.filtered_objects(f_expr=f_expr, obj_types=[c])
+            else:
+                obj = self.filtered_objects(obj_types=[c])
 
             def get_txyz(ref):
                 if ref>=0: return obj[ref]

@@ -251,7 +251,7 @@ def export_MATLAB(filename, tracks):
     logger.info(f'Writing out MATLAB files to dir: {filename}')
     export_track = np.vstack([trk.to_array() for trk in tracks])
     output = {'tracks': export_track,
-              'track_labels':['x','y','frm','ID','parentID','rootID',
+              'track_labels':['frm','x','y','z','ID','parentID','rootID',
                               'class_label'],
               'class_labels':['interphase','prometaphase','metaphase',
                               'anaphase','apoptosis'],

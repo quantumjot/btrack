@@ -323,6 +323,7 @@ class HDF5FileHandler:
         logger.info(f'Opening HDF file: {self.filename}')
         self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
+        self._f_expr = None # DO NOT USE
 
     @property
     def object_types(self):
@@ -460,9 +461,12 @@ class HDF5FileHandler:
             # TODO(arl): this needs to be stored in the HDF folder
             if 'f_expr' in self._hdf['tracks'][c].attrs:
                 f_expr = self._hdf['tracks'][c].attrs['f_expr']
-                obj = self.filtered_objects(f_expr=f_expr, obj_types=[c])
+            elif self._f_expr is not None:
+                f_expr = self._f_expr
             else:
-                obj = self.filtered_objects(obj_types=[c])
+                f_expr = None
+
+            obj = self.filtered_objects(f_expr=f_expr, obj_types=[c])
 
             def get_txyz(ref):
                 if ref>=0: return obj[ref]

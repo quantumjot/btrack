@@ -77,7 +77,7 @@ ObjectFactory = _PyTrackObjectFactory()
 
 
 
-def export_delegator(filename, tracker, obj_type=None):
+def export_delegator(filename, tracker, obj_type=None, filter_by=None):
     """ Export data from the tracker using the appropriate exporter """
     # assert(isinstance(tracker, BayesianTracker))
     assert(isinstance(filename, str))
@@ -93,7 +93,9 @@ def export_delegator(filename, tracker, obj_type=None):
         export_MATLAB(filename, tracker.tracks)
     elif ext == '.hdf5' or ext == '.hdf':
         with HDF5FileHandler(filename, read_write='a') as hdf:
-            hdf.write_tracks(tracker, obj_type=obj_type)
+            hdf.write_tracks(tracker,
+                             obj_type=obj_type,
+                             f_expr=filter_by)
     else:
         logger.error(f'Export file format {ext} not recognized.')
 

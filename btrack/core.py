@@ -584,9 +584,9 @@ class BayesianTracker:
         dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
         return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
 
-    def export(self, filename, obj_type=None):
+    def export(self, filename, obj_type=None, filter_by=None):
         """ export tracks using the appropriate exporter """
-        export_delegator(filename, self, obj_type=obj_type)
+        export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 
 
 

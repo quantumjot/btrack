@@ -2,6 +2,8 @@ btrack/include/eigen
 btrack/__pycache__
 btrack/optimise/__pycache__
 notebooks
+dist
+btrack.egg-info
 *.DS_store
 *.o
 *.pyc

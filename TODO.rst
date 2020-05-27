@@ -31,6 +31,8 @@ Updates
 0.3.5
 -----
 - Sanity check to ensure shared library has same version as python wrapper
+- Filtering options stored in HDF file now
+- Preparations for pip registration
 
 0.3.4
 -----

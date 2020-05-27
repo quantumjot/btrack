@@ -99,7 +99,7 @@ $ git clone https://github.com/quantumjot/BayesianTracker.git
 $ conda env create -f ./BayesianTracker/environment.yml
 $ conda activate btrack
 $ cd BayesianTracker
-$ pip install .
+$ pip install -e .
 ```
 
 *Optional*: You can compile the tracker from source using the `build.sh` script.
@@ -109,14 +109,14 @@ $ pip install .
 
 If you do not want to install a local copy, you can run the tracker in a Colab notebook. Please note that these examples are work in progress and may change:
 
-| Status        | Notebook                                     | Link |
-| ------------- | -------------------------------------------- | ---- |
-| *In progress* | Loading your own data                        | -
-| *In progress* | Basic object tracking with bTrack            | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
-| *In progress* | Advanced data import                         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1V2TtJ5FGqSILTuThSRg5j9crsBsorUmy)|
-| *In progress* | Advanced object tracking with bTrack (2D/3D) | -
-| *In progress* | Advanced configuration options               | -
-| Complete      | How to install *bTrack* in your own notebook | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
+| Status        | Level | Notebook                                     | Link |
+| ------------- | ----- | -------------------------------------------- | ---- |
+| *In progress* | Basic | Loading your own data                        | -
+| Complete      | Basic | Object tracking with btrack                  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
+| Complete      | Basic | Data import options                          | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1V2TtJ5FGqSILTuThSRg5j9crsBsorUmy)|
+| *In progress* | Advanced | Object tracking with btrack (2D/3D)       | -
+| *In progress* | Advanced | Configuration options                     | -
+| Complete      | Advanced | How to compile btrack from source         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
 
 
 ---

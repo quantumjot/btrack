@@ -12,11 +12,15 @@ def get_version():
         version = ver.readline()
     return version.rstrip()
 
-print(find_packages())
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
 
 setup(name='btrack',
       version=get_version(),
       description='BayesianTracker is a simple Python/C++ based framework for multi-object tracking',
+      long_description=long_description,
+      long_description_content_type='text/markdown',
       author='Alan R. Lowe',
       author_email='a.lowe@ucl.ac.uk',
       url='https://github.com/quantumjot/BayesianTracker',

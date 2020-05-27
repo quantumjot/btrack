@@ -1,8 +1,12 @@
 btrack/include/eigen
 btrack/__pycache__
 btrack/optimise/__pycache__
+btrack/agents.py
+btrack/render_movie.py
+examples/napari.png
 notebooks
 dist
+build
 btrack.egg-info
 *.DS_store
 *.o

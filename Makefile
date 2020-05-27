@@ -18,7 +18,7 @@ NVCC = nvcc
 # If your compiler is a bit older you may need to change -std=c++11 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
 GDBFLAGS = -g3 -O0 -ggdb
-CXXFLAGS = -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false -I"./btrack/include" -DVERSION_MAJOR=0 -DVERSION_MINOR=3 -DVERSION_BUILD=5
+CXXFLAGS = -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false -I"./btrack/include" -DVERSION_MAJOR=0 -DVERSION_MINOR=3 -DVERSION_BUILD=6
 LDFLAGS = -shared $(XLDFLAGS)
 
 EXE = tracker

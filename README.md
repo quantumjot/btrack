@@ -26,7 +26,7 @@ based on heuristics. The global solution identifies a sequence of
 high-likelihood hypotheses that accounts for all observations.
 
 <!-- [![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)   -->
-[![LineageTree](./examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+[![LineageTree](https://raw.githubusercontent.com/quantumjot/BayesianTracker/master/examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red.
 
 
@@ -86,24 +86,23 @@ to Python.
 following works on the Ubuntu shell for Win10. The setup instructions below have
  been tested on Ubuntu 18.04 LTS and OS X 10.15.
 
-1. First clone the BayesianTracker repo:
+ #### Installing the latest stable version
+ ```sh
+ pip install btrack
+ ```
+
+
+ #### (Advanced) Installing the latest development version
+
 ```sh
 $ git clone https://github.com/quantumjot/BayesianTracker.git
-```
-
-2. (Optional, but advised) Create a conda environment:
-```sh
 $ conda env create -f ./BayesianTracker/environment.yml
 $ conda activate btrack
-```
-
-3. Install the tracker:
-```sh
 $ cd BayesianTracker
 $ pip install .
 ```
 
-*NOTE* (Optional): You can compile from source using the `build.sh` script.
+*Optional*: You can compile the tracker from source using the `build.sh` script.
 
 ---
 ### Usage in Colab notebooks

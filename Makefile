@@ -15,10 +15,19 @@ endif
 
 NVCC = nvcc
 
+
+# automatically get the version numbers from VERSION.txt
+VERSION_FILE := ./btrack/VERSION.txt
+VERSION_MAJOR = $(shell cat $(VERSION_FILE) | cut -f1 -d.)
+VERSION_MINOR = $(shell cat $(VERSION_FILE) | cut -f2 -d.)
+VERSION_BUILD = $(shell cat $(VERSION_FILE) | cut -f3 -d.)
+
 # If your compiler is a bit older you may need to change -std=c++11 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
 GDBFLAGS = -g3 -O0 -ggdb
-CXXFLAGS = -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false -I"./btrack/include" -DVERSION_MAJOR=0 -DVERSION_MINOR=3 -DVERSION_BUILD=6
+CXXFLAGS = -c -std=c++11 -m64 -O3 -fPIC -DDEBUG=false -DFAST_COST_UPDATE=false \
+					 -I"./btrack/include" -DVERSION_MAJOR=$(VERSION_MAJOR) \
+					 -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_BUILD=$(VERSION_BUILD)
 LDFLAGS = -shared $(XLDFLAGS)
 
 EXE = tracker
@@ -28,7 +37,7 @@ SRC = $(wildcard $(SRC_DIR)/*.cc)
 OBJ = $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
 
 
-
+# make it
 all: $(EXE)
 
 $(EXE): $(OBJ)

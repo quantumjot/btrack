@@ -31,4 +31,4 @@ setup(name='btrack',
       license='LICENSE.md',
       classifiers=['Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Bio-Informatics',
-                   'Topic :: Scientific/Engineerign :: Image Recognition'])
+                   'Topic :: Scientific/Engineering :: Image Recognition'])

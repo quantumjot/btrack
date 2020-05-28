@@ -29,4 +29,6 @@ setup(name='btrack',
       install_requires=get_install_required(),
       python_requires='>=3.6',
       license='LICENSE.md',
-      classifiers=['Topic :: Scientific/Engineering'])
+      classifiers=['Topic :: Scientific/Engineering',
+                   'Topic :: Scientific/Engineering :: Bio-Informatics',
+                   'Topic :: Scientific/Engineerign :: Image Recognition'])

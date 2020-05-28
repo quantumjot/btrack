@@ -198,6 +198,16 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
         tracks: a list of Tracklet objects
     """
 
+    def _build_track_from_dict(d):
+        txyz = np.stack([[float(j) for j in d[k]] for k in ('t','x','y','z')], axis=-1)
+        labels = [int(constants.States[l].value) for l in d['label']]
+        data = [ObjectFactory.get(txyz[i,:], label=labels[i]) for i in range(txyz.shape[0])]
+        tid, pid, cid = int(d['ID']), int(d['parent']), [int(c) for c in d['children']]
+        track = btypes.Tracklet(tid, data, parent=pid, children=cid)
+        track.root = int(d['root'])
+        return track
+
+
     file_stats_fn = os.path.join(folder, f"tracks_{cell_type}.json")
     if not os.path.exists(file_stats_fn):
         raise IOError(f'Tracking data file not found: {file_stats_fn}')
@@ -217,7 +227,7 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
                 d = json.loads(track_file)
                 d['cell_type'] = cell_type
                 d['filename'] = track_fn
-                tracks.append(btypes.Tracklet.from_dict(d))
+                tracks.append(_build_track_from_dict(d))
         return tracks
 
     # iterate over the track files and create Track objects
@@ -226,7 +236,7 @@ def import_all_tracks_JSON(folder, cell_type='GFP'):
             d = json.load(track_file)
             d['cell_type'] = cell_type
             d['filename'] = track_fn
-            tracks.append(btypes.Tracklet.from_dict(d))
+            tracks.append(_build_track_from_dict(d))
 
     return tracks
 

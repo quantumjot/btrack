@@ -449,6 +449,17 @@ void TrackManager::finalise(void)
         m_dummies.push_back(m_tracks[i]->track[o]);
       }
     }
+
+    // finally, if the root node remains unset, change it to the track ID
+    if (m_tracks[i]->root == 0) {
+      m_tracks[i]->root = m_tracks[i]->ID;
+    }
+
+    // if the parent node remains unset, change it to the track ID
+    if (m_tracks[i]->parent == 0) {
+      m_tracks[i]->parent = m_tracks[i]->ID;
+    }
+
   }
 }
 

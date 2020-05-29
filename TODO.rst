@@ -17,6 +17,7 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
+- Record library version number in exported data
 
 
 Thanks
@@ -28,10 +29,16 @@ Thanks
 Updates
 =======
 
+0.3.7
+-----
+- Root nodes now how correct root and parent ID set by track manager
+- Makefile infers version number from VERSION.txt during build from source
+- Added _build_track_from_dict to JSON loader
+
 0.3.6
 -----
 - PyPi release
-
+- Added property filtering to export_delegator, and HDF exporter
 
 0.3.5
 -----

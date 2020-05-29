@@ -3,11 +3,13 @@ btrack/__pycache__
 btrack/optimise/__pycache__
 btrack/agents.py
 btrack/render_movie.py
+models/MDCK_*
 examples/napari.png
 notebooks
 dist
 build
 btrack.egg-info
+bworker.py
 *.DS_store
 *.o
 *.pyc

@@ -211,8 +211,7 @@ class BayesianTracker:
     def max_search_radius(self, max_search_radius):
         """ Set the maximum search radius for fast cost updates """
         assert(max_search_radius>0. and max_search_radius<=100.)
-        logger.info('Setting maximum XYZ search radius to {}px...'
-                    .format(max_search_radius))
+        logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
         lib.max_search_radius(self._engine, max_search_radius)
 
 
@@ -291,7 +290,7 @@ class BayesianTracker:
         if len(volume) != 3 or any([len(v)!=2 for v in volume]):
             raise ValueError('Volume must contain three tuples (xyz)')
         lib.set_volume(self._engine, np.array(volume, dtype='float64'))
-        logger.info('Set volume to {}'.format(volume))
+        logger.info(f'Set volume to {volume}')
 
 
     @property
@@ -317,7 +316,7 @@ class BayesianTracker:
             'provided as a MotionModel object')
 
         self._motion_model = model
-        logger.info('Loading motion model: {}'.format(model.name))
+        logger.info('Loading motion model: {model.name}')
 
         # need to populate fields in the C++ library
         lib.motion( self._engine, model.measurements, model.states, model.A,
@@ -352,7 +351,7 @@ class BayesianTracker:
             'provided as a ObjectModel object')
 
         self._object_model = model
-        logger.info('Loading object model: {}'.format(model.name))
+        logger.info('Loading object model: {model.name}')
 
         # need to populate fields in the C++ library
         lib.model( self._engine, model.states, model.emission,
@@ -416,7 +415,8 @@ class BayesianTracker:
         stats = self._stats(ret)
 
         if not utils.log_error(stats.error):
-            logger.info('SUCCESS. Found {} tracks in {} frames'.format(self.n_tracks, 1+self._frame_range[1]))
+            logger.info(f('SUCCESS. Found {self.n_tracks} tracks in'
+                         f'{1+self._frame_range[1]} frames'))
 
         # can log the statistics as well
         utils.log_stats(stats.to_dict())
@@ -437,9 +437,9 @@ class BayesianTracker:
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
-            logger.info('Tracking objects in frames {} to '
-                '{} (of {})...'.format(frm, min(frm+step_size-1,
-                self._frame_range[1]+1), self._frame_range[1]+1))
+            logger.info((f'Tracking objects in frames {frm} to '
+                         f'{min(frm+step_size-1, self._frame_range[1]+1)}'
+                         f'(of {self._frame_range[1]+1})...'))
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
@@ -447,11 +447,11 @@ class BayesianTracker:
 
         if not utils.log_error(stats.error):
             logger.info('SUCCESS.')
-            logger.info(' - Found {} tracks in {} frames (in '
-                '{}s)'.format(self.n_tracks, 1+self._frame_range[1],
-                stats.t_total_time))
-            logger.info(' - Inserted {} dummy objects to fill '
-                'tracking gaps'.format(self.n_dummies))
+            logger.info((f' - Found {self.n_tracks} tracks in '
+                         f'{1+self._frame_range[1]} frames '
+                         f'(in {stats.t_total_time}s)'))
+            logger.info((f' - Inserted {self.n_dummies} dummy objects to fill '
+                         'tracking gaps'))
 
 
     def step(self, n_steps=1):
@@ -500,9 +500,9 @@ class BayesianTracker:
         h_optimise = [h.type for h in optimised]
 
         for h_type in set(h_original):
-            logger.info(' - {}: {} (of {})'.format(h_type,
-                        h_optimise.count(h_type), h_original.count(h_type)))
-        logger.info(' - TOTAL: {} hypotheses'.format(len(hypotheses)))
+            logger.info((f' - {h_type}: {h_optimise.count(h_type)}'
+                         f'(of {h_original.count(h_type)})'))
+        logger.info(f' - TOTAL: {len(hypotheses)} hypotheses')
 
         # now that we have generated the optimal sequence, merge all of the
         # tracks, delete fragments and assign divisions

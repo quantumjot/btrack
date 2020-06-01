@@ -104,7 +104,8 @@ def export_delegator(filename, tracker, obj_type=None, filter_by=None):
 
 
 def check_track_type(tracks):
-    return isinstance(tracks[0], btypes.Tracklet)
+    # return isinstance(tracks[0], btypes.Tracklet)
+    return all([isinstance(t, btypes.Tracklet) for t in tracks])
 
 
 def export_single_track_JSON(filename, track):
@@ -434,6 +435,9 @@ class HDF5FileHandler:
         # if we have used the f_expr we can save it as an attribute here
         if f_expr is not None and isinstance(f_expr, str):
             grp.attrs['f_expr'] = f_expr
+
+        # also save the version number as an attribute
+        grp.attrs['version'] = __version__
 
         # write out dummies
         if dummies:

@@ -48,8 +48,8 @@ def load_config(filename):
         local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
 
         if not os.path.exists(local_filename):
-            logger.error("Configuration file {} not found".format(filename))
-            raise IOError("Configuration file {} not found".format(filename))
+            logger.error(f'Configuration file {filename} not found')
+            raise IOError(f'Configuration file {filename} not found')
         else:
             filename = local_filename
 
@@ -62,7 +62,7 @@ def load_config(filename):
 
     config = config["TrackerConfig"]
 
-    logger.info("Loading configuration file: {}".format(filename))
+    logger.info(f'Loading configuration file: {filename}')
     t_config = {"MotionModel": read_motion_model(config),
                 "ObjectModel": read_object_model(config),
                 "HypothesisModel": hypothesis.read_hypothesis_model(config)}
@@ -75,7 +75,7 @@ def log_error(err_code):
     """ Take an error code from the tracker and log an error for the user. """
     error = constants.Errors(err_code)
     if error != constants.Errors.SUCCESS and error != constants.Errors.NO_ERROR:
-        logger.error('ERROR: {0:s}'.format(error))
+        logger.error(f'ERROR: {error}')
         return True
     return False
 

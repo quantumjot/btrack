@@ -34,6 +34,7 @@ Updates
 - Root nodes now how correct root and parent ID set by track manager
 - Makefile infers version number from VERSION.txt during build from source
 - Added _build_track_from_dict to JSON loader
+- Fixed error writing filtering to HDF
 
 0.3.6
 -----

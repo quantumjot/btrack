@@ -97,9 +97,9 @@ def load_library(filename):
 
     try:
         lib = ctypes.cdll.LoadLibrary(full_lib_file)
-        logger.info('Loaded btrack: {0:s}'.format(full_lib_file))
+        logger.info(f'Loaded btrack: {full_lib_file}')
     except IOError:
-        raise IOError('Cannot load shared library {0:s}'.format(full_lib_file))
+        raise IOError(f'Cannot load shared library {full_lib_file}')
 
     return lib
 

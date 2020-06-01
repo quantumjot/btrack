@@ -35,10 +35,6 @@ from .optimise import hypothesis
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
-# TODO(arl): sort this out with final packaging!
-# BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
-
-
 
 def numpy_pointer_decorator(func):
     """ simple decorator for numpy ctypes pointers """

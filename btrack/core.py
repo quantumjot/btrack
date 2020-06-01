@@ -110,7 +110,6 @@ class BayesianTracker:
         track_interactive(): run the tracking in interactive mode
         optimise(): run the optimiser
         cleanup(): clean up the tracks according to some metrics
-
         configure_from_file(): pass a json configuration file
 
     Args:
@@ -130,8 +129,6 @@ class BayesianTracker:
 
     Notes:
         TODO(arl): lower precision for tracking output?
-        DONE(arl): return list of references - 31-10-2017
-        DONE(arl): clean up setting up of models - 27-12-2017
 
     References:
         'A Bayesian algorithm for tracking multiple moving objects in outdoor

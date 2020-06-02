@@ -436,7 +436,7 @@ class HDF5FileHandler:
             grp.attrs['f_expr'] = f_expr
 
         # also save the version number as an attribute
-        grp.attrs['version'] = __version__
+        grp.attrs['version'] = constants.get_version()
 
         # write out dummies
         if dummies:

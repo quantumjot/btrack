@@ -382,7 +382,6 @@ class HDF5FileHandler:
             # note that this doesn't do much error checking at the moment
             if f_expr is not None:
                 assert(isinstance(f_expr, str))
-                print(f_expr)
                 pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
                 m = re.match(pattern, f_expr)
                 f_eval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10

@@ -357,15 +357,40 @@ void HypothesisEngine::hypothesis_init( TrackletPtr a_trk )
       // double prob_init = std::max(prob_init_border, prob_init_front);
       //short int best_hypothesis = std::argmax(prob_init_border, prob_init_front);
 
+      // assign the correct initialization hypothesis type
+      unsigned int h_init_type;
+
       if (prob_init_border > prob_init_front) {
-        Hypothesis h_init(TYPE_Pinit_border, a_trk);
+
+        // if the border is the highest probability, but we have exceeded the
+        // threshold, then label this as a lazy initialization, which should
+        // only occur if using the 'relax' mode.
+
+        if (d_start >= m_params.theta_dist) {
+          h_init_type = TYPE_Pinit_lazy;
+        } else {
+          h_init_type = TYPE_Pinit_border;
+        }
+
+        Hypothesis h_init(h_init_type, a_trk);
         h_init.probability = safe_log(prob_init_border)
                              + 0.5*safe_log(P_TP(a_trk));
         m_hypotheses.push_back( h_init );
         return;
 
       } else {
-        Hypothesis h_init(TYPE_Pinit_front, a_trk);
+
+        // if the front is the highest probability, but we have exceeded the
+        // threshold, then label this as a lazy initialization, which should
+        // only occur if using the 'relax' mode.
+
+        if (a_trk->track.front()->t >= m_frame_range[0]+m_params.theta_time) {
+          h_init_type = TYPE_Pinit_lazy;
+        } else {
+          h_init_type = TYPE_Pinit_front;
+        }
+
+        Hypothesis h_init(h_init_type, a_trk);
         h_init.probability = safe_log(prob_init_front)
                              + 0.5*safe_log(P_TP(a_trk));
         m_hypotheses.push_back( h_init );
@@ -399,15 +424,40 @@ void HypothesisEngine::hypothesis_term( TrackletPtr a_trk )
       // take the highest likelihood hypothesis
       // double prob_term = std::max(prob_term_border, prob_term_back);
 
+      // assign the correct initialization hypothesis type
+      unsigned int h_term_type;
+
       if (prob_term_border > prob_term_back) {
-        Hypothesis h_term(TYPE_Pterm_border, a_trk);
+
+        // if the border is the highest probability, but we have exceeded the
+        // threshold, then label this as a lazy termination, which should
+        // only occur if using the 'relax' mode.
+
+        if (d_stop >= m_params.theta_dist) {
+          h_term_type = TYPE_Pterm_lazy;
+        } else {
+          h_term_type = TYPE_Pterm_border;
+        }
+
+        Hypothesis h_term(h_term_type, a_trk);
         h_term.probability = safe_log(prob_term_border)
                              + 0.5*safe_log(P_TP(a_trk));
         m_hypotheses.push_back( h_term );
         return;
 
       } else {
-        Hypothesis h_term(TYPE_Pterm_back, a_trk);
+
+        // if the back is the highest probability, but we have exceeded the
+        // threshold, then label this as a lazy termination, which should
+        // only occur if using the 'relax' mode.
+
+        if (a_trk->track.back()->t <= m_frame_range[1]-m_params.theta_time) {
+          h_term_type = TYPE_Pterm_lazy;
+        } else {
+          h_term_type = TYPE_Pterm_back;
+        }
+
+        Hypothesis h_term(h_term_type, a_trk);
         h_term.probability = safe_log(prob_term_back)
                              + 0.5*safe_log(P_TP(a_trk));
         m_hypotheses.push_back( h_term );

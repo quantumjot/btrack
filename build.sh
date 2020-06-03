@@ -16,4 +16,4 @@ make
 
 # run the installation
 echo "Installing btrack python package..."
-pip install .
+pip install -e .

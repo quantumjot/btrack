@@ -6,6 +6,7 @@ btrack/render_movie.py
 models/MDCK_*
 examples/napari.png
 notebooks
+deprecated
 dist
 build
 btrack.egg-info

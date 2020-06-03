@@ -1,6 +1,10 @@
+[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  :microscope::computer:
+<!-- [![PyPI - Downloads](https://img.shields.io/pypi/dm/btrack.svg)](https://pypistats.org/packages/btrack) -->
+
+
 # Bayesian Tracker (bTrack)
 
-**WORK IN PROGRESS** :microscope::computer:  
+
 http://lowe.cs.ucl.ac.uk/cellx.html
 
 
@@ -88,11 +92,14 @@ following works on the Ubuntu shell for Win10. The setup instructions below have
 
  #### Installing the latest stable version
  ```sh
- pip install btrack
+ $ pip install btrack
  ```
 
 
  #### (Advanced) Installing the latest development version
+
+If you would rather install the latest development version, and/or compile
+directly from source, you can clone and install from this repo:
 
 ```sh
 $ git clone https://github.com/quantumjot/BayesianTracker.git
@@ -102,7 +109,8 @@ $ cd BayesianTracker
 $ pip install -e .
 ```
 
-*Optional*: You can compile the tracker from source using the `build.sh` script.
+Addtionally, the `build.sh` script will download Eigen source, run the makefile
+and pip install.
 
 ---
 ### Usage in Colab notebooks

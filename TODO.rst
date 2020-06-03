@@ -17,7 +17,6 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
-- Record library version number in exported data
 
 
 Thanks
@@ -28,6 +27,11 @@ Thanks
 
 Updates
 =======
+
+0.3.8
+-----
+- Added 'lazy' termination and initialization hypotheses to aid diagnostics
+- Store library version number in HDF files
 
 0.3.7
 -----

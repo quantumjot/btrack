@@ -480,14 +480,11 @@ class BayesianTracker:
         """ Optimise the tracks. This generates the hypotheses for track merges,
         branching etc, runs the optimiser and then performs track merging,
         removal of track fragments, renumbering and assignment of branches.
-
-        TODO(arl): need to check whether optimiser parameters have been
-        specified
         """
 
         logger.info(f'Loading hypothesis model: {self.hypothesis_model.name}')
 
-        logger.info('Calculating hypotheses from tracklets...')
+        logger.info(f'Calculating hypotheses (relax: {self.hypothesis_model.relax})...')
         hypotheses = self.hypotheses()
 
         # set up the track optimiser
@@ -498,10 +495,11 @@ class BayesianTracker:
 
         h_original = [h.type for h in hypotheses]
         h_optimise = [h.type for h in optimised]
+        h_types = sorted(list(set(h_original)), key=lambda h: h.value)
 
-        for h_type in set(h_original):
+        for h_type in h_types:
             logger.info((f' - {h_type}: {h_optimise.count(h_type)}'
-                         f'(of {h_original.count(h_type)})'))
+                         f' (of {h_original.count(h_type)})'))
         logger.info(f' - TOTAL: {len(hypotheses)} hypotheses')
 
         # now that we have generated the optimal sequence, merge all of the

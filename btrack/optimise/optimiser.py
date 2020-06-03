@@ -27,8 +27,14 @@ from cvxopt import matrix, spmatrix
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
-INIT_FATES = (Fates.INITIALIZE, Fates.INITIALIZE_BORDER, Fates.INITIALIZE_FRONT)
-TERM_FATES = (Fates.TERMINATE, Fates.TERMINATE_BORDER, Fates.TERMINATE_BACK)
+INIT_FATES = (Fates.INITIALIZE,
+              Fates.INITIALIZE_BORDER,
+              Fates.INITIALIZE_FRONT,
+              Fates.INITIALIZE_LAZY)
+TERM_FATES = (Fates.TERMINATE,
+              Fates.TERMINATE_BORDER,
+              Fates.TERMINATE_BACK,
+              Fates.TERMINATE_LAZY)
 
 class TrackOptimiser:
     """ TrackOptimiser
@@ -186,9 +192,9 @@ class TrackOptimiser:
                 continue
 
             else:
-                raise ValueError('Unknown hypothesis: {0:s}'.format(h.type))
+                raise ValueError(f'Unknown hypothesis: {h.type}')
 
-        logger.info('Optimising...')
+        logger.info('Optimizing...')
 
         # now set up the ILP solver
         G = spmatrix([], [], [], (2*N, n_hypotheses), 'd')
@@ -202,13 +208,13 @@ class TrackOptimiser:
 
         # log the warning if not optimal solution
         if status != 'optimal':
-            logger.warning('Optimizer returned status: {0:s}'.format(status))
+            logger.warning(f'Optimizer returned status: {status}')
             return []
 
         # return only the selected hypotheses
         results = [i for i,h in enumerate(self.hypotheses) if x[i]>0]
 
-        logger.info('Optimisation complete. (Solution: {0:s})'.format(status))
+        logger.info(f'Optimization complete. (Solution: {status})')
         return results
 
 

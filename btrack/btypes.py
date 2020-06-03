@@ -357,7 +357,7 @@ class Tracklet:
 
     @property
     def is_root(self):
-        return self.parent == 0 or self.parent == None
+        return self.parent == 0 or self.parent == None or self.parent == self.ID
 
     @property
     def kalman(self): return self._kalman

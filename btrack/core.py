@@ -316,7 +316,7 @@ class BayesianTracker:
             'provided as a MotionModel object')
 
         self._motion_model = model
-        logger.info('Loading motion model: {model.name}')
+        logger.info(f'Loading motion model: {model.name}')
 
         # need to populate fields in the C++ library
         lib.motion( self._engine, model.measurements, model.states, model.A,
@@ -351,7 +351,7 @@ class BayesianTracker:
             'provided as a ObjectModel object')
 
         self._object_model = model
-        logger.info('Loading object model: {model.name}')
+        logger.info(f'Loading object model: {model.name}')
 
         # need to populate fields in the C++ library
         lib.model( self._engine, model.states, model.emission,

@@ -17,6 +17,8 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
+- Simplify IO/ Remove JSON track loader/exporter, clean up HDF handler
+- Add documentation/wiki for configuration
 
 
 Thanks

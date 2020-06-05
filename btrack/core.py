@@ -30,9 +30,8 @@ from . import libwrapper
 
 from .dataio import export_delegator
 
-# from btrack.optimise import hypothesis
 from .optimise import optimiser
-from .optimise import lineage
+# from .optimise import lineage
 
 from datetime import datetime
 from collections import OrderedDict
@@ -370,6 +369,10 @@ class BayesianTracker:
         self._frame_range = frame_range
 
 
+    @property
+    def objects(self):
+        return self._objects
+
     def append(self, objects):
         """ Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
@@ -388,7 +391,7 @@ class BayesianTracker:
             ret = lib.append( self._engine, obj )
 
         # store a copy of the list of objects
-        self._objects = objects
+        self._objects += objects
 
 
     def _stats(self, info_ptr):
@@ -486,6 +489,11 @@ class BayesianTracker:
 
         logger.info(f'Calculating hypotheses (relax: {self.hypothesis_model.relax})...')
         hypotheses = self.hypotheses()
+
+        # if we don't have any hypotheses return
+        if not hypotheses:
+            logger.warning('No hypotheses could be found.')
+            return []
 
         # set up the track optimiser
         track_linker = optimiser.TrackOptimiser()

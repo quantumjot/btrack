@@ -34,6 +34,8 @@ Updates
 -----
 - Added 'lazy' termination and initialization hypotheses to aid diagnostics
 - Store library version number in HDF files
+- Fixed error where last frame of data not added to tracks
+- Removed python lineage tree generation (now performed in C++ lib)
 
 0.3.7
 -----

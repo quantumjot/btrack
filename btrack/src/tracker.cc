@@ -295,7 +295,7 @@ unsigned int BayesianTracker::initialise() {
   current_frame = frames.front();
 
   // set up the first tracklets based on the first set of objects
-  while ( objects[o_counter]->t == current_frame && o_counter != n_objects ) {
+  while ( objects[o_counter]->t == current_frame && o_counter != n_objects-1 ) {
     // add a new tracklet
     TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
                                                   objects[o_counter],
@@ -338,11 +338,13 @@ void BayesianTracker::step(const unsigned int steps)
       return;
     }
     // take a step
-    step++;
+    //step++;
   }
 
 
-  while (step < steps && current_frame < frames.back()) {
+  while (step < steps && current_frame <= frames.back()) {
+
+    // std::cout << "Frame: " << current_frame << std::endl;
 
     // update the list of active tracks
     update_active();
@@ -351,11 +353,12 @@ void BayesianTracker::step(const unsigned int steps)
     new_objects.clear();
 
     // loop over all tracks found in this frame
-    while ( objects[o_counter]->t == current_frame && o_counter != n_objects) {
+    while (objects[o_counter]->t == current_frame && o_counter != n_objects-1) {
       // store a reference to this object
       new_objects.push_back( objects[o_counter] );
       o_counter++;
     }
+
 
     // set up some counters
     size_t n_active = active.size();
@@ -371,6 +374,8 @@ void BayesianTracker::step(const unsigned int steps)
       current_frame++;
       continue;
     }
+
+
 
     // make some space for the belief matrix
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> belief;
@@ -391,6 +396,8 @@ void BayesianTracker::step(const unsigned int steps)
     //   belief_filename << current_frame << ".csv";
     //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
     // }
+
+
 
     // now that we have the complete belief matrix, we want to associate
     // do naive linking

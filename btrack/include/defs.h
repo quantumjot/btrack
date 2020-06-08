@@ -57,7 +57,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define DYNAMIC_ACCURACY false
 #define DIMS 3
 #define MAX_LOST 5
-#define MAX_SEARCH_RADIUS 10
+#define MAX_SEARCH_RADIUS 100
 #define WRITE_BELIEF_MATRIX false
 #define RESOLVE_CONFLICTS true
 
@@ -93,6 +93,11 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define TYPE_Pterm_lazy   22
 #define TYPE_Pdead        666
 #define TYPE_undef        999
+
+// update methods
+#define UPDATE_MODE_EXACT 0
+#define UPDATE_MODE_APPROXIMATE 1
+#define UPDATE_MODE_CUDA 2
 
 
 // hypothesis generation

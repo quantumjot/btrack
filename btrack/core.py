@@ -167,6 +167,10 @@ class BayesianTracker:
         else:
             logger.info(f'btrack (v{__version__}) library imported')
 
+        # silently set the update method to EXACT
+        self._bayesian_update_method = constants.BayesianUpdates.EXACT
+        lib.set_update_mode(self._engine, self.update_method.value)
+
 
     def __enter__(self):
         logger.info('Starting BayesianTracker session')
@@ -209,9 +213,21 @@ class BayesianTracker:
     @max_search_radius.setter
     def max_search_radius(self, max_search_radius):
         """ Set the maximum search radius for fast cost updates """
-        assert(max_search_radius>0. and max_search_radius<=100.)
+        assert(max_search_radius>0.)
         logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
         lib.max_search_radius(self._engine, max_search_radius)
+
+
+    @property
+    def update_method(self):
+        return self._bayesian_update_method
+    @update_method.setter
+    def update_method(self, method):
+        """ set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
+        assert(method in constants.BayesianUpdates)
+        logger.info(f'Setting Bayesian update method to: {method}')
+        lib.set_update_mode(self._engine, method.value)
+        self._bayesian_update_method = method
 
 
     @property
@@ -264,8 +280,10 @@ class BayesianTracker:
         > E - a zero-based temporal index of the frame in which the track ends
         > P - label of the parent track (0 is used when no parent is defined)
         > R - label of the root track
+        > G - generational depth (from root)
         """
-        return [(t.ID, t.t[0], t.t[-1], t.parent, t.root) for t in self.tracks]
+        lbep = lambda t: (t.ID, t.t[0], t.t[-1], t.parent, t.root, t.generation)
+        return [lbep(t) for t in self.tracks]
 
 
     def _sort(self, tracks):
@@ -441,7 +459,7 @@ class BayesianTracker:
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info((f'Tracking objects in frames {frm} to '
-                         f'{min(frm+step_size-1, self._frame_range[1]+1)}'
+                         f'{min(frm+step_size-1, self._frame_range[1]+1)} '
                          f'(of {self._frame_range[1]+1})...'))
 
             stats = self.step(step_size)
@@ -525,8 +543,8 @@ class BayesianTracker:
         n = lib.track_length(self._engine, idx)
 
         # set up some space for the output
-        children = np.zeros((2,), dtype='int32')    # pointers to children
-        refs = np.zeros((n,), dtype='int32')        # pointers to objects
+        children = np.zeros((2,), dtype=np.int32)    # pointers to children
+        refs = np.zeros((n,), dtype=np.int32)        # pointers to objects
 
         # get the track data
         _ = lib.get_refs(self._engine, refs, idx)
@@ -552,7 +570,7 @@ class BayesianTracker:
             if r<0:
                 # TODO(arl): softmax scores are zero for dummy objects
                 dummy = dummies.pop(0)
-                dummy.probability = np.zeros((5,), dtype='float')
+                dummy.probability = np.zeros((5,), dtype=np.float32)
                 track.append(dummy)
             else:
                 track.append(self._objects[r])
@@ -560,6 +578,7 @@ class BayesianTracker:
         # make a new track object and return it
         trk = btypes.Tracklet(trk_id, track, parent=p, children=c, fate=f)
         trk.root = lib.get_root(self._engine, idx)
+        trk.generation = lib.get_generation(self._engine, idx)
 
         if not self.return_kalman: return trk
 
@@ -568,9 +587,9 @@ class BayesianTracker:
         sz_cov = self.motion_model.measurements**2 + 1
 
         # otherwise grab the kalman filter data
-        kal_mu = np.zeros((n, sz_mu), dtype='float')     # kalman filtered
-        kal_cov = np.zeros((n, sz_cov), dtype='float')   # kalman covariance
-        kal_pred = np.zeros((n, sz_mu), dtype='float')   # motion model predict
+        kal_mu = np.zeros((n, sz_mu), dtype=np.float32)     # kalman filtered
+        kal_cov = np.zeros((n, sz_cov), dtype=np.float32)   # kalman covariance
+        kal_pred = np.zeros((n, sz_mu), dtype=np.float32)   # motion predict
 
         n_kal = lib.get_kalman_mu(self._engine, kal_mu, idx)
         _ = lib.get_kalman_covar(self._engine, kal_cov, idx)

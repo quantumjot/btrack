@@ -24,7 +24,7 @@ InterfaceWrapper::InterfaceWrapper() {
   std::cout << "." << v_build << ", compiled " << build_date << " at ";
   std::cout << build_time << ")" << std::endl;
   // create a track manager instance, pass it to the tracker
-  tracker = BayesianTracker(true);
+  tracker = BayesianTracker(true, UPDATE_MODE_EXACT);
 };
 
 InterfaceWrapper::~InterfaceWrapper() {
@@ -44,6 +44,11 @@ bool InterfaceWrapper::check_library_version(const uint8_t a_major,
   // throw an error or let python deal with it?
   //throw std::runtime_error("Library version number mismatch.");
   return false;
+}
+
+// set the update mode of the tracker
+void InterfaceWrapper::set_update_mode(const unsigned int a_update_mode) {
+  tracker.set_update_mode(a_update_mode);
 }
 
 // tracking and basic data handling
@@ -167,6 +172,11 @@ unsigned int InterfaceWrapper::get_children(int* children,
 // return the fate (as assigned by the optimizer)
 unsigned int InterfaceWrapper::get_fate(const unsigned int a_ID) const {
   return tracker.tracks[a_ID]->fate;
+}
+
+// get the generational depth of the track
+unsigned int InterfaceWrapper::get_generation(const unsigned int a_ID) const {
+  return tracker.tracks[a_ID]->generation;
 }
 
 unsigned int InterfaceWrapper::get_kalman_mu(double* output,

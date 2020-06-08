@@ -71,6 +71,9 @@ class LineageTreeNode
     // pointers to left and right nodes
     LineageTreeNode* m_left;
     LineageTreeNode* m_right;
+
+    // store the generational depth, default depth is always zero
+    unsigned int m_depth = 0;
 };
 
 

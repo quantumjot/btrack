@@ -105,14 +105,18 @@ double probability_erf( const Eigen::Vector3d& x,
 
 
 
-
+// BayesianTracker::BayesianTracker(const bool verbose) {
+//   // default behaviour is to use exact updates
+//   BayesianTracker(verbose, UPDATE_MODE_EXACT);
+// }
 
 
 
 
 
 // set up the tracker using an existing track manager
-BayesianTracker::BayesianTracker(const bool verbose) {
+BayesianTracker::BayesianTracker(const bool verbose,
+                                 const unsigned int update_mode) {
 
   // set up verbosity
   this->verbose = verbose;
@@ -130,6 +134,9 @@ BayesianTracker::BayesianTracker(const bool verbose) {
   // reserve some space for the tracks
   active.reserve(RESERVE_ACTIVE_TRACKS);
   new_objects.reserve(RESERVE_NEW_OBJECTS);
+
+  // set the appropriate cost function
+  set_update_mode(update_mode);
 }
 
 
@@ -137,6 +144,13 @@ BayesianTracker::BayesianTracker(const bool verbose) {
 BayesianTracker::~BayesianTracker() {
   //std::cout << "Destruction of BayesianTracker" << std::endl;
   // clean up gracefully
+}
+
+
+
+void BayesianTracker::set_update_mode(const unsigned int update_mode) {
+  cost_function_mode = update_mode;
+  if (DEBUG) std::cout << "Update mode: " << cost_function_mode << std::endl;
 }
 
 
@@ -383,12 +397,25 @@ void BayesianTracker::step(const unsigned int steps)
     // now do the Bayesian updates
     belief.setZero(n_obs+1, n_active);
 
-    // do we want to do a fast update?
-    if (FAST_COST_UPDATE) {
-        cost_FAST(belief, n_active, n_obs);
+    // now do the Bayesian updates using the correct mode
+    //switch(cost_function_mode) {
+
+    if (cost_function_mode == UPDATE_MODE_EXACT) {
+      cost_EXACT(belief, n_active, n_obs);
+    } else if (cost_function_mode == UPDATE_MODE_APPROXIMATE) {
+      cost_APPROXIMATE(belief, n_active, n_obs);
+    } else if (cost_function_mode == UPDATE_MODE_CUDA) {
+      throw std::runtime_error("CUDA update method not supported");
+      //cost_CUDA(belief, n_active, n_obs);
     } else {
-        cost(belief, n_active, n_obs);
+      throw std::runtime_error("Update method not supported");
     }
+
+
+
+    // use an implicit function pointer call to the appropriate cost function
+    // cost_function_ptr(belief, n_active, n_obs);
+    //(this->*cost_function_ptr)(belief, n_active, n_obs);
 
     // if (WRITE_BELIEF_MATRIX) {
     //   std::stringstream belief_filename;
@@ -396,8 +423,6 @@ void BayesianTracker::step(const unsigned int steps)
     //   belief_filename << current_frame << ".csv";
     //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
     // }
-
-
 
     // now that we have the complete belief matrix, we want to associate
     // do naive linking
@@ -453,18 +478,6 @@ bool BayesianTracker::update_active()
 }
 
 
-// // Run a final clean of the data to trim any lost tracks
-// bool BayesianTracker::clean() {
-//   // trim any tracks
-//   for (size_t i=0; i<tracks.size(); i++){
-//     tracks[i]->trim();
-//   }
-//
-//   // finalise by renaming any dummy objects
-//   tracks.finalise();
-//   return true;
-// }
-
 
 void BayesianTracker::debug_output(const unsigned int frm) const
 {
@@ -484,9 +497,9 @@ void BayesianTracker::debug_output(const unsigned int frm) const
 
 
 // make the cost matrix of all possible linkages
-void BayesianTracker::cost(Eigen::Ref<Eigen::MatrixXd> belief,
-                           const size_t n_tracks,
-                           const size_t n_objects)
+void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
+                                 const size_t n_tracks,
+                                 const size_t n_objects)
 {
   // start a timer
   std::clock_t t_update_start = std::clock();
@@ -580,9 +593,9 @@ void BayesianTracker::cost(Eigen::Ref<Eigen::MatrixXd> belief,
 
 
 // make the cost matrix of all possible linkages
-void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
-                                const size_t n_tracks,
-                                const size_t n_objects)
+void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
+                                       const size_t n_tracks,
+                                       const size_t n_objects)
 {
   // start a timer
   std::clock_t t_update_start = std::clock();
@@ -590,11 +603,12 @@ void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
   // set up some variables for Bayesian updates
   Prediction trk_prediction;
   double prob_assign = 0.;
-  double uniform_prior = 1. / (n_objects+1);
+  //double uniform_prior = 1. / (n_objects+1);
   double prior_assign, PrDP, posterior, update;
 
   // set the uniform prior
-  belief.fill(uniform_prior);
+  //belief.fill(uniform_prior);
+  belief.fill(0.); // we will update the priors on-the-fly here
 
   // Posterior is a misnoma here because it is initially the prior, but
   // becomes the posterior
@@ -623,6 +637,21 @@ void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
     local_objects = m_cube.get(active[trk], false);
     size_t n_local_objects = local_objects.size();
 
+    // TODO(arl):
+    // now that we know which local updates are to be made, approximate all of
+    // the updates that we would have made, set the prior probabilities
+    //
+    // calculate the local uniform prior for only those objects that we have
+    // selected the local objects
+    double local_uniform_prior = 1. / (n_local_objects+1);
+    for (size_t obj=0; obj != n_local_objects; obj++) {
+      v_posterior(local_objects[obj].second) = local_uniform_prior;
+    }
+    // set the lost prior also
+    v_posterior(n_objects) = local_uniform_prior;
+
+
+
     // loop through each candidate object
     for (size_t obj=0; obj != n_local_objects; obj++) {
 
@@ -631,10 +660,21 @@ void BayesianTracker::cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
                                     trk_prediction,
                                     this->accuracy);
 
+
       // set the probability of assignment to zero if the track is currently
       // in a metaphase state and the object to link to is anaphase
       if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
         if (active[trk]->track.back()->label == STATE_metaphase &&
+            local_objects[obj].first->label == STATE_anaphase) {
+
+          // set the probability of assignment to zero
+          prob_assign = 0.0;
+        }
+      }
+
+      // disallow incorrect linking
+      if (DISALLOW_PROMETAPHASE_ANAPHASE_LINKING) {
+        if (active[trk]->track.back()->label == STATE_prometaphase &&
             local_objects[obj].first->label == STATE_anaphase) {
 
           // set the probability of assignment to zero

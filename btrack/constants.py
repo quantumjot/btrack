@@ -66,3 +66,9 @@ class States(enum.Enum):
     APOPTOSIS = 4
     NULL = 5
     DUMMY = 99
+
+@enum.unique
+class BayesianUpdates(enum.Enum):
+    EXACT = 0
+    APPROXIMATE = 1
+    CUDA = 2

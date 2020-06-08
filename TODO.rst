@@ -17,7 +17,6 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
-
 - Add documentation/wiki for configuration
 
 
@@ -32,8 +31,7 @@ Updates
 
 0.3.9
 -----
-- Added approximate Bayesian updates for use with very large datasets/numbers of
- objects. Reduces compute time at expense of completeness.
+- Added approximate Bayesian updates for use with very large datasets/numbers of objects. Reduces compute time at expense of completeness.
 - Added generational depth to the tree output
 - Simplify IO/cleaned up HDF handler
 
@@ -150,8 +148,7 @@ Updates
 
 0.2.6
 -----
-- Added get_motion_vector function to motion model to make predictions more
-  model agnostic
+- Added get_motion_vector function to motion model to make predictions more model agnostic
 - Added the ability to select which hypotheses are generated during optimization
 - Added more tracking statistics to logging
 - Improved track linking heuristics

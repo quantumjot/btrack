@@ -329,6 +329,7 @@ class Tracklet:
         self.children = children
         self.type = None
         self.fate = fate
+        self.generation = 0
 
     def __len__(self):
         return len(self._data)

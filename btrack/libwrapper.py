@@ -127,6 +127,10 @@ class LibraryWrapper(object):
     lib.check_library_version.restype = ctypes.c_bool
     lib.check_library_version.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
 
+    # set the update method
+    lib.set_update_mode.restype = None
+    lib.set_update_mode.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+
     # set the motion model
     lib.motion.restype = None
     lib.motion.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint,
@@ -185,6 +189,10 @@ class LibraryWrapper(object):
     # get the fate of the track
     lib.get_fate.restype = ctypes.c_uint
     lib.get_fate.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+
+    # get the generational depth of the track
+    lib.get_generation.restype = ctypes.c_uint
+    lib.get_generation.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
     # get the kalman filtered position
     lib.get_kalman_mu.restype = ctypes.c_uint

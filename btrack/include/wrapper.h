@@ -36,6 +36,9 @@ class InterfaceWrapper
                                 const uint8_t a_minor,
                                 const uint8_t a_build ) const;
 
+    // set the update mode of the tracker (e.g. EXACT, APPROXIMATE, CUDA etc)
+    void set_update_mode(const unsigned int a_update_mode);
+
     // tracking and basic data handling
     void set_motion_model(const unsigned int measurements,
                           const unsigned int states,
@@ -81,6 +84,9 @@ class InterfaceWrapper
 
     // get the fate of the track
     unsigned int get_fate(const unsigned int a_ID) const;
+
+    // get the generational depth of the track in the tree
+    unsigned int get_generation(const unsigned int a_ID) const;
 
     // get a dummy object by reference
     PyTrackObject get_dummy(const int a_ID);

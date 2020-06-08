@@ -141,6 +141,7 @@ public:
   unsigned int child_two = 0;
   unsigned int renamed_ID;
   unsigned int fate = TYPE_undef;
+  unsigned int generation = 0;
 
 
 private:

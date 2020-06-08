@@ -371,6 +371,9 @@ void TrackManager::build_trees(void)
       // create a new node and associate the track with it
       LineageTreeNode root_node = LineageTreeNode(m_tracks[i]);
 
+      // since we know this is a root node, set the generational depth to zero
+      root_node.m_depth = 0;
+
       // check to see whether the track has children, if so, traverse the tree
       if (root_node.has_children())
       {
@@ -393,12 +396,22 @@ void TrackManager::build_trees(void)
             LineageTreeNode left_node = LineageTreeNode(track_left);
             LineageTreeNode right_node = LineageTreeNode(track_right);
 
-            queue.push_back(left_node);
-            queue.push_back(right_node);
+            // set the generational depth as one greater than the parent node
+            unsigned int generation_of_children = node.m_depth + 1;
+            left_node.m_depth = generation_of_children;
+            right_node.m_depth = generation_of_children;
 
             // update the tracks with the correct root note ID
             track_left->root = root_node.m_track->ID;
             track_right->root = root_node.m_track->ID;
+
+            // set the tracklets generational depth
+            track_left->generation = generation_of_children;
+            track_right->generation = generation_of_children;
+
+            // push these nodes onto the queue for discovery
+            queue.push_back(left_node);
+            queue.push_back(right_node);
 
             // flag these as used
             used.insert(track_left->ID);

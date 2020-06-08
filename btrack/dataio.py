@@ -320,7 +320,7 @@ class HDF5FileHandler:
                 tracks      - (I x 1) [index into coords]
                 dummies     - similar to coords, but for dummy objects
                 map         - (K x 2) [start_index, end_index] -> tracks array
-                LBEPR       - (K x 5) [L, B, E, P, R]
+                LBEPRG      - (K x 6) [L, B, E, P, R, G]
                 fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
@@ -496,6 +496,7 @@ class HDF5FileHandler:
                 track = btypes.Tracklet(lbep[i,0], list(map(get_txyz, refs)))
                 track.parent = lbep[i,3]    # set the parent and root of tree
                 track.root = lbep[i,4]
+                if lbep.shape[1] == 6: track.generation = lbep[i,5]
                 track.fate = constants.Fates(fates[i]) # restore the track fate
                 tracks.append(track)
 
@@ -505,8 +506,7 @@ class HDF5FileHandler:
 
     @property
     def segmentation(self):
-        logger.info(f'Loading segmentation...')
-        return self._hdf['segmentation']['images'][:]
+        raise NotImplementedError
 
     @property
     def lbep(self):

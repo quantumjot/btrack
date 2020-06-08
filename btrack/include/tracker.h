@@ -85,7 +85,9 @@ class BayesianTracker
 public:
   // Constructor
   BayesianTracker() {};
-  BayesianTracker(const bool verbose);
+  // BayesianTracker(const bool verbose);
+  BayesianTracker(const bool verbose,
+                  const unsigned int update_mode);
 
   // Default destructor
   ~BayesianTracker();
@@ -94,6 +96,9 @@ public:
   // TODO(arl): is this essential anymore?
   // unsigned int setup(const double prob_not_assign, const unsigned int max_lost,
   // 									const double accuracy);
+
+  // set the cost function to use
+  void set_update_mode(const unsigned int update_mode);
 
   // set up the motion model. matrices are in the form of c-style linear arrays
   unsigned int set_motion_model(const unsigned int measurements,
@@ -153,14 +158,18 @@ public:
   // track maintenance
   bool purge();
 
-  // calculate the cost matrix
-  void cost(Eigen::Ref<Eigen::MatrixXd> belief,
-            const size_t n_tracks,
-            const size_t n_objects);
+  // calculate the cost matrix using different methods
+  void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
+                  const size_t n_tracks,
+                  const size_t n_objects);
 
-  void cost_FAST(Eigen::Ref<Eigen::MatrixXd> belief,
-            const size_t n_tracks,
-            const size_t n_objects);
+  void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
+                        const size_t n_tracks,
+                        const size_t n_objects);
+
+  void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief,
+                 const size_t n_tracks,
+                 const size_t n_objects);
 
   // calculate linkages based on belief matrix
   void link(Eigen::Ref<Eigen::MatrixXd> belief,
@@ -188,6 +197,12 @@ private:
 
   // default object model, must remain uninitialised
   ObjectModel object_model;
+
+  // function pointer to chosen cost function
+  // void (BayesianTracker::*cost_function_ptr)(Eigen::Ref<Eigen::MatrixXd> belief,
+  //                                            const size_t n_tracks,
+  //                                            const size_t n_objects);
+  unsigned int cost_function_mode;
 
   // default tracking parameters
   double prob_not_assign = PROB_NOT_ASSIGN;

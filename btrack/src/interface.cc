@@ -56,8 +56,19 @@ EXTERN_DECL {
                               const uint8_t a_major,
                               const uint8_t a_minor,
                               const uint8_t a_build ) {
-                                
+
     return h->check_library_version(a_major, a_minor, a_build);
+  }
+
+  /* =========================================================================
+  UPDATE METHOD SETTINGS
+  ========================================================================= */
+
+  void set_update_mode( InterfaceWrapper* h,
+                        const unsigned int a_update_mode ) {
+
+    // set the tracker update mode
+    h->set_update_mode(a_update_mode);
   }
 
   /* =========================================================================
@@ -89,7 +100,6 @@ EXTERN_DECL {
     }
     h->set_max_search_radius(msr);
   }
-
 
   /* =========================================================================
   APPEND NEW OBJECT
@@ -159,6 +169,11 @@ EXTERN_DECL {
   unsigned int get_fate( InterfaceWrapper* h,
                           const unsigned int trk ) {
     return h->get_fate(trk);
+  }
+
+  unsigned int get_generation( InterfaceWrapper* h,
+                               const unsigned int trk ) {
+    return h->get_generation(trk);
   }
 
   unsigned int get_kalman_mu( InterfaceWrapper* h,

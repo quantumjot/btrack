@@ -17,7 +17,7 @@ C/C++ and CUDA
 Misc
 ----
 - Other motion models
-- Simplify IO/ Remove JSON track loader/exporter, clean up HDF handler
+
 - Add documentation/wiki for configuration
 
 
@@ -30,12 +30,20 @@ Thanks
 Updates
 =======
 
+0.3.9
+-----
+- Added approximate Bayesian updates for use with very large datasets/numbers of
+ objects. Reduces compute time at expense of completeness.
+- Added generational depth to the tree output
+- Simplify IO/cleaned up HDF handler
+
 0.3.8
 -----
 - Added 'lazy' termination and initialization hypotheses to aid diagnostics
 - Store library version number in HDF files
 - Fixed error where last frame of data not added to tracks
 - Removed python lineage tree generation (now performed in C++ lib)
+- Remove JSON track loader/exporter
 
 0.3.7
 -----

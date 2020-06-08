@@ -200,7 +200,7 @@ print(track_zero.children)
 
 Tracks can also be exported in the LBEP format:
 ```python
-from btrack.utils import export_LBEP
+from btrack.dataio import export_LBEP
 
 export_LBEP('/path/to/your/res_track.txt', tracks)
 ```

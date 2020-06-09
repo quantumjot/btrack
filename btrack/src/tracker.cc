@@ -335,7 +335,8 @@ void BayesianTracker::step(const unsigned int steps)
 {
 
   // make sure that we have steps greater than zero
-  assert(steps>0);
+  // assert(steps>0);
+  if (steps < 1) return;
 
   // reset the step counter
   unsigned int step = 0;

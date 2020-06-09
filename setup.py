@@ -1,3 +1,8 @@
+"""BayesianTracker (`btrack`) is a multi object tracking algorithm, specifically
+used to reconstruct trajectories in crowded fields.  New observations are
+assigned to tracks by evaluating the posterior probability of each potential
+linkage from a Bayesian belief matrix for all possible linkages. """
+
 from setuptools import setup
 from setuptools import find_packages
 # from setuptools.command.install import install
@@ -12,14 +17,14 @@ def get_version():
         version = ver.readline()
     return version.rstrip()
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+DESCRIPTION = 'A framework for Bayesian multi-object tracking'
+LONG_DESCRIPTION = __doc__
 
 
 setup(name='btrack',
       version=get_version(),
-      description='BayesianTracker is a simple Python/C++ based framework for multi-object tracking',
-      long_description=long_description,
+      description=DESCRIPTION,
+      long_description=LONG_DESCRIPTION,
       long_description_content_type='text/markdown',
       author='Alan R. Lowe',
       author_email='a.lowe@ucl.ac.uk',
@@ -29,6 +34,9 @@ setup(name='btrack',
       install_requires=get_install_required(),
       python_requires='>=3.6',
       license='LICENSE.md',
-      classifiers=['Topic :: Scientific/Engineering',
+      classifiers=['Programming Language :: C++',
+                   'Programming Language :: Python',
+                   'Programming Language :: Python :: 3 :: Only',
+                   'Topic :: Scientific/Engineering',
                    'Topic :: Scientific/Engineering :: Bio-Informatics',
                    'Topic :: Scientific/Engineering :: Image Recognition'])

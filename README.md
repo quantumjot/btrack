@@ -4,11 +4,7 @@
 
 # Bayesian Tracker (bTrack)
 
-
-http://lowe.cs.ucl.ac.uk/cellx.html
-
-
-BayesianTracker (`btrack`) is a multi object tracking algorithm, specifically
+BayesianTracker (`btrack`) is a Python library for multi object tracking,
 used to reconstruct trajectories in crowded fields. Here, we use a
 probabilistic network of information to perform the trajectory linking. This
 method uses spatial information as well as appearance information for track linking.
@@ -20,41 +16,36 @@ states) of each of the objects in the field of view.  We assign new observations
 to the growing tracklets (linking) by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible linkages.
 
-<!-- [![SquiggleCube](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker.png)](http://lowe.cs.ucl.ac.uk)  
-*Example of tracking objects in 3D space* -->
-
 The tracklets are then assembled into tracks by using multiple hypothesis
 testing and integer programming to identify a globally optimal solution. The
 likelihood of each hypothesis is calculated for some or all of the tracklets
 based on heuristics. The global solution identifies a sequence of
 high-likelihood hypotheses that accounts for all observations.
 
+### Cell tracking in time-lapse imaging data
+
+We developed `btrack` for cell tracking in time-lapse microscopy data.
+
 <!-- [![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)   -->
-[![LineageTree](https://raw.githubusercontent.com/quantumjot/BayesianTracker/master/examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
-*Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red.
+<!-- [![LineageTree](https://raw.githubusercontent.com/quantumjot/BayesianTracker/master/examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+*Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red. -->
+[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin, [arboretum](#Usage-with-Napari).
 
-
-
-
-
-### Example: Tracking mammalian cells in time-lapse microscopy experiments
-
-We developed BayesianTracker to enable us to track cells in large populations
-over very long periods of time, reconstruct lineages and study cell movement or
-sub-cellular protein localisation. Below is an example of tracking cells:
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
-*Video of tracking*
+*Video of tracking, showing automatic lineage determination*
 
-
+Read about the science:  
+http://lowe.cs.ucl.ac.uk/cellx.html
 
 
 
 ---
 ### Citation
 
-More details of how the tracking algorithm works and how it can be applied to
-tracking cells in time-lapse microscopy data can be found in our publication:
+More details of how this type of tracking approach can be applied to tracking
+cells in time-lapse microscopy data can be found in our publication:
 
 **Local cellular neighbourhood controls proliferation in cell competition**  
 Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
@@ -83,8 +74,8 @@ You can also --> :star: :wink:
 ### Installation
 
 BayesianTracker has been tested with Python 3.7 on OS X and Linux.
-The tracker and hypothesis engine are mostly written in C++ with a C interface
-to Python.
+The tracker and hypothesis engine are mostly written in C++ with a Python
+wrapper.
 
 *NOTE TO WINDOWS USERS*: We have not tested this on Windows, although the
 following works on the Ubuntu shell for Win10. The setup instructions below have
@@ -131,11 +122,11 @@ If you do not want to install a local copy, you can run the tracker in a Colab n
 
 ### Usage with Napari
 
-You can visualize the output using our plugin (called `arboretum`) for the open source image viewer [`Napari`](https://github.com/napari/napari). We provide example code here:
+You can run btrack with a GUI and visualize the output using our plugin (called `arboretum`) for the open source image viewer [`Napari`](https://github.com/napari/napari).
 
 | Status        | Notebook                                     | Link |
 | ------------- | -------------------------------------------- | ---- |
-| *In progress* | Visualizing bTrack output using arboretum    | [GitHub](https://github.com/quantumjot/arboretum)
+| *In progress* | Visualizing btrack output using arboretum    | [GitHub](https://github.com/quantumjot/arboretum)
 
 ---
 
@@ -190,11 +181,12 @@ print(track_zero.t)
 # print the fate of the track
 print(track_zero.fate)
 
-# print the track ID, root node, parent node and children
+# print the track ID, root node, parent node, children and generational depth
 print(track_zero.ID)
 print(track_zero.root)
 print(track_zero.parent)
 print(track_zero.children)
+print(track_zero.generation)
 
 ```
 
@@ -211,7 +203,7 @@ There are many additional options, including the ability to define object models
 Observations can be provided in three basic formats:
 + a simple JSON file
 + HDF5 for larger/more complex datasets, or
-+ using your own code as a `PyTrackObject`.
++ using your own code as a `PyTrackObject` directly from numpy arrays.
 
 HDF5 is the *default* format for data interchange, where additional information
 such as images or metadata can also be stored.  

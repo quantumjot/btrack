@@ -61,9 +61,9 @@ class _PyTrackObjectFactory:
         new_object = btypes.PyTrackObject()
         new_object.ID = self._ID
         new_object.t = txyz[0].astype(np.uint32)
-        new_object.x = txyz[1]
-        new_object.y = txyz[2]
-        new_object.z = txyz[3]
+        new_object.x = txyz[1].astype(np.float32)
+        new_object.y = txyz[2].astype(np.float32)
+        new_object.z = txyz[3].astype(np.float32)
         new_object.dummy = False
         new_object.label = class_label          # from the classifier
         new_object.probability = probability
@@ -77,6 +77,47 @@ class _PyTrackObjectFactory:
 
 # instatiate the factory
 ObjectFactory = _PyTrackObjectFactory()
+
+
+def import_JSON(filename):
+    """ generic JSON importer for localisations from other software """
+    with open(filename, 'r') as json_file:
+        data = json.load(json_file)
+    objects = []
+    for ID, _obj in data.items():
+        txyz = np.array([_obj[k] for k in ['t','x','y','z']])
+        obj = ObjectFactory.get(txyz, label=int(_obj['label']))
+        objects.append(obj)
+    return objects
+
+
+def import_CSV(filename):
+    """ import from a CSV file
+
+    CSV file should have one of the following formats:
+
+    t, x, y
+    t, x, y, label
+    t, x, y, z
+    t, x, y, z, label
+
+    """
+    objects = []
+    with open(filename, 'r') as csv_file:
+        csvreader = csv.DictReader(csvfile, delimiter=' ', quotechar='|')
+        for row in csvreader:
+            txyz = np.zeros((1,4), dtype=np.float32)
+            txyz[:,(0, 1, 2)] = [row[k] for k in ('t', 'x', 'y')]
+            if 'z' in row:
+                txyz[:,3] = row['z'] # if we have z info
+            if 'label' in row:
+                label = int(row['label'])
+            else:
+                label = None
+
+            objects.append(ObjectFactory.get(txyz, label=label))
+    return objects
+
 
 
 
@@ -95,12 +136,9 @@ def export_delegator(filename, tracker, obj_type=None, filter_by=None):
     elif ext == '.mat':
         raise DeprecationWarning('MATLAB export is deprecated')
     elif ext == '.csv':
-        export_csv(filename, tracker, obj_type=obj_type)
+        export_CSV(filename, tracker.tracks, obj_type=obj_type)
     elif ext in ('.hdf', '.hdf5', '.h5'):
-        with HDF5FileHandler(filename, read_write='a') as hdf:
-            hdf.write_tracks(tracker,
-                             obj_type=obj_type,
-                             f_expr=filter_by)
+        _export_HDF(filename, tracker, obj_type=obj_type, filter_by=filter_by)
     else:
         logger.error(f'Export file format {ext} not recognized.')
 
@@ -114,18 +152,21 @@ def check_track_type(tracks):
 
 
 
-def export_csv(filename,
-               tracker,
-               obj_type=None,
-               properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
+def export_CSV(filename: str,
+               tracks: list,
+               properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
+               obj_type=None):
     """ export the track data as a simple CSV file """
 
-    if not tracker.tracks:
+    if not tracks:
         logger.error(f'No tracks found when exporting to: {filename}')
         return
 
+    if not check_track_type(tracks):
+        logger.error('Tracks of incorrect type')
+
     logger.info(f'Writing out CSV files to: {filename}')
-    export_track = np.vstack([t.to_array(properties) for t in tracker.tracks])
+    export_track = np.vstack([t.to_array(properties) for t in tracks])
 
     with open(filename, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=' ')
@@ -135,11 +176,19 @@ def export_csv(filename,
 
 
 
-def export_LBEP(filename, tracks):
+
+def export_LBEP(filename: str, tracks: list):
     """ export the LBEP table described here:
     https://public.celltrackingchallenge.net/documents/
         Naming%20and%20file%20content%20conventions.pdf
     """
+    if not tracks:
+        logger.error(f'No tracks found when exporting to: {filename}')
+        return
+
+    if not check_track_type(tracks):
+        logger.error('Tracks of incorrect type')
+
     tracks.sort(key=lambda t: t.ID)
     if not filename.endswith('.txt'): filename+='.txt'
     with open(filename, 'w') as lbep_file:
@@ -148,6 +197,14 @@ def export_LBEP(filename, tracks):
             lbep = f'{track.ID} {track.t[0]} {track.t[-1]} {track.parent}'
             lbep_file.write(f'{lbep}\n')
 
+
+def _export_HDF(filename: str,
+               tracker,
+               obj_type=None,
+               filter_by: str):
+    """ export to HDF """
+    with HDF5FileHandler(filename, read_write='a') as hdf:
+        hdf.write_tracks(tracker, obj_type=obj_type, f_expr=filter_by)
 
 
 
@@ -400,22 +457,7 @@ class HDF5FileHandler:
 
 
 
-def import_JSON(filename):
-    """ generic JSON importer for localisations from other software """
-    with open(filename, 'r') as json_file:
-        data = json.load(json_file)
-    objects = []
-    for ID, _obj in data.items():
-        txyz = np.array([_obj[k] for k in ['t','x','y','z']])
-        obj = ObjectFactory.get(txyz, label=int(_obj['label']))
-        objects.append(obj)
-    return objects
 
-
-
-def import_CSV(filename):
-    """ import from a CSV file """
-    raise NotImplementedError
 
 
 if __name__ == "__main__":

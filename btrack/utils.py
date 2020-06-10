@@ -244,17 +244,14 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def import_HDF(filename, filter_using=None):
+def import_HDF(*args, **kwargs):
     """ Import the HDF data. """
     from . import dataio
-    with dataio.HDF5FileHandler(filename) as hdf:
-        objects = hdf.filtered_objects(f_expr=filter_using)
-    return objects
+    return dataio.import_HDF(*args, **kwargs)
 
 def import_JSON(filename):
     """ Import JSON data """
-    from . import dataio
-    return dataio.import_JSON(filename)
+    raise DeprecationWarning('Use dataio.import_JSON instead')
 
 
 def build_trees(tracks, update_tracks=True):

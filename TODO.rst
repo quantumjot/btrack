@@ -29,6 +29,12 @@ Thanks
 Updates
 =======
 
+0.3.10
+------
+- CSV track exporter
+- Removed JSON export
+
+
 0.3.9
 -----
 - Added approximate Bayesian updates for use with very large datasets/numbers of objects. Reduces compute time at expense of completeness.

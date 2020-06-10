@@ -190,26 +190,47 @@ print(track_zero.generation)
 
 ```
 
-Tracks can also be exported in the LBEP format:
-```python
-from btrack.dataio import export_LBEP
-
-export_LBEP('/path/to/your/res_track.txt', tracks)
-```
-
 There are many additional options, including the ability to define object models.
 
-### Input data
-Observations can be provided in three basic formats:
-+ a simple JSON file
+### Importing data
+Observations can be provided in several basic formats:
++ a simple CSV or JSON file
 + HDF5 for larger/more complex datasets, or
 + using your own code as a `PyTrackObject` directly from numpy arrays.
 
-HDF5 is the *default* format for data interchange, where additional information
-such as images or metadata can also be stored.  
+
+For example, CSV data of the format:
+```
+t x   y   z
+0 300 300 0
+1 301 299 1
+2 302 288 2
+...
+```
+
+can be imported:
+
+```python
+from btrack.dataio import import_CSV
+objects = import_CSV('/path/to/your/objects.csv')
+```
 
 More detail in the wiki:
 https://github.com/quantumjot/BayesianTracker/wiki/3.-Importing-data
+
+### Exporting data
+
+Tracks can also be exported in CSV and/or the LBEP format:
+```python
+from btrack.dataio import export_CSV
+from btrack.dataio import export_LBEP
+
+# export tracks in CSV format
+export_csv('/path/to/your/tracks.csv', tracks)
+
+# export the LBEP table of lineage information
+export_LBEP('/path/to/your/lbep_tracks.txt', tracks)
+```
 
 
 ### Dealing with very large datasets

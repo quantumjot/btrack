@@ -23,6 +23,9 @@ VOLUME = ((0,1024), (0,1024), (-100,100))
 HDF_CHUNK_CACHE = 100*1024*1024
 USER_MODEL_DIR = ""
 
+DEFAULT_EXPORT_PROPERTIES = ['ID','t','x','y','z','parent','root', 'state',
+                             'generation']
+
 
 @enum.unique
 class Errors(enum.Enum):

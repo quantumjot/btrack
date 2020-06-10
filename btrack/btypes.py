@@ -331,9 +331,6 @@ class Tracklet:
         self.fate = fate
         self.generation = 0
 
-        self._export_properties = ['ID','t','x','y','z','parent','root',
-                                   'state','generation']
-
     def __len__(self):
         return len(self._data)
 
@@ -385,21 +382,17 @@ class Tracklet:
         """ Return the motion model prediction for the given timestep. """
         return np.matrix(self.kalman[index,13:]).reshape(3,1)
 
-    def to_dict(self, properties: list = None):
+    def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
         """ Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
-        if properties is None:
-            properites = self._export_properties
         trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
 
         return OrderedDict(trk_tuple)
 
-    def to_array(self, properties: list = None):
+    def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
         """ Return a numpy array of the tracklet which can be used for MATLAB
         export. """
-        if properties is None:
-            properites = self._export_properties
 
         tmp_track = np.zeros((len(self), len(properties)), dtype=np.float32)
         for i, property in enumerate(properties):

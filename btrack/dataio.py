@@ -114,19 +114,22 @@ def check_track_type(tracks):
 
 
 
-def export_csv(filename, tracker, obj_type=None):
+def export_csv(filename,
+               tracker,
+               obj_type=None,
+               properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
     """ export the track data as a simple CSV file """
+
     if not tracker.tracks:
         logger.error(f'No tracks found when exporting to: {filename}')
         return
-    logger.info(f'Writing out CSV files to: {filename}')
 
-    props = ['ID','t','x','y','z','parent','root','state','generation']
-    export_track = np.vstack([trk.to_array(props) for trk in tracker.tracks])
+    logger.info(f'Writing out CSV files to: {filename}')
+    export_track = np.vstack([t.to_array(properties) for t in tracker.tracks])
 
     with open(filename, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile, delimiter=' ')
-        csvwriter.writerow(props)
+        csvwriter.writerow(properties)
         for i in range(export_track.shape[0]):
             csvwriter.writerow(export_track[i,:].tolist())
 

@@ -19,7 +19,7 @@ __email__ = "code@arlowe.co.uk"
 
 import re
 import os
-import numpy as np
+import csv
 import h5py
 import json
 import logging
@@ -28,8 +28,10 @@ import logging
 from . import btypes
 from . import constants
 
+import numpy as np
+
 from collections import OrderedDict
-from scipy.io import savemat
+from functools import wraps
 
 
 
@@ -89,10 +91,12 @@ def export_delegator(filename, tracker, obj_type=None, filter_by=None):
     assert(os.path.exists(export_dir))
 
     if ext == '.json':
-        export_all_tracks_JSON(export_dir, tracker.tracks, cell_type=obj_type)
+        raise DeprecationWarning('JSON export is deprecated')
     elif ext == '.mat':
-        export_MATLAB(filename, tracker.tracks)
-    elif ext == '.hdf5' or ext == '.hdf':
+        raise DeprecationWarning('MATLAB export is deprecated')
+    elif ext == '.csv':
+        export_csv(filename, tracker, obj_type=obj_type)
+    elif ext in ('.hdf', '.hdf5', '.h5'):
         with HDF5FileHandler(filename, read_write='a') as hdf:
             hdf.write_tracks(tracker,
                              obj_type=obj_type,
@@ -109,168 +113,22 @@ def check_track_type(tracks):
     return all([isinstance(t, btypes.Tracklet) for t in tracks])
 
 
-def export_single_track_JSON(filename, track):
-    """ export a single track as a JSON file """
 
-    if not isinstance(filename, str):
-        raise TypeError('Filename must be a string')
+def export_csv(filename, tracker, obj_type=None):
+    """ export the track data as a simple CSV file """
+    if not tracker.tracks:
+        logger.error(f'No tracks found when exporting to: {filename}')
+        return
+    logger.info(f'Writing out CSV files to: {filename}')
 
-    if not isinstance(track, btypes.Tracklet):
-        raise TypeError('Tracks must be of type btypes.Tracklet')
+    props = ['ID','t','x','y','z','parent','root','state','generation']
+    export_track = np.vstack([trk.to_array(props) for trk in tracker.tracks])
 
-    json_export = track.to_dict()
-    with open(filename, 'w') as json_file:
-        json.dump(json_export, json_file, indent=2)
-
-
-def export_JSON(filename, tracks):
-    """ JSON Exporter for track data. """
-    if not check_track_type(tracks):
-        raise TypeError('Tracks must be of type btypes.Tracklet')
-
-    # make a list of all track object data, sorted by track ID
-    d = {"Tracklet_"+str(trk.ID):trk.to_dict() for trk in tracks}
-    json_export = OrderedDict(sorted(list(d.items()), key=lambda t: t[1]['ID']))
-
-    with open(filename, 'w') as json_file:
-        json.dump(json_export, json_file, indent=2, separators=(',', ': '))
-
-
-def export_all_tracks_JSON(export_dir,
-                           tracks,
-                           cell_type=None,
-                           as_zip_archive=True):
-
-    """ export_all_tracks_JSON
-
-    Export all tracks as individual JSON files.
-
-    Args:
-        export_dir: the directory to export the tracks to
-        tracks: a list of Track objects
-        cell_type: a string representing the object (cell) type
-        as_zip_archive: a boolean to enable saving to a zip archive
-
-    Returns:
-        None
-
-    """
-
-    assert(cell_type in ['GFP','RFP','iRFP','Phase',None])
-    filenames = []
-
-    logger.info(f'Writing out JSON files to dir: {export_dir}')
-    for track in tracks:
-        fn = f"track_{track.ID}_{cell_type}.json"
-        track_fn = os.path.join(export_dir, fn)
-        export_single_track_JSON(track_fn, track)
-        filenames.append(fn)
-
-    # make a zip archive of the files
-    if as_zip_archive:
-        import zipfile
-        zip_fn = f"tracks_{cell_type}.zip"
-        full_zip_fn = os.path.join(export_dir, zip_fn)
-        with zipfile.ZipFile(full_zip_fn, 'w') as zip:
-            for fn in filenames:
-                src_json_file = os.path.join(export_dir, fn)
-                zip.write(src_json_file, arcname=fn)
-                os.remove(src_json_file)
-
-    file_stats_fn = f"tracks_{cell_type}.json"
-    file_stats = {}
-    file_stats[str(cell_type)] = {"path": export_dir,
-                                  "zipped": as_zip_archive,
-                                  "files": filenames}
-
-    logger.info(f'Writing out JSON file list to: {file_stats_fn}')
-    with open(os.path.join(export_dir, file_stats_fn), 'w') as filelist:
-        json.dump(file_stats, filelist, indent=2, separators=(',', ': '))
-
-
-def import_all_tracks_JSON(folder, cell_type='GFP'):
-    """ import_all_tracks_JSON
-
-    import all of the tracks as Tracklet objects, for further analysis.
-
-    Args:
-        folder: the directory where the tracks are
-
-    Returns:
-        tracks: a list of Tracklet objects
-    """
-
-    def _build_track_from_dict(d):
-        txyz = np.stack([[float(j) for j in d[k]] for k in ('t','x','y','z')], axis=-1)
-        labels = [int(constants.States[l].value) for l in d['label']]
-        data = [ObjectFactory.get(txyz[i,:], label=labels[i]) for i in range(txyz.shape[0])]
-        tid, pid, cid = int(d['ID']), int(d['parent']), [int(c) for c in d['children']]
-        track = btypes.Tracklet(tid, data, parent=pid, children=cid)
-        track.root = int(d['root'])
-        return track
-
-
-    file_stats_fn = os.path.join(folder, f"tracks_{cell_type}.json")
-    if not os.path.exists(file_stats_fn):
-        raise IOError(f'Tracking data file not found: {file_stats_fn}')
-
-    with open(file_stats_fn, 'r') as json_file:
-        track_files = json.load(json_file)
-
-    tracks = []
-    # check to see whether this is a zipped file
-    as_zipped = track_files[cell_type]['zipped']
-    if as_zipped:
-        import zipfile
-        zip_fn = os.path.join(folder, f"tracks_{cell_type}.zip")
-        with zipfile.ZipFile(zip_fn, 'r') as zipped_tracks:
-            for track_fn in track_files[cell_type]['files']:
-                track_file = zipped_tracks.read(track_fn)
-                d = json.loads(track_file)
-                d['cell_type'] = cell_type
-                d['filename'] = track_fn
-                tracks.append(_build_track_from_dict(d))
-        return tracks
-
-    # iterate over the track files and create Track objects
-    for track_fn in track_files[cell_type]['files']:
-        with open(os.path.join(folder, track_fn), 'r') as track_file:
-            d = json.load(track_file)
-            d['cell_type'] = cell_type
-            d['filename'] = track_fn
-            tracks.append(_build_track_from_dict(d))
-
-    return tracks
-
-
-def fate_table(tracks):
-    """ Create a fate table of all of the tracks. This is used by the MATLAB
-    exporter.
-    """
-
-    fate_table = {}
-    for t in tracks:
-        if t.fate not in list(fate_table.keys()):
-            fate_table[t.fate] = [t.ID]
-        else:
-            fate_table[t.fate].append(t.ID)
-    return fate_table
-
-
-def export_MATLAB(filename, tracks):
-    """ MATLAB Exporter for track data. """
-
-    if not check_track_type(tracks):
-        raise TypeError('Tracks must be of type btypes.Tracklet')
-    logger.info(f'Writing out MATLAB files to dir: {filename}')
-    export_track = np.vstack([trk.to_array() for trk in tracks])
-    output = {'tracks': export_track,
-              'track_labels':['frm','x','y','z','ID','parentID','rootID',
-                              'class_label'],
-              'class_labels':['interphase','prometaphase','metaphase',
-                              'anaphase','apoptosis'],
-              'fate_table': fate_table(tracks)}
-    savemat(filename, output)
+    with open(filename, 'w', newline='') as csvfile:
+        csvwriter = csv.writer(csvfile, delimiter=' ')
+        csvwriter.writerow(props)
+        for i in range(export_track.shape[0]):
+            csvwriter.writerow(export_track[i,:].tolist())
 
 
 
@@ -286,6 +144,23 @@ def export_LBEP(filename, tracks):
         for track in tracks:
             lbep = f'{track.ID} {track.t[0]} {track.t[-1]} {track.parent}'
             lbep_file.write(f'{lbep}\n')
+
+
+
+
+def h5check_property_exists(property):
+    """ Wrapper for hdf handler to make sure a property exists """
+    def func(fn):
+        @wraps(fn)
+        def wrapped_handler_property(*args, **kwargs):
+            self = args[0]
+            assert(isinstance(self, HDF5FileHandler))
+            if property not in self._hdf:
+                logger.error(f'{property.capitalize()} not found in {self.filename}')
+                return None
+            return fn(*args, **kwargs)
+        return wrapped_handler_property
+    return func
 
 
 
@@ -359,10 +234,12 @@ class HDF5FileHandler:
         """ Return the objects in the file """
         return self.filtered_objects()
 
+    @h5check_property_exists('objects')
     def filtered_objects(self, f_expr=None, obj_types=None):
         """ return a filtered list of objects based on metadata.
         f_expr should be of the format 'flag==1'
         """
+
         objects = []
         if obj_types is None:
             obj_types = self.object_types
@@ -401,7 +278,10 @@ class HDF5FileHandler:
 
     def write_tracks(self, tracker, obj_type=None, f_expr=None):
         """ Write tracks to HDF file """
-        logger.info(self.object_types)
+        if not tracker.tracks:
+            logger.error(f'No tracks found when exporting to: {self.filename}')
+            return
+
         assert(obj_type in self.object_types)
 
         tracks = tracker.refs
@@ -456,6 +336,7 @@ class HDF5FileHandler:
         grp.create_dataset('fates', data=fate_table, dtype='int32')
 
     @property
+    @h5check_property_exists('tracks')
     def tracks(self):
         """ Return the tracks in the file
         TODO(arl): recover lineage information from tracker (sp. children field)
@@ -509,6 +390,7 @@ class HDF5FileHandler:
         raise NotImplementedError
 
     @property
+    @h5check_property_exists('tracks')
     def lbep(self):
         logger.info('Loading LBEPR tables...')
         return [self._hdf['tracks'][k]['LBEPR'][:] for k in self._hdf['tracks']]

@@ -331,6 +331,9 @@ class Tracklet:
         self.fate = fate
         self.generation = 0
 
+        self._export_properties = ['ID','t','x','y','z','parent','root',
+                                   'state','generation']
+
     def __len__(self):
         return len(self._data)
 
@@ -382,39 +385,26 @@ class Tracklet:
         """ Return the motion model prediction for the given timestep. """
         return np.matrix(self.kalman[index,13:]).reshape(3,1)
 
-    def to_dict(self):
+    def to_dict(self, properties: list = None):
         """ Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
-        # TODO(arl): add the Kalman filter output here too
-        trk_tuple = (('ID', self.ID),
-                     ('length', len(self)),
-                     ('root', self.root),
-                     ('parent', self.parent),
-                     ('children', self.children),
-                     ('label', self.label),
-                     ('fate', self.fate.name),
-                     ('x', self.x),
-                     ('y', self.y),
-                     ('z', self.z),
-                     ('t', self.t))
+        if properties is None:
+            properites = self._export_properties
+        trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
 
         return OrderedDict(trk_tuple)
 
-    def to_array(self):
+    def to_array(self, properties: list = None):
         """ Return a numpy array of the tracklet which can be used for MATLAB
         export. """
-        # TODO(arl): add the Kalman filter output here too
-        # return np.hstack((self.__data, np.ones((len(self),1))*self.ID))
-        tmp_track = np.zeros((len(self),8), dtype=np.float32)
-        tmp_track[:,0] = self.t
-        tmp_track[:,1] = self.x
-        tmp_track[:,2] = self.y
-        tmp_track[:,3] = self.z
-        tmp_track[:,4] = self.ID
-        tmp_track[:,5] = self.parent
-        tmp_track[:,6] = self.root
-        tmp_track[:,7] = self.state
+        if properties is None:
+            properites = self._export_properties
+
+        tmp_track = np.zeros((len(self), len(properties)), dtype=np.float32)
+        for i, property in enumerate(properties):
+            tmp_track[:,i] = getattr(self, property)
+
         return tmp_track
 
     def in_frame(self, frame):

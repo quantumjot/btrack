@@ -201,7 +201,7 @@ def export_LBEP(filename: str, tracks: list):
 def _export_HDF(filename: str,
                tracker,
                obj_type=None,
-               filter_by: str):
+               filter_by: str = None):
     """ export to HDF """
     with HDF5FileHandler(filename, read_write='a') as hdf:
         hdf.write_tracks(tracker, obj_type=obj_type, f_expr=filter_by)

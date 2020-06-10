@@ -226,7 +226,7 @@ from btrack.dataio import export_CSV
 from btrack.dataio import export_LBEP
 
 # export tracks in CSV format
-export_csv('/path/to/your/tracks.csv', tracks)
+export_CSV('/path/to/your/tracks.csv', tracks)
 
 # export the LBEP table of lineage information
 export_LBEP('/path/to/your/lbep_tracks.txt', tracks)

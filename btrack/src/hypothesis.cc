@@ -691,6 +691,15 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
     }
   }
 
+  // disallow incorrect linking
+  if (DISALLOW_PROMETAPHASE_ANAPHASE_LINKING) {
+    if (a_trk->track.back()->label == STATE_prometaphase &&
+        a_trk_lnk->track.front()->label == STATE_anaphase) {
+      // set the probability of assignment to zero
+      link_penalty = PENALTY_METAPHASE_ANAPHASE_LINKING;
+    }
+  }
+
   // DONE(arl): need to penalise longer times between tracks, dt acts as
   // a linear scaling penalty - scale the distance linearly by time
   // return std::exp(-(d*dt)/m_params.lambda_link);

@@ -2,7 +2,7 @@
 <!-- [![PyPI - Downloads](https://img.shields.io/pypi/dm/btrack.svg)](https://pypistats.org/packages/btrack) -->
 
 
-# Bayesian Tracker (bTrack)
+# Bayesian Tracker (btrack)
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking,
 used to reconstruct trajectories in crowded fields. Here, we use a

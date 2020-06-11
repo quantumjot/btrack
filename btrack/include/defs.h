@@ -20,10 +20,14 @@
 #include <iostream>
 #include <limits>
 
+#ifndef M_PI
+    #define M_PI 3.14159265358979323846
+#endif
+
 // store some information about the compilation
-static uint v_major = VERSION_MAJOR;
-static uint v_minor = VERSION_MINOR;
-static uint v_build = VERSION_BUILD;
+static unsigned int v_major = VERSION_MAJOR;
+static unsigned int v_minor = VERSION_MINOR;
+static unsigned int v_build = VERSION_BUILD;
 static std::string build_date = __DATE__;
 static std::string build_time = __TIME__;
 
@@ -111,7 +115,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define WEIGHT_ANAPHASE 2.0
 #define WEIGHT_OTHER 5.0
 #define PENALTY_METAPHASE_ANAPHASE_LINKING 10.0
-
+#define PENALTY_PROMETAPHASE_ANAPHASE_LINKING 10.0
 
 // definitions to use for countins states in the hypothesis engine
 #define COUNT_STATE_FROM_BACK true

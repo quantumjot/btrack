@@ -12,6 +12,11 @@ ifeq ($(UNAME), Darwin)
 	CXX = clang++
 	EXT = dylib
 endif
+ifeq ($(UNAME), Windows)
+	# do something Windowsy
+	CXX = x86_64-w64-mingw32-g++
+	EXT = DLL
+endif
 
 NVCC = nvcc
 

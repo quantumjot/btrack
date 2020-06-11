@@ -17,7 +17,7 @@
 // DLL export for Windows, not fully supported yet. Other platforms default to
 // exporting symbols for C
 #ifdef _WIN32
-  #define EXTERN_DECL __declspec(dllimport)
+  #define EXTERN_DECL extern "C" //__declspec(dllimport)
 #else
   #define EXTERN_DECL extern "C"
 #endif

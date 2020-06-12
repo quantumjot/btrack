@@ -87,10 +87,6 @@ def load_library(filename):
     version = platform.version()
     release = platform.release()
 
-    if system is 'Windows':
-        logger.warning('Windows is not fully supported yet. libtracker.DLL '
-                        'must be compiled.')
-
     file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
 
     full_lib_file = lib_file + file_ext[system]
@@ -114,7 +110,7 @@ class LibraryWrapper(object):
 
     """
 
-    lib = load_library(os.path.join(BTRACK_PATH,'libs/libtracker'))
+    lib = load_library(os.path.join(BTRACK_PATH, 'libs', 'libtracker'))
 
     # deal with constructors/destructors
     lib.new_interface.restype = ctypes.c_void_p

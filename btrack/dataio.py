@@ -398,10 +398,11 @@ class HDF5FileHandler:
     @property
     @h5check_property_exists('tracks')
     def tracks(self):
-        """ Return the tracks in the file
-        TODO(arl): recover lineage information from tracker (sp. children field)
-        """
+        """ Return the tracks in the file """
         dummies, ret = [], []
+
+        # make an object factory
+        factory = _PyTrackObjectFactory()
 
         for ci, c in enumerate(self._hdf['tracks'].keys()):
             logger.info(f'Loading tracks: {c}...')
@@ -413,7 +414,8 @@ class HDF5FileHandler:
             # if there are dummies, make new dummy objects
             if 'dummies' in self._hdf['tracks'][c]:
                 dummies = self._hdf['tracks'][c]['dummies'][:]
-                dobj = [ObjectFactory.get(dummies[i,:]) for i in range(dummies.shape[0])]
+                n_dummies = dummies.shape[0]
+                dobj = [factory.get(dummies[i,:]) for i in range(n_dummies)]
                 for d in dobj: d.dummy = True
 
             # TODO(arl): this needs to be stored in the HDF folder
@@ -437,9 +439,26 @@ class HDF5FileHandler:
                 track = btypes.Tracklet(lbep[i,0], list(map(get_txyz, refs)))
                 track.parent = lbep[i,3]    # set the parent and root of tree
                 track.root = lbep[i,4]
-                if lbep.shape[1] == 6: track.generation = lbep[i,5]
+                if lbep.shape[1] > 5: track.generation = lbep[i,5]
                 track.fate = constants.Fates(fates[i]) # restore the track fate
                 tracks.append(track)
+
+            # once we have all of the tracks, populate the children
+            to_update = {}
+            for track in tracks:
+                if not track.is_root:
+                    parents = filter(lambda t: t.ID == track.parent, tracks)
+                    for parent in parents:
+                        if parent not in to_update:
+                            to_update[parent] = []
+                        to_update[parent].append(track.ID)
+
+            # sanity check, can be removed at a later date
+            assert all([len(children)<=2 for children in to_update.values()])
+
+            # add the children to the parent
+            for track, children in to_update.items():
+                track.children = children
 
             ret.append(tracks)
 

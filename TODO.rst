@@ -35,6 +35,7 @@ Updates
 - Removed JSON export
 - Added children to tracks when loading from hdf
 - Added checks to hdf handler to make sure properties exist when loading/saving
+- Added is_leaf property to tracklet class
 
 0.3.9
 -----

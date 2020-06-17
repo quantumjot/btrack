@@ -45,12 +45,6 @@ class PyTrackObject(ctypes.Structure):
 
     Properties:
         probability: class label probabilities
-
-    Notes:
-        Similar to the impy TrackObject class.
-
-        TODO(arl): Add attributes and to/from JSON functions
-
     """
 
     _fields_ = [('ID', ctypes.c_uint),
@@ -303,14 +297,12 @@ class Tracklet:
         x: x position
         y: y position
         z: z position
-        dummy: did this position arise from an actual measurement?
-        parent:    parent tracklet
+        parent: parent tracklet
         root: root tracklet if a branching tree (ie cell division)
         motion_model: typically a reference to a Kalman filter or motion model
+        is_root: boolean flag to denote root track
+        is_leaf: boolean flag to denote leaf track
 
-    Notes:
-        TODO (arl) add the dummy field back, and the track merging. Also,
-        clean up indexing into arrays.
     """
 
     def __init__(self,
@@ -358,8 +350,12 @@ class Tracklet:
         return [o.probability for o in self._data]
 
     @property
-    def is_root(self):
+    def is_root(self) -> bool:
         return self.parent == 0 or self.parent == None or self.parent == self.ID
+
+    @property
+    def is_leaf(self) -> bool:
+        return not self.children
 
     @property
     def kalman(self): return self._kalman
@@ -387,7 +383,6 @@ class Tracklet:
         export. This is an ordered dictionary for nicer JSON output.
         """
         trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
-
         return OrderedDict(trk_tuple)
 
     def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
@@ -397,7 +392,6 @@ class Tracklet:
         tmp_track = np.zeros((len(self), len(properties)), dtype=np.float32)
         for i, property in enumerate(properties):
             tmp_track[:,i] = getattr(self, property)
-
         return tmp_track
 
     def in_frame(self, frame):

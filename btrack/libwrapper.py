@@ -101,7 +101,7 @@ def load_library(filename):
 
 
 
-class LibraryWrapper(object):
+class LibraryWrapper:
     """ LibraryWrapper
 
     This is a container and interface class to the btrack library. This can

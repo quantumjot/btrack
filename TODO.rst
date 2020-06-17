@@ -17,6 +17,7 @@ Misc
 ----
 - Other motion models
 - Add documentation/wiki for configuration
+- Windows support/Cross-compiled shared lib
 
 
 Thanks

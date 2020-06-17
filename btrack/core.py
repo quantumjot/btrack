@@ -282,7 +282,7 @@ class BayesianTracker:
         > R - label of the root track
         > G - generational depth (from root)
         """
-        lbep = lambda t: (t.ID, t.t[0], t.t[-1], t.parent, t.root, t.generation)
+        lbep = lambda t: (t.ID, t.start, t.stop, t.parent, t.root, t.generation)
         return [lbep(t) for t in self.tracks]
 
 
@@ -330,7 +330,7 @@ class BayesianTracker:
             model = new_model
         else:
             raise TypeError('Motion model needs to be defined in /models/ or'
-            'provided as a MotionModel object')
+                'provided as a MotionModel object')
 
         self._motion_model = model
         logger.info(f'Loading motion model: {model.name}')

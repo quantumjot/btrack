@@ -302,15 +302,19 @@ class Tracklet:
         motion_model: typically a reference to a Kalman filter or motion model
         is_root: boolean flag to denote root track
         is_leaf: boolean flag to denote leaf track
+        start: first time stamp of track
+        stop: last time stamp of track
 
     """
 
     def __init__(self,
-                 ID,
-                 data,
+                 ID: int,
+                 data: list,
                  parent=None,
                  children=[],
                  fate=constants.Fates.UNDEFINED):
+
+        assert all([isinstance(o, PyTrackObject) for o in data])
 
         self.ID = ID
         self._data = data
@@ -336,6 +340,11 @@ class Tracklet:
     def t(self): return [o.t for o in self._data]
     @property
     def dummy(self): return [o.dummy for o in self._data]
+
+    @property
+    def start(self): return self.t[0]
+    @property
+    def stop(self): return self.t[-1]
 
     @property
     def label(self):

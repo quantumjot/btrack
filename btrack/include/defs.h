@@ -107,7 +107,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 // hypothesis generation
 #define MAX_TRACK_LEN 150
 #define DEFAULT_LOW_PROBABILITY 1e-308
-
+#define DEFAULT_LOST_PROBABILITY 0.1
 #define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
 #define WEIGHT_METAPHASE_ANAPHASE 0.1
 #define WEIGHT_METAPHASE 2.0

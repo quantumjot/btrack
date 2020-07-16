@@ -83,15 +83,15 @@ double probability_erf( const Eigen::Vector3d& x,
 
 
 
-// void write_belief_matrix_to_CSV(std::string a_filename,
-//                                 Eigen::Ref<Eigen::MatrixXd> a_belief)
-// {
-//   std::cout << a_filename << std::endl;
-//   std::ofstream belief_file;
-//   belief_file.open(a_filename);
-//   belief_file << a_belief.format(CSVFormat);
-//   belief_file.close();
-// }
+void write_belief_matrix_to_CSV(std::string a_filename,
+                                Eigen::Ref<Eigen::MatrixXd> a_belief)
+{
+  std::cout << a_filename << std::endl;
+  std::ofstream belief_file;
+  belief_file.open(a_filename);
+  belief_file << a_belief.format(CSVFormat);
+  belief_file.close();
+}
 
 
 
@@ -418,13 +418,6 @@ void BayesianTracker::step(const unsigned int steps)
     // cost_function_ptr(belief, n_active, n_obs);
     //(this->*cost_function_ptr)(belief, n_active, n_obs);
 
-    // if (WRITE_BELIEF_MATRIX) {
-    //   std::stringstream belief_filename;
-    //   belief_filename << "/home/arl/Desktop/belief/belief_";
-    //   belief_filename << current_frame << ".csv";
-    //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
-    // }
-
     // now that we have the complete belief matrix, we want to associate
     // do naive linking
     link(belief, n_active, n_obs);
@@ -509,15 +502,25 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
   Prediction trk_prediction;
   double prob_assign = 0.;
   double uniform_prior = 1. / (n_objects+1);
+  //double uniform_prior = (1.-DEFAULT_LOST_PROBABILITY) / (n_objects);
   double prior_assign, PrDP, posterior, update;
 
   // set the uniform prior
   belief.fill(uniform_prior);
 
+  // // set the lost probability
+  // Eigen::VectorXd v_lost_probability = Eigen::VectorXd(n_tracks);
+  // v_lost_probability.fill(DEFAULT_LOST_PROBABILITY);
+  // belief.row(n_objects) = v_lost_probability;
+
   // Posterior is a misnoma here because it is initially the prior, but
   // becomes the posterior
   Eigen::VectorXd v_posterior;
   Eigen::VectorXd v_update = Eigen::VectorXd(n_objects+1);
+
+  // if (WRITE_BELIEF_MATRIX) {
+  //   unsigned int belief_idx = 0;
+  // }
 
   for (size_t trk=0; trk != n_tracks; trk++) {
 
@@ -577,6 +580,16 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
       // do the update
       v_posterior = v_posterior.array()*v_update.array();
       v_posterior(obj) = posterior;
+
+      // if (WRITE_BELIEF_MATRIX && current_frame == 10) {
+      //   belief.col(trk) = v_posterior;
+      //   std::stringstream belief_filename;
+      //   belief_filename << "/media/quantumjot/Data/belief/belief_";
+      //   belief_filename << belief_idx << ".csv";
+      //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
+      //   belief_idx++;
+      // }
+
     }
 
     // now update the entire column (i.e. track)
@@ -638,6 +651,14 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
     local_objects = m_cube.get(active[trk], false);
     size_t n_local_objects = local_objects.size();
 
+    // if there are no local objects, then this track is lost
+    if (n_local_objects < 1){
+      v_posterior.fill(0.0); // all objects have zero probability
+      v_posterior(n_objects) = 1.0; // the lost probability is one
+      belief.col(trk) = v_posterior;
+      continue;
+    }
+
     // TODO(arl):
     // now that we know which local updates are to be made, approximate all of
     // the updates that we would have made, set the prior probabilities
@@ -645,6 +666,9 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
     // calculate the local uniform prior for only those objects that we have
     // selected the local objects
     double local_uniform_prior = 1. / (n_local_objects+1);
+    // double local_uniform_prior = (1.-DEFAULT_LOST_PROBABILITY) / n_local_objects;
+    // std::cout << trk << " --> " << n_local_objects << " (" << local_uniform_prior << ")" <<std::endl;
+
     for (size_t obj=0; obj != n_local_objects; obj++) {
       v_posterior(local_objects[obj].second) = local_uniform_prior;
     }
@@ -706,7 +730,7 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
       v_posterior = v_posterior.array()*v_update.array();
       v_posterior(local_objects[obj].second) = posterior;
 
-    }
+    } // objects
 
     // now update the entire column (i.e. track)
     //belief.col(trk) = belief.col(trk).cwiseProduct( v_posterior );

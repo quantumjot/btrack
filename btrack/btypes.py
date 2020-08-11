@@ -55,7 +55,8 @@ class PyTrackObject(ctypes.Structure):
                 ('dummy', ctypes.c_bool),
                 ('states', ctypes.c_uint),
                 ('label', ctypes.c_int),
-                ('prob', ctypes.POINTER(ctypes.c_double))]
+                ('prob', ctypes.c_double)]
+                # ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
         super(PyTrackObject, self).__init__()

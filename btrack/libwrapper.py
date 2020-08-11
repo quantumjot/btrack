@@ -101,15 +101,12 @@ def load_library(filename):
 
 
 
-class LibraryWrapper:
-    """ LibraryWrapper
-
+def get_library():
+    """
     This is a container and interface class to the btrack library. This can
     be shared between the tracker and the optimiser to provide a uniform
     interface.
-
     """
-
     lib = load_library(os.path.join(BTRACK_PATH, 'libs', 'libtracker'))
 
     # deal with constructors/destructors
@@ -121,7 +118,8 @@ class LibraryWrapper:
 
     # check the version number
     lib.check_library_version.restype = ctypes.c_bool
-    lib.check_library_version.argtypes = [ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]
+    lib.check_library_version.argtypes = [ctypes.c_uint, ctypes.c_uint,
+                                          ctypes.c_uint]
 
     # set the update method
     lib.set_update_mode.restype = None
@@ -235,3 +233,5 @@ class LibraryWrapper:
     # merge following optimisation
     lib.merge.restype = None
     lib.merge.argtypes = [ctypes.c_void_p, np_uint_p, ctypes.c_uint]
+
+    return lib

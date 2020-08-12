@@ -88,7 +88,6 @@ def load_library(filename):
     release = platform.release()
 
     file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
-
     full_lib_file = lib_file + file_ext[system]
 
     try:
@@ -102,11 +101,7 @@ def load_library(filename):
 
 
 def get_library():
-    """
-    This is a container and interface class to the btrack library. This can
-    be shared between the tracker and the optimiser to provide a uniform
-    interface.
-    """
+    """ This loads and returns the btrack shared library. """
     lib = load_library(os.path.join(BTRACK_PATH, 'libs', 'libtracker'))
 
     # deal with constructors/destructors

@@ -73,13 +73,9 @@ You can also --> :star: :wink:
 
 ### Installation
 
-BayesianTracker has been tested with Python 3.7 on OS X and Linux.
+BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
 The tracker and hypothesis engine are mostly written in C++ with a Python
 wrapper.
-
-*NOTE TO WINDOWS USERS*: We have not tested this on Windows, although the
-following works on the Ubuntu shell for Win10. The setup instructions below have
- been tested on Ubuntu 18.04 LTS and OS X 10.15.
 
  #### Installing the latest stable version
  ```sh

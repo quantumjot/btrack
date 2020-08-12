@@ -17,7 +17,7 @@ Misc
 ----
 - Other motion models
 - Add documentation/wiki for configuration
-- Windows support/Cross-compiled shared lib
+
 
 
 Thanks
@@ -28,6 +28,10 @@ Thanks
 
 Updates
 =======
+
+0.3.11
+------
+- Added Windows support
 
 0.3.10
 ------

@@ -16,6 +16,7 @@ ifeq ($(UNAME), Windows)
 	# do something Windowsy
 	CXX = x86_64-w64-mingw32-g++
 	EXT = DLL
+	XLDFLAGS = -static-libgcc -static-libstdc++
 endif
 
 NVCC = nvcc

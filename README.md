@@ -226,3 +226,30 @@ with btrack.BayesianTracker() as tracker:
     tracker.max_search_radius = 100
     ...
 ```
+
+
+---
+### Citation
+
+More details of how this type of tracking approach can be applied to tracking
+cells in time-lapse microscopy data can be found in our publication:
+
+**Local cellular neighbourhood controls proliferation in cell competition**  
+Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
+*Mol. Biol. Cell* (2017) <https://doi.org/10.1091/mbc.E17-06-0368>
+
+```
+@article{Bove07112017,
+  author = {Bove, Anna and Gradeci, Daniel and Fujita, Yasuyuki and Banerjee,
+    Shiladitya and Charras, Guillaume and Lowe, Alan R.},
+  title = {Local cellular neighborhood controls proliferation in cell competition},
+  volume = {28},
+  number = {23},
+  pages = {3215-3228},
+  year = {2017},
+  doi = {10.1091/mbc.E17-06-0368},
+  URL = {http://www.molbiolcell.org/content/28/23/3215.abstract},
+  eprint = {http://www.molbiolcell.org/content/28/23/3215.full.pdf+html},
+  journal = {Molecular Biology of the Cell}
+}
+```

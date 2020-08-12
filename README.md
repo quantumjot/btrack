@@ -1,8 +1,8 @@
-[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  :microscope::computer:
+[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack)](https://pepy.tech/project/btrack)
+
 <!-- [![PyPI - Downloads](https://img.shields.io/pypi/dm/btrack.svg)](https://pypistats.org/packages/btrack) -->
 
-
-# Bayesian Tracker (btrack)
+# Bayesian Tracker (btrack) :microscope::computer:
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking,
 used to reconstruct trajectories in crowded fields. Here, we use a
@@ -30,7 +30,7 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 <!-- [![LineageTree](https://raw.githubusercontent.com/quantumjot/BayesianTracker/master/examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red. -->
 [![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
-*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin, [arboretum](#Usage-with-Napari).
+*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#Usage-with-Napari).
 
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
@@ -38,34 +38,6 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 
 Read about the science:  
 http://lowe.cs.ucl.ac.uk/cellx.html
-
-
-
----
-### Citation
-
-More details of how this type of tracking approach can be applied to tracking
-cells in time-lapse microscopy data can be found in our publication:
-
-**Local cellular neighbourhood controls proliferation in cell competition**  
-Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
-*Mol. Biol. Cell* (2017) <https://doi.org/10.1091/mbc.E17-06-0368>
-
-```
-@article{Bove07112017,
-  author = {Bove, Anna and Gradeci, Daniel and Fujita, Yasuyuki and Banerjee,
-    Shiladitya and Charras, Guillaume and Lowe, Alan R.},
-  title = {Local cellular neighborhood controls proliferation in cell competition},
-  volume = {28},
-  number = {23},
-  pages = {3215-3228},
-  year = {2017},
-  doi = {10.1091/mbc.E17-06-0368},
-  URL = {http://www.molbiolcell.org/content/28/23/3215.abstract},
-  eprint = {http://www.molbiolcell.org/content/28/23/3215.full.pdf+html},
-  journal = {Molecular Biology of the Cell}
-}
-```
 
 You can also --> :star: :wink:
 
@@ -81,7 +53,6 @@ wrapper.
  ```sh
  $ pip install btrack
  ```
-
 
  #### (Advanced) Installing the latest development version
 

@@ -149,11 +149,17 @@ public:
     return tracks.size();
   };
 
-  // return the Euclidean distance between object and trajectory
-  double euclidean_dist(const size_t trk, const size_t obj) const {
-    Eigen::Vector3d dxyz = tracks[trk]->position()-new_objects[obj]->position();
+  // // return the Euclidean distance between object and trajectory
+  // double euclidean_dist(const size_t trk, const size_t obj) const {
+  //   Eigen::Vector3d dxyz = tracks[trk]->position()-new_objects[obj]->position();
+  //   return std::sqrt(dxyz.transpose()*dxyz);
+  // };
+
+  double euclidean_dist(const TrackletPtr& trk, const TrackObjectPtr& obj) const {
+    Eigen::Vector3d dxyz = trk->position() - obj->position();
     return std::sqrt(dxyz.transpose()*dxyz);
   };
+
 
   // track maintenance
   bool purge();
@@ -268,8 +274,6 @@ const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
 
 void write_belief_matrix_to_CSV(std::string a_filename,
                                 Eigen::Ref<Eigen::MatrixXd> a_belief);
-
-
 
 
 #endif

@@ -804,14 +804,20 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
         std::cout << "ERROR: Exhausted potential linkages." << std::endl;
       }
 
-      // append the new object onto the track
-      active[trk]->append( new_objects[obj] );
+      // make sure that we only make links that are possible
+      if (euclidean_dist(active[trk], new_objects[obj]) <= max_search_radius &&
+          CLIP_MAXIMUM_LINKAGE_DISTANCE) {
 
-      // update the statistics
-      statistics.p_link = lnk.second;
+        // append the new object onto the track
+        active[trk]->append( new_objects[obj] );
 
-      // since we've found a correspondence for this one, remove from set
-      not_used.erase(trk);
+        // update the statistics
+        statistics.p_link = lnk.second;
+
+        // since we've found a correspondence for this one, remove from set
+        not_used.erase(trk);
+      }
+
     } else if (n_links < 1) {
       // this object has no matches, add a new tracklet
       TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
@@ -838,11 +844,16 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
         std::cout << "ERROR: Exhausted potential linkages." << std::endl;
       }
 
-      // update only this one
-      active[trk]->append( new_objects[obj] );
+      // double euclidean_dist(const size_t trk, const size_t obj) const {
+      if (euclidean_dist(active[trk], new_objects[obj]) <= max_search_radius &&
+          CLIP_MAXIMUM_LINKAGE_DISTANCE) {
 
-      // since we've found a correspondence for this one, remove from set
-      not_used.erase(trk);
+        // update only this one
+        active[trk]->append( new_objects[obj] );
+
+        // since we've found a correspondence for this one, remove from set
+        not_used.erase(trk);
+      }
     }
   }
 

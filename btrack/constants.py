@@ -17,11 +17,10 @@ MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1
 DEBUG = True
 EXPORT_FORMATS = frozenset(['.json','.mat','.hdf5'])
-NEW_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b',
-                '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
 VOLUME = ((0,1024), (0,1024), (-100,100))
 HDF_CHUNK_CACHE = 100*1024*1024
 USER_MODEL_DIR = ""
+GLPK_OPTIONS = {}
 
 DEFAULT_EXPORT_PROPERTIES = ['ID','t','x','y','z','parent','root', 'state',
                              'generation']

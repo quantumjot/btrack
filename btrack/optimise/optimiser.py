@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 import logging
 from . import hypothesis
 
-from btrack.constants import Fates
+from btrack.constants import Fates, GLPK_OPTIONS
 
 from cvxopt.glpk import ilp
 from cvxopt import matrix, spmatrix
@@ -95,8 +95,10 @@ class TrackOptimiser:
         Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
     """
 
-    def __init__(self):
+    def __init__(self,
+                 options: dict = GLPK_OPTIONS):
         self._hypotheses = []
+        self.options = options      # TODO(arl): do some option parsing?
 
     @property
     def hypotheses(self):
@@ -116,6 +118,8 @@ class TrackOptimiser:
         """
 
         logger.info('Setting up constraints matrix for global optimisation...')
+        if self.options:
+            logger.info(f'Using GLPK options: {self.options}...')
 
         # anon function to renumber track ID from C++
         trk_idx = lambda h: int(h)-1
@@ -204,7 +208,7 @@ class TrackOptimiser:
         b = matrix(1., (2*N,1), 'd')
 
         # now try to solve it!!!
-        status, x = ilp(-rho, -G, h, A, b, I, B)
+        status, x = ilp(-rho, -G, h, A, b, I, B, options=self.options)
 
         # log the warning if not optimal solution
         if status != 'optimal':

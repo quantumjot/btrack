@@ -29,6 +29,11 @@ Thanks
 Updates
 =======
 
+0.3.12
+------
+- Added radial clipping option to linker
+- Exposed solver options to tracker interface
+
 0.3.11
 ------
 - Added Windows support

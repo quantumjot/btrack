@@ -130,7 +130,7 @@ class PyTrackingInfo(ctypes.Structure):
             import pandas as pd
             return pd.DataFrame(self.to_dict()).to_html()
         except:
-            return "Install pandas for nicer rendering <br>" + self.__repr__()
+            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
 
     @property
     def tracker_active(self):
@@ -349,7 +349,7 @@ class Tracklet:
             import pandas as pd
             return pd.DataFrame(self.to_dict()).to_html()
         except:
-            return "Install pandas for nicer rendering <br>" + self.__repr__()
+            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
 
     @property
     def x(self): return [o.x for o in self._data]

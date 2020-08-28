@@ -122,6 +122,16 @@ class PyTrackingInfo(ctypes.Structure):
         stats = {k:getattr(self, k) for k,typ in PyTrackingInfo._fields_}
         return stats
 
+    def __repr__(self):
+        return self.to_dict().__repr__()
+
+    def _repr_html_(self):
+        try:
+            import pandas as pd
+            return pd.DataFrame(self.to_dict()).to_html()
+        except:
+            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
+
     @property
     def tracker_active(self):
         """ return the current status """
@@ -330,6 +340,16 @@ class Tracklet:
 
     def __len__(self):
         return len(self._data)
+
+    def __repr__(self):
+        return self.to_dict().__repr__()
+
+    def _repr_html_(self):
+        try:
+            import pandas as pd
+            return pd.DataFrame(self.to_dict()).to_html()
+        except:
+            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
 
     @property
     def x(self): return [o.x for o in self._data]

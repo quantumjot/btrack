@@ -12,6 +12,7 @@ def get_version():
 def get_version_tuple():
     return tuple([int(v) for v in get_version().split(".")])
 
+MAX_SEARCH_RADIUS = 100
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1

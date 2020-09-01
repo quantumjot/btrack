@@ -138,24 +138,14 @@ class BayesianTracker:
         competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
         Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
     """
-    def __init__(self, verbose=True):
+    def __init__(self,
+                 verbose: bool = True,
+                 max_search_radius: int = constants.MAX_SEARCH_RADIUS):
         """ Initialise the BayesianTracker C++ engine and parameters """
 
-        # default parameters and space for stored objects
-        self._motion_model = None
-        self._object_model = None
-        self._frame_range = [0,0]
-        self._max_search_radius = np.inf
-        self.return_kalman = False
-        self._objects = []
-
-        # do not initialise until the init() has been run
+        # load the library, get an instance of the engine
         self._initialised = False
-
-        # load the library
         self._lib = libwrapper.get_library()
-
-        # get an instance of the engine
         self._engine = self._lib.new_interface(verbose)
 
         # sanity check library version
@@ -169,6 +159,15 @@ class BayesianTracker:
         self._bayesian_update_method = constants.BayesianUpdates.EXACT
         self._lib.set_update_mode(self._engine, self.update_method.value)
 
+        # default parameters and space for stored objects
+        self._objects = []
+        self._motion_model = None
+        self._object_model = None
+        self._frame_range = [0,0]
+        self.max_search_radius = max_search_radius
+        self.return_kalman = False
+
+
 
     def __enter__(self):
         logger.info('Starting BayesianTracker session')
@@ -180,13 +179,13 @@ class BayesianTracker:
         self._lib.del_interface( self._engine )
 
 
-    def configure_from_file(self, filename):
+    def configure_from_file(self, filename: str):
         """ Configure the tracker from a configuration file """
         config = utils.load_config(filename)
         self.configure(config)
 
 
-    def configure(self, config):
+    def configure(self, config: dict):
         """ Configure the tracker with a motion model, an object model and
         hypothesis generation_parameters.
         """
@@ -209,7 +208,7 @@ class BayesianTracker:
     def max_search_radius(self):
         return self._max_search_radius
     @max_search_radius.setter
-    def max_search_radius(self, max_search_radius):
+    def max_search_radius(self, max_search_radius: int):
         """ Set the maximum search radius for fast cost updates """
         assert(max_search_radius>0.)
         logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
@@ -222,7 +221,7 @@ class BayesianTracker:
     @update_method.setter
     def update_method(self, method):
         """ set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
-        assert(method in constants.BayesianUpdates)
+        assert method in constants.BayesianUpdates
         logger.info(f'Setting Bayesian update method to: {method}')
         self._lib.set_update_mode(self._engine, method.value)
         self._bayesian_update_method = method
@@ -298,7 +297,7 @@ class BayesianTracker:
         self._lib.get_volume(self._engine, vol)
         return [tuple(vol[i,:].tolist()) for i in range(3)]+[self.frame_range]
     @volume.setter
-    def volume(self, volume):
+    def volume(self, volume: tuple):
         """ Set the imaging volume """
         if not isinstance(volume, tuple):
             raise TypeError('Volume must be a tuple')
@@ -441,7 +440,7 @@ class BayesianTracker:
         utils.log_stats(stats.to_dict())
 
 
-    def track_interactive(self, step_size=100):
+    def track_interactive(self, step_size: int = 100):
         """ Run the tracking in an interactive mode """
 
         # TODO(arl): this needs cleaning up to have some decent output
@@ -473,7 +472,7 @@ class BayesianTracker:
                          'tracking gaps'))
 
 
-    def step(self, n_steps=1):
+    def step(self, n_steps: int = 1):
         """ Run an iteration (or more) of the tracking. Mostly for
         interactive mode tracking """
         if not self._initialised: return None
@@ -540,7 +539,7 @@ class BayesianTracker:
         return optimised
 
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx: int):
         """ Grab a track from the BayesianTracker object. """
         # get the track length
         n = self._lib.track_length(self._engine, idx)
@@ -603,13 +602,13 @@ class BayesianTracker:
         return trk
 
 
-    def cleanup(self, sigma=2.5):
+    def cleanup(self, sigma: float = 2.5):
         """ Clean up following tracking. Can be used to remove static objects
         and links that are greater than the maximum distance permitted """
         dynamic_track = lambda trk: (np.std(trk.x)+np.std(trk.y))*0.5 > sigma
         return [t for t in self.tracks if len(t)>1 and dynamic_track(t)]
 
-    def export(self, filename, obj_type=None, filter_by=None):
+    def export(self, filename: str, obj_type=None, filter_by=None):
         """ export tracks using the appropriate exporter """
         export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 

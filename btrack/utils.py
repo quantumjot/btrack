@@ -246,8 +246,9 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 def import_HDF(*args, **kwargs):
     """ Import the HDF data. """
-    from . import dataio
-    return dataio.import_HDF(*args, **kwargs)
+    # from . import dataio
+    # return dataio.import_HDF(*args, **kwargs)
+    raise DeprecationWarning('Use dataio.HDF5FileHandler instead')
 
 def import_JSON(filename):
     """ Import JSON data """

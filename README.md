@@ -103,10 +103,10 @@ BayesianTracker can be used simply as follows:
 
 ```python
 import btrack
-from btrack.utils import import_HDF
+from btrack.dataio import import_CSV
 
 # NOTE(arl):  This should be from your image segmentation code
-objects = import_HDF('/path/to/your/objects.hdf5', filter_using=None)
+objects = import_CSV('/path/to/your/objects.csv)
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:

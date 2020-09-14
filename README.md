@@ -235,7 +235,7 @@ More details of how this type of tracking approach can be applied to tracking
 cells in time-lapse microscopy data can be found in the following publications:
 
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
-Ulicna K, Vallardi G, Charras G and Lowe AR.
+Ulicna K, Vallardi G, Charras G and Lowe AR.  
 *bioRxiv* (2020)  
 <https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
 

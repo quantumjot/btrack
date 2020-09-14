@@ -247,15 +247,15 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 
 ```
 @article {Ulicna2020.09.10.276980,
-	author = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
-	title = {Automated deep lineage tree analysis using a Bayesian single cell tracking approach},
-	elocation-id = {2020.09.10.276980},
-	year = {2020},
-	doi = {10.1101/2020.09.10.276980},
-	publisher = {Cold Spring Harbor Laboratory},
-	URL = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980},
-	eprint = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980.full.pdf},
-	journal = {bioRxiv}
+  author = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
+  title = {Automated deep lineage tree analysis using a Bayesian single cell tracking approach},
+  elocation-id = {2020.09.10.276980},
+  year = {2020},
+  doi = {10.1101/2020.09.10.276980},
+  publisher = {Cold Spring Harbor Laboratory},
+  URL = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980},
+  eprint = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980.full.pdf},
+  journal = {bioRxiv}
 }
 ```
 ```

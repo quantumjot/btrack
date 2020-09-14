@@ -232,12 +232,32 @@ with btrack.BayesianTracker() as tracker:
 ### Citation
 
 More details of how this type of tracking approach can be applied to tracking
-cells in time-lapse microscopy data can be found in our publication:
+cells in time-lapse microscopy data can be found in the following publications:
+
+**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
+Ulicna K, Vallardi G, Charras G and Lowe AR.
+*bioRxiv* (2020)  
+<https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
+
 
 **Local cellular neighbourhood controls proliferation in cell competition**  
 Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
-*Mol. Biol. Cell* (2017) <https://doi.org/10.1091/mbc.E17-06-0368>
+*Mol. Biol. Cell* (2017)  
+<https://doi.org/10.1091/mbc.E17-06-0368>
 
+```
+@article {Ulicna2020.09.10.276980,
+	author = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
+	title = {Automated deep lineage tree analysis using a Bayesian single cell tracking approach},
+	elocation-id = {2020.09.10.276980},
+	year = {2020},
+	doi = {10.1101/2020.09.10.276980},
+	publisher = {Cold Spring Harbor Laboratory},
+	URL = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980},
+	eprint = {https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980.full.pdf},
+	journal = {bioRxiv}
+}
+```
 ```
 @article{Bove07112017,
   author = {Bove, Anna and Gradeci, Daniel and Fujita, Yasuyuki and Banerjee,

@@ -23,6 +23,7 @@ HDF_CHUNK_CACHE = 100*1024*1024
 USER_MODEL_DIR = ""
 GLPK_OPTIONS = {}
 
+DEFAULT_OBJECT_KEYS = ['t','x','y','z','label']
 DEFAULT_EXPORT_PROPERTIES = ['ID','t','x','y','z','parent','root', 'state',
                              'generation']
 

@@ -246,21 +246,15 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 def import_HDF(*args, **kwargs):
     """ Import the HDF data. """
-    # from . import dataio
-    # return dataio.import_HDF(*args, **kwargs)
     raise DeprecationWarning('Use dataio.HDF5FileHandler instead')
+
 
 def import_JSON(filename):
     """ Import JSON data """
     raise DeprecationWarning('Use dataio.import_JSON instead')
 
 
-def build_trees(tracks, update_tracks=True):
-    """ Build lineage trees and update the track relationships """
-    raise DeprecationWarning('btrack.optimize.lineage deprecated')
-    # from btrack.optimise import lineage
-    # tree = lineage.LineageTree(tracks)
-    # return tree.create(update_tracks=update_tracks)
+
 
 
 

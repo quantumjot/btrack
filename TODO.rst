@@ -23,11 +23,20 @@ Misc
 Thanks
 ======
 - Thanks to Giulia V and Kristina U for helpful suggestions.
+- Thanks to Volker H for notebook extensions
 
 
 
 Updates
 =======
+
+0.3.13
+------
+- Added convenience function to convert Pandas or numpy arrays to PyTrackObject
+- Added __repr__ for object and tracklet representations in jupyter notebooks
+- Deprecated import_HDF in favor of the HDF5FileHandler
+- Bug fix for CSV importer
+
 
 0.3.12
 ------

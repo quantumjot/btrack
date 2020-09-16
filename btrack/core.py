@@ -28,7 +28,7 @@ from . import constants
 from . import btypes
 from . import libwrapper
 
-from .dataio import export_delegator
+from .dataio import export_delegator, localizations_to_objects
 from .optimise import optimiser
 
 from datetime import datetime
@@ -394,8 +394,10 @@ class BayesianTracker:
         order here does not matter. This means several datasets can be
         concatenated easily, by running this a few times. """
 
-        if not isinstance(objects, list):
-            objects = [objects]
+        # if not isinstance(objects, list):
+        #     objects = [objects]
+
+        objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
             obj.ID = idx + len(self._objects) # make sure ID tracks properly

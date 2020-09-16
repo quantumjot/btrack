@@ -79,15 +79,67 @@ class _PyTrackObjectFactory:
 ObjectFactory = _PyTrackObjectFactory()
 
 
+
+
+def localizations_to_objects(localizations,
+                             default_keys = constants.DEFAULT_OBJECT_KEYS):
+
+    """ take a numpy array or pandas dataframe and convert to PyTrackObjects
+
+    Params:
+        localizations: list(PyTrackObject), np.ndarray, pandas.DataFrame
+
+    """
+
+    logger.info(f'Objects are of type: {type(localizations)}')
+
+    if isinstance(localizations, list):
+        if all([isinstance(l, btypes.PyTrackObject) for l in localizations]):
+            # if these are already PyTrackObjects just silently return
+            return localizations
+
+    # do we have a numpy array or pandas dataframe?
+    if isinstance(localizations, np.ndarray):
+        assert localizations.ndim == 2
+        assert localizations.shape[1] >=3
+
+        n_features = localizations.shape[1]
+        keys = default_keys[:n_features]
+        objects_dict = {keys[i]: localizations[:, i] for i in range(n_features)}
+    else:
+        try:
+            objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
+        except:
+            logger.error(f'Unknown localization type: {type(localizations)}')
+            raise TypeError(f'Unknown localization type: {type(localizations)}')
+
+    # how many objects are there
+    n_objects = objects_dict['t'].shape[0]
+
+    # now that we have the object dictionary, convert this to objects
+    objects = []
+    for i in range(n_objects):
+        data = {k: v[i] for k, v in objects_dict.items()}
+        data.update({'ID': i})
+        obj = btypes.PyTrackObject.from_dict(data)
+        objects.append(obj)
+
+    return objects
+
+
+
+
 def import_JSON(filename):
     """ generic JSON importer for localisations from other software """
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
     objects = []
-    for ID, _obj in data.items():
-        txyz = np.array([_obj[k] for k in ['t','x','y','z']])
-        obj = ObjectFactory.get(txyz, label=int(_obj['label']))
+
+    for i, _obj in enumerate(data.values()):
+        _obj.update({'ID': i})
+        obj = btypes.PyTrackObject.from_dict(_obj)
         objects.append(obj)
+
     return objects
 
 
@@ -102,20 +154,17 @@ def import_CSV(filename):
     t, x, y, z, label
 
     """
+
     objects = []
     with open(filename, 'r') as csv_file:
-        csvreader = csv.DictReader(csvfile, delimiter=' ', quotechar='|')
-        for row in csvreader:
-            txyz = np.zeros((1,4), dtype=np.float32)
-            txyz[:,(0, 1, 2)] = [row[k] for k in ('t', 'x', 'y')]
-            if 'z' in row:
-                txyz[:,3] = row['z'] # if we have z info
-            if 'label' in row:
-                label = int(row['label'])
-            else:
-                label = None
-
-            objects.append(ObjectFactory.get(txyz, label=label))
+        csvreader = csv.DictReader(csv_file,
+                                   delimiter=',',
+                                   quotechar='|')
+        for i, row in enumerate(csvreader):
+            data = {k: float(v) for k,v in row.items()}
+            data.update({'ID': i})
+            obj = btypes.PyTrackObject.from_dict(data)
+            objects.append(obj)
     return objects
 
 
@@ -168,8 +217,8 @@ def export_CSV(filename: str,
     logger.info(f'Writing out CSV files to: {filename}')
     export_track = np.vstack([t.to_array(properties) for t in tracks])
 
-    with open(filename, 'w', newline='') as csvfile:
-        csvwriter = csv.writer(csvfile, delimiter=' ')
+    with open(filename, 'w', newline='') as csv_file:
+        csvwriter = csv.writer(csv_file, delimiter=' ')
         csvwriter.writerow(properties)
         for i in range(export_track.shape[0]):
             csvwriter.writerow(export_track[i,:].tolist())
@@ -196,6 +245,7 @@ def export_LBEP(filename: str, tracks: list):
         for track in tracks:
             lbep = f'{track.ID} {track.t[0]} {track.t[-1]} {track.parent}'
             lbep_file.write(f'{lbep}\n')
+
 
 
 def _export_HDF(filename: str,

@@ -59,8 +59,15 @@ class PyTrackObject(ctypes.Structure):
                 # ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
-        super(PyTrackObject, self).__init__()
+        super().__init__()
+
+        # default values for pytrack object
+        self.prob = 0
+        self.dummy = False
+        self.label = constants.States.NULL.value
+
         self._raw_probability = None
+
 
     @property
     def probability(self):
@@ -75,6 +82,33 @@ class PyTrackObject(ctypes.Structure):
     @property
     def state(self):
         return constants.States(self.label)
+
+    def to_dict(self):
+        """ Return a dictionary of the fields and their values """
+        stats = {k: getattr(self, k) for k, typ in PyTrackObject._fields_}
+        return stats
+
+    @staticmethod
+    def from_dict(properties: dict):
+        """ build an object from a dictionary """
+        obj = PyTrackObject()
+        attr = (k for k, _ in PyTrackObject._fields_ if k in properties.keys())
+        for key in attr:
+            try:
+                setattr(obj, key, properties[key])
+            except:
+                setattr(obj, key, int(properties[key]))
+        return obj
+
+    def __repr__(self):
+        return self.to_dict().__repr__()
+
+    def _repr_html_(self):
+        try:
+            import pandas as pd
+            return pd.DataFrame(self.to_dict(), index=[0]).to_html()
+        except:
+            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
 
 
 
@@ -119,18 +153,8 @@ class PyTrackingInfo(ctypes.Structure):
         """ Return a dictionary of the statistics """
         # TODO(arl): make this more readable by converting seconds, milliseconds
         # and interpreting error messages?
-        stats = {k:getattr(self, k) for k,typ in PyTrackingInfo._fields_}
+        stats = {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
         return stats
-
-    def __repr__(self):
-        return self.to_dict().__repr__()
-
-    def _repr_html_(self):
-        try:
-            import pandas as pd
-            return pd.DataFrame(self.to_dict()).to_html()
-        except:
-            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
 
     @property
     def tracker_active(self):

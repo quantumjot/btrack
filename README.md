@@ -77,10 +77,8 @@ If you do not want to install a local copy, you can run the tracker in a Colab n
 
 | Status        | Level | Notebook                                     | Link |
 | ------------- | ----- | -------------------------------------------- | ---- |
-| *In progress* | Basic | Loading your own data                        | -
-| Complete      | Basic | Object tracking with btrack                  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
 | Complete      | Basic | Data import options                          | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1V2TtJ5FGqSILTuThSRg5j9crsBsorUmy)|
-| *In progress* | Advanced | Object tracking with btrack (2D/3D)       | -
+| Complete      | Basic | Object tracking with btrack                  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
 | *In progress* | Advanced | Configuration options                     | -
 | Complete      | Advanced | How to compile btrack from source         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
 
@@ -163,8 +161,7 @@ There are many additional options, including the ability to define object models
 Observations can be provided in several basic formats:
 + a simple CSV or JSON file
 + HDF5 for larger/more complex datasets, or
-+ using your own code as a `PyTrackObject` directly from numpy arrays.
-
++ using your own code from numpy arrays or pandas data arrays.
 
 For example, CSV data of the format:
 ```
@@ -182,8 +179,7 @@ from btrack.dataio import import_CSV
 objects = import_CSV('/path/to/your/objects.csv')
 ```
 
-More detail in the wiki:
-https://github.com/quantumjot/BayesianTracker/wiki/3.-Importing-data
+More detail the colab notebooks above.
 
 ### Exporting data
 

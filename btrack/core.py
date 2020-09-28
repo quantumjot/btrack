@@ -148,6 +148,9 @@ class BayesianTracker:
         self._lib = libwrapper.get_library()
         self._engine = self._lib.new_interface(verbose)
 
+        if not verbose:
+            logger.setLevel(logging.WARNING)
+
         # sanity check library version
         version_tuple = constants.get_version_tuple()
         if not self._lib.check_library_version(self._engine, *version_tuple):
@@ -613,6 +616,17 @@ class BayesianTracker:
     def export(self, filename: str, obj_type=None, filter_by=None):
         """ export tracks using the appropriate exporter """
         export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
+
+
+    def to_napari(self):
+        """ Return the data in a format for a napari tracks layer """
+        t_header = ['ID','t','z','y','x']
+        p_header = ['t','state','generation','root']
+        data = np.vstack([t.to_array(t_header) for t in self.tracks])
+        p_array = np.vstack([t.to_array(p_header) for t in self.tracks])
+        properties = {p: p_array[:,i] for i, p in enumerate(p_header)}
+        graph = {t.ID: [t.parent] for t in self.tracks if not t.is_root}
+        return data, properties, graph
 
 
 

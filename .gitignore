@@ -5,6 +5,7 @@ btrack/agents.py
 btrack/render_movie.py
 models/MDCK_*
 examples/napari.png
+examples/.ipynb_checkpoints
 notebooks
 deprecated
 dist

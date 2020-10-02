@@ -618,12 +618,15 @@ class BayesianTracker:
         export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 
 
-    def to_napari(self):
+    def to_napari(self, ndim: int = 3):
         """ Return the data in a format for a napari tracks layer """
-        t_header = ['ID','t','z','y','x']
+        assert ndim in (2, 3)
+        t_header = ['ID','t'] + ['z','y','x'][-ndim:]
         p_header = ['t','state','generation','root']
-        data = np.vstack([t.to_array(t_header) for t in self.tracks])
-        p_array = np.vstack([t.to_array(p_header) for t in self.tracks])
+        # ensure lexicographic ordering of tracks
+        ordered = sorted(list(self.tracks), key=lambda t: t.ID)
+        data = np.vstack([t.to_array(t_header) for t in ordered])
+        p_array = np.vstack([t.to_array(p_header) for t in ordered])
         properties = {p: p_array[:,i] for i, p in enumerate(p_header)}
         graph = {t.ID: [t.parent] for t in self.tracks if not t.is_root}
         return data, properties, graph

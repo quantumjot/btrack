@@ -1,7 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack)](https://pepy.tech/project/btrack)
 
-<!-- [![PyPI - Downloads](https://img.shields.io/pypi/dm/btrack.svg)](https://pypistats.org/packages/btrack) -->
-
 # Bayesian Tracker (btrack) :microscope::computer:
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking,
@@ -103,8 +101,8 @@ BayesianTracker can be used simply as follows:
 import btrack
 from btrack.dataio import import_CSV
 
-# NOTE(arl):  This should be from your image segmentation code
-objects = import_CSV('/path/to/your/objects.csv)
+# NOTE(arl): This should be from your image segmentation code
+objects = import_CSV('/path/to/your/objects.csv')
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
@@ -121,7 +119,7 @@ with btrack.BayesianTracker() as tracker:
   # track them (in interactive mode)
   tracker.track_interactive(step_size=100)
 
-  # generate hypotheses and run the global optimiser
+  # generate hypotheses and run the global optimizer
   tracker.optimize()
 
   # get the tracks as a python list

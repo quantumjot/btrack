@@ -69,7 +69,7 @@
 
 // Python structure for external interface
 extern "C" struct PyTrackObject {
-  unsigned int ID;
+  unsigned long ID;
   double x;
   double y;
   double z;
@@ -124,7 +124,7 @@ class TrackObject
 
     // xyzt position, dummy flag and class label, note that the ID can be
     // negative, indicating a dummy object
-    int ID;
+    long ID;
     double x;
     double y;
     double z;

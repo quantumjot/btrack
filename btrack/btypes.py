@@ -47,7 +47,7 @@ class PyTrackObject(ctypes.Structure):
         probability: class label probabilities
     """
 
-    _fields_ = [('ID', ctypes.c_uint),
+    _fields_ = [('ID', ctypes.c_ulong),
                 ('x', ctypes.c_double),
                 ('y', ctypes.c_double),
                 ('z', ctypes.c_double),

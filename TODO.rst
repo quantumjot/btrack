@@ -30,6 +30,10 @@ Thanks
 Updates
 =======
 
+0.3.14
+------
+- Use long C type for object ID
+
 0.3.13
 ------
 - Added convenience function to convert Pandas or numpy arrays to PyTrackObject

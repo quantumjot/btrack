@@ -537,7 +537,7 @@ class BayesianTracker:
         h_array = np.array(selected_hypotheses, dtype='uint32')
         h_array = h_array[np.newaxis,...]
         self._lib.merge(self._engine, h_array, len(selected_hypotheses))
-        logger.info(f'Completed optimization with {self.n_tracks} tracks.')
+        logger.info(f'Completed optimization with {self.n_tracks} tracks')
 
         return optimised
 

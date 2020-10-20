@@ -270,14 +270,25 @@ def _export_HDF(filename: str,
                tracker,
                obj_type=None,
                filter_by: str = None):
-    """ export to HDF """
+    """Export to HDF."""
+
+    filename_noext, ext = os.path.splitext(filename)
+    if not ext == '.h5':
+        filename = filename_noext + '.h5'
+        logger.warning(f'Changing HDF filename to {filename}')
+
+
     with HDF5FileHandler(filename, read_write='a', obj_type=obj_type) as hdf:
+        # if there are no objects, write them out
+        if f'objects/{obj_type}' not in hdf._hdf:
+            hdf.write_objects(tracker)
+        # write the tracks
         hdf.write_tracks(tracker, f_expr=filter_by)
 
 
 
 def h5check_property_exists(property):
-    """ Wrapper for hdf handler to make sure a property exists """
+    """Wrapper for hdf handler to make sure a property exists."""
     def func(fn):
         @wraps(fn)
         def wrapped_handler_property(*args, **kwargs):
@@ -353,14 +364,14 @@ class HDF5FileHandler:
     def __init__(self,
                  filename: str,
                  read_write: str = 'r',
-                 object_type: str = 'obj_type_1'):
+                 obj_type: str = 'obj_type_1'):
 
         self._f_expr = None # DO NOT USE
         self._object_type = None
-        self.object_type = object_type
+        self.object_type = obj_type
 
         self.filename = filename
-        logger.info(f'Opening HDF file: {self.filename}')
+        logger.info(f'Opening HDF file: {self.filename}...')
         self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
 
@@ -387,13 +398,14 @@ class HDF5FileHandler:
     @object_type.setter
     def object_type(self, obj_type: str):
         if not obj_type.startswith('obj_type_'):
-            raise ValueError('Object type must start with ``obj_type_``.')
+            raise ValueError('Object type must start with ``obj_type_``')
         self._object_type = obj_type
 
 
     @property
     @h5check_property_exists('segmentation')
     def segmentation(self):
+        logger.info('Loading segmentation')
         return self._hdf['segmentation']['images'][:].astype(np.uint16)
 
     def write_segmentation(self, segmentation: np.ndarray):
@@ -445,8 +457,8 @@ class HDF5FileHandler:
 
         # sanity check that coordinates matches labels
         assert txyz.shape[0] == labels.shape[0]
-        logger.info(f'Loading {self.object_type} {txyz.shape} '
-                    f'({len(filtered_idx)} filtered: {f_expr})...')
+        logger.info(f'Loading objects/{self.object_type} {txyz.shape} '
+                    f'({len(filtered_idx)} filtered: {f_expr})')
 
         txyz_filtered = txyz[filtered_idx, :]
         labels_filtered = labels[filtered_idx, :]
@@ -468,6 +480,7 @@ class HDF5FileHandler:
         self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(self.object_type)
 
+
         n_objects = len(tracker.objects)
         n_frames = np.max([o.t for o in tracker.objects]) + 1
 
@@ -483,9 +496,12 @@ class HDF5FileHandler:
             fmap[t, 1] = np.max([fmap[t, 1], i])
         fmap[1:, 0] = fmap[:-1, 1]
 
+        logger.info(f'Writing objects/{self.object_type}')
         grp.create_dataset('coords', data=txyz, dtype='float32')
-        grp.create_dataset('labels', data=labels, dtype='float32')
         grp.create_dataset('map', data=fmap, dtype='uint32')
+
+        logger.info(f'Writing labels/{self.object_type}')
+        grp.create_dataset('labels', data=labels, dtype='float32')
 
 
     @property
@@ -493,7 +509,7 @@ class HDF5FileHandler:
     def tracks(self):
         """Return the tracks in the file."""
 
-        logger.info(f'Loading tracks: {self.object_type}...')
+        logger.info(f'Loading tracks/{self.object_type}')
         track_map = self._hdf['tracks'][self.object_type]['map'][:]
         track_refs = self._hdf['tracks'][self.object_type]['tracks'][:]
         lbep = self._hdf['tracks'][self.object_type]['LBEPR'][:]
@@ -552,7 +568,7 @@ class HDF5FileHandler:
 
         return tracks
 
-
+    @h5check_property_exists('objects')
     def write_tracks(self, tracker, f_expr=None):
         """Write tracks to HDF file."""
         if not tracker.tracks:
@@ -566,7 +582,7 @@ class HDF5FileHandler:
         # sanity check
         assert lbep_table.shape[0] == len(tracks)
 
-        logger.info(f'Writing tracks to HDF file: {self.filename}')
+        logger.info(f'Writing tracks/{self.object_type}')
         hdf_tracks = np.concatenate(tracks, axis=0)
 
         hdf_frame_map = np.zeros((len(tracks),2), dtype=np.int32)
@@ -579,11 +595,11 @@ class HDF5FileHandler:
         if 'tracks' not in self._hdf:
             self._hdf.create_group('tracks')
 
-        if self.obj_type in self._hdf['tracks']:
-            logger.warning(f'Removing {self.obj_type} from HDF file. ')
-            del self._hdf['tracks'][self.obj_type]
+        if self.object_type in self._hdf['tracks']:
+            logger.warning(f'Removing tracks/{self.object_type}.')
+            del self._hdf['tracks'][self.object_type]
 
-        grp = self._hdf['tracks'].create_group(self.obj_type)
+        grp = self._hdf['tracks'].create_group(self.object_type)
         grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')
         grp.create_dataset('map', data=hdf_frame_map, dtype='uint32')
 
@@ -596,17 +612,17 @@ class HDF5FileHandler:
 
         # write out dummies
         if dummies:
-            logger.info(f'Writing dummies to HDF file: {self.filename}')
-            o = self.object_types.index(self.obj_type) + 1
+            logger.info(f'Writing dummies/{self.object_type}')
+            o = self.object_types.index(self.object_type) + 1
             txyz = np.stack([[d.t, d.x, d.y, d.z, o] for d in dummies], axis=0)
             grp.create_dataset('dummies', data=txyz, dtype='float32')
 
         # write out the LBEP table
-        logger.info(f'Writing LBEPR to HDF file: {self.filename}')
+        logger.info(f'Writing LBEP/{self.object_type}')
         grp.create_dataset('LBEPR', data=lbep_table, dtype='int32')
 
         # write out cell fates
-        logger.info(f'Writing track fates to HDF file: {self.filename}')
+        logger.info(f'Writing fates/{self.object_type}')
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset('fates', data=fate_table, dtype='int32')
 
@@ -614,7 +630,7 @@ class HDF5FileHandler:
     @h5check_property_exists('tracks')
     def lbep(self):
         """Return the LBEP data."""
-        logger.info('Loading LBEPR tables...')
+        logger.info(f'Loading LBEP/{self.object_type}')
         return self._hdf['tracks'][self.obj_type]['LBEPR'][:]
 
 

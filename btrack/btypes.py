@@ -47,7 +47,7 @@ class PyTrackObject(ctypes.Structure):
         probability: class label probabilities
     """
 
-    _fields_ = [('ID', ctypes.c_ulong),
+    _fields_ = [('ID', ctypes.c_long),
                 ('x', ctypes.c_double),
                 ('y', ctypes.c_double),
                 ('z', ctypes.c_double),
@@ -385,6 +385,9 @@ class Tracklet:
     def t(self): return [o.t for o in self._data]
     @property
     def dummy(self): return [o.dummy for o in self._data]
+
+    @property
+    def refs(self): return [o.ID for o in self._data]
 
     @property
     def start(self): return self.t[0]

@@ -69,7 +69,7 @@
 
 // Python structure for external interface
 extern "C" struct PyTrackObject {
-  unsigned long ID;
+  long ID;
   double x;
   double y;
   double z;

@@ -41,6 +41,7 @@ logger = logging.getLogger('worker_process')
 
 class _PyTrackObjectFactory:
     def __init__(self):
+        raise DeprecationWarning('_PyTrackObjectFactory will be deprecated.')
         self.reset()
 
     def get(self, txyz, label=None, obj_type=0):
@@ -76,13 +77,12 @@ class _PyTrackObjectFactory:
         self._ID = 0
 
 # instatiate the factory
-ObjectFactory = _PyTrackObjectFactory()
+# ObjectFactory = _PyTrackObjectFactory()
 
 
 
 
-def localizations_to_objects(localizations,
-                             default_keys = constants.DEFAULT_OBJECT_KEYS):
+def localizations_to_objects(localizations):
 
     """ take a numpy array or pandas dataframe and convert to PyTrackObjects
 
@@ -100,12 +100,7 @@ def localizations_to_objects(localizations,
 
     # do we have a numpy array or pandas dataframe?
     if isinstance(localizations, np.ndarray):
-        assert localizations.ndim == 2
-        assert localizations.shape[1] >=3
-
-        n_features = localizations.shape[1]
-        keys = default_keys[:n_features]
-        objects_dict = {keys[i]: localizations[:, i] for i in range(n_features)}
+        return objects_from_array(localizations)
     else:
         try:
             objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
@@ -115,21 +110,44 @@ def localizations_to_objects(localizations,
 
     # how many objects are there
     n_objects = objects_dict['t'].shape[0]
+    objects_dict['ID'] = np.arange(n_objects)
 
+    return objects_from_dict(objects_dict)
+
+
+
+def objects_from_dict(objects_dict: dict):
+    """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
+    n_objects = int(objects_dict['t'].shape[0])
+
+    assert all([v.shape[0] == n_objects for k, v in objects_dict.items()])
+
     for i in range(n_objects):
         data = {k: v[i] for k, v in objects_dict.items()}
-        data.update({'ID': i})
         obj = btypes.PyTrackObject.from_dict(data)
         objects.append(obj)
-
     return objects
 
+def objects_from_array(objects_arr: np.ndarray,
+                       default_keys = constants.DEFAULT_OBJECT_KEYS):
+    """Construct PyTrackObjects from a numpy array"""
+    assert objects_arr.ndim == 2
+
+    n_features = objects_arr.shape[1]
+    assert n_features >= 3
+
+    n_objects = objects_arr.shape[0]
+
+    keys = default_keys[:n_features]
+    objects_dict = {keys[i]: objects_arr[:, i] for i in range(n_features)}
+    objects_dict['ID'] = np.arange(n_objects)
+    return objects_from_dict(objects_dict)
 
 
 
-def import_JSON(filename):
+def import_JSON(filename: str):
     """ generic JSON importer for localisations from other software """
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
@@ -143,7 +161,7 @@ def import_JSON(filename):
     return objects
 
 
-def import_CSV(filename):
+def import_CSV(filename: str):
     """ import from a CSV file
 
     CSV file should have one of the following formats:
@@ -253,8 +271,8 @@ def _export_HDF(filename: str,
                obj_type=None,
                filter_by: str = None):
     """ export to HDF """
-    with HDF5FileHandler(filename, read_write='a') as hdf:
-        hdf.write_tracks(tracker, obj_type=obj_type, f_expr=filter_by)
+    with HDF5FileHandler(filename, read_write='a', obj_type=obj_type) as hdf:
+        hdf.write_tracks(tracker, f_expr=filter_by)
 
 
 
@@ -275,7 +293,7 @@ def h5check_property_exists(property):
 
 
 class HDF5FileHandler:
-    """ HDF5FileHandler
+    """HDF5 File Handler.
 
     Generic HDF5 file hander for reading and writing datasets. This is
     inter-operable between segmentation, tracking and analysis code.
@@ -293,12 +311,13 @@ class HDF5FileHandler:
 
     Basic format of the HDF file is:
         segmentation/
-            images          - (J x h x w) uint8 images of the segmentation
+            images          - (J x (d) x h x w) uint16 segmentation
         objects/
             obj_type_1/
                 coords      - (I x 5) [t, x, y, z, object_type]
                 labels      - (I x D) [label, (softmax scores ...)]
                 map         - (J x 2) [start_index, end_index] -> coords array
+                properties  - (I x D) [property-0, ..., property-D]
             ...
         tracks/
             obj_type_1/
@@ -309,20 +328,41 @@ class HDF5FileHandler:
                 fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
-    Notes:
-        NOTE(arl): the final slice [:] reads the whole file in one go,
-        since we are unlikely to have more objects than memory and we
-        need to load them all anyway.
 
-        NOTE(arl): should dummies be moved to coords?
+    Parameters
+    ----------
+    segmentation : np.ndarray
+    objects : list [PyTrackObject]
+    filtered_objects  : np.ndarray
+    properties : np.ndarray
+    tracks : list [Tracklet]
+    lbep : np.ndarray
+
+    Methods
+    -------
+
+
+    Usage
+    -----
+
+    > with HDF5FileHandler('file.h5', 'r') as h:
+    >    objects = h.objects
+
     """
 
-    def __init__(self, filename, read_write='r'):
+    def __init__(self,
+                 filename: str,
+                 read_write: str = 'r',
+                 object_type: str = 'obj_type_1'):
+
+        self._f_expr = None # DO NOT USE
+        self._object_type = None
+        self.object_type = object_type
+
         self.filename = filename
         logger.info(f'Opening HDF file: {self.filename}')
         self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
-        self._f_expr = None # DO NOT USE
 
     @property
     def object_types(self):
@@ -339,67 +379,192 @@ class HDF5FileHandler:
         logger.info(f'Closing HDF file: {self.filename}')
         self._hdf.close()
 
+
+
+    @property
+    def object_type(self) -> str:
+        return self._object_type
+    @object_type.setter
+    def object_type(self, obj_type: str):
+        if not obj_type.startswith('obj_type_'):
+            raise ValueError('Object type must start with ``obj_type_``.')
+        self._object_type = obj_type
+
+
+    @property
+    @h5check_property_exists('segmentation')
+    def segmentation(self):
+        return self._hdf['segmentation']['images'][:].astype(np.uint16)
+
+    def write_segmentation(self, segmentation: np.ndarray):
+        """Write out the segmentation to an HDF file."""
+        # write the segmentation out
+        grp = self._hdf.create_group('segmentation')
+        grp.create_dataset(f'images',
+                           data=segmentation,
+                           dtype='uint16',
+                           compression='gzip',
+                           compression_opts=7)
+
     @property
     def objects(self):
-        """ Return the objects in the file """
+        """Return the objects in the file."""
         return self.filtered_objects()
 
     @h5check_property_exists('objects')
-    def filtered_objects(self, f_expr=None, obj_types=None):
+    def filtered_objects(self, f_expr=None):
         """ return a filtered list of objects based on metadata.
         f_expr should be of the format 'flag==1'
         """
 
-        objects = []
-        if obj_types is None:
-            obj_types = self.object_types
+        if self.object_type not in self.object_types:
+            raise ValueError(f'Object type {self.object_type} not recognized')
+
+        # read the whole dataset into memory
+        txyz = self._hdf['objects'][self.object_type]['coords'][:]
+        if 'labels' not in self._hdf['objects'][self.object_type]:
+            logger.warning('Labels missing from objects in HDF file')
+            labels = np.zeros((txyz.shape[0], 6))
         else:
-            assert(isinstance(obj_types, list))
-            assert(all([o in self.object_types for o in obj_types]))
+            labels = self._hdf['objects'][self.object_type]['labels'][:]
 
-        for ci, c in enumerate(obj_types):
-            # read the whole dataset into memory
-            txyz = self._hdf['objects'][c]['coords'][:]
-            if 'labels' not in self._hdf['objects'][c]:
-                logger.warning('Labels missing from objects in HDF file')
-                labels = np.zeros((txyz.shape[0], 6))
+        # note that this doesn't do much error checking at the moment
+        if f_expr is not None:
+            assert isinstance(f_expr, str)
+            pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
+            m = re.match(pattern, f_expr)
+            f_eval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
+
+            if m['name'] in self._hdf['objects'][self.object_type]:
+                data = self._hdf['objects'][self.object_type][m['name']][:]
+                filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
-                labels = self._hdf['objects'][c]['labels'][:]
-            idx = range(txyz.shape[0])      # default filtering uses all objects
+                logger.warning(f'Cannot filter objects by {m["name"]}')
+        else:
+            filtered_idx = range(txyz.shape[0]) # default filtering uses all
 
-            # note that this doesn't do much error checking at the moment
-            if f_expr is not None:
-                assert(isinstance(f_expr, str))
-                pattern = '(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
-                m = re.match(pattern, f_expr)
-                f_eval = f'x{m["op"]}{m["cmp"]}' # e.g. x > 10
+        # sanity check that coordinates matches labels
+        assert txyz.shape[0] == labels.shape[0]
+        logger.info(f'Loading {self.object_type} {txyz.shape} '
+                    f'({len(filtered_idx)} filtered: {f_expr})...')
 
-                if m['name'] in self._hdf['objects'][c]:
-                    data = self._hdf['objects'][c][m['name']][:]
-                    idx = [i for i, x in enumerate(data) if eval(f_eval)]
-                else:
-                    logger.warning(f'Cannot filter objects by {m["name"]}')
+        txyz_filtered = txyz[filtered_idx, :]
+        labels_filtered = labels[filtered_idx, :]
 
-            assert(txyz.shape[0] == labels.shape[0])
-            logger.info(f'Loading {c} {txyz.shape} ({len(idx)} filtered: {f_expr})...')
-            obj = [ObjectFactory.get(txyz[i,:], label=labels[i,:], obj_type=ci+1) for i in idx]
-            objects += obj
-        return objects
+        objects_dict = {'t': txyz_filtered[:, 0],
+                        'x': txyz_filtered[:, 1],
+                        'y': txyz_filtered[:, 2],
+                        'z': txyz_filtered[:, 3],
+                        'label': labels_filtered[:, 0],
+                        'ID': np.asarray(filtered_idx),}
 
-    def write_tracks(self, tracker, obj_type=None, f_expr=None):
-        """ Write tracks to HDF file """
+        return objects_from_dict(objects_dict)
+
+
+    def write_objects(self, tracker):
+        """Write objects to HDF file."""
+        #TODO(arl): make sure that the objects are ordered in time
+
+        self._hdf.create_group('objects')
+        grp = self._hdf['objects'].create_group(self.object_type)
+
+        n_objects = len(tracker.objects)
+        n_frames = np.max([o.t for o in tracker.objects]) + 1
+
+        txyz = np.zeros((n_objects, 5), dtype=np.float32)
+        labels = np.zeros((n_objects, 1), dtype=np.uint8)
+        fmap = np.zeros((n_frames, 2), dtype=np.uint32)
+
+        # convert the btrack objects into a numpy array
+        for i, obj in enumerate(tracker.objects):
+            txyz[i, :] = [obj.t, obj.x, obj.y, obj.z, 0]
+            labels[i, :] = obj.label
+            t = int(obj.t)
+            fmap[t, 1] = np.max([fmap[t, 1], i])
+        fmap[1:, 0] = fmap[:-1, 1]
+
+        grp.create_dataset('coords', data=txyz, dtype='float32')
+        grp.create_dataset('labels', data=labels, dtype='float32')
+        grp.create_dataset('map', data=fmap, dtype='uint32')
+
+
+    @property
+    @h5check_property_exists('tracks')
+    def tracks(self):
+        """Return the tracks in the file."""
+
+        logger.info(f'Loading tracks: {self.object_type}...')
+        track_map = self._hdf['tracks'][self.object_type]['map'][:]
+        track_refs = self._hdf['tracks'][self.object_type]['tracks'][:]
+        lbep = self._hdf['tracks'][self.object_type]['LBEPR'][:]
+        fates = self._hdf['tracks'][self.object_type]['fates'][:]
+
+        # if there are dummies, make new dummy objects
+        if 'dummies' in self._hdf['tracks'][self.object_type]:
+            dummies = self._hdf['tracks'][self.object_type]['dummies'][:]
+            dummy_obj = objects_from_array(dummies[:, :4])
+            for d in dummy_obj:
+                d.ID = -(d.ID+1)    # restore the -ve ID
+                d.dummy = True      # set the dummy flag to true
+
+        # TODO(arl): this needs to be stored in the HDF folder
+        if 'f_expr' in self._hdf['tracks'][self.object_type].attrs:
+            f_expr = self._hdf['tracks'][self.object_type].attrs['f_expr']
+        elif self._f_expr is not None:
+            f_expr = self._f_expr
+        else:
+            f_expr = None
+
+        obj = self.filtered_objects(f_expr=f_expr)
+
+        def _get_txyz(_ref):
+            if _ref>=0:
+                return obj[_ref]
+            return dummy_obj[abs(_ref)-1] # references are -ve for dummies
+
+        tracks = []
+        for i in range(track_map.shape[0]):
+            idx = slice(*track_map[i, :].tolist())
+            refs = track_refs[idx]
+            track = btypes.Tracklet(lbep[i, 0], list(map(_get_txyz, refs)))
+            track.parent = lbep[i, 3]    # set the parent and root of tree
+            track.root = lbep[i, 4]
+            if lbep.shape[1] > 5: track.generation = lbep[i, 5]
+            track.fate = constants.Fates(fates[i]) # restore the track fate
+            tracks.append(track)
+
+        # once we have all of the tracks, populate the children
+        to_update = {}
+        for track in tracks:
+            if not track.is_root:
+                parents = filter(lambda t: t.ID == track.parent, tracks)
+                for parent in parents:
+                    if parent not in to_update:
+                        to_update[parent] = []
+                    to_update[parent].append(track.ID)
+
+        # sanity check, can be removed at a later date
+        assert all([len(children)<=2 for children in to_update.values()])
+
+        # add the children to the parent
+        for track, children in to_update.items():
+            track.children = children
+
+        return tracks
+
+
+    def write_tracks(self, tracker, f_expr=None):
+        """Write tracks to HDF file."""
         if not tracker.tracks:
             logger.error(f'No tracks found when exporting to: {self.filename}')
             return
-
-        assert(obj_type in self.object_types)
 
         tracks = tracker.refs
         dummies = tracker.dummies
         lbep_table = np.stack(tracker.lbep, axis=0).astype(np.int32)
 
         # sanity check
-        assert(lbep_table.shape[0] == len(tracks))
+        assert lbep_table.shape[0] == len(tracks)
 
         logger.info(f'Writing tracks to HDF file: {self.filename}')
         hdf_tracks = np.concatenate(tracks, axis=0)
@@ -409,16 +574,16 @@ class HDF5FileHandler:
             if i > 0:
                 offset = hdf_frame_map[i-1,1]
             else: offset = 0
-            hdf_frame_map[i,:] = np.array([0, len(track)]) + offset
+            hdf_frame_map[i, :] = np.array([0, len(track)]) + offset
 
         if 'tracks' not in self._hdf:
             self._hdf.create_group('tracks')
 
-        if obj_type in self._hdf['tracks']:
-            logger.warning(f'Removing {obj_type} from HDF file. ')
-            del self._hdf['tracks'][obj_type]
+        if self.obj_type in self._hdf['tracks']:
+            logger.warning(f'Removing {self.obj_type} from HDF file. ')
+            del self._hdf['tracks'][self.obj_type]
 
-        grp = self._hdf['tracks'].create_group(obj_type)
+        grp = self._hdf['tracks'].create_group(self.obj_type)
         grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')
         grp.create_dataset('map', data=hdf_frame_map, dtype='uint32')
 
@@ -432,7 +597,7 @@ class HDF5FileHandler:
         # write out dummies
         if dummies:
             logger.info(f'Writing dummies to HDF file: {self.filename}')
-            o = self.object_types.index(obj_type) + 1
+            o = self.object_types.index(self.obj_type) + 1
             txyz = np.stack([[d.t, d.x, d.y, d.z, o] for d in dummies], axis=0)
             grp.create_dataset('dummies', data=txyz, dtype='float32')
 
@@ -447,82 +612,10 @@ class HDF5FileHandler:
 
     @property
     @h5check_property_exists('tracks')
-    def tracks(self):
-        """ Return the tracks in the file """
-        dummies, ret = [], []
-
-        # make an object factory
-        factory = _PyTrackObjectFactory()
-
-        for ci, c in enumerate(self._hdf['tracks'].keys()):
-            logger.info(f'Loading tracks: {c}...')
-            track_map = self._hdf['tracks'][c]['map'][:]
-            track_refs = self._hdf['tracks'][c]['tracks'][:]
-            lbep = self._hdf['tracks'][c]['LBEPR'][:]
-            fates = self._hdf['tracks'][c]['fates'][:]
-
-            # if there are dummies, make new dummy objects
-            if 'dummies' in self._hdf['tracks'][c]:
-                dummies = self._hdf['tracks'][c]['dummies'][:]
-                n_dummies = dummies.shape[0]
-                dobj = [factory.get(dummies[i,:]) for i in range(n_dummies)]
-                for d in dobj: d.dummy = True
-
-            # TODO(arl): this needs to be stored in the HDF folder
-            if 'f_expr' in self._hdf['tracks'][c].attrs:
-                f_expr = self._hdf['tracks'][c].attrs['f_expr']
-            elif self._f_expr is not None:
-                f_expr = self._f_expr
-            else:
-                f_expr = None
-
-            obj = self.filtered_objects(f_expr=f_expr, obj_types=[c])
-
-            def get_txyz(ref):
-                if ref>=0: return obj[ref]
-                return dobj[abs(ref)-1] # references are -ve for dummies
-
-            tracks = []
-            for i in range(track_map.shape[0]):
-                idx = slice(*track_map[i,:].tolist())
-                refs = track_refs[idx]
-                track = btypes.Tracklet(lbep[i,0], list(map(get_txyz, refs)))
-                track.parent = lbep[i,3]    # set the parent and root of tree
-                track.root = lbep[i,4]
-                if lbep.shape[1] > 5: track.generation = lbep[i,5]
-                track.fate = constants.Fates(fates[i]) # restore the track fate
-                tracks.append(track)
-
-            # once we have all of the tracks, populate the children
-            to_update = {}
-            for track in tracks:
-                if not track.is_root:
-                    parents = filter(lambda t: t.ID == track.parent, tracks)
-                    for parent in parents:
-                        if parent not in to_update:
-                            to_update[parent] = []
-                        to_update[parent].append(track.ID)
-
-            # sanity check, can be removed at a later date
-            assert all([len(children)<=2 for children in to_update.values()])
-
-            # add the children to the parent
-            for track, children in to_update.items():
-                track.children = children
-
-            ret.append(tracks)
-
-        return ret
-
-    @property
-    def segmentation(self):
-        raise NotImplementedError
-
-    @property
-    @h5check_property_exists('tracks')
     def lbep(self):
+        """Return the LBEP data."""
         logger.info('Loading LBEPR tables...')
-        return [self._hdf['tracks'][k]['LBEPR'][:] for k in self._hdf['tracks']]
+        return self._hdf['tracks'][self.obj_type]['LBEPR'][:]
 
 
 

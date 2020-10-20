@@ -397,9 +397,6 @@ class BayesianTracker:
         order here does not matter. This means several datasets can be
         concatenated easily, by running this a few times. """
 
-        # if not isinstance(objects, list):
-        #     objects = [objects]
-
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):

@@ -5,25 +5,28 @@ BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_version():
-    with open(os.path.join(BTRACK_PATH, "VERSION.txt") ,"r") as ver:
+    with open(os.path.join(BTRACK_PATH, "VERSION.txt"), "r") as ver:
         version = ver.readline()
     return version.rstrip()
 
+
 def get_version_tuple():
     return tuple([int(v) for v in get_version().split(".")])
+
 
 MAX_SEARCH_RADIUS = 100
 DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1
 DEBUG = True
-EXPORT_FORMATS = frozenset(['.json','.mat','.hdf5'])
-VOLUME = ((0,1024), (0,1024), (-100,100))
+EXPORT_FORMATS = frozenset(['.json', '.mat', '.hdf5'])
+VOLUME = ((0, 1024), (0, 1024), (-1e5, 1e5))
 HDF_CHUNK_CACHE = 100*1024*1024
 USER_MODEL_DIR = ""
 GLPK_OPTIONS = {}
 
-DEFAULT_OBJECT_KEYS = ['t','x','y','z','label']
+
+DEFAULT_OBJECT_KEYS = ['t', 'x', 'y', 'z', 'label']
 DEFAULT_EXPORT_PROPERTIES = ['ID','t','x','y','z','parent','root', 'state',
                              'generation','dummy']
 
@@ -41,6 +44,7 @@ class Errors(enum.Enum):
     PROB_NOT_ASSIGN_OUT_OF_RANGE = 908
     NOT_DEFINED = 909
     NO_ERROR = 910
+
 
 @enum.unique
 class Fates(enum.Enum):
@@ -61,6 +65,7 @@ class Fates(enum.Enum):
     DEAD = 666
     UNDEFINED = 999
 
+
 @enum.unique
 class States(enum.Enum):
     INTERPHASE = 0
@@ -70,6 +75,7 @@ class States(enum.Enum):
     APOPTOSIS = 4
     NULL = 5
     DUMMY = 99
+
 
 @enum.unique
 class BayesianUpdates(enum.Enum):

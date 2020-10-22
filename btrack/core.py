@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,14 +11,12 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
-import os
-import json
-import time
+
 import ctypes
 import logging
 import numpy as np
@@ -31,8 +29,6 @@ from . import libwrapper
 from .dataio import export_delegator, localizations_to_objects
 from .optimise import optimiser
 
-from datetime import datetime
-from collections import OrderedDict
 import itertools
 
 __version__ = constants.get_version()
@@ -43,16 +39,13 @@ logger = logging.getLogger('worker_process')
 # if we don't have any handlers, set one up
 if not logger.handlers:
     # configure stream handler
-    log_formatter = logging.Formatter('[%(levelname)s][%(asctime)s] %(message)s',
-        datefmt='%Y/%m/%d %I:%M:%S %p')
+    log_fmt = logging.Formatter('[%(levelname)s][%(asctime)s] %(message)s',
+                                datefmt='%Y/%m/%d %I:%M:%S %p')
     console_handler = logging.StreamHandler()
-    console_handler.setFormatter(log_formatter)
+    console_handler.setFormatter(log_fmt)
 
     logger.addHandler(console_handler)
     logger.setLevel(logging.DEBUG)
-
-
-
 
 
 class BayesianTracker:
@@ -166,27 +159,22 @@ class BayesianTracker:
         self._objects = []
         self._motion_model = None
         self._object_model = None
-        self._frame_range = [0,0]
+        self._frame_range = [0, 0]
         self.max_search_radius = max_search_radius
         self.return_kalman = False
-
-
 
     def __enter__(self):
         logger.info('Starting BayesianTracker session')
         return self
 
-
     def __exit__(self, exc_type, exc_value, traceback):
         logger.info('Ending BayesianTracker session')
-        self._lib.del_interface( self._engine )
-
+        self._lib.del_interface(self._engine)
 
     def configure_from_file(self, filename: str):
         """ Configure the tracker from a configuration file """
         config = utils.load_config(filename)
         self.configure(config)
-
 
     def configure(self, config: dict):
         """ Configure the tracker with a motion model, an object model and
@@ -200,27 +188,26 @@ class BayesianTracker:
         self.motion_model = config.get("MotionModel", None)
         self.object_model = config.get("ObjectModel", None)
         self.hypothesis_model = config.get("HypothesisModel", None)
-
         self._initialised = True
 
-
-    def __len__(self): return self.n_tracks
-
+    def __len__(self):
+        return self.n_tracks
 
     @property
     def max_search_radius(self):
         return self._max_search_radius
+
     @max_search_radius.setter
     def max_search_radius(self, max_search_radius: int):
         """ Set the maximum search radius for fast cost updates """
-        assert(max_search_radius>0.)
+        assert max_search_radius > 0.
         logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
         self._lib.max_search_radius(self._engine, max_search_radius)
-
 
     @property
     def update_method(self):
         return self._bayesian_update_method
+
     @update_method.setter
     def update_method(self, method):
         """ set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
@@ -229,25 +216,21 @@ class BayesianTracker:
         self._lib.set_update_mode(self._engine, method.value)
         self._bayesian_update_method = method
 
-
     @property
     def n_tracks(self):
         """ Return the number of tracks found """
-        return self._lib.size( self._engine )
-
+        return self._lib.size(self._engine)
 
     @property
     def n_dummies(self):
         """ Return the number of dummy objects (negative ID) """
         return len([d for d in itertools.chain.from_iterable(self.refs) if d<0])
 
-
     @property
     def tracks(self):
         """ Return a sorted list of tracks, default is to sort by increasing
         length """
         return [self[i] for i in range(self.n_tracks)]
-
 
     @property
     def refs(self):
@@ -259,60 +242,57 @@ class BayesianTracker:
             n = self._lib.track_length(self._engine, i)
 
             # set up some space for the output and  get the track data
-            refs = np.zeros((n,),dtype='int32')
+            refs = np.zeros((n,), dtype='int32')
             _ = self._lib.get_refs(self._engine, refs, i)
             tracks.append(refs.tolist())
 
         return tracks
 
-
     @property
     def dummies(self):
         """ Return a list of dummy objects """
-        return [self._lib.get_dummy(self._engine, -(i+1)) for i in range( self.n_dummies)]
-
+        return [self._lib.get_dummy(self._engine, -(i+1)) for i in range(self.n_dummies)]
 
     @property
     def lbep(self):
         """ Return an LBEP list
-        > L - a unique label of the track (label of markers, 16-bit positive)
-        > B - a zero-based temporal index of the frame in which the track begins
-        > E - a zero-based temporal index of the frame in which the track ends
-        > P - label of the parent track (0 is used when no parent is defined)
-        > R - label of the root track
-        > G - generational depth (from root)
+        L - a unique label of the track (label of markers, 16-bit positive)
+        B - a zero-based temporal index of the frame in which the track begins
+        E - a zero-based temporal index of the frame in which the track ends
+        P - label of the parent track (0 is used when no parent is defined)
+        R - label of the root track
+        G - generational depth (from root)
         """
         lbep = lambda t: (t.ID, t.start, t.stop, t.parent, t.root, t.generation)
         return [lbep(t) for t in self.tracks]
 
-
     def _sort(self, tracks):
         """ Return a sorted list of tracks """
-        return sorted(tracks, key=lambda t:len(t), reverse=True)
-
+        return sorted(tracks, key=lambda t: len(t), reverse=True)
 
     @property
     def volume(self):
         """ Return the imaging volume in the format xyzt. This is effectively
         the range of each dimension: [(xlo,xhi), ..., (zlo,zhi), (tlo,thi)]
         """
-        vol = np.zeros((3,2),dtype='float')
+        vol = np.zeros((3, 2), dtype='float')
         self._lib.get_volume(self._engine, vol)
-        return [tuple(vol[i,:].tolist()) for i in range(3)]+[self.frame_range]
+        return [tuple(vol[i, :].tolist()) for i in range(3)]+[self.frame_range]
+
     @volume.setter
     def volume(self, volume: tuple):
         """ Set the imaging volume """
         if not isinstance(volume, tuple):
             raise TypeError('Volume must be a tuple')
-        if len(volume) != 3 or any([len(v)!=2 for v in volume]):
+        if len(volume) != 3 or any([len(v) != 2 for v in volume]):
             raise ValueError('Volume must contain three tuples (xyz)')
         self._lib.set_volume(self._engine, np.array(volume, dtype='float64'))
         logger.info(f'Set volume to {volume}')
 
-
     @property
     def motion_model(self):
         return self._motion_model
+
     @motion_model.setter
     def motion_model(self, new_model):
         """ Set a new motion model. Must be of type MotionModel, either loaded
@@ -330,20 +310,20 @@ class BayesianTracker:
             model = new_model
         else:
             raise TypeError('Motion model needs to be defined in /models/ or'
-                'provided as a MotionModel object')
+                            'provided as a MotionModel object')
 
         self._motion_model = model
         logger.info(f'Loading motion model: {model.name}')
 
         # need to populate fields in the C++ library
-        self._lib.motion( self._engine, model.measurements, model.states, model.A,
-            model.H, model.P, model.Q, model.R, model.dt, model.accuracy,
-            model.max_lost, model.prob_not_assign )
-
+        self._lib.motion(self._engine, model.measurements, model.states,
+                         model.A, model.H, model.P, model.Q, model.R, model.dt,
+                         model.accuracy, model.max_lost, model.prob_not_assign)
 
     @property
     def object_model(self):
         return self._object_model
+
     @object_model.setter
     def object_model(self, new_model):
         """
@@ -365,19 +345,19 @@ class BayesianTracker:
             return
         else:
             raise TypeError('Object model needs to be defined in /models/ or'
-            'provided as a ObjectModel object')
+                            'provided as a ObjectModel object')
 
         self._object_model = model
         logger.info(f'Loading object model: {model.name}')
 
         # need to populate fields in the C++ library
-        self._lib.model( self._engine, model.states, model.emission,
-            model.transition, model.start )
-
+        self._lib.model(self._engine, model.states, model.emission,
+                        model.transition, model.start)
 
     @property
     def frame_range(self):
         return self._frame_range
+
     @frame_range.setter
     def frame_range(self, frame_range):
         if not isinstance(frame_range, tuple):
@@ -385,7 +365,6 @@ class BayesianTracker:
         if frame_range[1] < frame_range[0]:
             raise ValueError('Frame range must be low->high')
         self._frame_range = frame_range
-
 
     @property
     def objects(self):
@@ -400,16 +379,15 @@ class BayesianTracker:
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
-            obj.ID = idx + len(self._objects) # make sure ID tracks properly
+            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError('track_object must be a PyTrackObject')
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
-            ret = self._lib.append( self._engine, obj )
+            _ = self._lib.append(self._engine, obj)
 
         # store a copy of the list of objects
         self._objects += objects
-
 
     def _stats(self, info_ptr):
         """ Cast the info pointer back to an object """
@@ -418,7 +396,6 @@ class BayesianTracker:
             raise TypeError('Stats requires the pointer to the object')
 
         return info_ptr.contents
-
 
     def track(self):
         """ Run the actual tracking algorithm """
@@ -435,12 +412,11 @@ class BayesianTracker:
         stats = self._stats(ret)
 
         if not utils.log_error(stats.error):
-            logger.info(f('SUCCESS. Found {self.n_tracks} tracks in'
+            logger.info((f'SUCCESS. Found {self.n_tracks} tracks in'
                          f'{1+self._frame_range[1]} frames'))
 
         # can log the statistics as well
         utils.log_stats(stats.to_dict())
-
 
     def track_interactive(self, step_size: int = 100):
         """ Run the tracking in an interactive mode """
@@ -473,13 +449,11 @@ class BayesianTracker:
             logger.info((f' - Inserted {self.n_dummies} dummy objects to fill '
                          'tracking gaps'))
 
-
     def step(self, n_steps: int = 1):
         """ Run an iteration (or more) of the tracking. Mostly for
         interactive mode tracking """
         if not self._initialised: return None
         return self._stats(self._lib.step( self._engine, n_steps ))
-
 
     def hypotheses(self, params=None):
         """ Calculate and return hypotheses using the hypothesis engine """
@@ -493,7 +467,6 @@ class BayesianTracker:
         # now get all of the hypotheses
         h = [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
         return h
-
 
     def optimize(self, **kwargs): return self.optimise(**kwargs)
     def optimise(self,
@@ -540,7 +513,6 @@ class BayesianTracker:
         logger.info(f'Completed optimization with {self.n_tracks} tracks')
 
         return optimised
-
 
     def __getitem__(self, idx: int):
         """ Grab a track from the BayesianTracker object. """
@@ -604,7 +576,6 @@ class BayesianTracker:
         trk.kalman = np.hstack((kal_mu, kal_cov[:,1:], kal_pred[:,1:]))
         return trk
 
-
     def cleanup(self, sigma: float = 2.5):
         """ Clean up following tracking. Can be used to remove static objects
         and links that are greater than the maximum distance permitted """
@@ -615,19 +586,9 @@ class BayesianTracker:
         """ export tracks using the appropriate exporter """
         export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 
-
     def to_napari(self, ndim: int = 3):
         """ Return the data in a format for a napari tracks layer """
-        assert ndim in (2, 3)
-        t_header = ['ID','t'] + ['z','y','x'][-ndim:]
-        p_header = ['t','state','generation','root']
-        # ensure lexicographic ordering of tracks
-        ordered = sorted(list(self.tracks), key=lambda t: t.ID)
-        data = np.vstack([t.to_array(t_header) for t in ordered])
-        p_array = np.vstack([t.to_array(p_header) for t in ordered])
-        properties = {p: p_array[:,i] for i, p in enumerate(p_header)}
-        graph = {t.ID: [t.parent] for t in self.tracks if not t.is_root}
-        return data, properties, graph
+        return utils.tracks_to_napari(self.tracks, ndim)
 
 
 

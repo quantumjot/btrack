@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,17 +11,14 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
-import re
 import os
 import numpy as np
-import time
-import csv
 import json
 
 import logging
@@ -30,10 +27,6 @@ import logging
 from . import btypes
 from . import constants
 from .optimise import hypothesis
-
-from collections import OrderedDict
-from scipy.io import savemat
-
 
 
 # get the logger instance
@@ -211,14 +204,15 @@ def read_object_model(config):
         this could form part of a Python only object model.
 
         TODO(arl): More parsing of the data/reshaping arrays. Raise an
-        appropriate error if there is something wrong with the model definition.
+        appropriate error if there is something wrong with the model definition
     """
 
     m = config['ObjectModel']
-    if not m: return None
+    if not m:
+        return None
 
-    matrices = frozenset(['transition','emission','start'])
-    model = core.ObjectModel()
+    matrices = frozenset(['transition', 'emission', 'start'])
+    model = btypes.ObjectModel()
 
     if 'ObjectModel' not in list(config.keys()):
         raise ValueError('Not a valid object model file')
@@ -228,7 +222,7 @@ def read_object_model(config):
     model.states = m['states']
 
     for matrix in matrices:
-        m_data = np.matrix(m[matrix]['matrix'],dtype='float')
+        m_data = np.matrix(m[matrix]['matrix'], dtype='float')
         setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes
@@ -239,8 +233,8 @@ def read_object_model(config):
 
 def crop_volume(objects, volume=constants.VOLUME):
     """ Return a list of objects that fall within a certain volume """
-    axes = ['x','y','z','t']
-    within = lambda o: all([getattr(o, a)>=v[0] and getattr(o, a)<=v[1] for a,v in zip(axes, volume)])
+    axes = ['x', 'y', 'z', 't']
+    within = lambda o: all([getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in zip(axes, volume)])
     return [o for o in objects if within(o)]
 
 
@@ -254,7 +248,20 @@ def import_JSON(filename):
     raise DeprecationWarning('Use dataio.import_JSON instead')
 
 
-
+def tracks_to_napari(tracks: list, ndim: int = 3):
+    """Convert a list of Tracklets to napari format input."""
+    assert ndim in (2, 3)
+    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
+    t_header = ['ID', 't'] + ['z', 'y', 'x'][-ndim:]
+    p_header = ['t', 'state', 'generation', 'root']
+    # ensure lexicographic ordering of tracks
+    ordered = sorted(list(tracks), key=lambda t: t.ID)
+    data = np.vstack([t.to_array(t_header) for t in ordered])
+    p_array = np.vstack([t.to_array(p_header) for t in ordered])
+    properties = {p: p_array[:, i] for i, p in enumerate(p_header)}
+    graph = {t.ID: [t.parent] for t in tracks if not t.is_root}
+    print('called')
+    return data, properties, graph
 
 
 

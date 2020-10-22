@@ -260,7 +260,6 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
     p_array = np.vstack([t.to_array(p_header) for t in ordered])
     properties = {p: p_array[:, i] for i, p in enumerate(p_header)}
     graph = {t.ID: [t.parent] for t in tracks if not t.is_root}
-    print('called')
     return data, properties, graph
 
 

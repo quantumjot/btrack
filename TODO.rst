@@ -38,6 +38,7 @@ Updates
 - Deprecated `_PyTrackObjectFactory` for generating objects
 - Added `objects_from_dict` and `objects_from_array` convenience functions
 - Reformatted code with black/flake8
+- Added .github/workflow
 
 0.3.13
 ------

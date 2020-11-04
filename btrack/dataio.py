@@ -36,44 +36,7 @@ logger = logging.getLogger('worker_process')
 
 class _PyTrackObjectFactory:
     def __init__(self):
-        raise DeprecationWarning('_PyTrackObjectFactory will be deprecated.')
-        self.reset()
-
-    def get(self, txyz, label=None, obj_type=0):
-        """ get an instatiated object """
-        assert isinstance(txyz, np.ndarray)
-        assert txyz[0] >= 0.0  # assert that time is always positive!
-        if label is not None:
-            if isinstance(label, int):
-                class_label = label
-                probability = np.zeros((1,))
-            else:
-                class_label = label[0].astype(np.uint32)
-                probability = label[1:].astype(np.float32)
-        else:
-            class_label = constants.States.NULL.value
-            probability = np.zeros((1,))
-
-        new_object = btypes.PyTrackObject()
-        new_object.ID = self._ID
-        new_object.t = txyz[0].astype(np.uint32)
-        new_object.x = txyz[1].astype(np.float32)
-        new_object.y = txyz[2].astype(np.float32)
-        new_object.z = txyz[3].astype(np.float32)
-        new_object.dummy = False
-        new_object.label = class_label  # from the classifier
-        new_object.probability = probability
-        new_object.type = int(obj_type)
-
-        self._ID += 1
-        return new_object
-
-    def reset(self):
-        self._ID = 0
-
-
-# instatiate the factory
-# ObjectFactory = _PyTrackObjectFactory()
+        raise DeprecationWarning('_PyTrackObjectFactory has been deprecated.')
 
 
 def localizations_to_objects(localizations):

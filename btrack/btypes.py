@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,23 +11,18 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
+from collections import OrderedDict
+
 import numpy as np
 
-from . import utils
-from . import constants
-
-# from datetime import datetime
-from collections import OrderedDict
-import itertools
-
-
+from . import constants, utils
 
 
 class PyTrackObject(ctypes.Structure):
@@ -47,16 +42,18 @@ class PyTrackObject(ctypes.Structure):
         probability: class label probabilities
     """
 
-    _fields_ = [('ID', ctypes.c_long),
-                ('x', ctypes.c_double),
-                ('y', ctypes.c_double),
-                ('z', ctypes.c_double),
-                ('t', ctypes.c_uint),
-                ('dummy', ctypes.c_bool),
-                ('states', ctypes.c_uint),
-                ('label', ctypes.c_int),
-                ('prob', ctypes.c_double)]
-                # ('prob', ctypes.POINTER(ctypes.c_double))]
+    _fields_ = [
+        ("ID", ctypes.c_long),
+        ("x", ctypes.c_double),
+        ("y", ctypes.c_double),
+        ("z", ctypes.c_double),
+        ("t", ctypes.c_uint),
+        ("dummy", ctypes.c_bool),
+        ("states", ctypes.c_uint),
+        ("label", ctypes.c_int),
+        ("prob", ctypes.c_double),
+    ]
+    # ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
         super().__init__()
@@ -68,7 +65,6 @@ class PyTrackObject(ctypes.Structure):
 
         self._raw_probability = None
 
-
     @property
     def probability(self):
         return self._raw_probability
@@ -76,7 +72,7 @@ class PyTrackObject(ctypes.Structure):
     @probability.setter
     def probability(self, probability):
         if not isinstance(probability, np.ndarray):
-            raise TypeError('.probability should be a numpy array')
+            raise TypeError(".probability should be a numpy array")
         self._raw_probability = probability
 
     @property
@@ -96,7 +92,7 @@ class PyTrackObject(ctypes.Structure):
         for key in attr:
             try:
                 setattr(obj, key, properties[key])
-            except:
+            except ValueError:
                 setattr(obj, key, int(properties[key]))
         return obj
 
@@ -106,11 +102,13 @@ class PyTrackObject(ctypes.Structure):
     def _repr_html_(self):
         try:
             import pandas as pd
+
             return pd.DataFrame(self.to_dict(), index=[0]).to_html()
-        except:
-            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
-
-
+        except ImportError:
+            return (
+                "<b>Install pandas for nicer, tabular rendering.</b> <br>"
+                + self.__repr__()
+            )
 
 
 class PyTrackingInfo(ctypes.Structure):
@@ -136,22 +134,23 @@ class PyTrackingInfo(ctypes.Structure):
 
     """
 
-    _fields_ = [('error', ctypes.c_uint),
-                ('n_tracks', ctypes.c_uint),
-                ('n_active', ctypes.c_uint),
-                ('n_conflicts', ctypes.c_uint),
-                ('n_lost', ctypes.c_uint),
-                ('t_update_belief', ctypes.c_float),
-                ('t_update_link', ctypes.c_float),
-                ('t_total_time', ctypes.c_float),
-                ('p_link', ctypes.c_float),
-                ('p_lost', ctypes.c_float),
-                ('complete', ctypes.c_bool)]
-
+    _fields_ = [
+        ("error", ctypes.c_uint),
+        ("n_tracks", ctypes.c_uint),
+        ("n_active", ctypes.c_uint),
+        ("n_conflicts", ctypes.c_uint),
+        ("n_lost", ctypes.c_uint),
+        ("t_update_belief", ctypes.c_float),
+        ("t_update_link", ctypes.c_float),
+        ("t_total_time", ctypes.c_float),
+        ("p_link", ctypes.c_float),
+        ("p_lost", ctypes.c_float),
+        ("complete", ctypes.c_bool),
+    ]
 
     def to_dict(self):
         """ Return a dictionary of the statistics """
-        # TODO(arl): make this more readable by converting seconds, milliseconds
+        # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?
         stats = {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
         return stats
@@ -161,7 +160,6 @@ class PyTrackingInfo(ctypes.Structure):
         """ return the current status """
         no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
         return no_error and not self.complete
-
 
 
 class MotionModel:
@@ -175,7 +173,7 @@ class MotionModel:
 
     Args:
         name: a name identifier
-        measurements: the number of measurements of the system (typically x,y,z)
+        measurements: the number of measurements of the system (e.g. x,y,z)
         states: the number of states of the system (typically >=measurements)
         A: State transition matrix
         B: Control matrix
@@ -204,7 +202,7 @@ class MotionModel:
     """
 
     def __init__(self):
-        self.name = 'Default'
+        self.name = "Default"
         self.A = None
         self.H = None
         self.P = None
@@ -213,7 +211,7 @@ class MotionModel:
         self.measurements = None
         self.states = None
         self.dt = 1
-        self.accuracy = 2.
+        self.accuracy = 2.0
         self.max_lost = constants.MAX_LOST
         self.prob_not_assign = constants.PROB_NOT_ASSIGN
 
@@ -237,30 +235,35 @@ class MotionModel:
         s = self.states
         m = self.measurements
 
-        # if we have defined a model, restructure matrices to the correct shapes
+        # if we defined a model, restructure matrices to the correct shapes
         # do some parsing to check that the model is specified correctly
         if s and m:
-            shapes = {'A':(s,s), 'H':(m,s), 'P':(s,s), 'R':(m,m)}
+            shapes = {"A": (s, s), "H": (m, s), "P": (s, s), "R": (m, m)}
             for m_name in shapes:
                 try:
                     m_array = getattr(self, m_name)
-                    r_matrix = np.reshape(m_array, shapes[m_name], order='C')
+                    r_matrix = np.reshape(m_array, shapes[m_name], order="C")
                 except ValueError:
-                    raise ValueError('Matrx {0:s} is incorrecly specified. '
-                        '({1:d} entries for {2:d}x{3:d} matrix.)'.format(m_name,
-                        len(m_array), shapes[m_name][0],
-                        shapes[m_name][1]))
+                    raise ValueError(
+                        "Matrx {0:s} is incorrecly specified. "
+                        "({1:d} entries for {2:d}x{3:d} matrix.)".format(
+                            m_name,
+                            len(m_array),
+                            shapes[m_name][0],
+                            shapes[m_name][1],
+                        )
+                    )
 
                 setattr(self, m_name, r_matrix)
         else:
-            raise ValueError('Cannot reshape matrices as MotionModel is '
-                            'uninitialised')
+            raise ValueError(
+                "Cannot reshape matrices as MotionModel is " "uninitialised"
+            )
 
     @staticmethod
     def load(filename):
         """ Load a model from file """
         return utils.read_motion_model(filename)
-
 
 
 class ObjectModel:
@@ -276,6 +279,7 @@ class ObjectModel:
         start: initial probabilities
 
     """
+
     def __init__(self):
         self.emission = None
         self.transition = None
@@ -293,17 +297,17 @@ class ObjectModel:
                 Eigen::Matrix<double, s, 1> start;
         """
         if not self.states:
-            raise ValueError('Cannot reshape matrices as ObjectModel is '
-                            'uninitialised')
+            raise ValueError(
+                "Cannot reshape matrices as ObjectModel is " "uninitialised"
+            )
         s = self.states
-        self.emission = np.reshape(self.emission, (s,s), order='C')
-        self.transition = np.reshape(self.transition, (s,s), order='C')
+        self.emission = np.reshape(self.emission, (s, s), order="C")
+        self.transition = np.reshape(self.transition, (s, s), order="C")
 
     @staticmethod
     def load(filename):
         """ Load a model from file """
         return utils.read_object_model(filename)
-
 
 
 class Tracklet:
@@ -324,9 +328,6 @@ class Tracklet:
 
     Members:
         __len__: length of the trajectory in frames (including interpolated)
-        lost: whether the track was lost during tracking
-        merge: a merging function to stitch together two tracks
-        labeller: a mapping function from an integer to another label type (str)
 
     Properties:
         x: x position
@@ -342,12 +343,14 @@ class Tracklet:
 
     """
 
-    def __init__(self,
-                 ID: int,
-                 data: list,
-                 parent=None,
-                 children=[],
-                 fate=constants.Fates.UNDEFINED):
+    def __init__(
+        self,
+        ID: int,
+        data: list,
+        parent=None,
+        children=[],
+        fate=constants.Fates.UNDEFINED,
+    ):
 
         assert all([isinstance(o, PyTrackObject) for o in data])
 
@@ -371,28 +374,45 @@ class Tracklet:
     def _repr_html_(self):
         try:
             import pandas as pd
+
             return pd.DataFrame(self.to_dict()).to_html()
-        except:
-            return "<b>Install pandas for nicer, tabular rendering in Jupyter</b> <br>" + self.__repr__()
+        except ImportError:
+            return (
+                "<b>Install pandas for nicer, tabular rendering.</b> <br>"
+                + self.__repr__()
+            )
 
     @property
-    def x(self): return [o.x for o in self._data]
-    @property
-    def y(self): return [o.y for o in self._data]
-    @property
-    def z(self): return [o.z for o in self._data]
-    @property
-    def t(self): return [o.t for o in self._data]
-    @property
-    def dummy(self): return [o.dummy for o in self._data]
+    def x(self):
+        return [o.x for o in self._data]
 
     @property
-    def refs(self): return [o.ID for o in self._data]
+    def y(self):
+        return [o.y for o in self._data]
 
     @property
-    def start(self): return self.t[0]
+    def z(self):
+        return [o.z for o in self._data]
+
     @property
-    def stop(self): return self.t[-1]
+    def t(self):
+        return [o.t for o in self._data]
+
+    @property
+    def dummy(self):
+        return [o.dummy for o in self._data]
+
+    @property
+    def refs(self):
+        return [o.ID for o in self._data]
+
+    @property
+    def start(self):
+        return self.t[0]
+
+    @property
+    def stop(self):
+        return self.t[-1]
 
     @property
     def label(self):
@@ -408,32 +428,36 @@ class Tracklet:
 
     @property
     def is_root(self) -> bool:
-        return self.parent == 0 or self.parent == None or self.parent == self.ID
+        return (
+            self.parent == 0 or self.parent is None or self.parent == self.ID
+        )
 
     @property
     def is_leaf(self) -> bool:
         return not self.children
 
     @property
-    def kalman(self): return self._kalman
+    def kalman(self):
+        return self._kalman
+
     @kalman.setter
     def kalman(self, data):
-        assert(isinstance(data, np.ndarray))
+        assert isinstance(data, np.ndarray)
         self._kalman = data
 
     def mu(self, index):
         """ Return the Kalman filter mu. Note that we are only returning the mu
          for the positions (e.g. 3x1) """
-        return np.matrix(self.kalman[index,1:4]).reshape(3,1)
+        return np.matrix(self.kalman[index, 1:4]).reshape(3, 1)
 
     def covar(self, index):
         """ Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3) """
-        return np.matrix(self.kalman[index,4:13]).reshape(3,3)
+        return np.matrix(self.kalman[index, 4:13]).reshape(3, 3)
 
     def predicted(self, index):
         """ Return the motion model prediction for the given timestep. """
-        return np.matrix(self.kalman[index,13:]).reshape(3,1)
+        return np.matrix(self.kalman[index, 13:]).reshape(3, 1)
 
     def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
         """ Return a dictionary of the tracklet which can be used for JSON
@@ -448,14 +472,14 @@ class Tracklet:
 
         tmp_track = np.zeros((len(self), len(properties)), dtype=np.float32)
         for i, property in enumerate(properties):
-            tmp_track[:,i] = getattr(self, property)
+            tmp_track[:, i] = getattr(self, property)
         return tmp_track
 
     def in_frame(self, frame):
         """ Return true or false as to whether the track is in the frame """
-        return self.t[0]<=frame and self.t[-1]>=frame
+        return self.t[0] <= frame and self.t[-1] >= frame
 
     def trim(self, frame, tail=75):
         """ Trim the tracklet and return one with the trimmed data """
-        d = [o for o in self._data if o.t<=frame and o.t>=frame-tail]
+        d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)

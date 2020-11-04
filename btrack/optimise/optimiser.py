@@ -225,7 +225,3 @@ class TrackOptimiser:
 
         logger.info(f'Optimization complete. (Solution: {status})')
         return results
-
-
-if __name__ == '__main__':
-    pass

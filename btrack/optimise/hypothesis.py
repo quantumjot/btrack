@@ -162,7 +162,3 @@ def read_hypothesis_model(config):
     h_params.hypotheses_to_generate = int(h_bin[::-1], 2)
 
     return h_params
-
-
-if __name__ == '__main__':
-    pass

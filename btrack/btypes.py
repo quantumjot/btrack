@@ -94,8 +94,6 @@ class PyTrackObject(ctypes.Structure):
                 setattr(obj, key, properties[key])
             except TypeError:
                 setattr(obj, key, int(properties[key]))
-            finally:
-                raise ValueError("Object parameter type not understood")
         return obj
 
     def __repr__(self):

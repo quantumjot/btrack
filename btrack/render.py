@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,25 +11,23 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
+
 import re
-import os
+from itertools import combinations, product
 
-import numpy as np
-import matplotlib.pyplot as plt
-
-from matplotlib.collections import LineCollection
 import matplotlib.patheffects as PathEffects
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-from itertools import product, combinations
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.axes import Axes
+from matplotlib.collections import LineCollection
+from mpl_toolkits.mplot3d.art3d import Line3DCollection
 
-from . import constants
 
 def _draw_cube(ax, box):
     """ draw_cube
@@ -46,12 +44,13 @@ def _draw_cube(ax, box):
     if not isinstance(ax, Axes):
         raise TypeError('ax argument must be a matpotlib axis')
 
-    edges = combinations(np.array(list(product(box[0],box[1],box[2]))), 2)
+    edges = combinations(np.array(list(product(box[0], box[1], box[2]))), 2)
 
     for s, e in edges:
-        if any([np.sum(np.abs(s-e))==box[d][1]-box[d][0] for d in range(3)]):
-            ax.plot(*list(zip(s,e)), linestyle=':', color='b')
-
+        if any(
+            [np.sum(np.abs(s - e)) == box[d][1] - box[d][0] for d in range(3)]
+        ):
+            ax.plot(*list(zip(s, e)), linestyle=':', color='b')
 
 
 def _check_plot_order(order):
@@ -74,30 +73,32 @@ def _check_plot_order(order):
     # check that the string contains plottable axes
     order_ok = not bool(re.compile(r'[^xyzt]').search(order))
     if not order_ok:
-        raise ValueError('Order string is incorrectly specified: {0:s}'
-                        '. Should contain one of xyzt.'.format(order))
+        raise ValueError(
+            'Order string is incorrectly specified: {0:s}'
+            '. Should contain one of xyzt.'.format(order)
+        )
 
     # check that we have the correct number of dimensions
     DIMS = len(order)
-    if DIMS<2 or DIMS>3:
+    if DIMS < 2 or DIMS > 3:
         raise ValueError('Plot dimensions must be 2D or 3D.')
 
     return DIMS
 
 
-
-def plot_tracks(tracks,
-                agents=[],
-                lw=1.,
-                color_by_type = False,
-                terminii=False,
-                tail=None,
-                box=None,
-                order='xyz',
-                kalman=False,
-                cmap=plt.get_cmap('viridis'),
-                labels=False,
-                title='BayesianTracker output'):
+def plot_tracks(
+    tracks,
+    agents=[],
+    lw=1.0,
+    terminii=False,
+    tail=None,
+    box=None,
+    order='xyz',
+    kalman=False,
+    cmap=plt.get_cmap('viridis'),
+    labels=False,
+    title='BayesianTracker output',
+):
     """ plot_tracks
 
     Plot tracks using matplotlib/matplotlib3d. Uses linecollections to speed up
@@ -112,7 +113,6 @@ def plot_tracks(tracks,
         terminii: bool to plot markers at the start and end of tracks
         kalman: plot the output of the kalman filter
         labels: bool to plot track IDs as labels
-        color_by_type: bool to plot track types in different colours
 
     Returns:
         None
@@ -125,7 +125,7 @@ def plot_tracks(tracks,
     """
     DIMS = _check_plot_order(order)
 
-    fig = plt.figure(figsize=(16,16))
+    fig = plt.figure(figsize=(16, 16))
 
     # set up fiddly plot functions
     if DIMS == 3:
@@ -133,17 +133,14 @@ def plot_tracks(tracks,
     else:
         ax = fig.add_subplot(111)
 
-    # if the color by type flag is set, partition the tracks according to type:
-    if color_by_type:
-        track_types = [t.type for t in tracks]
-
-
     # use a color map
-    colors_rgb = [cmap(int(i)) for i in np.linspace(0,255,16)]
-    p_args = {'colors_rgb':colors_rgb, 'order':order, 'labels':labels, 'lw':lw}
-
-    # render the agents
-    # _render_agents(ax, agents, **p_args)
+    colors_rgb = [cmap(int(i)) for i in np.linspace(0, 255, 16)]
+    p_args = {
+        'colors_rgb': colors_rgb,
+        'order': order,
+        'labels': labels,
+        'lw': lw,
+    }
 
     # render the tracks
     _render_tracks(ax, tracks, **p_args)
@@ -167,9 +164,16 @@ def plot_tracks(tracks,
     plt.show()
 
 
-
-def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
-                   terminii=False, lw=1., use_alpha=False):
+def _render_tracks(
+    ax,
+    tracks,
+    colors_rgb=[],
+    order='xyz',
+    labels=False,
+    terminii=False,
+    lw=1.0,
+    use_alpha=False,
+):
     """ render_tracks
 
     Render the tracks on a given set of axes using matplotlib/matplotlib3d.
@@ -191,11 +195,12 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
 
     for track in tracks:
 
-        if len(track) < 2: continue
+        if len(track) < 2:
+            continue
 
         p_order = [getattr(track, order[i]) for i in range(DIMS)]
         segments = list(zip(*p_order))
-        t_color = colors_rgb[track.ID % (len(colors_rgb)-1)]
+        t_color = colors_rgb[track.ID % (len(colors_rgb) - 1)]
 
         lines.append(segments)
         clrs.append(t_color)
@@ -206,21 +211,22 @@ def _render_tracks(ax, tracks, colors_rgb=[], order='xyz', labels=False,
             l_args = [getattr(track, order[i])[-1] for i in range(DIMS)]
             l_args = l_args + [str(track.ID), None]
             # plot the text label with an outline
-            ax.text(*l_args, color='k',
-                path_effects=[PathEffects.withStroke(linewidth=0.5,
-                foreground=t_color)])
+            ax.text(
+                *l_args,
+                color='k',
+                path_effects=[
+                    PathEffects.withStroke(linewidth=0.5, foreground=t_color)
+                ],
+            )
 
         # TODO(arl): add the terminus plotting
-        if terminii: pass
+        if terminii:
+            pass
 
     lc = lineplot(lines, clrs)
     lc.set_linewidth(lw)
 
     addline(ax, lc)
-
-
-
-
 
 
 if __name__ == "__main__":

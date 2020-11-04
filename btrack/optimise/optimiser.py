@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,30 +11,34 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
-from . import hypothesis
 
-from btrack.constants import Fates, GLPK_OPTIONS
-
-from cvxopt.glpk import ilp
 from cvxopt import matrix, spmatrix
+from cvxopt.glpk import ilp
+
+from btrack.constants import GLPK_OPTIONS, Fates
 
 # get the logger instance
 logger = logging.getLogger('worker_process')
 
-INIT_FATES = (Fates.INITIALIZE,
-              Fates.INITIALIZE_BORDER,
-              Fates.INITIALIZE_FRONT,
-              Fates.INITIALIZE_LAZY)
-TERM_FATES = (Fates.TERMINATE,
-              Fates.TERMINATE_BORDER,
-              Fates.TERMINATE_BACK,
-              Fates.TERMINATE_LAZY)
+INIT_FATES = (
+    Fates.INITIALIZE,
+    Fates.INITIALIZE_BORDER,
+    Fates.INITIALIZE_FRONT,
+    Fates.INITIALIZE_LAZY,
+)
+TERM_FATES = (
+    Fates.TERMINATE,
+    Fates.TERMINATE_BORDER,
+    Fates.TERMINATE_BACK,
+    Fates.TERMINATE_LAZY,
+)
+
 
 class TrackOptimiser:
     """ TrackOptimiser
@@ -45,7 +49,7 @@ class TrackOptimiser:
 
     General types of linkage error to resolve:
         Track lost at periphery -> Terminate the track
-        Track lost briefly, but same state -> Link tracklets together by merging
+        Track lost briefly, same state -> Link tracklets together by merging
         Object splitting (eg cell division) -> Do not merge, but create graph
 
     The algorithm proceeds as follows:
@@ -54,7 +58,7 @@ class TrackOptimiser:
         3. Merge/'link' trajectories
         4. Assign a 'fate' or optimal hypothesis to each trajectory
 
-    The global optimisation utilises integer optimisation from the GLPK library.
+    The global optimisation utilises integer optimisation from the GLPK library
     Takes in the list of hypotheses and formulates as a mixed integer linear
     programming problem.  Then attempts to use GLPK to solve the association
     problem, returns a list of hypotheses to act upon.
@@ -95,21 +99,21 @@ class TrackOptimiser:
         Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
     """
 
-    def __init__(self,
-                 options: dict = GLPK_OPTIONS):
+    def __init__(self, options: dict = GLPK_OPTIONS):
         self._hypotheses = []
-        self.options = options      # TODO(arl): do some option parsing?
+        self.options = options  # TODO(arl): do some option parsing?
 
     @property
     def hypotheses(self):
         return self._hypotheses
+
     @hypotheses.setter
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
     def optimise(self):
         """
-        We set up a constraints matrix, A in this manner: (num_hypotheses x 2N).
+        We set up a constraints matrix, A in this manner: (num_hypotheses x 2N)
         Rho is the log probability of accepting the hypothesis. x is the
         integer set of hypotheses selected.
 
@@ -122,7 +126,8 @@ class TrackOptimiser:
             logger.info(f'Using GLPK options: {self.options}...')
 
         # anon function to renumber track ID from C++
-        trk_idx = lambda h: int(h)-1
+        def trk_idx(_h):
+            return int(_h) - 1
 
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
@@ -130,8 +135,8 @@ class TrackOptimiser:
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...
-        A = spmatrix([], [], [], (2*N, n_hypotheses), 'd')
-        rho = matrix(0., (n_hypotheses, 1), 'd')
+        A = spmatrix([], [], [], (2 * N, n_hypotheses), 'd')
+        rho = matrix(0.0, (n_hypotheses, 1), 'd')
 
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
@@ -143,27 +148,27 @@ class TrackOptimiser:
             if h.type == Fates.FALSE_POSITIVE:
                 # is this a false positive?
                 trk = trk_idx(h.ID)
-                A[trk,counter] = 1
-                A[N+trk,counter] = 1
+                A[trk, counter] = 1
+                A[N + trk, counter] = 1
                 continue
 
             elif h.type in INIT_FATES:
                 # an initialisation, therefore we only present this in the
                 # second half of the A matrix
                 trk = trk_idx(h.ID)
-                A[N+trk,counter] = 1
+                A[N + trk, counter] = 1
                 continue
 
             elif h.type in TERM_FATES:
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
-                A[trk,counter] = 1
+                A[trk, counter] = 1
                 continue
 
             elif h.type == Fates.APOPTOSIS:
                 # an apoptosis event, entry in first half only
                 trk = trk_idx(h.ID)
-                A[trk,counter] = 1
+                A[trk, counter] = 1
                 # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
                 continue
 
@@ -171,8 +176,8 @@ class TrackOptimiser:
                 # a linkage event
                 trk_i = trk_idx(h.ID)
                 trk_j = trk_idx(h.link_ID)
-                A[trk_i,counter] = 1
-                A[N+trk_j,counter] = 1
+                A[trk_i, counter] = 1
+                A[N + trk_j, counter] = 1
                 continue
 
             elif h.type == Fates.DIVIDE:
@@ -180,9 +185,9 @@ class TrackOptimiser:
                 trk = trk_idx(h.ID)
                 child_one = trk_idx(h.child_one_ID)
                 child_two = trk_idx(h.child_two_ID)
-                A[trk,counter] = 1
-                A[N+child_one,counter] = 1
-                A[N+child_two,counter] = 1
+                A[trk, counter] = 1
+                A[N + child_one, counter] = 1
+                A[N + child_two, counter] = 1
                 continue
 
             elif h.type == Fates.MERGE:
@@ -190,9 +195,9 @@ class TrackOptimiser:
                 trk = trk_idx(h.ID)
                 parent_one = trk_idx(h.parent_one_ID)
                 parent_two = trk_idx(h.parent_two_ID)
-                A[N+trk,counter] = 1
-                A[parent_one,counter] = 1
-                A[parent_two,counter] = 1
+                A[N + trk, counter] = 1
+                A[parent_one, counter] = 1
+                A[parent_two, counter] = 1
                 continue
 
             else:
@@ -201,14 +206,14 @@ class TrackOptimiser:
         logger.info('Optimizing...')
 
         # now set up the ILP solver
-        G = spmatrix([], [], [], (2*N, n_hypotheses), 'd')
-        h = matrix(0., (2*N,1), 'd')      # NOTE h cannot be a sparse matrix
-        I = set()                         # empty set of x which are integer
-        B = set(range(n_hypotheses))      # signifies all are binary in x
-        b = matrix(1., (2*N,1), 'd')
+        G = spmatrix([], [], [], (2 * N, n_hypotheses), 'd')
+        h = matrix(0.0, (2 * N, 1), 'd')  # NOTE h cannot be a sparse matrix
+        Ix = set()  # empty set of x which are integer
+        B = set(range(n_hypotheses))  # signifies all are binary in x
+        b = matrix(1.0, (2 * N, 1), 'd')
 
         # now try to solve it!!!
-        status, x = ilp(-rho, -G, h, A, b, I, B, options=self.options)
+        status, x = ilp(-rho, -G, h, A, b, Ix, B, options=self.options)
 
         # log the warning if not optimal solution
         if status != 'optimal':
@@ -216,7 +221,7 @@ class TrackOptimiser:
             return []
 
         # return only the selected hypotheses
-        results = [i for i,h in enumerate(self.hypotheses) if x[i]>0]
+        results = [i for i, h in enumerate(self.hypotheses) if x[i] > 0]
 
         logger.info(f'Optimization complete. (Solution: {status})')
         return results

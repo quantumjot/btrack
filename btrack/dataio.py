@@ -40,7 +40,6 @@ class _PyTrackObjectFactory:
 
 
 def localizations_to_objects(localizations):
-
     """ take a numpy array or pandas dataframe and convert to PyTrackObjects
 
     Params:

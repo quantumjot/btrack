@@ -645,14 +645,6 @@ class BayesianTracker:
         trk.kalman = np.hstack((kal_mu, kal_cov[:, 1:], kal_pred[:, 1:]))
         return trk
 
-    def cleanup(self, sigma: float = 2.5):
-        """ Clean up following tracking. Can be used to remove static objects
-        and links that are greater than the maximum distance permitted """
-        dynamic_track = (
-            lambda trk: (np.std(trk.x) + np.std(trk.y)) * 0.5 > sigma
-        )
-        return [t for t in self.tracks if len(t) > 1 and dynamic_track(t)]
-
     def export(self, filename: str, obj_type=None, filter_by=None):
         """ export tracks using the appropriate exporter """
         export_delegator(

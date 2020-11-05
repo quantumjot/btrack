@@ -30,13 +30,15 @@ Thanks
 Updates
 =======
 
-0.3.14
+0.4.0
 ------
 - Use long C type for object ID
 - Refactored HDF5FileHandler for improved loading/saving
 - Added `refs` property to `Tracklets` to enable indexing to original objects
 - Deprecated `_PyTrackObjectFactory` for generating objects
 - Added `objects_from_dict` and `objects_from_array` convenience functions
+- Reformatted code with black/flake8
+- Added .github/workflow
 
 0.3.13
 ------

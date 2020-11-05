@@ -1,5 +1,5 @@
-import os
 import enum
+import os
 
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -19,16 +19,26 @@ DEFAULT_LOW_PROBABILITY = -1e5
 MAX_LOST = 5
 PROB_NOT_ASSIGN = 0.1
 DEBUG = True
-EXPORT_FORMATS = frozenset(['.json', '.mat', '.hdf5'])
+EXPORT_FORMATS = frozenset([".json", ".mat", ".hdf5"])
 VOLUME = ((0, 1024), (0, 1024), (-1e5, 1e5))
-HDF_CHUNK_CACHE = 100*1024*1024
+HDF_CHUNK_CACHE = 100 * 1024 * 1024
 USER_MODEL_DIR = ""
 GLPK_OPTIONS = {}
 
 
-DEFAULT_OBJECT_KEYS = ['t', 'x', 'y', 'z', 'label']
-DEFAULT_EXPORT_PROPERTIES = ['ID','t','x','y','z','parent','root', 'state',
-                             'generation','dummy']
+DEFAULT_OBJECT_KEYS = ["t", "x", "y", "z", "label"]
+DEFAULT_EXPORT_PROPERTIES = [
+    "ID",
+    "t",
+    "x",
+    "y",
+    "z",
+    "parent",
+    "root",
+    "state",
+    "generation",
+    "dummy",
+]
 
 
 @enum.unique

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 # Name:     BayesianTracker
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
@@ -11,26 +11,22 @@
 # License:  See LICENSE.md
 #
 # Created:  14/08/2014
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
-import os
-import platform
 import ctypes
 import logging
+import os
+import platform
+
 import numpy as np
 
-from . import utils
-
+from .btypes import PyTrackingInfo, PyTrackObject
 from .constants import BTRACK_PATH
-from .btypes import PyTrackObject
-from .btypes import PyTrackingInfo
 from .optimise import hypothesis
-
-
 
 # get the logger instance
 logger = logging.getLogger('worker_process')
@@ -40,31 +36,43 @@ def numpy_pointer_decorator(func):
     """ simple decorator for numpy ctypes pointers """
     return func()
 
+
 @numpy_pointer_decorator
 def np_dbl_p():
     """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.double, ndim=2, flags='C_CONTIGUOUS')
+    return np.ctypeslib.ndpointer(
+        dtype=np.double, ndim=2, flags='C_CONTIGUOUS'
+    )
+
 
 @numpy_pointer_decorator
 def np_dbl_pc():
     """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.double, ndim=2, flags='F_CONTIGUOUS')
+    return np.ctypeslib.ndpointer(
+        dtype=np.double, ndim=2, flags='F_CONTIGUOUS'
+    )
+
 
 @numpy_pointer_decorator
 def np_uint_p():
     """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS')
+    return np.ctypeslib.ndpointer(
+        dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS'
+    )
+
 
 @numpy_pointer_decorator
 def np_int_p():
     """ Temporary function. Will remove in final release """
     return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags='C_CONTIGUOUS')
 
+
 @numpy_pointer_decorator
 def np_int_vec_p():
     """ Temporary function. Will remove in final release """
-    return np.ctypeslib.ndpointer(dtype=np.int32, ndim=1) #, flags='C_CONTIGUOUS')
-
+    return np.ctypeslib.ndpointer(
+        dtype=np.int32, ndim=1
+    )  # , flags='C_CONTIGUOUS')
 
 
 def load_library(filename):
@@ -84,10 +92,8 @@ def load_library(filename):
     lib_file, ext = os.path.splitext(filename)
 
     system = platform.system()
-    version = platform.version()
-    release = platform.release()
 
-    file_ext = {'Linux':'.so', 'Darwin':'.dylib', 'Windows':'.DLL'}
+    file_ext = {'Linux': '.so', 'Darwin': '.dylib', 'Windows': '.DLL'}
     full_lib_file = lib_file + file_ext[system]
 
     try:
@@ -97,7 +103,6 @@ def load_library(filename):
         raise IOError(f'Cannot load shared library {full_lib_file}')
 
     return lib
-
 
 
 def get_library():
@@ -113,8 +118,11 @@ def get_library():
 
     # check the version number
     lib.check_library_version.restype = ctypes.c_bool
-    lib.check_library_version.argtypes = [ctypes.c_uint, ctypes.c_uint,
-                                          ctypes.c_uint]
+    lib.check_library_version.argtypes = [
+        ctypes.c_uint,
+        ctypes.c_uint,
+        ctypes.c_uint,
+    ]
 
     # set the update method
     lib.set_update_mode.restype = None
@@ -122,10 +130,20 @@ def get_library():
 
     # set the motion model
     lib.motion.restype = None
-    lib.motion.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_uint,
-                            np_dbl_p, np_dbl_p, np_dbl_p, np_dbl_p,
-                            np_dbl_p, ctypes.c_double, ctypes.c_double,
-                            ctypes.c_uint, ctypes.c_double]
+    lib.motion.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_uint,
+        ctypes.c_uint,
+        np_dbl_p,
+        np_dbl_p,
+        np_dbl_p,
+        np_dbl_p,
+        np_dbl_p,
+        ctypes.c_double,
+        ctypes.c_double,
+        ctypes.c_uint,
+        ctypes.c_double,
+    ]
 
     # set the object model
     # lib.model.restype = None
@@ -217,9 +235,12 @@ def get_library():
 
     # calculate the hypotheses
     lib.create_hypotheses.restype = ctypes.c_uint
-    lib.create_hypotheses.argtypes = [ctypes.c_void_p,
-                                      hypothesis.PyHypothesisParams,
-                                      ctypes.c_uint, ctypes.c_uint]
+    lib.create_hypotheses.argtypes = [
+        ctypes.c_void_p,
+        hypothesis.PyHypothesisParams,
+        ctypes.c_uint,
+        ctypes.c_uint,
+    ]
 
     # get a hypothesis by ID
     lib.get_hypothesis.restype = hypothesis.Hypothesis

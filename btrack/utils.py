@@ -265,7 +265,7 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
     assert ndim in (2, 3)
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
-    p_header = ["t", "state", "generation", "root"]
+    p_header = ["t", "state", "generation", "root", "parent"]
     # ensure lexicographic ordering of tracks
     ordered = sorted(list(tracks), key=lambda t: t.ID)
     data = np.vstack([t.to_array(t_header) for t in ordered])

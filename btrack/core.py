@@ -633,9 +633,9 @@ class BayesianTracker:
         sz_cov = self.motion_model.measurements ** 2 + 1
 
         # otherwise grab the kalman filter data
-        kal_mu = np.zeros((n, sz_mu), dtype=np.float32)  # kalman filtered
-        kal_cov = np.zeros((n, sz_cov), dtype=np.float32)  # kalman covariance
-        kal_pred = np.zeros((n, sz_mu), dtype=np.float32)  # motion predict
+        kal_mu = np.zeros((n, sz_mu), dtype=np.float64)  # kalman filtered
+        kal_cov = np.zeros((n, sz_cov), dtype=np.float64)  # kalman covariance
+        kal_pred = np.zeros((n, sz_mu), dtype=np.float64)  # motion predict
 
         _ = self._lib.get_kalman_mu(self._engine, kal_mu, idx)
         _ = self._lib.get_kalman_covar(self._engine, kal_cov, idx)

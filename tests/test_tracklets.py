@@ -47,15 +47,22 @@ def test_object():
         assert getattr(obj, k) == v
 
 
-@pytest.mark.parametrize("track_len", [1, 10, 100, 1000])
+@pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
 def test_tracklet(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     data matches the data used for creation."""
     tracklet, data, track_ID = _create_test_tracklet(track_len)
+    assert len(tracklet) == len(data)
+
+    # now check that the track data is correct
     assert tracklet.ID == track_ID
+    fields = ["x", "y", "z", "t"]
+    for field in fields:
+        obj_data = [getattr(obj, field) for obj in data]
+        np.testing.assert_equal(obj_data, getattr(tracklet, field))
 
 
-@pytest.mark.parametrize("track_len", [1, 10, 100, 1000])
+@pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
 def test_tracklet_properties(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     properties match the data used for creation."""

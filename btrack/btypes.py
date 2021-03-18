@@ -357,6 +357,7 @@ class Tracklet:
         self.ID = ID
         self._data = data
         self._kalman = None
+        self._properties = {}
 
         self.root = None
         self.parent = parent
@@ -383,47 +384,56 @@ class Tracklet:
             )
 
     @property
-    def x(self):
+    def properties(self) -> dict:
+        return self._properties
+
+    @properties.setter
+    def properties(self, properties: dict):
+        """Store properties associated with this Tracklet."""
+        self._properties = properties
+
+    @property
+    def x(self) -> list:
         return [o.x for o in self._data]
 
     @property
-    def y(self):
+    def y(self) -> list:
         return [o.y for o in self._data]
 
     @property
-    def z(self):
+    def z(self) -> list:
         return [o.z for o in self._data]
 
     @property
-    def t(self):
+    def t(self) -> list:
         return [o.t for o in self._data]
 
     @property
-    def dummy(self):
+    def dummy(self) -> list:
         return [o.dummy for o in self._data]
 
     @property
-    def refs(self):
+    def refs(self) -> list:
         return [o.ID for o in self._data]
 
     @property
-    def start(self):
+    def start(self) -> list:
         return self.t[0]
 
     @property
-    def stop(self):
+    def stop(self) -> list:
         return self.t[-1]
 
     @property
-    def label(self):
+    def label(self) -> list:
         return [o.state.name for o in self._data]
 
     @property
-    def state(self):
+    def state(self) -> list:
         return [o.state.value for o in self._data]
 
     @property
-    def softmax(self):
+    def softmax(self) -> list:
         return [o.probability for o in self._data]
 
     @property

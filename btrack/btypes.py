@@ -19,6 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 from collections import OrderedDict
+from typing import Dict
 
 import numpy as np
 
@@ -384,12 +385,22 @@ class Tracklet:
             )
 
     @property
-    def properties(self) -> dict:
+    def properties(self) -> Dict[str, np.ndarray]:
         return self._properties
 
     @properties.setter
-    def properties(self, properties: dict):
+    def properties(self, properties: Dict[str, np.ndarray]):
         """Store properties associated with this Tracklet."""
+
+        # validate the track properties
+        for k, v in properties.items():
+            if len(v) != len(self.data):
+                raise ValueError(
+                    'The number of properties and track objects must be equal.'
+                )
+            # ensure the property values are a numpy array
+            if type(v) != np.ndarray:
+                properties[k] = np.asarray(v)
         self._properties = properties
 
     @property

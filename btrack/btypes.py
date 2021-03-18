@@ -394,13 +394,14 @@ class Tracklet:
 
         # validate the track properties
         for k, v in properties.items():
-            if len(v) != len(self.data):
+            if len(v) != len(self):
                 raise ValueError(
                     'The number of properties and track objects must be equal.'
                 )
             # ensure the property values are a numpy array
             if type(v) != np.ndarray:
                 properties[k] = np.asarray(v)
+
         self._properties = properties
 
     @property

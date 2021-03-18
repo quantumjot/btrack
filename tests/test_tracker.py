@@ -6,12 +6,12 @@ import btrack
 
 
 def _load_csv():
-    objects = btrack.dataio.import_CSV("./_test_data/test_data.csv")
+    objects = btrack.dataio.import_CSV("./tests/_test_data/test_data.csv")
     return objects
 
 
 def _load_ground_truth():
-    with open("./_test_data/test_ground_truth.json", "r") as file:
+    with open("./tests/_test_data/test_ground_truth.json", "r") as file:
         ground_truth = json.load(file)
     return ground_truth
 
@@ -24,7 +24,7 @@ def test_tracker():
 
     # run the tracking
     with btrack.BayesianTracker() as tracker:
-        tracker.configure_from_file("../models/cell_config.json")
+        tracker.configure_from_file("./models/cell_config.json")
         tracker.append(objects)
         tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
         tracker.track_interactive(step_size=100)

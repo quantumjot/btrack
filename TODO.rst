@@ -30,6 +30,10 @@ Thanks
 Updates
 =======
 
+0.4.1
+-----
+- Added track and object properties which store associated metadata
+
 0.4.0
 ------
 - Use long C type for object ID

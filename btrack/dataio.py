@@ -23,6 +23,7 @@ import logging
 import os
 import re
 from functools import wraps
+from typing import Dict
 
 import h5py
 import numpy as np
@@ -431,6 +432,16 @@ class HDF5FileHandler:
         }
 
         return objects_from_dict(objects_dict)
+
+    @h5check_property_exists('properties')
+    @property
+    def properties(self):
+        """Read object properties seperately."""
+        pass
+
+    def write_properties(self, properties: Dict[str, np.ndarray]):
+        """Write object properties."""
+        pass
 
     def write_objects(self, tracker):
         """Write objects to HDF file."""

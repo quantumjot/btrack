@@ -22,21 +22,31 @@ def _create_test_object():
     return obj, data
 
 
+def _create_test_properties():
+    properties = {
+        "speed": np.random.uniform(0.0, 1.0),
+        "circularity": np.random.uniform(0.0, 1.0),
+        "reporter": np.random.uniform(0.0, 1.0),
+    }
+    return properties
+
+
 def _create_test_tracklet(track_len: int):
     """Create a test track."""
     data = [_create_test_object()[0] for i in range(track_len)]
+    props = [_create_test_properties() for i in range(track_len)]
+    for idx, obj in enumerate(data):
+        obj.properties = props[idx]
     track_ID = np.random.randint(0, 1000)
     tracklet = btrack.btypes.Tracklet(track_ID, data)
-    return tracklet, data, track_ID
 
+    # convert to dictionary {key: [p0,...,pn]}
+    if not props:
+        properties = {}
+    else:
+        properties = {k: [p[k] for p in props] for k in props[0].keys()}
 
-def _create_test_properties(track_len: int):
-    properties = {
-        "speed": np.random.uniform(0.0, 1.0, size=(track_len,)),
-        "circularity": np.random.uniform(0.0, 1.0, size=(track_len,)),
-        "reporter": np.random.uniform(0.0, 1.0, size=(track_len,)),
-    }
-    return properties
+    return tracklet, data, properties, track_ID
 
 
 def test_object():
@@ -47,11 +57,20 @@ def test_object():
         assert getattr(obj, k) == v
 
 
+@pytest.mark.parametrize("properties", [{}, _create_test_properties()])
+def test_object_properties(properties: dict):
+    """Test an object with some properties."""
+    obj, data = _create_test_object()
+    obj.properties = properties
+    for k, v in properties.items():
+        assert obj.properties[k] == v
+
+
 @pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
 def test_tracklet(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     data matches the data used for creation."""
-    tracklet, data, track_ID = _create_test_tracklet(track_len)
+    tracklet, data, properties, track_ID = _create_test_tracklet(track_len)
     assert len(tracklet) == len(data)
 
     # now check that the track data is correct
@@ -66,10 +85,7 @@ def test_tracklet(track_len: int):
 def test_tracklet_properties(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     properties match the data used for creation."""
-    tracklet, data, track_ID = _create_test_tracklet(track_len)
-    properties = _create_test_properties(track_len)
-
-    tracklet.properties = properties
+    tracklet, data, properties, track_ID = _create_test_tracklet(track_len)
     t_properties = tracklet.properties
 
     for k, v in properties.items():
@@ -79,10 +95,11 @@ def test_tracklet_properties(track_len: int):
 def test_malformed_tracklet_properties():
     """Test for malformed properties by truncating the first property."""
     track_len = 10
-    tracklet, data, track_ID = _create_test_tracklet(track_len)
-    properties = _create_test_properties(track_len)
+    tracklet, data, properties, track_ID = _create_test_tracklet(track_len)
     first_key = list(properties.keys())[0]
-    properties[first_key] = properties[first_key][: track_len - 2]
+    # this removes a property from one of the objects
+    del tracklet._data[0].properties[first_key]
 
-    with pytest.raises(ValueError):
-        tracklet.properties = properties
+    # raises a key error when trying to retreive the properties
+    with pytest.raises(KeyError):
+        _ = tracklet.properties

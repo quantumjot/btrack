@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 from collections import OrderedDict
-from typing import Dict
+from typing import Dict, Union
 
 import numpy as np
 
@@ -37,7 +37,7 @@ class PyTrackObject(ctypes.Structure):
         position: 2D/3D position
         dummy: is this a real object or a dummy object (e.g. when lost)
         label: object classification
-        attributes: object attributes, essentially metadata about object
+        properties: object attributes, essentially metadata about object
 
     Properties:
         probability: class label probabilities
@@ -58,13 +58,21 @@ class PyTrackObject(ctypes.Structure):
 
     def __init__(self):
         super().__init__()
-
-        # default values for pytrack object
         self.prob = 0
         self.dummy = False
         self.label = constants.States.NULL.value
 
         self._raw_probability = None
+        self._properties = {}
+
+    @property
+    def properties(self) -> Dict[str, Union[int, float]]:
+        return self._properties
+
+    @properties.setter
+    def properties(self, properties: Dict[str, Union[int, float]]):
+        """Set the object properties."""
+        self._properties = properties
 
     @property
     def probability(self):
@@ -76,25 +84,35 @@ class PyTrackObject(ctypes.Structure):
             raise TypeError(".probability should be a numpy array")
         self._raw_probability = probability
 
+    # def __getattr__(self, attribute):
+    #     return self.properties[attribute]
+
     @property
     def state(self):
         return constants.States(self.label)
 
     def to_dict(self):
-        """ Return a dictionary of the fields and their values """
-        stats = {k: getattr(self, k) for k, typ in PyTrackObject._fields_}
+        """Return a dictionary of the fields and their values."""
+        stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
+        stats.update(self.properties)
         return stats
 
     @staticmethod
     def from_dict(properties: dict):
-        """ build an object from a dictionary """
+        """Build an object from a dictionary."""
         obj = PyTrackObject()
-        attr = (k for k, _ in PyTrackObject._fields_ if k in properties.keys())
+        fields = [k for k, _ in PyTrackObject._fields_]
+        attr = [k for k in fields if k in properties.keys()]
         for key in attr:
             try:
                 setattr(obj, key, properties[key])
             except TypeError:
                 setattr(obj, key, int(properties[key]))
+
+        # we can add any extra details to the properties dictionary
+        obj.properties = {
+            k: v for k, v in properties.items() if k not in fields
+        }
         return obj
 
     def __repr__(self):
@@ -320,6 +338,9 @@ class Tracklet:
     Track 'fates' are the selected hypotheses after optimization. Defined in
     constants.Fates
 
+    Intrinsic properties can be accesses as attributes, e.g:
+    track.x returns the track x values
+
     Args:
         ID: unique identifier
         data: trajectory
@@ -358,7 +379,6 @@ class Tracklet:
         self.ID = ID
         self._data = data
         self._kalman = None
-        self._properties = {}
 
         self.root = None
         self.parent = parent
@@ -386,11 +406,13 @@ class Tracklet:
 
     @property
     def properties(self) -> Dict[str, np.ndarray]:
-        return self._properties
+        """Return the properties of the objects."""
+        # find the set of keys, then grab the properties
+        keys = set()
+        for obj in self._data:
+            keys.update(obj.properties.keys())
 
-    @properties.setter
-    def properties(self, properties: Dict[str, np.ndarray]):
-        """Store properties associated with this Tracklet."""
+        properties = {k: [o.properties[k] for o in self._data] for k in keys}
 
         # validate the track properties
         for k, v in properties.items():
@@ -402,7 +424,20 @@ class Tracklet:
             if type(v) != np.ndarray:
                 properties[k] = np.asarray(v)
 
-        self._properties = properties
+        return properties
+
+    @properties.setter
+    def properties(self, properties: Dict[str, np.ndarray]):
+        """Store properties associated with this Tracklet."""
+        # TODO(arl): this will need to set the object properties
+        pass
+
+    def __getitem__(self, attr: str):
+        assert isinstance(attr, str)
+        try:
+            return getattr(self, attr)
+        except AttributeError:
+            return self.properties[attr]
 
     @property
     def x(self) -> list:
@@ -486,15 +521,17 @@ class Tracklet:
         export. This is an ordered dictionary for nicer JSON output.
         """
         trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
-        return OrderedDict(trk_tuple)
+        data = OrderedDict(trk_tuple)
+        data.update(self.properties)
+        return data
 
     def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
         """ Return a numpy array of the tracklet which can be used for MATLAB
         export. """
-
-        tmp_track = np.zeros((len(self), len(properties)), dtype=np.float32)
-        for i, property in enumerate(properties):
-            tmp_track[:, i] = getattr(self, property)
+        data = self.to_dict(properties)
+        tmp_track = np.zeros((len(self), len(data.keys())), dtype=np.float32)
+        for idx, key in enumerate(data.keys()):
+            tmp_track[:, idx] = np.asarray(data[key])
         return tmp_track
 
     def in_frame(self, frame):

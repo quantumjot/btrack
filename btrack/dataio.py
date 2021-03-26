@@ -23,7 +23,6 @@ import logging
 import os
 import re
 from functools import wraps
-from typing import Dict
 
 import h5py
 import numpy as np
@@ -170,7 +169,6 @@ def export_delegator(filename, tracker, obj_type=None, filter_by=None):
 
 
 def check_track_type(tracks):
-    # return isinstance(tracks[0], btypes.Tracklet)
     return all([isinstance(t, btypes.Tracklet) for t in tracks])
 
 
@@ -282,7 +280,9 @@ class HDF5FileHandler:
                 coords      - (I x 5) [t, x, y, z, object_type]
                 labels      - (I x D) [label, (softmax scores ...)]
                 map         - (J x 2) [start_index, end_index] -> coords array
-                properties  - (I x D) [property-0, ..., property-D]
+                properties/
+                    property-0  - (I x 1) first named property
+                    ...
             ...
         tracks/
             obj_type_1/
@@ -294,18 +294,19 @@ class HDF5FileHandler:
             ...
 
 
-    Parameters
+    Properties
     ----------
     segmentation : np.ndarray
     objects : list [PyTrackObject]
     filtered_objects  : np.ndarray
-    properties : np.ndarray
     tracks : list [Tracklet]
     lbep : np.ndarray
 
     Methods
     -------
-
+    write_segmentation
+    write_objects
+    write_tracks
 
     Usage
     -----
@@ -389,13 +390,24 @@ class HDF5FileHandler:
         if self.object_type not in self.object_types:
             raise ValueError(f'Object type {self.object_type} not recognized')
 
+        grp = self._hdf['objects'][self.object_type]
+
         # read the whole dataset into memory
-        txyz = self._hdf['objects'][self.object_type]['coords'][:]
-        if 'labels' not in self._hdf['objects'][self.object_type]:
+        txyz = grp['coords'][:]
+        if 'labels' not in grp:
             logger.warning('Labels missing from objects in HDF file')
             labels = np.zeros((txyz.shape[0], 6))
         else:
             labels = self._hdf['objects'][self.object_type]['labels'][:]
+
+        # get properties if we have them (note, this assumes that the same
+        # properties exist for each object)
+        properties = {}
+        if 'properties' in grp:
+            properties = {
+                k: grp['properties'][k][:] for k in grp['properties']
+            }
+            assert all([len(p) == len(txyz) for p in properties.values()])
 
         # note that this doesn't do much error checking at the moment
         if f_expr is not None:
@@ -404,8 +416,8 @@ class HDF5FileHandler:
             m = re.match(pattern, f_expr)
             f_eval = f'x{m["op"]}{m["cmp"]}'  # e.g. x > 10
 
-            if m['name'] in self._hdf['objects'][self.object_type]:
-                data = self._hdf['objects'][self.object_type][m['name']][:]
+            if m['name'] in grp:
+                data = grp[m['name']][:]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
                 logger.warning(f'Cannot filter objects by {m["name"]}')
@@ -431,17 +443,11 @@ class HDF5FileHandler:
             'ID': np.asarray(filtered_idx),
         }
 
+        # add the filtered properties
+        for key, props in properties.items():
+            objects_dict.update({key: props[filtered_idx]})
+
         return objects_from_dict(objects_dict)
-
-    @h5check_property_exists('properties')
-    @property
-    def properties(self):
-        """Read object properties seperately."""
-        pass
-
-    def write_properties(self, properties: Dict[str, np.ndarray]):
-        """Write object properties."""
-        pass
 
     def write_objects(self, tracker):
         """Write objects to HDF file."""
@@ -449,6 +455,8 @@ class HDF5FileHandler:
 
         self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(self.object_type)
+        props_grp = grp.create_group('properties')
+        props = {k: [] for k in tracker.objects[0].properties.keys()}
 
         n_objects = len(tracker.objects)
         n_frames = np.max([o.t for o in tracker.objects]) + 1
@@ -463,6 +471,11 @@ class HDF5FileHandler:
             labels[i, :] = obj.label
             t = int(obj.t)
             fmap[t, 1] = np.max([fmap[t, 1], i])
+
+            # add in any properties
+            for key in props.keys():
+                props[key].append(obj.properties[key])
+
         fmap[1:, 0] = fmap[:-1, 1]
 
         logger.info(f'Writing objects/{self.object_type}')
@@ -471,6 +484,10 @@ class HDF5FileHandler:
 
         logger.info(f'Writing labels/{self.object_type}')
         grp.create_dataset('labels', data=labels, dtype='float32')
+
+        logger.info(f'Writing properties/{self.object_type}')
+        for key in props.keys():
+            props_grp.create_dataset(key, data=props[key], dtype='float32')
 
     @property
     @h5check_property_exists('tracks')

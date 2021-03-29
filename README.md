@@ -114,13 +114,16 @@ with btrack.BayesianTracker() as tracker:
   tracker.append(objects)
 
   # set the volume (Z axis volume is set very large for 2D data)
-  tracker.volume=((0,1200),(0,1600),(-1e5,1e5))
+  tracker.volume=((0, 1200), (0, 1600), (-1e5, 1e5))
 
   # track them (in interactive mode)
   tracker.track_interactive(step_size=100)
 
   # generate hypotheses and run the global optimizer
   tracker.optimize()
+
+  # store the data in an HDF5 file
+  tracker.export('/path/to/tracks.h5', obj_type='obj_type_1')
 
   # get the tracks as a python list
   tracks = tracker.tracks

@@ -260,18 +260,54 @@ def import_JSON(filename):
     raise DeprecationWarning("Use dataio.import_JSON instead")
 
 
+def _cat_tracks_as_dict(tracks: list, properties: list):
+    """ Concatenate all tracks a dictionary. """
+    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
+
+    data = {}
+
+    for track in tracks:
+        trk = track.to_dict(properties)
+        if not data:
+            data = {k: [] for k in trk.keys()}
+
+        for key in data.keys():
+            property = trk[key]
+            if not isinstance(property, (list, np.ndarray)):
+                property = [property] * len(track)
+
+            assert len(property) == len(track)
+            data[key].append(property)
+
+    for key in data.keys():
+        data[key] = np.concatenate(data[key])
+
+    return data
+
+
 def tracks_to_napari(tracks: list, ndim: int = 3):
     """Convert a list of Tracklets to napari format input."""
+    # TODO: arl guess the dimensionality from the data
     assert ndim in (2, 3)
-    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
     p_header = ["t", "state", "generation", "root", "parent"]
+
     # ensure lexicographic ordering of tracks
     ordered = sorted(list(tracks), key=lambda t: t.ID)
-    data = np.vstack([t.to_array(t_header) for t in ordered])
-    p_array = np.vstack([t.to_array(p_header) for t in ordered])
-    properties = {p: p_array[:, i] for i, p in enumerate(p_header)}
-    graph = {t.ID: [t.parent] for t in tracks if not t.is_root}
+    header = t_header + p_header
+    tracks_as_dict = _cat_tracks_as_dict(ordered, header)
+
+    # note that there may be other metadata in the tracks, grab that too
+    prop_keys = p_header + [
+        k for k in tracks_as_dict.keys() if k not in t_header
+    ]
+
+    # get the data for napari
+    data = np.stack(
+        [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
+    )
+    properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
+    graph = {t.ID: [t.parent] for t in ordered if not t.is_root}
     return data, properties, graph
 
 

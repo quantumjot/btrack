@@ -92,14 +92,14 @@ def test_tracklet_properties(track_len: int):
         np.testing.assert_equal(t_properties[k], v)
 
 
-def test_malformed_tracklet_properties():
-    """Test for malformed properties by truncating the first property."""
-    track_len = 10
-    tracklet, data, properties, track_ID = _create_test_tracklet(track_len)
-    first_key = list(properties.keys())[0]
-    # this removes a property from one of the objects
-    del tracklet._data[0].properties[first_key]
-
-    # raises a key error when trying to retreive the properties
-    with pytest.raises(KeyError):
-        _ = tracklet.properties
+# def test_malformed_tracklet_properties():
+#     """Test for malformed properties by truncating the first property."""
+#     track_len = 10
+#     tracklet, data, properties, track_ID = _create_test_tracklet(track_len)
+#     first_key = list(properties.keys())[0]
+#     # this removes a property from one of the objects
+#     del tracklet._data[0].properties[first_key]
+#
+#     # raises a key error when trying to retreive the properties
+#     with pytest.raises(KeyError):
+#         _ = tracklet.properties

@@ -67,6 +67,8 @@ class PyTrackObject(ctypes.Structure):
 
     @property
     def properties(self) -> Dict[str, Union[int, float]]:
+        if self.dummy:
+            return {}
         return self._properties
 
     @properties.setter
@@ -412,7 +414,13 @@ class Tracklet:
         for obj in self._data:
             keys.update(obj.properties.keys())
 
-        properties = {k: [o.properties[k] for o in self._data] for k in keys}
+        properties = {
+            k: [
+                o.properties[k] if k in o.properties else np.nan
+                for o in self._data
+            ]
+            for k in keys
+        }
 
         # validate the track properties
         for k, v in properties.items():

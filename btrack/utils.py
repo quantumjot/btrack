@@ -20,6 +20,7 @@ __email__ = "code@arlowe.co.uk"
 import json
 import logging
 import os
+from typing import List, Union
 
 import numpy as np
 
@@ -309,6 +310,30 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
     graph = {t.ID: [t.parent] for t in ordered if not t.is_root}
     return data, properties, graph
+
+
+def segmentation_to_objects(
+    segmentation: Union[str, np.ndarray, List[np.ndarray], List[str]],
+    scale: tuple = (),
+):
+    """Convert segmentation to a set of btrack.PyTrackObjects.
+
+    Parameters
+    ----------
+    segmentation : list, np.ndarray
+        Segmentation can be provided in several different formats.
+
+    scale : tuple
+        A scale for each dimension of the input segmentation. Defaults to one
+        for all axes.
+
+    Returns
+    -------
+    objects : list
+        A list of btrack.PyTrackObjects
+    """
+
+    pass
 
 
 if __name__ == "__main__":

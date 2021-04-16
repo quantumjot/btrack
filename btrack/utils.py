@@ -349,6 +349,8 @@ def segmentation_to_objects(
             return ((x == 0) | (x == 1)).all()
 
         # check to see whether this is a binary segmentation
+        # TODO(arl): of course, this may also be ternary etc, so this will
+        # fail, should really check that the labels are unique
         if _is_binary(segmentation):
             labeled, _ = measurements.label(segmentation)
         else:

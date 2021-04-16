@@ -345,13 +345,20 @@ def segmentation_to_objects(
         if np.sum(segmentation) == 0:
             return None
 
-        labeled, n_objects = measurements.label(segmentation)
-        idx = list(range(1, n_objects + 1))
+        def _is_binary(x: np.ndarray) -> bool:
+            return ((x == 0) | (x == 1)).all()
 
+        # check to see whether this is a binary segmentation
+        if _is_binary(segmentation):
+            labeled, _ = measurements.label(segmentation)
+        else:
+            labeled = segmentation
+
+        idx = [label for label in np.unique(labeled) if label > 0]
+
+        # TODO(arl): replace this with scipy.ndimage.find_objects
         _centroids = np.array(
-            measurements.center_of_mass(
-                segmentation.astype(np.bool), labels=labeled, index=idx,
-            )
+            measurements.center_of_mass(labeled, labels=labeled, index=idx,)
         )
 
         # apply the anistropic scaling
@@ -369,6 +376,8 @@ def segmentation_to_objects(
         return _centroids
 
     centroids = []
+
+    logger.info("Localizing objects from segmentation...")
 
     if isinstance(segmentation, np.ndarray):
 
@@ -409,6 +418,9 @@ def segmentation_to_objects(
 
     # now create the btrack objects
     objects = localizations_to_objects(centroids_dict)
+    n_frames = int(np.max(centroids[:, 0]) + 1)
+
+    logger.info(f"...Found {len(objects)} objects in {n_frames} frames.")
 
     return objects
 

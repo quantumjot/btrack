@@ -17,15 +17,18 @@
 __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
+import inspect
 import json
 import logging
 import os
-from typing import List, Union
+from typing import Generator, Optional, Union
 
 import numpy as np
+from scipy.ndimage import measurements
 
 # import core
 from . import btypes, constants
+from .dataio import localizations_to_objects
 from .optimise import hypothesis
 
 # get the logger instance
@@ -313,19 +316,19 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
 
 
 def segmentation_to_objects(
-    segmentation: Union[str, np.ndarray, List[np.ndarray], List[str]],
-    scale: tuple = (),
-):
-    """Convert segmentation to a set of btrack.PyTrackObjects.
+    segmentation: Union[np.ndarray, Generator], scale: Optional[tuple] = None,
+) -> list:
+    """Convert segmentation to a set of btrack.PyTrackObject.
 
     Parameters
     ----------
-    segmentation : list, np.ndarray
-        Segmentation can be provided in several different formats.
+    segmentation : np.ndarray or Generator
+        Segmentation can be provided in several different formats. Arrays should
+        be ordered as T(Z)YX.
 
     scale : tuple
         A scale for each dimension of the input segmentation. Defaults to one
-        for all axes.
+        for all axes, and allows scaling for anisotropic imaging data.
 
     Returns
     -------
@@ -333,7 +336,81 @@ def segmentation_to_objects(
         A list of btrack.PyTrackObjects
     """
 
-    pass
+    def _centroids_from_single_arr(
+        segmentation: np.ndarray, frame: int
+    ) -> np.ndarray:
+        """Return the object centroids from a numpy array representing the
+        image data."""
+
+        if np.sum(segmentation) == 0:
+            return None
+
+        labeled, n_objects = measurements.label(segmentation)
+        idx = list(range(1, n_objects + 1))
+
+        _centroids = np.array(
+            measurements.center_of_mass(
+                segmentation.astype(np.bool), labels=labeled, index=idx,
+            )
+        )
+
+        # apply the anistropic scaling
+        if scale is not None:
+            if len(scale) != segmentation.ndim:
+                raise ValueError("Scale dimensions do not match segmentation.")
+
+            # perform the scaling
+            _centroids = _centroids * np.array(scale)
+
+        # insert the time index
+        assert frame >= 0
+        _centroids = np.insert(_centroids, 0, frame, axis=1)
+
+        return _centroids
+
+    centroids = []
+
+    if isinstance(segmentation, np.ndarray):
+
+        if segmentation.ndim not in (3, 4):
+            raise ValueError("Segmentation array must have 3 or 4 dims.")
+
+        for idx in range(segmentation.shape[0]):
+            _centroids = _centroids_from_single_arr(
+                segmentation[idx, ...], frame=idx
+            )
+            if _centroids is not None:
+                centroids.append(_centroids)
+
+    elif inspect.isgeneratorfunction(segmentation) or isinstance(
+        segmentation, Generator
+    ):
+
+        for idx, seg in enumerate(segmentation):
+            _centroids = _centroids_from_single_arr(seg, frame=idx)
+            if _centroids is not None:
+                centroids.append(_centroids)
+
+    else:
+
+        raise TypeError(
+            f"Segmentation of type {type(segmentation)} not accepted."
+        )
+
+    if not centroids:
+        return []
+
+    # now concatenate these
+    centroids = np.concatenate(centroids, axis=0)
+
+    # order things correctly
+    coords = ["t"] + ["z", "y", "x"][-(centroids.shape[-1] - 1) :]
+    centroids_dict = {key: centroids[:, idx] for idx, key in enumerate(coords)}
+
+    # now create the btrack objects
+    objects = localizations_to_objects(centroids_dict)
+
+    return objects
 
 
 if __name__ == "__main__":

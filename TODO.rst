@@ -33,6 +33,8 @@ Updates
 0.4.1
 -----
 - Added track and object properties which store associated metadata
+- Added more tests
+- Added a segmentation to objects utility function
 
 0.4.0
 ------

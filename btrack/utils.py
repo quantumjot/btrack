@@ -26,7 +26,7 @@ import numpy as np
 
 # import core
 from . import btypes, constants
-from ._segmentation import segmentation_to_objects
+from ._localization import segmentation_to_objects
 from .optimise import hypothesis
 
 # get the logger instance

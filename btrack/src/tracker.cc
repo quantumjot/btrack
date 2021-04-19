@@ -591,7 +591,7 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
       // }
 
     }
-
+    
     // now update the entire column (i.e. track)
     //belief.col(trk) = belief.col(trk).cwiseProduct( v_posterior );
     belief.col(trk) = v_posterior;

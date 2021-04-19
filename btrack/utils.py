@@ -17,22 +17,24 @@
 __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
-import inspect
+
 import json
 import logging
 import os
-from typing import Generator, Optional, Union
 
 import numpy as np
-from scipy.ndimage import measurements
 
 # import core
 from . import btypes, constants
-from .dataio import localizations_to_objects
+from ._segmentation import segmentation_to_objects
 from .optimise import hypothesis
 
 # get the logger instance
 logger = logging.getLogger("worker_process")
+
+
+# add an alias here
+segmentation_to_objects = segmentation_to_objects
 
 
 def load_config(filename):
@@ -313,118 +315,6 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
     graph = {t.ID: [t.parent] for t in ordered if not t.is_root}
     return data, properties, graph
-
-
-def segmentation_to_objects(
-    segmentation: Union[np.ndarray, Generator], scale: Optional[tuple] = None,
-) -> list:
-    """Convert segmentation to a set of btrack.PyTrackObject.
-
-    Parameters
-    ----------
-    segmentation : np.ndarray or Generator
-        Segmentation can be provided in several different formats. Arrays should
-        be ordered as T(Z)YX.
-
-    scale : tuple
-        A scale for each dimension of the input segmentation. Defaults to one
-        for all axes, and allows scaling for anisotropic imaging data.
-
-    Returns
-    -------
-    objects : list
-        A list of btrack.PyTrackObjects
-    """
-
-    def _centroids_from_single_arr(
-        segmentation: np.ndarray, frame: int
-    ) -> np.ndarray:
-        """Return the object centroids from a numpy array representing the
-        image data."""
-
-        if np.sum(segmentation) == 0:
-            return None
-
-        def _is_binary(x: np.ndarray) -> bool:
-            return ((x == 0) | (x == 1)).all()
-
-        # check to see whether this is a binary segmentation
-        # TODO(arl): of course, this may also be ternary etc, so this will
-        # fail, should really check that the labels are unique
-        if _is_binary(segmentation):
-            labeled, _ = measurements.label(segmentation)
-        else:
-            labeled = segmentation
-
-        idx = [label for label in np.unique(labeled) if label > 0]
-
-        # TODO(arl): replace this with scipy.ndimage.find_objects
-        _centroids = np.array(
-            measurements.center_of_mass(labeled, labels=labeled, index=idx,)
-        )
-
-        # apply the anistropic scaling
-        if scale is not None:
-            if len(scale) != segmentation.ndim:
-                raise ValueError("Scale dimensions do not match segmentation.")
-
-            # perform the scaling
-            _centroids = _centroids * np.array(scale)
-
-        # insert the time index
-        assert frame >= 0
-        _centroids = np.insert(_centroids, 0, frame, axis=1)
-
-        return _centroids
-
-    centroids = []
-
-    logger.info("Localizing objects from segmentation...")
-
-    if isinstance(segmentation, np.ndarray):
-
-        if segmentation.ndim not in (3, 4):
-            raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-        for idx in range(segmentation.shape[0]):
-            _centroids = _centroids_from_single_arr(
-                segmentation[idx, ...], frame=idx
-            )
-            if _centroids is not None:
-                centroids.append(_centroids)
-
-    elif inspect.isgeneratorfunction(segmentation) or isinstance(
-        segmentation, Generator
-    ):
-
-        for idx, seg in enumerate(segmentation):
-            _centroids = _centroids_from_single_arr(seg, frame=idx)
-            if _centroids is not None:
-                centroids.append(_centroids)
-
-    else:
-
-        raise TypeError(
-            f"Segmentation of type {type(segmentation)} not accepted."
-        )
-
-    if not centroids:
-        return []
-
-    # now concatenate these
-    centroids = np.concatenate(centroids, axis=0)
-
-    # order things correctly
-    coords = ["t"] + ["z", "y", "x"][-(centroids.shape[-1] - 1) :]
-    centroids_dict = {key: centroids[:, idx] for idx, key in enumerate(coords)}
-
-    # now create the btrack objects
-    objects = localizations_to_objects(centroids_dict)
-    n_frames = int(np.max(centroids[:, 0]) + 1)
-
-    logger.info(f"...Found {len(objects)} objects in {n_frames} frames.")
-
-    return objects
 
 
 if __name__ == "__main__":

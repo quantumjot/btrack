@@ -3,3 +3,4 @@ h5py>=2.10.0
 matplotlib>=3.1.1
 numpy>=1.17.3
 scipy>=1.3.1
+skimage>=0.16.2

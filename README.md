@@ -24,8 +24,6 @@ high-likelihood hypotheses that accounts for all observations.
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
-<!-- [![LineageTree](http://lowe.cs.ucl.ac.uk/images/bayesian_tracker_lineage_tree.png)](http://lowe.cs.ucl.ac.uk)   -->
-<!-- [![LineageTree](https://raw.githubusercontent.com/quantumjot/BayesianTracker/master/examples/render.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red. -->
 [![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#Usage-with-Napari).
@@ -69,40 +67,24 @@ Addtionally, the `build.sh` script will download Eigen source, run the makefile
 and pip install.
 
 ---
-### Usage in Colab notebooks
 
-If you do not want to install a local copy, you can run the tracker in a Colab notebook. Please note that these examples are work in progress and may change:
+### Simple example
 
-| Status        | Level | Notebook                                     | Link |
-| ------------- | ----- | -------------------------------------------- | ---- |
-| Complete      | Basic | Data import options                          | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1V2TtJ5FGqSILTuThSRg5j9crsBsorUmy)|
-| Complete      | Basic | Object tracking with btrack                  | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1A1PRM0a3Z0ufszdnVxntcaEDzU_Vh4u9)|
-| *In progress* | Advanced | Configuration options                     | -
-| Complete      | Advanced | How to compile btrack from source         | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/19t5HBV76_Js8M3LX63CwiXzemax7Tvsk)|
-
-
----
-
-### Usage with Napari
-
-You can run btrack with a GUI and visualize the output using our plugin (called `arboretum`) for the open source image viewer [`Napari`](https://github.com/napari/napari).
-
-| Status        | Notebook                                     | Link |
-| ------------- | -------------------------------------------- | ---- |
-| *In progress* | Visualizing btrack output using arboretum    | [GitHub](https://github.com/quantumjot/arboretum)
-
----
-
-### Usage from Python
-
-BayesianTracker can be used simply as follows:
+A simple pipeline is shown below. Others can be found in the examples folder.
 
 ```python
-import btrack
-from btrack.dataio import import_CSV
 
-# NOTE(arl): This should be from your image segmentation code
-objects = import_CSV('/path/to/your/objects.csv')
+import btrack
+from skimage.io import imread
+
+# load your segmentation data
+segmentation = imread('/path/to/segmentation.tif')
+
+# create btrack objects (with properties) from the segmentation data
+# (you can also calculate properties, based on scikit-image regionprops)
+obj_from_arr = btrack.utils.segmentation_to_objects(
+  segmentation, properties=('area', )
+)
 
 # initialise a tracker session using a context manager
 with btrack.BayesianTracker() as tracker:
@@ -127,6 +109,9 @@ with btrack.BayesianTracker() as tracker:
 
   # get the tracks as a python list
   tracks = tracker.tracks
+
+  # optional: get the data in a format for napari
+  data, properties, graph = tracker.to_napari(ndim=2)
 ```
 
 Tracks themselves are python objects with properties:
@@ -156,45 +141,27 @@ print(track_zero.generation)
 
 ```
 
-There are many additional options, including the ability to define object models.
+### Visualizing track data with napari
 
-### Importing data
-Observations can be provided in several basic formats:
-+ a simple CSV or JSON file
-+ HDF5 for larger/more complex datasets, or
-+ using your own code from numpy arrays or pandas data arrays.
-
-For example, CSV data of the format:
-```
-t x   y   z
-0 300 300 0
-1 301 299 1
-2 302 288 2
-...
-```
-
-can be imported:
+We developed the `Tracks` layer that is now part of the multidimensional image
+viewer [napari](https://github.com/napari/napari) -- you can use this to
+visualize the output of `btrack`:
 
 ```python
-from btrack.dataio import import_CSV
-objects = import_CSV('/path/to/your/objects.csv')
+import napari
+
+viewer = napari.Viewer()
+viewer.add_labels(segmentation)
+viewer.add_tracks(data, properties=properties, graph=graph)
 ```
 
-More detail the colab notebooks above.
+Read more about the tracks API here:  
+https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks
 
-### Exporting data
+In addition, we provide a plugin for napari that enables users to visualize
+lineage trees:  
+https://github.com/quantumjot/arboretum
 
-Tracks can also be exported in CSV and/or the LBEP format:
-```python
-from btrack.dataio import export_CSV
-from btrack.dataio import export_LBEP
-
-# export tracks in CSV format
-export_CSV('/path/to/your/tracks.csv', tracks)
-
-# export the LBEP table of lineage information
-export_LBEP('/path/to/your/lbep_tracks.txt', tracks)
-```
 
 
 ### Dealing with very large datasets

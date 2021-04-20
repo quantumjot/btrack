@@ -36,6 +36,7 @@ def _centroids_from_single_arr(
     frame: int,
     intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
+    use_weighted_centroid: bool = False,
 ) -> np.ndarray:
     """Return the object centroids from a numpy array representing the
     image data."""
@@ -45,6 +46,14 @@ def _centroids_from_single_arr(
 
     def _is_binary(x: np.ndarray) -> bool:
         return ((x == 0) | (x == 1)).all()
+
+    if use_weighted_centroid and intensity_image is not None:
+        CENTROID_PROPERTY = "weighted_centroid"
+    else:
+        CENTROID_PROPERTY = "centroid"
+
+    if CENTROID_PROPERTY not in properties:
+        properties = (CENTROID_PROPERTY,) + properties
 
     # check to see whether this is a binary segmentation
     # TODO(arl): of course, this may also be ternary etc, so this will
@@ -59,7 +68,9 @@ def _centroids_from_single_arr(
     )
 
     # add time to the array
-    _centroids['t'] = np.full(_centroids['centroid-0'].shape, frame)
+    _centroids['t'] = np.full(
+        _centroids[f"{CENTROID_PROPERTY}-0"].shape, frame
+    )
 
     # apply the anistropic scaling
     if scale is not None:
@@ -68,15 +79,15 @@ def _centroids_from_single_arr(
 
         # perform the anistropic scaling
         for dim in range(segmentation.ndim):
-            _centroids[f"centroid-{dim}"] = np.multiply(
-                _centroids[f"centroid-{dim}"], float(scale[dim])
+            _centroids[f"{CENTROID_PROPERTY}-{dim}"] = np.multiply(
+                _centroids[f"{CENTROID_PROPERTY}-{dim}"], float(scale[dim])
             )
 
     # now rename the axes for btrack
     dim_names = ["z", "y", "x"][-(segmentation.ndim) :]
     for dim in range(segmentation.ndim):
         dim_name = dim_names[dim]
-        _centroids[dim_name] = _centroids.pop(f"centroid-{dim}")
+        _centroids[dim_name] = _centroids.pop(f"{CENTROID_PROPERTY}-{dim}")
 
     return _centroids
 
@@ -96,6 +107,7 @@ def segmentation_to_objects(
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
+    use_weighted_centroid: bool = True,
 ) -> list:
     """Convert segmentation to a set of btrack.PyTrackObject.
 
@@ -107,15 +119,20 @@ def segmentation_to_objects(
 
     intensity_image : np.ndarray or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
-        additional properties.
+        additional properties. See skimage.measure.regionprops for more info.
 
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
-        properties are added as metadata to the btrack objects.
+        properties are added as metadata to the btrack objects. See
+        skimage.measure.regionprops for more info.
 
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
+
+    use_weighted_centroid : bool, default True
+        If an intensity image has been provided, default to calculating the
+        weighted centroid. See skimage.measure.regionprops for more info.
 
     Returns
     -------
@@ -125,6 +142,7 @@ def segmentation_to_objects(
 
     centroids = {}
     USE_INTENSITY = False
+    USE_WEIGHTED = False
 
     logger.info("Localizing objects from segmentation...")
 
@@ -135,10 +153,13 @@ def segmentation_to_objects(
                 "Segmentation and intensity image must be the same type."
             )
         USE_INTENSITY = True
+        USE_WEIGHTED = use_weighted_centroid and USE_INTENSITY
 
-    # make sure that we always calculate the centroid
-    if 'centroid' not in properties:
-        properties = ('centroid',) + properties
+    if USE_INTENSITY:
+        logger.info('Found intensity_image data')
+
+    if USE_WEIGHTED:
+        logger.info('Calculating weighted centroids using intensity_image')
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
@@ -155,7 +176,12 @@ def segmentation_to_objects(
             seg = segmentation[frame, ...]
             intens = intensity_image[frame, ...] if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
-                seg, properties, frame, intensity_image=intens, scale=scale,
+                seg,
+                properties,
+                frame,
+                intensity_image=intens,
+                scale=scale,
+                use_weighted_centroid=USE_WEIGHTED,
             )
 
             # concatenate the centroids
@@ -168,7 +194,12 @@ def segmentation_to_objects(
         for frame, seg in enumerate(segmentation):
             intens = next(intensity_image) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
-                seg, properties, frame, intensity_image=intens, scale=scale,
+                seg,
+                properties,
+                frame,
+                intensity_image=intens,
+                scale=scale,
+                use_weighted_centroid=USE_WEIGHTED,
             )
 
             # concatenate the centroids

@@ -33,6 +33,10 @@ Updates
 0.4.1
 -----
 - Added track and object properties which store associated metadata
+- Added more tests
+- Added a segmentation to objects utility function
+- Allow properties to be determined directly using scikit-image
+- HDF5FileHandler can now write objects directly
 
 0.4.0
 ------

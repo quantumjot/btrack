@@ -17,6 +17,7 @@
 __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
+
 import json
 import logging
 import os
@@ -25,10 +26,15 @@ import numpy as np
 
 # import core
 from . import btypes, constants
+from ._localization import segmentation_to_objects
 from .optimise import hypothesis
 
 # get the logger instance
 logger = logging.getLogger("worker_process")
+
+
+# add an alias here
+segmentation_to_objects = segmentation_to_objects
 
 
 def load_config(filename):

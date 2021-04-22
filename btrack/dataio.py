@@ -40,7 +40,7 @@ class _PyTrackObjectFactory:
 
 
 def localizations_to_objects(localizations):
-    """ take a numpy array or pandas dataframe and convert to PyTrackObjects
+    """Take a numpy array or pandas dataframe and convert to PyTrackObjects
 
     Params:
         localizations: list(PyTrackObject), np.ndarray, pandas.DataFrame
@@ -410,6 +410,7 @@ class HDF5FileHandler:
             assert all([len(p) == len(txyz) for p in properties.values()])
 
         # note that this doesn't do much error checking at the moment
+        # TODO(arl): this should now reference the `properties`
         if f_expr is not None:
             assert isinstance(f_expr, str)
             pattern = r'(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
@@ -449,24 +450,35 @@ class HDF5FileHandler:
 
         return objects_from_dict(objects_dict)
 
-    def write_objects(self, tracker):
+    def write_objects(self, data):
         """Write objects to HDF file."""
         # TODO(arl): make sure that the objects are ordered in time
+
+        if isinstance(data, list):
+            objects = data
+        elif hasattr(data, 'objects'):
+            objects = data.objects
+        else:
+            raise TypeError("Object type not recognized.")
+
+        # make sure that the data to be written are all of type PyTrackObject
+        if not all([isinstance(o, btypes.PyTrackObject) for o in objects]):
+            raise TypeError("Object type not recognized.")
 
         self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(self.object_type)
         props_grp = grp.create_group('properties')
-        props = {k: [] for k in tracker.objects[0].properties.keys()}
+        props = {k: [] for k in objects[0].properties.keys()}
 
-        n_objects = len(tracker.objects)
-        n_frames = np.max([o.t for o in tracker.objects]) + 1
+        n_objects = len(objects)
+        n_frames = np.max([o.t for o in objects]) + 1
 
         txyz = np.zeros((n_objects, 5), dtype=np.float32)
         labels = np.zeros((n_objects, 1), dtype=np.uint8)
         fmap = np.zeros((n_frames, 2), dtype=np.uint32)
 
         # convert the btrack objects into a numpy array
-        for i, obj in enumerate(tracker.objects):
+        for i, obj in enumerate(objects):
             txyz[i, :] = [obj.t, obj.x, obj.y, obj.z, 0]
             labels[i, :] = obj.label
             t = int(obj.t)

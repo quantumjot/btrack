@@ -82,7 +82,7 @@ segmentation = imread('/path/to/segmentation.tif')
 
 # create btrack objects (with properties) from the segmentation data
 # (you can also calculate properties, based on scikit-image regionprops)
-obj_from_arr = btrack.utils.segmentation_to_objects(
+objects = btrack.utils.segmentation_to_objects(
   segmentation, properties=('area', )
 )
 

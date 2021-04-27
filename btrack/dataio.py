@@ -361,8 +361,9 @@ class HDF5FileHandler:
     @property
     @h5check_property_exists('segmentation')
     def segmentation(self):
-        logger.info('Loading segmentation')
-        return self._hdf['segmentation']['images'][:].astype(np.uint16)
+        segmentation = self._hdf['segmentation']['images'][:].astype(np.uint16)
+        logger.info(f'Loading segmentation {segmentation.shape}')
+        return segmentation
 
     def write_segmentation(self, segmentation: np.ndarray):
         """Write out the segmentation to an HDF file."""

@@ -256,6 +256,11 @@ void HypothesisEngine::create( void )
   // loop through trajectories
   for (size_t i=0; i<m_num_tracks; i++) {
 
+    // PROVIDE SOME DEBUG INFO
+    // if (i % 100 == 0){
+    //   std::cout << "Hypothesis: " << i << " of " << m_num_tracks << std::endl;
+    // }
+
     // get the test track
     trk = m_tracks[i];
 
@@ -268,7 +273,6 @@ void HypothesisEngine::create( void )
 
     // calculate the death hypotheis
     hypothesis_dead(trk);
-
 
     // manage conflicts
     std::vector<TrackletPtr> conflicts;

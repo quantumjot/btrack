@@ -1,4 +1,4 @@
-BayesianTracker example data folder
------------------------------------
+BayesianTracker examples
+------------------------
 
-Example data for bTrack testing purposes
+Example data and notebooks

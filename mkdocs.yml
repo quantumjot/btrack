@@ -1,0 +1,10 @@
+site_name: napari-btrack
+site_description: A plugin to use btrack from napari
+site_author: Alan R. Lowe
+
+theme: readthedocs
+
+repo_url: https://github.com/quantumjot/napari-btrack
+
+pages:
+- Home: index.md

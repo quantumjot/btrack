@@ -77,3 +77,6 @@ target/
 
 # written by setuptools_scm
 */_version.py
+
+# specific to this repo
+examples/

@@ -74,7 +74,7 @@ class PyTrackObject(ctypes.Structure):
     @properties.setter
     def properties(self, properties: Dict[str, Union[int, float]]):
         """Set the object properties."""
-        self._properties = properties
+        self._properties.update(properties)
 
     @property
     def probability(self):
@@ -85,9 +85,6 @@ class PyTrackObject(ctypes.Structure):
         if not isinstance(probability, np.ndarray):
             raise TypeError(".probability should be a numpy array")
         self._raw_probability = probability
-
-    # def __getattr__(self, attribute):
-    #     return self.properties[attribute]
 
     @property
     def state(self):

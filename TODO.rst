@@ -29,6 +29,11 @@ Thanks
 
 Updates
 =======
+0.4.2
+-----
+- Bug fix for object properties. These are now updated rather than being overwritten
+- Bug fix for writing multiple object types to the same h5 file
+- Added project logo
 
 0.4.1
 -----

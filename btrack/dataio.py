@@ -466,7 +466,8 @@ class HDF5FileHandler:
         if not all([isinstance(o, btypes.PyTrackObject) for o in objects]):
             raise TypeError("Object type not recognized.")
 
-        self._hdf.create_group('objects')
+        if 'objects' not in self._hdf:
+            self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(self.object_type)
         props_grp = grp.create_group('properties')
         props = {k: [] for k in objects[0].properties.keys()}

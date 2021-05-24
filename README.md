@@ -1,5 +1,7 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack)](https://pepy.tech/project/btrack)
 
+[![logo](./examples/btrack_logo.png)]()
+
 # Bayesian Tracker (btrack) :microscope::computer:
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking,

@@ -26,7 +26,6 @@ high-likelihood hypotheses that accounts for all observations.
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
-*Automated cell tracking and lineage tree reconstruction*. Cell divisions are highlighted in red. -->
 [![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
 *Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#Usage-with-Napari).
 

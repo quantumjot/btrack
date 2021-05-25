@@ -293,6 +293,12 @@ class HDF5FileHandler:
                 fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
+    Parameters
+    ----------
+    filename : str
+    read_write : str
+    obj_type : str
+
 
     Properties
     ----------

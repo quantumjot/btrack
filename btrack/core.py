@@ -88,45 +88,57 @@ class BayesianTracker:
     Use optimise to generate hypotheses for global optimisation. Read the
     TrackLinker documentation for more information about the track linker.
 
-    Members:
-        append(): append an object (or list of objects)
-        track(): run the tracking algorithm
-        track_interactive(): run the tracking in interactive mode
-        optimise(): run the optimiser
-        cleanup(): clean up the tracks according to some metrics
-        configure_from_file(): pass a json configuration file
+    Parameters
+    ----------
 
-    Args:
-        motion_model: a motion model to make motion predictions
-        object_model: an object model to make state predictions
-        return_kalman: boolean to request the Kalman debug info
+    verbose : bool
+        A flag to set the verbosity level while logging the output.
+    max_search_radius : int, float
+        The maximum search radius of the algorithm in isotropic units of the
+        data. Should be greater than zero.
 
-    Properties:
-        n_tracks: number of found tracks
-        tracks: the tracks themselves
-        refs: the tracks (by reference)
-        dummies: the dummy objects inserted by the tracker
-        volume: the imaging volume [x,y,z,t]
-        frame_range: the frame range for tracking, essentially the last
-            dimension of volume
-        max_search_radius: maximum search radius when using fast cost update
+    Attributes
+    ----------
+    n_tracks : int
+        The number of found tracks.
+    n_dummies : int
+        The number of inserted dummy objects.
+    tracks : list
+        A list of Tracklet objects.
+    refs : list
+        References to the objects forming the tracks.
+    dummies : list
+        The dummy objects inserted by the tracker.
+    volume : tuple
+        The imaging volume [x, y, z, t]
+    frame_range : tuple
+        The frame range for tracking, essentially the last dimension of volume.
+    max_search_radius : int, float
+        The maximum search radius of the algorithm in isotropic units of the
+        data. Should be greater than zero.
+    motion_model :
+        A motion model to make motion predictions.
+    object_model :
+        An object model to make state predictions.
+    update_method : BayesianUpdates
+        The method to perform the bayesian updates during tracklet linking.
+    return_kalman : bool
+        Flag to request the Kalman debug info when returning tracks.
 
-    Notes:
-        TODO(arl): lower precision for tracking output?
+    Notes
+    -----
+    'A Bayesian algorithm for tracking multiple moving objects in outdoor
+    surveillance video', Narayana M and Haverkamp D 2007 IEEE
 
-    References:
-        'A Bayesian algorithm for tracking multiple moving objects in outdoor
-        surveillance video', Narayana M and Haverkamp D 2007 IEEE
+    'Report Automated Cell Lineage Construction' Al-Kofahi et al.
+    Cell Cycle 2006 vol. 5 (3) pp. 327-335
 
-        'Report Automated Cell Lineage Construction' Al-Kofahi et al.
-        Cell Cycle 2006 vol. 5 (3) pp. 327-335
+    'Reliable cell tracking by global data association', Bise et al.
+    2011 IEEE Symposium on Biomedical Imaging pp. 1004-1010
 
-        'Reliable cell tracking by global data association', Bise et al.
-        2011 IEEE Symposium on Biomedical Imaging pp. 1004-1010
-
-        'Local cellular neighbourhood controls proliferation in cell
-        competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
-        Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
+    'Local cellular neighbourhood controls proliferation in cell
+    competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
+    Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
     """
 
     def __init__(
@@ -199,7 +211,7 @@ class BayesianTracker:
 
     @max_search_radius.setter
     def max_search_radius(self, max_search_radius: int):
-        """ Set the maximum search radius for fast cost updates """
+        """Set the maximum search radius for fast cost updates."""
         assert max_search_radius > 0.0
         logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
         self._lib.max_search_radius(self._engine, max_search_radius)
@@ -210,7 +222,7 @@ class BayesianTracker:
 
     @update_method.setter
     def update_method(self, method):
-        """ set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
+        """Set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
         assert method in constants.BayesianUpdates
         logger.info(f'Setting Bayesian update method to: {method}')
         self._lib.set_update_mode(self._engine, method.value)
@@ -223,15 +235,15 @@ class BayesianTracker:
 
     @property
     def n_dummies(self):
-        """ Return the number of dummy objects (negative ID) """
+        """Return the number of dummy objects (negative ID)."""
         return len(
             [d for d in itertools.chain.from_iterable(self.refs) if d < 0]
         )
 
     @property
     def tracks(self):
-        """ Return a sorted list of tracks, default is to sort by increasing
-        length """
+        """Return a sorted list of tracks, default is to sort by increasing
+        length."""
         return [self[i] for i in range(self.n_tracks)]
 
     @property

@@ -116,14 +116,16 @@ class BayesianTracker:
     max_search_radius : int, float
         The maximum search radius of the algorithm in isotropic units of the
         data. Should be greater than zero.
-    motion_model :
+    motion_model : MotionModel
         A motion model to make motion predictions.
-    object_model :
+    object_model : ObjectModel
         An object model to make state predictions.
     update_method : BayesianUpdates
         The method to perform the bayesian updates during tracklet linking.
     return_kalman : bool
         Flag to request the Kalman debug info when returning tracks.
+    lbep :
+        Return an LBEP table of the track lineages.
 
     Notes
     -----

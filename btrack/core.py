@@ -122,6 +122,15 @@ class BayesianTracker:
         An object model to make state predictions.
     update_method : BayesianUpdates
         The method to perform the bayesian updates during tracklet linking.
+            BayesianUpdates.EXACT
+                Use the exact Bayesian update method. Can be slow for systems
+                with many objects.
+            BayesianUpdates.APPROXIMATE
+                Use the approximate Bayesian update method. Useful for systems
+                with may objects.
+            BayesianUpdates.CUDA
+                Use the CUDA implementation of the Bayesian update method. Not
+                currently implemented.
     return_kalman : bool
         Flag to request the Kalman debug info when returning tracks.
     lbep :
@@ -250,8 +259,8 @@ class BayesianTracker:
 
     @property
     def refs(self):
-        """ Return tracks as a list of IDs (essentially pointers) to the
-        original objects. Use this to write out HDF5 tracks. """
+        """Return tracks as a list of IDs (essentially pointers) to the original
+        objects. Use this to write out HDF5 tracks. """
         tracks = []
         for i in range(self.n_tracks):
             # get the track length
@@ -266,7 +275,7 @@ class BayesianTracker:
 
     @property
     def dummies(self):
-        """ Return a list of dummy objects """
+        """Return a list of dummy objects."""
         return [
             self._lib.get_dummy(self._engine, -(i + 1))
             for i in range(self.n_dummies)
@@ -274,7 +283,10 @@ class BayesianTracker:
 
     @property
     def lbep(self):
-        """ Return an LBEP list
+        """ Return an LBEP list describing the track lineage information.
+
+        Notes
+        -----
         L - a unique label of the track (label of markers, 16-bit positive)
         B - a zero-based temporal index of the frame in which the track begins
         E - a zero-based temporal index of the frame in which the track ends
@@ -301,9 +313,8 @@ class BayesianTracker:
 
     @property
     def volume(self):
-        """ Return the imaging volume in the format xyzt. This is effectively
-        the range of each dimension: [(xlo,xhi), ..., (zlo,zhi), (tlo,thi)]
-        """
+        """Return the imaging volume in the format xyzt. This is effectively
+        the range of each dimension: [(xlo,xhi), ..., (zlo,zhi), (tlo,thi)]."""
         vol = np.zeros((3, 2), dtype='float')
         self._lib.get_volume(self._engine, vol)
         return [tuple(vol[i, :].tolist()) for i in range(3)] + [
@@ -312,7 +323,13 @@ class BayesianTracker:
 
     @volume.setter
     def volume(self, volume: tuple):
-        """ Set the imaging volume """
+        """Set the imaging volume.
+
+        Parameters
+        ----------
+        volume : tuple
+            A tuple describing the imaging volume.
+        """
         if not isinstance(volume, tuple):
             raise TypeError('Volume must be a tuple')
         if len(volume) != 3 or any([len(v) != 2 for v in volume]):
@@ -326,14 +343,13 @@ class BayesianTracker:
 
     @motion_model.setter
     def motion_model(self, new_model):
-        """ Set a new motion model. Must be of type MotionModel, either loaded
+        """Set a new motion model. Must be of type MotionModel, either loaded
         from file or instantiating a MotionModel.
 
-        Args:
-            new_model: can be a string or a user defined MotionModel class
-
-        Raises:
-            TypeError is cannot determine the type of motion model
+        Parameters
+        ----------
+        new_model : MotionModel
+            A motion model to be used by the tracker.
         """
 
         if isinstance(new_model, btypes.MotionModel):
@@ -370,15 +386,13 @@ class BayesianTracker:
 
     @object_model.setter
     def object_model(self, new_model):
-        """
-        Set a new object model. Must be of type ObjectModel, either loaded
+        """ Set a new object model. Must be of type ObjectModel, either loaded
         from file or instantiating an ObjectModel.
 
-        Args:
-            new_model: can be a string or a user defined ObjectModel class
+        Parameters
+        ----------
+        new_model : ObjectModel
 
-        Raises:
-            TypeError if cannot determine the type of motion model
         """
 
         if isinstance(new_model, btypes.ObjectModel):
@@ -410,7 +424,7 @@ class BayesianTracker:
         return self._frame_range
 
     @frame_range.setter
-    def frame_range(self, frame_range):
+    def frame_range(self, frame_range: tuple):
         if not isinstance(frame_range, tuple):
             raise TypeError('Frame range must be specified as a tuple')
         if frame_range[1] < frame_range[0]:
@@ -422,10 +436,18 @@ class BayesianTracker:
         return self._objects
 
     def append(self, objects):
-        """ Append a single track object, or list of objects to the stack. Note
+        """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
-        concatenated easily, by running this a few times. """
+        concatenated easily, by running this a few times.
+
+        Parameters
+        ----------
+
+        objects : list, np.ndarray
+            A list of objects to track.
+
+        """
 
         objects = localizations_to_objects(objects)
 
@@ -474,7 +496,15 @@ class BayesianTracker:
         utils.log_stats(stats.to_dict())
 
     def track_interactive(self, step_size: int = 100):
-        """ Run the tracking in an interactive mode """
+        """Run the tracking in an interactive mode.
+
+        Parameters
+        ----------
+        step_size : int, default=100
+            The number of tracking steps to be taken before returning summary
+            statistics. The tracking will be followed to completion, regardless
+            of the step size provided.
+        """
 
         # TODO(arl): this needs cleaning up to have some decent output
         if not self._initialised:
@@ -517,14 +547,14 @@ class BayesianTracker:
             )
 
     def step(self, n_steps: int = 1):
-        """ Run an iteration (or more) of the tracking. Mostly for
-        interactive mode tracking """
+        """Run an iteration (or more) of the tracking. Mostly for interactive
+        mode tracking."""
         if not self._initialised:
             return None
         return self._stats(self._lib.step(self._engine, n_steps))
 
     def hypotheses(self, params=None):
-        """ Calculate and return hypotheses using the hypothesis engine """
+        """Calculate and return hypotheses using the hypothesis engine."""
         # raise NotImplementedError
         if not self.hypothesis_model:
             raise AttributeError('Hypothesis model has not been specified.')
@@ -550,6 +580,17 @@ class BayesianTracker:
         """ Optimise the tracks. This generates the hypotheses for track merges,
         branching etc, runs the optimiser and then performs track merging,
         removal of track fragments, renumbering and assignment of branches.
+
+        Parameters
+        ----------
+        options : dict
+            A set of options to be used by GLPK during convex optimization.
+
+        Returns
+        -------
+        optimized : list
+            The list of hypotheses which represents the optimal solution.
+
         """
 
         logger.info(f'Loading hypothesis model: {self.hypothesis_model.name}')
@@ -597,7 +638,7 @@ class BayesianTracker:
         return optimised
 
     def __getitem__(self, idx: int):
-        """ Grab a track from the BayesianTracker object. """
+        """Return a single track from the BayesianTracker object."""
         # get the track length
         n = self._lib.track_length(self._engine, idx)
 
@@ -660,13 +701,39 @@ class BayesianTracker:
         return trk
 
     def export(self, filename: str, obj_type=None, filter_by=None):
-        """ export tracks using the appropriate exporter """
+        """Export tracks using the appropriate exporter.
+
+        Parameters
+        ----------
+        filename : str
+            The filename to export the data. The extension (e.g. .h5) is used
+            to select the correct export function.
+        obj_type : str, optional
+            The object type to export the data. Usually `obj_type_1`
+        filter_by : str, optional
+            A string that represents how the data has been filtered prior to
+            tracking, e.g. using the object property `area>100`
+        """
         export_delegator(
             filename, self, obj_type=obj_type, filter_by=filter_by
         )
 
     def to_napari(self, ndim: int = 3):
-        """ Return the data in a format for a napari tracks layer """
+        """Return the data in a format for a napari tracks layer.
+
+        Parameters
+        ----------
+        ndim : int
+            The number of spatial dimensions of the data. Must be 2 or 3.
+
+
+        Returns
+        -------
+        data : np.ndarray
+        properties : dict
+        graph : dict
+
+        """
         return utils.tracks_to_napari(self.tracks, ndim)
 
 

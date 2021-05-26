@@ -141,6 +141,9 @@ print(track_zero.children)
 print(track_zero.generation)
 
 ```
+### Configuration
+
+For a complete guide to configuration, see `CONFIGURATION.md`.
 
 ### Visualizing track data with napari
 

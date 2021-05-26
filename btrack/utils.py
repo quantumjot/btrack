@@ -292,7 +292,32 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
 
 
 def tracks_to_napari(tracks: list, ndim: int = 3):
-    """Convert a list of Tracklets to napari format input."""
+    """Convert a list of Tracklets to napari format input.
+
+    Parameters
+    ----------
+    tracks : list
+        A list of tracklet objects from BayesianTracker.
+    ndim : int
+        The number of spatial dimensions of the data. Must be 2 or 3.
+
+
+    Returns
+    -------
+    data : array (N, D+1)
+        Coordinates for N points in D+1 dimensions. ID,T,(Z),Y,X. The first
+        axis is the integer ID of the track. D is either 3 or 4 for planar
+        or volumetric timeseries respectively.
+    properties : dict {str: array (N,)}, DataFrame
+        Properties for each point. Each property should be an array of length N,
+        where N is the number of points.
+    graph : dict {int: list}
+        Graph representing associations between tracks. Dictionary defines the
+        mapping between a track ID and the parents of the track. This can be
+        one (the track has one parent, and the parent has >=1 child) in the
+        case of track splitting, or more than one (the track has multiple
+        parents, but only one child) in the case of track merging.
+    """
     # TODO: arl guess the dimensionality from the data
     assert ndim in (2, 3)
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]

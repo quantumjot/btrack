@@ -110,7 +110,7 @@ class BayesianTracker:
     dummies : list
         The dummy objects inserted by the tracker.
     volume : tuple
-        The imaging volume [x, y, z, t]
+        The imaging volume as [(xlo, xhi), ..., (zlo, zhi), (tlo, thi)]
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
     max_search_radius : int, float
@@ -157,7 +157,7 @@ class BayesianTracker:
         verbose: bool = True,
         max_search_radius: int = constants.MAX_SEARCH_RADIUS,
     ):
-        """ Initialise the BayesianTracker C++ engine and parameters """
+        """Initialise the BayesianTracker C++ engine and parameters."""
 
         # load the library, get an instance of the engine
         self._initialised = False
@@ -195,13 +195,23 @@ class BayesianTracker:
         self._lib.del_interface(self._engine)
 
     def configure_from_file(self, filename: str):
-        """ Configure the tracker from a configuration file """
+        """Configure the tracker from a configuration file. See `configure`."""
         config = utils.load_config(filename)
         self.configure(config)
 
     def configure(self, config: dict):
-        """ Configure the tracker with a motion model, an object model and
+        """Configure the tracker with a motion model, an object model and
         hypothesis generation_parameters.
+
+        Parameters
+        ----------
+        config : dict
+            A dictionary containing the configuration options for a tracking
+            session.
+
+        Notes
+        -----
+
         """
 
         if not isinstance(config, dict):
@@ -241,7 +251,7 @@ class BayesianTracker:
 
     @property
     def n_tracks(self):
-        """ Return the number of tracks found """
+        """Return the number of tracks found."""
         return self._lib.size(self._engine)
 
     @property
@@ -283,7 +293,7 @@ class BayesianTracker:
 
     @property
     def lbep(self):
-        """ Return an LBEP list describing the track lineage information.
+        """Return an LBEP list describing the track lineage information.
 
         Notes
         -----
@@ -314,7 +324,8 @@ class BayesianTracker:
     @property
     def volume(self):
         """Return the imaging volume in the format xyzt. This is effectively
-        the range of each dimension: [(xlo,xhi), ..., (zlo,zhi), (tlo,thi)]."""
+        the range of each dimension: [(xlo, xhi), ..., (zlo, zhi), (tlo, thi)].
+        """
         vol = np.zeros((3, 2), dtype='float')
         self._lib.get_volume(self._engine, vol)
         return [tuple(vol[i, :].tolist()) for i in range(3)] + [
@@ -720,20 +731,7 @@ class BayesianTracker:
 
     def to_napari(self, ndim: int = 3):
         """Return the data in a format for a napari tracks layer.
-
-        Parameters
-        ----------
-        ndim : int
-            The number of spatial dimensions of the data. Must be 2 or 3.
-
-
-        Returns
-        -------
-        data : np.ndarray
-        properties : dict
-        graph : dict
-
-        """
+        See `utils.tracks_to_napari`."""
         return utils.tracks_to_napari(self.tracks, ndim)
 
 

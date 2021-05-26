@@ -256,9 +256,7 @@ def h5check_property_exists(property):
 
 
 class HDF5FileHandler:
-    """HDF5 File Handler.
-
-    Generic HDF5 file hander for reading and writing datasets. This is
+    """Generic HDF5 file hander for reading and writing datasets. This is
     inter-operable between segmentation, tracking and analysis code.
 
     LBEPR is a modification of the LBEP format to also include the root node
@@ -296,23 +294,24 @@ class HDF5FileHandler:
     Parameters
     ----------
     filename : str
+        The filename of the hdf5 file to be used.
     read_write : str
+        A read/write mode for the file, e.g. `w`, `r`, `a` etc.
     obj_type : str
-
+        The name of the object type. Defaults to `obj_type_1`.
 
     Properties
     ----------
     segmentation : np.ndarray
+        A numpy array representing the segmentation data. TZYX
     objects : list [PyTrackObject]
+        A list of PyTrackObjects localised from the segmentation data.
     filtered_objects  : np.ndarray
+        Similar to objects, but filtered by property.
     tracks : list [Tracklet]
+        A list of Tracklet objects.
     lbep : np.ndarray
-
-    Methods
-    -------
-    write_segmentation
-    write_objects
-    write_tracks
+        The LBEP table representing the track graph.
 
     Usage
     -----
@@ -372,7 +371,13 @@ class HDF5FileHandler:
         return segmentation
 
     def write_segmentation(self, segmentation: np.ndarray):
-        """Write out the segmentation to an HDF file."""
+        """Write out the segmentation to an HDF file.
+
+        Parameters
+        ----------
+        segmentation : np.ndarray
+            A numpy array representing the segmentation data. T(Z)YX, uint16
+        """
         # write the segmentation out
         grp = self._hdf.create_group('segmentation')
         grp.create_dataset(
@@ -390,9 +395,8 @@ class HDF5FileHandler:
 
     @h5check_property_exists('objects')
     def filtered_objects(self, f_expr=None):
-        """ return a filtered list of objects based on metadata.
-        f_expr should be of the format 'flag==1'
-        """
+        """A filtered list of objects based on metadata. f_expr should be of the
+         format `flag==1`."""
 
         if self.object_type not in self.object_types:
             raise ValueError(f'Object type {self.object_type} not recognized')
@@ -458,7 +462,14 @@ class HDF5FileHandler:
         return objects_from_dict(objects_dict)
 
     def write_objects(self, data):
-        """Write objects to HDF file."""
+        """Write objects to HDF file.
+
+        Parameters
+        ----------
+        data : list or BayesianTracker instance
+            Either a list of PyTrackObject to be written, or an instance of
+            BayesianTracker with a .objects property.
+        """
         # TODO(arl): make sure that the objects are ordered in time
 
         if isinstance(data, list):
@@ -576,7 +587,16 @@ class HDF5FileHandler:
 
     @h5check_property_exists('objects')
     def write_tracks(self, tracker, f_expr=None):
-        """Write tracks to HDF file."""
+        """Write tracks to HDF file.
+
+        Parameters
+        ----------
+        tracks : BayesianTracker
+            An instance of BayesianTracker.
+        f_expr : str
+            An expression which represents how the objects have been filtered
+            prior to tracking, e.g. `area>100.0`
+        """
         if not tracker.tracks:
             logger.error(f'No tracks found when exporting to: {self.filename}')
             return

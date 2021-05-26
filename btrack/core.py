@@ -46,47 +46,7 @@ if not logger.handlers:
 
 
 class BayesianTracker:
-    """ BayesianTracker
-
-    BayesianTracker is a multi object tracking algorithm, specifically
-    used to reconstruct tracks in crowded fields. Here we use a probabilistic
-    network of information to perform the trajectory linking. This method uses
-    positional information (position, velocity ...) as well as visual
-    information (labels, features...) for track linking.
-
-    The tracking algorithm assembles reliable sections of track that do not
-    contain splitting events (tracklets). Each new tracklet initiates a
-    probabilistic model in the form of a Kalman filter (Kalman, 1960), and
-    utilises this to predict future states (and error in states) of each of the
-    objects in the field of view.  We assign new observations to the growing
-    tracklets (linking) by evaluating the posterior probability of each
-    potential linkage from a Bayesian belief matrix for all possible linkages
-    (Narayana and Haverkamp, 2007). The best linkages are those with the
-    highest posterior probability.
-
-    This class is a wrapper for the C++ implementation of the BayesianTracker.
-
-    Data can be passed in in the following formats:
-        - btrack PyTrackObject (defined in btypes)
-        - Optional JSON files using loaders
-        - HDF
-
-    Can be used with ContextManager support, like this:
-
-        >>> with BayesianTracker() as tracker:
-        >>>    tracker.append(observations)
-        >>>    tracker.track()
-
-    The tracker can be used to return all of the original data neatly packaged
-    into tracklet objects, or as a nested list of references to the original
-    data sets. The latter is useful if using only the first part of a tracking
-    protocol, or other metadata is needed for further analysis. The references
-    can be used to make symbolic links in HDF5 files, for example.
-
-    Use the .tracks to return Tracklets, or .refs to return the references.
-
-    Use optimise to generate hypotheses for global optimisation. Read the
-    TrackLinker documentation for more information about the track linker.
+    """Bayesian Tracker.
 
     Parameters
     ----------
@@ -138,6 +98,46 @@ class BayesianTracker:
 
     Notes
     -----
+    BayesianTracker is a multi object tracking algorithm, specifically
+    used to reconstruct tracks in crowded fields. Here we use a probabilistic
+    network of information to perform the trajectory linking. This method uses
+    positional information (position, velocity ...) as well as visual
+    information (labels, features...) for track linking.
+
+    The tracking algorithm assembles reliable sections of track that do not
+    contain splitting events (tracklets). Each new tracklet initiates a
+    probabilistic model in the form of a Kalman filter (Kalman, 1960), and
+    utilises this to predict future states (and error in states) of each of the
+    objects in the field of view.  We assign new observations to the growing
+    tracklets (linking) by evaluating the posterior probability of each
+    potential linkage from a Bayesian belief matrix for all possible linkages
+    (Narayana and Haverkamp, 2007). The best linkages are those with the
+    highest posterior probability.
+
+    This class is a wrapper for the C++ implementation of the BayesianTracker.
+
+    Data can be passed in in the following formats:
+        - btrack PyTrackObject (defined in btypes)
+        - Optional JSON files using loaders
+        - HDF
+
+    Can be used with ContextManager support, like this:
+
+        >>> with BayesianTracker() as tracker:
+        >>>    tracker.append(observations)
+        >>>    tracker.track()
+
+    The tracker can be used to return all of the original data neatly packaged
+    into tracklet objects, or as a nested list of references to the original
+    data sets. The latter is useful if using only the first part of a tracking
+    protocol, or other metadata is needed for further analysis. The references
+    can be used to make symbolic links in HDF5 files, for example.
+
+    Use the .tracks to return Tracklets, or .refs to return the references.
+
+    Use optimise to generate hypotheses for global optimisation. Read the
+    TrackLinker documentation for more information about the track linker.
+
     'A Bayesian algorithm for tracking multiple moving objects in outdoor
     surveillance video', Narayana M and Haverkamp D 2007 IEEE
 

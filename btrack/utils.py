@@ -308,7 +308,7 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
         Coordinates for N points in D+1 dimensions. ID,T,(Z),Y,X. The first
         axis is the integer ID of the track. D is either 3 or 4 for planar
         or volumetric timeseries respectively.
-    properties : dict {str: array (N,)}, DataFrame
+    properties : dict {str: array (N,)}
         Properties for each point. Each property should be an array of length N,
         where N is the number of points.
     graph : dict {int: list}

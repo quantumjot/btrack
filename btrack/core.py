@@ -208,10 +208,6 @@ class BayesianTracker:
         config : dict
             A dictionary containing the configuration options for a tracking
             session.
-
-        Notes
-        -----
-
         """
 
         if not isinstance(config, dict):

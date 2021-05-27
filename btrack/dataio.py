@@ -40,11 +40,17 @@ class _PyTrackObjectFactory:
 
 
 def localizations_to_objects(localizations):
-    """Take a numpy array or pandas dataframe and convert to PyTrackObjects
+    """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
-    Params:
-        localizations: list(PyTrackObject), np.ndarray, pandas.DataFrame
+    Parameters
+    ----------
+    localizations : list[PyTrackObject], np.ndarray, pandas.DataFrame
+        A list or array of localizations.
 
+    Returns
+    -------
+    objects : list[PyTrackObject]
+        A list of PyTrackObject objects that represent the localizations.
     """
 
     logger.info(f'Objects are of type: {type(localizations)}')
@@ -95,7 +101,7 @@ def objects_from_dict(objects_dict: dict):
 def objects_from_array(
     objects_arr: np.ndarray, default_keys=constants.DEFAULT_OBJECT_KEYS
 ):
-    """Construct PyTrackObjects from a numpy array"""
+    """Construct PyTrackObjects from a numpy array."""
     assert objects_arr.ndim == 2
 
     n_features = objects_arr.shape[1]
@@ -110,7 +116,7 @@ def objects_from_array(
 
 
 def import_JSON(filename: str):
-    """ generic JSON importer for localisations from other software """
+    """Generic JSON importer for localisations from other software."""
     with open(filename, 'r') as json_file:
         data = json.load(json_file)
     objects = []
@@ -124,15 +130,16 @@ def import_JSON(filename: str):
 
 
 def import_CSV(filename: str):
-    """ import from a CSV file
+    """Import localizations from a CSV file
 
+    Notes
+    -----
     CSV file should have one of the following formats:
 
     t, x, y
     t, x, y, label
     t, x, y, z
     t, x, y, z, label
-
     """
 
     objects = []
@@ -147,7 +154,25 @@ def import_CSV(filename: str):
 
 
 def export_delegator(filename, tracker, obj_type=None, filter_by=None):
-    """ Export data from the tracker using the appropriate exporter """
+    """Export data from the tracker using the appropriate exporter.
+
+    Parameters
+    ----------
+    filename : str
+        The filename to export the data. The extension (e.g. .h5) is used
+        to select the correct export function.
+    tracker : BayesianTracker
+        An instance of the tracker.
+    obj_type : str, optional
+        The object type to export the data. Usually `obj_type_1`
+    filter_by : str, optional
+        A string that represents how the data has been filtered prior to
+        tracking, e.g. using the object property `area>100`
+
+    Notes
+    -----
+    This uses the appropriate exporter dependent on the given file extension.
+    """
     # assert(isinstance(tracker, BayesianTracker))
     assert isinstance(filename, str)
 
@@ -178,7 +203,20 @@ def export_CSV(
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
     obj_type=None,
 ):
-    """ export the track data as a simple CSV file """
+    """Export the track data as a simple CSV file.
+
+    Parameters
+    ----------
+    filename : str
+        The filename of the file to be exported.
+    tracks : list[Tracklet]
+        A list of Tracklet objects to be exported.
+    properties : list, default = constants.DEFAULT_EXPORT_PROPERTIES
+        A list of tracklet properties to be exported.
+    obj_type : str, optional
+        A string describing the object type, e.g. `obj_type_1`.
+
+    """
 
     if not tracks:
         logger.error(f'No tracks found when exporting to: {filename}')
@@ -198,10 +236,7 @@ def export_CSV(
 
 
 def export_LBEP(filename: str, tracks: list):
-    """ export the LBEP table described here:
-    https://public.celltrackingchallenge.net/documents/
-        Naming%20and%20file%20content%20conventions.pdf
-    """
+    """Export the LBEP table as a text file."""
     if not tracks:
         logger.error(f'No tracks found when exporting to: {filename}')
         return
@@ -259,38 +294,6 @@ class HDF5FileHandler:
     """Generic HDF5 file hander for reading and writing datasets. This is
     inter-operable between segmentation, tracking and analysis code.
 
-    LBEPR is a modification of the LBEP format to also include the root node
-    of the tree.
-
-        I - number of objects
-        J - number of frames
-        K - number of tracks
-
-    Added generic filtering to object retrieval, e.g.
-        obj = handler.filtered_objects('flag==1')
-        retrieves all objects if there is an object['flag'] == 1
-
-    Basic format of the HDF file is:
-        segmentation/
-            images          - (J x (d) x h x w) uint16 segmentation
-        objects/
-            obj_type_1/
-                coords      - (I x 5) [t, x, y, z, object_type]
-                labels      - (I x D) [label, (softmax scores ...)]
-                map         - (J x 2) [start_index, end_index] -> coords array
-                properties/
-                    property-0  - (I x 1) first named property
-                    ...
-            ...
-        tracks/
-            obj_type_1/
-                tracks      - (I x 1) [index into coords]
-                dummies     - similar to coords, but for dummy objects
-                map         - (K x 2) [start_index, end_index] -> tracks array
-                LBEPRG      - (K x 6) [L, B, E, P, R, G]
-                fates       - (K x n) [fate_from_tracker, ...future_expansion]
-            ...
-
     Parameters
     ----------
     filename : str
@@ -312,6 +315,43 @@ class HDF5FileHandler:
         A list of Tracklet objects.
     lbep : np.ndarray
         The LBEP table representing the track graph.
+
+    Notes
+    -----
+    Basic format of the HDF file is:
+        segmentation/
+            images          - (J x (d) x h x w) uint16 segmentation
+        objects/
+            obj_type_1/
+                coords      - (I x 5) [t, x, y, z, object_type]
+                labels      - (I x D) [label, (softmax scores ...)]
+                map         - (J x 2) [start_index, end_index] -> coords array
+                properties/
+                    area  - (I x 1) first named property (e.g. `area`)
+                    ...
+            ...
+        tracks/
+            obj_type_1/
+                tracks      - (I x 1) [index into coords]
+                dummies     - similar to coords, but for dummy objects
+                map         - (K x 2) [start_index, end_index] -> tracks array
+                LBEPRG      - (K x 6) [L, B, E, P, R, G]
+                fates       - (K x n) [fate_from_tracker, ...future_expansion]
+            ...
+
+
+    Where:
+        I - number of objects
+        J - number of frames
+        K - number of tracks
+
+    Added generic filtering to object retrieval, e.g.
+        obj = handler.filtered_objects('flag==1')
+        retrieves all objects if there is an object['flag'] == 1
+
+    LBEPR is a modification of the LBEP format to also include the root node
+    of the tree.
+
 
     Usage
     -----

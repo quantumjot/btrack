@@ -34,6 +34,8 @@ Updates
 - Bug fix for object properties. These are now updated rather than being overwritten
 - Bug fix for writing multiple object types to the same h5 file
 - Added project logo
+- Major update of docstrings to follow numpy guidelines
+- Added a separate configuration guide document to the repo
 
 0.4.1
 -----

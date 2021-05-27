@@ -584,9 +584,7 @@ class BayesianTracker:
         return self.optimise(**kwargs)
 
     def optimise(self, options: dict = constants.GLPK_OPTIONS):
-        """ Optimise the tracks. This generates the hypotheses for track merges,
-        branching etc, runs the optimiser and then performs track merging,
-        removal of track fragments, renumbering and assignment of branches.
+        """Optimize the tracks.
 
         Parameters
         ----------
@@ -598,6 +596,11 @@ class BayesianTracker:
         optimized : list
             The list of hypotheses which represents the optimal solution.
 
+        Notes
+        -----
+        This generates the hypotheses for track merges, branching etc, runs the
+        optimiser and then performs track merging, removal of track fragments,
+        renumbering and assignment of branches.
         """
 
         logger.info(f'Loading hypothesis model: {self.hypothesis_model.name}')

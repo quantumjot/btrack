@@ -27,20 +27,16 @@ from . import constants, utils
 
 
 class PyTrackObject(ctypes.Structure):
-    """ TrackObject
+    """The base `btrack` track object.
 
+    Attributes
+    ----------
+
+    Notes
+    -----
     Primitive class to store information about an object. Essentially a single
     object in a field of view, with some member variables to keep track of data
     associated with an object.
-
-    Args:
-        position: 2D/3D position
-        dummy: is this a real object or a dummy object (e.g. when lost)
-        label: object classification
-        properties: object attributes, essentially metadata about object
-
-    Properties:
-        probability: class label probabilities
     """
 
     _fields_ = [
@@ -181,13 +177,7 @@ class PyTrackingInfo(ctypes.Structure):
 
 
 class MotionModel:
-    """ MotionModel
-
-    Kalman filter:
-    'Is an algorithm which uses a series of measurements observed over time,
-    containing noise (random variations) and other inaccuracies, and produces
-    estimates of unknown variables that tend to be more precise than those that
-    would be based on a single measurement alone.'
+    """The `btrack` motion model
 
     Args:
         name: a name identifier
@@ -209,10 +199,15 @@ class MotionModel:
             if they are incorrectly sized.
         load(): load a motion model from a JSON file.
 
-    Notes:
-        This is just a wrapper for the data with a few convenience functions
-        thrown in. Matrices must be stored Fortran style, because Eigen uses
-        column major and Numpy uses row major storage.
+    Notes
+    -----
+    'Is an algorithm which uses a series of measurements observed over time,
+    containing noise (random variations) and other inaccuracies, and produces
+    estimates of unknown variables that tend to be more precise than those that
+    would be based on a single measurement alone.'
+    This is just a wrapper for the data with a few convenience functions
+    thrown in. Matrices must be stored Fortran style, because Eigen uses
+    column major and Numpy uses row major storage.
 
     References:
         'A new approach to linear filtering and prediction problems.'
@@ -285,7 +280,7 @@ class MotionModel:
 
 
 class ObjectModel:
-    """ ObjectModel
+    """The `btrack` object model.
 
     This is a class to deal with state transitions in the object, essentially
     a Hidden Markov Model.  Makes an assumption that the states are all
@@ -329,39 +324,72 @@ class ObjectModel:
 
 
 class Tracklet:
-    """ Tracklet
+    """A `btrack` Tracklet object used to store track information.
 
+    Parameters
+    ----------
+    ID : int
+        A unique integer identifier for the tracklet.
+    data : list[PyTrackObject]
+        The objects linked together to form the track.
+    parent : int,
+        The identifiers of the parent track(s).
+    children : list
+        The identifiers of the child tracks.
+    fate : constants.Fates, default = constants.Fates.UNDEFINED
+        An enumerated type describing the fate of the track.
+
+    Attributes
+    ----------
+    x : list[float]
+        The list of x positions.
+    y : list[float]
+        The list of y positions.
+    z : list[float]
+        The list of z positions.
+    t : list[float]
+        The list of timestamps.
+    dummy : list[bool]
+        A list specifying which objects are dummy objects inserted by the tracker.
+    parent : int, list
+        The identifiers of the parent track(s).
+    refs : list[int]
+        Returns a list of PyTrackObject identifiers used to build the track.
+        Useful for indexing back into the original data, e.g. table of
+        localizations or h5 file.
+    label : list[str]
+        Return the label of each object in the track.
+    state : list[int]
+        Return the numerical label of each object in the track.
+    softmax : list[float]
+        If defined, return the softmax score for the label of each object in the
+        track.
+    properties : Dict[str, np.ndarray]
+        Return a dictionary of track properties derived from PyTrackObject
+        properties.
+    root : int,
+        The identifier of the root ID if a branching tree (ie cell division).
+    is_root : boole
+        Flag to denote root track.
+    is_leaf : bool
+        Flag to denote leaf track.
+    start : int, float
+        First time stamp of track.
+    stop : int, float
+        Last time stamp of track.
+    kalman : np.ndarray
+        Return the complete output of the kalman filter for this track. Note,
+        that this may not have been returned while from the tracker. See
+        `BayesianTracker.return_kalman` for more details.
+
+
+    Notes
+    -----
     Tracklet object for storing and updating linked lists of track objects.
-    Forms the data structure for an individual tracklet.
-
-    Track 'fates' are the selected hypotheses after optimization. Defined in
-    constants.Fates
-
-    Intrinsic properties can be accesses as attributes, e.g:
-    track.x returns the track x values
-
-    Args:
-        ID: unique identifier
-        data: trajectory
-        kalman: Kalman filter output
-        labels: class labels for each object
-        fate: the fate of the track
-
-    Members:
-        __len__: length of the trajectory in frames (including interpolated)
-
-    Properties:
-        x: x position
-        y: y position
-        z: z position
-        parent: parent tracklet
-        root: root tracklet if a branching tree (ie cell division)
-        motion_model: typically a reference to a Kalman filter or motion model
-        is_root: boolean flag to denote root track
-        is_leaf: boolean flag to denote leaf track
-        start: first time stamp of track
-        stop: last time stamp of track
-
+    Forms the data structure for an individual tracklet. Track 'fates' are the
+    selected hypotheses after optimization. Defined in constants.Fates. Intrinsic
+    properties can be accesses as attributes, e.g: track.x returns the track
+    x values.
     """
 
     def __init__(
@@ -508,13 +536,13 @@ class Tracklet:
         self._kalman = data
 
     def mu(self, index):
-        """ Return the Kalman filter mu. Note that we are only returning the mu
-         for the positions (e.g. 3x1) """
+        """Return the Kalman filter mu. Note that we are only returning the mu
+         for the positions (e.g. 3x1)."""
         return np.matrix(self.kalman[index, 1:4]).reshape(3, 1)
 
     def covar(self, index):
-        """ Return the Kalman filter covariance matrix. Note that we are
-        only returning the covariance matrix for the positions (e.g. 3x3) """
+        """Return the Kalman filter covariance matrix. Note that we are
+        only returning the covariance matrix for the positions (e.g. 3x3)."""
         return np.matrix(self.kalman[index, 4:13]).reshape(3, 3)
 
     def predicted(self, index):
@@ -522,7 +550,7 @@ class Tracklet:
         return np.matrix(self.kalman[index, 13:]).reshape(3, 1)
 
     def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
-        """ Return a dictionary of the tracklet which can be used for JSON
+        """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
         trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
@@ -540,10 +568,10 @@ class Tracklet:
         return tmp_track
 
     def in_frame(self, frame):
-        """ Return true or false as to whether the track is in the frame """
+        """Return true or false as to whether the track is in the frame."""
         return self.t[0] <= frame and self.t[-1] >= frame
 
     def trim(self, frame, tail=75):
-        """ Trim the tracklet and return one with the trimmed data """
+        """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)

@@ -76,14 +76,17 @@ def np_int_vec_p():
 
 
 def load_library(filename):
-    """ Return the platform for shared library loading.  Take care of loading
-    the appropriate shared library.
+    """Return the platform for shared library loading.
 
-    Args:
-        filename: filename for the library
+    Parameters
+    ----------
+    filename : str
+        Filename for the shared library.
 
-    Raises:
-        logging warning if windows is used
+    Returns
+    -------
+    lib : ctypes.CDLL
+        The ctypes `btrack` library.
     """
 
     if not isinstance(filename, str):
@@ -106,7 +109,7 @@ def load_library(filename):
 
 
 def get_library():
-    """ This loads and returns the btrack shared library. """
+    """Loads and returns the btrack shared library."""
     lib = load_library(os.path.join(BTRACK_PATH, 'libs', 'libtracker'))
 
     # deal with constructors/destructors

@@ -5,6 +5,7 @@ This is a short guide to the configuration parameters for `btrack`
 ## Miscellaneous parameters
 + `max_search_radius` - the maximum search radius in isotropic unit of the data
 + `mode` - the update mode for the tracker
++ `volume` - estimate of the dimensions of the imaging volume
 
 
 ## Motion model

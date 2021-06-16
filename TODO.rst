@@ -36,6 +36,7 @@ Updates
 - Added project logo
 - Major update of docstrings to follow numpy guidelines
 - Added a separate configuration guide document to the repo
+- Apple M1 support for compilation
 
 0.4.1
 -----

@@ -12,6 +12,7 @@ dist
 build
 btrack.egg-info
 bworker.py
+docs/
 *.DS_store
 *.o
 *.pyc

@@ -46,11 +46,14 @@ if not logger.handlers:
 
 
 class BayesianTracker:
-    """Bayesian Tracker.
+    """BayesianTracker.
+
+    BayesianTracker is a multi object tracking algorithm, specifically
+    used to reconstruct tracks in crowded fields. Here we use a probabilistic
+    network of information to perform the trajectory linking.
 
     Parameters
     ----------
-
     verbose : bool
         A flag to set the verbosity level while logging the output.
     max_search_radius : int, float
@@ -98,11 +101,8 @@ class BayesianTracker:
 
     Notes
     -----
-    BayesianTracker is a multi object tracking algorithm, specifically
-    used to reconstruct tracks in crowded fields. Here we use a probabilistic
-    network of information to perform the trajectory linking. This method uses
-    positional information (position, velocity ...) as well as visual
-    information (labels, features...) for track linking.
+    This method uses positional information (position, velocity ...) as well as
+    visual information (labels, features...) for track linking.
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
@@ -138,6 +138,8 @@ class BayesianTracker:
     Use optimise to generate hypotheses for global optimisation. Read the
     TrackLinker documentation for more information about the track linker.
 
+    References
+    ----------
     'A Bayesian algorithm for tracking multiple moving objects in outdoor
     surveillance video', Narayana M and Haverkamp D 2007 IEEE
 
@@ -399,7 +401,6 @@ class BayesianTracker:
         Parameters
         ----------
         new_model : ObjectModel
-
         """
 
         if isinstance(new_model, btypes.ObjectModel):
@@ -453,7 +454,6 @@ class BayesianTracker:
 
         objects : list, np.ndarray
             A list of objects to track.
-
         """
 
         objects = localizations_to_objects(objects)

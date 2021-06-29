@@ -580,7 +580,7 @@ class HDF5FileHandler:
                 d.dummy = True  # set the dummy flag to true
 
         # TODO(arl): this needs to be stored in the HDF folder
-        if 'f_expr' in self._hdf['tracks'][self.object_type].attrs:
+        if 'f_expr' in self._hdf['tracks'][self.object_type].attrs and self._f_expr is None:
             f_expr = self._hdf['tracks'][self.object_type].attrs['f_expr']
         elif self._f_expr is not None:
             f_expr = self._f_expr

@@ -466,13 +466,18 @@ class HDF5FileHandler:
             assert isinstance(f_expr, str)
             pattern = r'(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
             m = re.match(pattern, f_expr)
-            f_eval = f'x{m["op"]}{m["cmp"]}'  # e.g. x > 10
 
-            if m['name'] in grp:
-                data = grp[m['name']][:]
+            if m is None:
+                raise ValueError(f'Cannot filter objects by {f_expr}')
+
+            f_eval = f'x{m["op"]}{m["cmp"]}'  # e.g. x > 10
+            properties = grp['properties']
+            if m['name'] in properties:
+                data = properties[m['name']][:]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
-                logger.warning(f'Cannot filter objects by {m["name"]}')
+                raise ValueError(f'Cannot filter objects by {f_expr}')
+
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
 

@@ -471,9 +471,16 @@ class HDF5FileHandler:
                 raise ValueError(f'Cannot filter objects by {f_expr}')
 
             f_eval = f'x{m["op"]}{m["cmp"]}'  # e.g. x > 10
-            properties = grp['properties']
-            if m['name'] in properties:
-                data = properties[m['name']][:]
+
+            # old files have these stored differently
+            if 'properties' in grp.keys():
+                property_group = grp['properties']
+            else:
+                property_group = grp
+
+            if m['name'] in property_group.keys():
+                # logger.info(f"Property {m['name']} found in {property_group}.")
+                data = property_group[m['name']][:]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
                 raise ValueError(f'Cannot filter objects by {f_expr}')

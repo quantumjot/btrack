@@ -728,10 +728,10 @@ class BayesianTracker:
             filename, self, obj_type=obj_type, filter_by=filter_by
         )
 
-    def to_napari(self, ndim: int = 3):
+    def to_napari(self, ndim: int = 3, replace_nan: bool = True):
         """Return the data in a format for a napari tracks layer.
         See `utils.tracks_to_napari`."""
-        return utils.tracks_to_napari(self.tracks, ndim)
+        return utils.tracks_to_napari(self.tracks, ndim, replace_nan=replace_nan)
 
 
 if __name__ == "__main__":

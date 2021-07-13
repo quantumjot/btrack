@@ -274,6 +274,7 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
 
     for track in tracks:
         trk = track.to_dict(properties)
+
         if not data:
             data = {k: [] for k in trk.keys()}
 
@@ -291,7 +292,7 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
     return data
 
 
-def tracks_to_napari(tracks: list, ndim: int = 3):
+def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
     """Convert a list of Tracklets to napari format input.
 
     Parameters
@@ -300,6 +301,9 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
         A list of tracklet objects from BayesianTracker.
     ndim : int
         The number of spatial dimensions of the data. Must be 2 or 3.
+    replace_nan : bool
+        Replace instances of NaN/inf in the track properties with an
+        interpolated value.
 
 
     Returns
@@ -338,6 +342,15 @@ def tracks_to_napari(tracks: list, ndim: int = 3):
         [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
     )
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
+
+    # replace any NaNs in the properties with an interpolated value
+    if replace_nan:
+        for k, v in properties.items():
+            nans = np.isnan(v)
+            nans_idx = lambda x: x.nonzero()[0]
+            v[nans]= np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
+            properties[k] = v
+
     graph = {t.ID: [t.parent] for t in ordered if not t.is_root}
     return data, properties, graph
 

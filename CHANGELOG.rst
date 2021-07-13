@@ -38,6 +38,7 @@ Updates
 - Major update of docstrings to follow numpy guidelines
 - Added a separate configuration guide document to the repo
 - Apple M1 support for compilation
+- Added ability to replace NaN in track properties with interpolated values for visualization
 
 0.4.1
 -----

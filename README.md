@@ -1,4 +1,6 @@
-[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack)](https://pepy.tech/project/btrack)
+[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
+[![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/build.yml/badge.svg)](quantumjot/BayesianTracker/actions)
 
 [![logo](./examples/btrack_logo.png)]()
 

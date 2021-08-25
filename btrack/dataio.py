@@ -303,7 +303,7 @@ class HDF5FileHandler:
     obj_type : str
         The name of the object type. Defaults to `obj_type_1`.
 
-    Properties
+    Attributes
     ----------
     segmentation : np.ndarray
         A numpy array representing the segmentation data. TZYX
@@ -318,6 +318,7 @@ class HDF5FileHandler:
 
     Notes
     -----
+    ```
     Basic format of the HDF file is:
         segmentation/
             images          - (J x (d) x h x w) uint16 segmentation
@@ -339,26 +340,24 @@ class HDF5FileHandler:
                 fates       - (K x n) [fate_from_tracker, ...future_expansion]
             ...
 
-
     Where:
         I - number of objects
         J - number of frames
         K - number of tracks
-
-    Added generic filtering to object retrieval, e.g.
-        obj = handler.filtered_objects('flag==1')
-        retrieves all objects if there is an object['flag'] == 1
+    ```
 
     LBEPR is a modification of the LBEP format to also include the root node
     of the tree.
 
 
-    Usage
-    -----
+    Examples
+    --------
+    >>> with HDF5FileHandler('file.h5', 'r') as handler:
+    >>>    objects = handler.objects
 
-    > with HDF5FileHandler('file.h5', 'r') as h:
-    >    objects = h.objects
-
+    Added generic filtering to object retrieval, e.g.
+    >>> obj = handler.filtered_objects('flag==1')
+    >>> obj = handler.filtered_objects('area>100')
     """
 
     def __init__(
@@ -592,7 +591,10 @@ class HDF5FileHandler:
                 d.dummy = True  # set the dummy flag to true
 
         # TODO(arl): this needs to be stored in the HDF folder
-        if 'f_expr' in self._hdf['tracks'][self.object_type].attrs and self._f_expr is None:
+        if (
+            'f_expr' in self._hdf['tracks'][self.object_type].attrs
+            and self._f_expr is None
+        ):
             f_expr = self._hdf['tracks'][self.object_type].attrs['f_expr']
         elif self._f_expr is not None:
             f_expr = self._f_expr

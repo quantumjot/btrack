@@ -537,7 +537,6 @@ class HDF5FileHandler:
         if 'objects' not in self._hdf:
             self._hdf.create_group('objects')
         grp = self._hdf['objects'].create_group(self.object_type)
-        props_grp = grp.create_group('properties')
         props = {k: [] for k in objects[0].properties.keys()}
 
         n_objects = len(objects)
@@ -567,9 +566,41 @@ class HDF5FileHandler:
         logger.info(f'Writing labels/{self.object_type}')
         grp.create_dataset('labels', data=labels, dtype='float32')
 
-        logger.info(f'Writing properties/{self.object_type}')
-        for key in props.keys():
-            props_grp.create_dataset(key, data=props[key], dtype='float32')
+        # finally, write any properties
+        self.write_properties(props)
+
+    @h5check_property_exists('objects')
+    def write_properties(self, data: dict):
+        """Write object properties to HDF file.
+
+        Parameters
+        ----------
+        data : dict {key: (N, D)}
+            A dictionary of key-value pairs of properties to be written. The
+            values should be an array equal in length to the number of objects
+            and with D dimensions.
+        """
+
+        if not isinstance(data, dict):
+            raise TypeError("Properties must be a dictionary.")
+
+        grp = self._hdf[f'objects/{self.object_type}']
+
+        if 'properties' not in grp.keys():
+            props_grp = grp.create_group('properties')
+
+        n_objects = len(self.objects)
+
+        for key, values in data.items():
+            if not values:
+                logger.warning("Property {key} is empty.")
+                continue
+            values = np.array(values)
+            logger.info(
+                f'Writing properties/{self.object_type}/{key} {values.shape}'
+            )
+            assert values.shape[0] == n_objects
+            props_grp.create_dataset(key, data=data[key], dtype='float32')
 
     @property
     @h5check_property_exists('tracks')

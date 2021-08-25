@@ -348,11 +348,40 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
         for k, v in properties.items():
             nans = np.isnan(v)
             nans_idx = lambda x: x.nonzero()[0]
-            v[nans]= np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
+            v[nans] = np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
             properties[k] = v
 
     graph = {t.ID: [t.parent] for t in ordered if not t.is_root}
     return data, properties, graph
+
+
+def _pandas_html_repr(obj):
+    """Prepare data for HTML representation in a notebook."""
+    try:
+        import pandas as pd
+    except ImportError:
+        return (
+            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
+            + obj.__repr__()
+        )
+
+    obj_as_dict = obj.to_dict()
+
+    # now try to process for display in the notebook
+    if hasattr(obj, '__len__'):
+        n_items = len(obj)
+    else:
+        n_items = 1
+
+    for k, v in obj_as_dict.items():
+        if not isinstance(v, (list, np.ndarray)):
+            obj_as_dict[k] = [v] * n_items
+        elif isinstance(v, np.ndarray):
+            ndim = 0 if n_items == 1 else 1
+            if v.ndim > ndim:
+                obj_as_dict[k] = [f'{v.shape[ndim:]} array'] * n_items
+
+    return pd.DataFrame.from_dict(obj_as_dict).to_html()
 
 
 if __name__ == "__main__":

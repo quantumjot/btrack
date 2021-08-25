@@ -114,15 +114,7 @@ class PyTrackObject(ctypes.Structure):
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        try:
-            import pandas as pd
-
-            return pd.DataFrame(self.to_dict(), index=[0]).to_html()
-        except ImportError:
-            return (
-                "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-                + self.__repr__()
-            )
+        return utils._pandas_html_repr(self)
 
 
 class PyTrackingInfo(ctypes.Structure):
@@ -421,15 +413,7 @@ class Tracklet:
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        try:
-            import pandas as pd
-
-            return pd.DataFrame(self.to_dict()).to_html()
-        except ImportError:
-            return (
-                "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-                + self.__repr__()
-            )
+        return utils._pandas_html_repr(self)
 
     @property
     def properties(self) -> Dict[str, np.ndarray]:

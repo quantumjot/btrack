@@ -31,6 +31,10 @@ Updates
 =======
 0.4.2
 -----
+- Bug fix to remove indexing error for objects in the last frame
+
+0.4.2
+-----
 - Bug fix for object properties. These are now updated rather than being overwritten
 - Bug fix for writing multiple object types to the same h5 file
 - Support for filtering by properties in h5 file

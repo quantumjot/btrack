@@ -359,20 +359,29 @@ void BayesianTracker::step(const unsigned int steps)
 
   while (step < steps && current_frame <= frames.back()) {
 
-    // std::cout << "Frame: " << current_frame << std::endl;
-
     // update the list of active tracks
     update_active();
 
     // clear the list of objects
     new_objects.clear();
 
+    // std::cout << "Full Frame: " << current_frame << std::endl;
+
     // loop over all tracks found in this frame
-    while (objects[o_counter]->t == current_frame && o_counter != n_objects-1) {
-      // store a reference to this object
-      new_objects.push_back( objects[o_counter] );
-      o_counter++;
+    if (o_counter < n_objects) {
+      while (objects[o_counter]->t == current_frame) {
+
+        // store a reference to this object
+        new_objects.push_back( objects[o_counter] );
+        o_counter++;
+
+        // make sure our iterator doesn't run off the end of the vector
+        if (o_counter >= n_objects) {
+          break;
+        }
+      }
     }
+
 
 
     // set up some counters
@@ -591,7 +600,7 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
       // }
 
     }
-    
+
     // now update the entire column (i.e. track)
     //belief.col(trk) = belief.col(trk).cwiseProduct( v_posterior );
     belief.col(trk) = v_posterior;

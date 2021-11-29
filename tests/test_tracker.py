@@ -15,6 +15,14 @@ def _load_ground_truth():
         ground_truth = json.load(file)
     return ground_truth
 
+def _get_tracklet(tracks: list, idx: int) -> list:
+    """Get a tracklet by the first object ID"""
+    target = [t for t in tracks.values() if t[0]==idx]
+    if target:
+        return target[0]
+    else:
+        return None
+
 
 def test_tracker():
     """Test the operation of the tracker, using the default config and known
@@ -33,7 +41,7 @@ def test_tracker():
 
     # iterate over the tracks and check that the object references match
     for track in tracks:
-        gt_refs = ground_truth[str(track.ID)]
+        gt_refs = _get_tracklet(ground_truth, track.refs[0])
         np.testing.assert_equal(track.refs, gt_refs)
 
 
@@ -60,3 +68,5 @@ def test_tracker_frames():
     assert len(tracks) == 1
     track = tracks[0]
     np.testing.assert_equal(track.t, t)
+
+test_tracker()

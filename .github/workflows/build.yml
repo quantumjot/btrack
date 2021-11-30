@@ -9,7 +9,11 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v2
       with:
-        python-version: '3.x'
+        python-version: '3.8'
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ hashFiles('setup.py') }}-${{ hashFiles('requirements.txt') }}
     - name:
         Install dependencies
       run: |
@@ -20,6 +24,6 @@ jobs:
         flake8
     - name: Test with pytest
       run: |
-        pip install -e .
+        pip install --upgrade --upgrade-strategy eager -r requirements.txt -e .
         pip install pytest
         pytest

@@ -32,6 +32,7 @@ Updates
 0.4.3
 -----
 - Bug fix to remove indexing error for objects in the last frame
+- Deprecate render package
 
 0.4.2
 -----

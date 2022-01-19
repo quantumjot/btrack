@@ -26,15 +26,17 @@ from skimage.measure import label, regionprops_table
 
 from .dataio import localizations_to_objects
 
+import dask
+
 # get the logger instance
 logger = logging.getLogger("worker_process")
 
 
 def _centroids_from_single_arr(
-    segmentation: Union[np.ndarray, Generator],
+    segmentation: Union[np.ndarray, dask.array.core.Array, Generator],
     properties: Tuple[str],
     frame: int,
-    intensity_image: Optional[np.ndarray] = None,
+    intensity_image: Union[np.ndarray, dask.array.core.Array] = None,
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = False,
 ) -> np.ndarray:
@@ -103,8 +105,8 @@ def _concat_centroids(centroids, new_centroids):
 
 
 def segmentation_to_objects(
-    segmentation: Union[np.ndarray, Generator],
-    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
+    segmentation: Union[np.ndarray, dask.array.core.Array, Generator],
+    intensity_image: Optional[Union[np.ndarray, dask.array.core.Array, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
@@ -113,11 +115,11 @@ def segmentation_to_objects(
 
     Parameters
     ----------
-    segmentation : np.ndarray or Generator
+    segmentation : np.ndarray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
 
-    intensity_image : np.ndarray or Generator, optional
+    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See skimage.measure.regionprops for more info.
 
@@ -175,6 +177,26 @@ def segmentation_to_objects(
         for frame in range(segmentation.shape[0]):
             seg = segmentation[frame, ...]
             intens = intensity_image[frame, ...] if USE_INTENSITY else None
+            _centroids = _centroids_from_single_arr(
+                seg,
+                properties,
+                frame,
+                intensity_image=intens,
+                scale=scale,
+                use_weighted_centroid=USE_WEIGHTED,
+            )
+
+            # concatenate the centroids
+            centroids = _concat_centroids(centroids, _centroids)
+
+    elif isinstance(segmentation, dask.array.core.Array):
+
+        if segmentation.ndim not in (3, 4):
+            raise ValueError("Segmentation array must have 3 or 4 dims.")
+
+        for frame in range(segmentation.shape[0]):
+            seg = segmentation[frame, ...].compute().astype(np.uint16)
+            intens = intensity_image[frame, ...].compute().astype(np.uint16) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
                 seg,
                 properties,

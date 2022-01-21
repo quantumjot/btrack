@@ -26,7 +26,11 @@ from skimage.measure import label, regionprops_table
 
 from .dataio import localizations_to_objects
 
-import dask
+try:
+    import dask
+    DASK_INSTALLED = True
+except ImportError:
+    DASK_INSTALLED = False
 
 # get the logger instance
 logger = logging.getLogger("worker_process")
@@ -189,26 +193,6 @@ def segmentation_to_objects(
             # concatenate the centroids
             centroids = _concat_centroids(centroids, _centroids)
 
-    elif isinstance(segmentation, dask.array.core.Array):
-
-        if segmentation.ndim not in (3, 4):
-            raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-        for frame in range(segmentation.shape[0]):
-            seg = segmentation[frame, ...].compute().astype(np.uint16)
-            intens = intensity_image[frame, ...].compute().astype(np.uint16) if USE_INTENSITY else None
-            _centroids = _centroids_from_single_arr(
-                seg,
-                properties,
-                frame,
-                intensity_image=intens,
-                scale=scale,
-                use_weighted_centroid=USE_WEIGHTED,
-            )
-
-            # concatenate the centroids
-            centroids = _concat_centroids(centroids, _centroids)
-
     elif inspect.isgeneratorfunction(segmentation) or isinstance(
         segmentation, Generator
     ):
@@ -226,6 +210,27 @@ def segmentation_to_objects(
 
             # concatenate the centroids
             centroids = _concat_centroids(centroids, _centroids)
+
+    elif DASK_INSTALLED:
+        if isinstance(segmentation, dask.array.core.Array):
+
+            if segmentation.ndim not in (3, 4):
+                raise ValueError("Segmentation array must have 3 or 4 dims.")
+
+            for frame in range(segmentation.shape[0]):
+                seg = segmentation[frame, ...].compute().astype(np.uint16)
+                intens = intensity_image[frame, ...].compute().astype(np.uint16) if USE_INTENSITY else None
+                _centroids = _centroids_from_single_arr(
+                    seg,
+                    properties,
+                    frame,
+                    intensity_image=intens,
+                    scale=scale,
+                    use_weighted_centroid=USE_WEIGHTED,
+                )
+
+                # concatenate the centroids
+                centroids = _concat_centroids(centroids, _centroids)
 
     else:
 

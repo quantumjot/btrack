@@ -28,6 +28,7 @@ from .dataio import localizations_to_objects
 
 try:
     import dask
+
     DASK_INSTALLED = True
 except ImportError:
     DASK_INSTALLED = False
@@ -37,10 +38,10 @@ logger = logging.getLogger("worker_process")
 
 
 def _centroids_from_single_arr(
-    segmentation: Union[np.ndarray, dask.array.core.Array, Generator],
+    segmentation: Union[np.ndarray, Generator],
     properties: Tuple[str],
     frame: int,
-    intensity_image: Union[np.ndarray, dask.array.core.Array] = None,
+    intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = False,
 ) -> np.ndarray:
@@ -109,8 +110,8 @@ def _concat_centroids(centroids, new_centroids):
 
 
 def segmentation_to_objects(
-    segmentation: Union[np.ndarray, dask.array.core.Array, Generator],
-    intensity_image: Optional[Union[np.ndarray, dask.array.core.Array, Generator]] = None,
+    segmentation: Union[np.ndarray, Generator],
+    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
@@ -212,6 +213,7 @@ def segmentation_to_objects(
             centroids = _concat_centroids(centroids, _centroids)
 
     elif DASK_INSTALLED:
+        print('using dask array')
         if isinstance(segmentation, dask.array.core.Array):
 
             if segmentation.ndim not in (3, 4):
@@ -219,7 +221,11 @@ def segmentation_to_objects(
 
             for frame in range(segmentation.shape[0]):
                 seg = segmentation[frame, ...].compute().astype(np.uint16)
-                intens = intensity_image[frame, ...].compute().astype(np.uint16) if USE_INTENSITY else None
+                intens = (
+                    intensity_image[frame, ...].compute().astype(np.uint16)
+                    if USE_INTENSITY
+                    else None
+                )
                 _centroids = _centroids_from_single_arr(
                     seg,
                     properties,

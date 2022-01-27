@@ -213,7 +213,7 @@ def segmentation_to_objects(
             centroids = _concat_centroids(centroids, _centroids)
 
     elif DASK_INSTALLED:
-        print('using dask array')
+
         if isinstance(segmentation, dask.array.core.Array):
 
             if segmentation.ndim not in (3, 4):

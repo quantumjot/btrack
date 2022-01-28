@@ -207,7 +207,7 @@ cells in time-lapse microscopy data can be found in the following publications:
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
 Ulicna K, Vallardi G, Charras G and Lowe AR.  
 *Front in Comp Sci* (2021)  
-<https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
+<https://www.frontiersin.org/article/10.3389/fcomp.2021.734559>
 
 
 **Local cellular neighbourhood controls proliferation in cell competition**  

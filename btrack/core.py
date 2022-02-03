@@ -568,7 +568,7 @@ class BayesianTracker:
 
         n_hypotheses = self._lib.create_hypotheses(
             self._engine,
-            self.hypothesis_model,
+            self.hypothesis_model.as_ctype(),
             self.frame_range[0],
             self.frame_range[1],
         )
@@ -731,7 +731,9 @@ class BayesianTracker:
     def to_napari(self, ndim: int = 3, replace_nan: bool = True):
         """Return the data in a format for a napari tracks layer.
         See `utils.tracks_to_napari`."""
-        return utils.tracks_to_napari(self.tracks, ndim, replace_nan=replace_nan)
+        return utils.tracks_to_napari(
+            self.tracks, ndim, replace_nan=replace_nan
+        )
 
 
 if __name__ == "__main__":

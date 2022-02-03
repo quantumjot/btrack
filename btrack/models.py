@@ -177,7 +177,7 @@ class ObjectModel:
         """
         if not self.states:
             raise ValueError(
-                "Cannot reshape matrices as ObjectModel is " "uninitialised"
+                "Cannot reshape matrices in `ObjectModel` as `states` are unknown."
             )
         s = self.states
         self.emission = np.reshape(self.emission, (s, s), order="C")
@@ -240,7 +240,7 @@ class HypothesisModel:
 
     @property
     def hypotheses_to_generate(self) -> int:
-        """Return an integer representation of the hypothesese to generate."""
+        """Return an integer representation of the hypotheses to generate."""
         h_bin = ''.join(
             [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
         )

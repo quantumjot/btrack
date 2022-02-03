@@ -22,7 +22,7 @@ import logging
 
 import numpy as np
 
-from . import btypes, constants, libwrapper, utils
+from . import btypes, constants, libwrapper, models, utils
 from .dataio import export_delegator, localizations_to_objects
 from .optimise import optimiser
 
@@ -361,7 +361,7 @@ class BayesianTracker:
             A motion model to be used by the tracker.
         """
 
-        if isinstance(new_model, btypes.MotionModel):
+        if isinstance(new_model, models.MotionModel):
             # TODO(arl): model parsing for a user defined model
             model = new_model
         else:
@@ -403,7 +403,7 @@ class BayesianTracker:
         new_model : ObjectModel
         """
 
-        if isinstance(new_model, btypes.ObjectModel):
+        if isinstance(new_model, models.ObjectModel):
             # this could be a user defined model
             # TODO(arl): model parsing
             model = new_model

@@ -18,8 +18,8 @@ __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
 
+import dataclasses
 import os
-from dataclasses import dataclass
 from typing import List
 
 import numpy as np
@@ -28,7 +28,7 @@ from . import constants, utils
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
 
-@dataclass
+@dataclasses.dataclass
 class MotionModel:
     """The `btrack` motion model.
 
@@ -40,22 +40,20 @@ class MotionModel:
         The number of measurements of the system (e.g. 3 for x, y, z).
     states : int
         The number of states of the system (typically >= measurements).
-    A : array
+    A : array (states, states)
         State transition matrix.
-    B : array
-        Control matrix.
-    H : array
+    H : array (measurements, states)
         Observation matrix.
-    P : array
+    P : array (states, states)
         Initial covariance estimate.
-    Q : array
+    G : array (states, )
         Estimated error in process.
-    R : array
+    R : array (measurements, measurements)
         Estimated error in measurements.
-    accuracy : float
-        Integration limits for calculating the probabilities.
     dt : float
         Time difference (always 1)
+    accuracy : float
+        Integration limits for calculating the probabilities.
     max_lost : int
         Number of frames without observation before marking as lost.
     prob_not_assign : float
@@ -78,13 +76,13 @@ class MotionModel:
     Kalman RE, 1960 Journal of Basic Engineering
     """
 
+    measurements: int
+    states: int
     A: np.ndarray
     H: np.ndarray
     P: np.ndarray
     G: np.ndarray
     R: np.ndarray
-    measurements: int
-    states: int
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -122,7 +120,9 @@ class MotionModel:
                     r_matrix = np.reshape(m_array, shapes[m_name], order="C")
                 except ValueError:
                     raise ValueError(
-                        f"Matrx {m_name} is incorrecly specified. ({len(m_array)} entries for {shapes[m_name][0]}x{shapes[m_name][1]} matrix.)"
+                        f"Matrx {m_name} is incorrecly specified."
+                        f" ({len(m_array)} entries for"
+                        f" {shapes[m_name][0]}x{shapes[m_name][1]} matrix.)"
                     )
 
                 setattr(self, m_name, r_matrix)
@@ -137,7 +137,7 @@ class MotionModel:
         return utils.read_motion_model(filename)
 
 
-@dataclass
+@dataclasses.dataclass
 class ObjectModel:
     """The `btrack` object model.
 
@@ -189,7 +189,7 @@ class ObjectModel:
         return utils.read_object_model(filename)
 
 
-@dataclass
+@dataclasses.dataclass
 class HypothesisModel:
     """The `btrack` hypothesis model.
 
@@ -229,7 +229,7 @@ class HypothesisModel:
     time_thresh: float
     apop_thresh: int
     segmentation_miss_rate: float
-    poptosis_rate: float
+    apoptosis_rate: float
     relax: bool
     name: str = "Default"
 
@@ -252,7 +252,7 @@ class HypothesisModel:
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 
-        for k, v in self.asdict():
+        for k, v in dataclasses.asdict(self).items():
             if k in fields:
                 setattr(h_params, k, v)
 

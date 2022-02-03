@@ -18,6 +18,7 @@ __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
 
+import dataclasses
 import json
 import logging
 import os
@@ -28,7 +29,6 @@ import numpy as np
 from . import btypes, constants
 from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
-from .optimise import hypothesis
 
 # get the logger instance
 logger = logging.getLogger("worker_process")
@@ -64,7 +64,7 @@ def load_config(filename: os.PathLike) -> dict:
     t_config = {
         "MotionModel": read_motion_model(config),
         "ObjectModel": read_object_model(config),
-        "HypothesisModel": hypothesis.read_hypothesis_model(config),
+        "HypothesisModel": read_hypothesis_model(config),
     }
 
     return t_config
@@ -158,32 +158,38 @@ def read_motion_model(config: dict) -> MotionModel:
     appropriate error if there is something wrong with the model
     definition.
     """
-    matrices = frozenset(["A", "H", "P", "G", "R"])
-    model = MotionModel()
 
     if "MotionModel" not in list(config.keys()):
         raise ValueError("Not a valid motion model in configuration.")
 
-    m = config["MotionModel"]
-    if not m:
+    motion_config = config["MotionModel"]
+    if not motion_config:
         return None
 
-    # set some standard params
-    model.name = m["name"].encode("utf-8")
-    model.dt = m["dt"]
-    model.measurements = m["measurements"]
-    model.states = m["states"]
-    model.accuracy = m["accuracy"]
-    model.prob_not_assign = m["prob_not_assign"]
-    model.max_lost = m["max_lost"]
+    matrices = frozenset(["A", "H", "P", "G", "R"])
+    fields = [f.name for f in dataclasses.fields(MotionModel)]
 
-    for matrix in matrices:
-        if "sigma" in m[matrix]:
-            sigma = m[matrix]["sigma"]
+    model_kwargs = {}
+
+    for field in fields:
+        if field not in motion_config.keys():
+            logger.error(f"Key {field} not found in `MotionModel` config.")
+
+        # if this is a matrix, prepare it
+        if field in matrices:
+            if "sigma" in motion_config[field]:
+                sigma = motion_config[field]["sigma"]
+            else:
+                sigma = 1.0
+            matrix = np.matrix(
+                motion_config[field]["matrix"], dtype=np.float64
+            )
+            model_kwargs[field] = matrix * sigma
         else:
-            sigma = 1.0
-        m_data = np.matrix(m[matrix]["matrix"], dtype="float")
-        setattr(model, matrix, m_data * sigma)
+            model_kwargs[field] = motion_config[field]
+
+    # set some standard params
+    model = MotionModel(**model_kwargs)
 
     # call the reshape function to set the matrices to the correct shapes
     model.reshape()
@@ -231,21 +237,22 @@ def read_object_model(config: dict) -> ObjectModel:
     appropriate error if there is something wrong with the model definition
     """
     matrices = frozenset(["transition", "emission", "start"])
-    model = ObjectModel()
 
     if "ObjectModel" not in list(config.keys()):
         raise ValueError("Not a valid object model file")
 
-    m = config["ObjectModel"]
-    if not m:
+    object_config = config["ObjectModel"]
+    if not object_config:
         return None
 
+    model = ObjectModel()
+
     # set some standard params
-    model.name = m["name"].encode("utf-8")
-    model.states = m["states"]
+    model.name = object_config["name"].encode("utf-8")
+    model.states = object_config["states"]
 
     for matrix in matrices:
-        m_data = np.matrix(m[matrix]["matrix"], dtype="float")
+        m_data = np.matrix(object_config[matrix]["matrix"], dtype="float")
         setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes
@@ -281,24 +288,20 @@ def read_hypothesis_model(config: dict) -> HypothesisModel:
     Notes:
         None
     """
-
-    model = HypothesisModel()
-
     if "ObjectModel" not in list(config.keys()):
         raise ValueError("Not a valid object model file")
 
-    m = config["ObjectModel"]
-    if not m:
+    hypothesis_config = config["HypothesisModel"]
+    if not hypothesis_config:
         return None
 
-    # h_params = PyHypothesisParams()
-    # fields = [f[0] for f in h_params._fields_]
-    #
-    # for p in config['HypothesisModel']:
-    #     if p in fields:
-    #         setattr(h_params, p, config['HypothesisModel'][p])
-    #
-    # h_params.name = config['HypothesisModel']['name']
+    fields = [f.name for f in dataclasses.fields(HypothesisModel)]
+
+    for field in fields:
+        if field not in hypothesis_config.keys():
+            logger.error(f"Key {field} not found in `HypothesisModel` config.")
+
+    model = HypothesisModel(**hypothesis_config)
 
     return model
 

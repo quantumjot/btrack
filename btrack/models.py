@@ -248,7 +248,6 @@ class HypothesisModel:
 
     def as_ctype(self) -> PyHypothesisParams:
         """Return the ctypes representation of the `HypothesisModel`."""
-
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 

@@ -213,7 +213,7 @@ class HypothesisModel:
     time_thresh : float
     apop_thresh : int
     segmentation_miss_rate : float
-    poptosis_rate : float
+    apoptosis_rate : float
     relax : bool
     """
 

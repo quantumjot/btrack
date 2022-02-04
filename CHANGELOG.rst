@@ -33,6 +33,7 @@ Updates
 -----
 - Bug fix to remove indexing error for objects in the last frame
 - Deprecate render package
+- Updated models to use dataclasses
 
 0.4.2
 -----

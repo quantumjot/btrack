@@ -29,7 +29,7 @@ high-likelihood hypotheses that accounts for all observations.
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
 [![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
-*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#Usage-with-Napari).
+*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#visualizing-track-data-with-napari).
 
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
@@ -207,7 +207,7 @@ cells in time-lapse microscopy data can be found in the following publications:
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
 Ulicna K, Vallardi G, Charras G and Lowe AR.  
 *Front in Comp Sci* (2021)  
-<https://www.biorxiv.org/content/early/2020/09/10/2020.09.10.276980>
+<https://www.frontiersin.org/article/10.3389/fcomp.2021.734559>
 
 
 **Local cellular neighbourhood controls proliferation in cell competition**  

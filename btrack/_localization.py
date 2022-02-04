@@ -54,6 +54,14 @@ def _centroids_from_single_arr(
     def _is_binary(x: np.ndarray) -> bool:
         return ((x == 0) | (x == 1)).all()
 
+    def _is_ternary(x: np.ndarray) -> bool:
+        return ((x == 0) | (x == 1) | (x == 2)).all()
+
+    def _is_multiclass(x: np.ndarray) -> bool:
+        # check if image is not uniquely labelled
+        # test to see number unique labels is not the same as the max label
+        return np.max(label(x)) != np.max(x)
+
     if use_weighted_centroid and intensity_image is not None:
         CENTROID_PROPERTY = "weighted_centroid"
     else:
@@ -62,10 +70,12 @@ def _centroids_from_single_arr(
     if CENTROID_PROPERTY not in properties:
         properties = (CENTROID_PROPERTY,) + properties
 
-    # check to see whether this is a binary segmentation
-    # TODO(arl): of course, this may also be ternary etc, so this will
-    # fail, should really check that the labels are unique
+    # check to see whether this is a binary segmentation or multiclass
     if _is_binary(segmentation):
+        labeled = label(segmentation)
+    elif _is_ternary(segmentation):
+        labeled = label(segmentation)
+    elif _is_multiclass(segmentation):
         labeled = label(segmentation)
     else:
         labeled = segmentation

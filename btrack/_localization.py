@@ -66,11 +66,6 @@ def _centroids_from_single_arr(
 
     # if class id is specified then extract that property first
     if assign_class_ID:
-        # check to see if class ID can be read from segmentation
-        # there are a few cases where this wouldnt work ie if there is a single
-        # instance of any one cell type, maybe best to just skip this check
-        # if _is_unique(segmentation):
-        #     raise ValueError("Segmentation is instance-wise, not semantic.")
 
         # ensure regionprops can properly read label image
         labeled = label(segmentation)

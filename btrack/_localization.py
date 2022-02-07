@@ -44,6 +44,7 @@ def _centroids_from_single_arr(
     intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = False,
+    assign_class_ID: bool = False,
 ) -> np.ndarray:
     """Return the object centroids from a numpy array representing the
     image data."""
@@ -51,16 +52,9 @@ def _centroids_from_single_arr(
     if np.sum(segmentation) == 0:
         return {}
 
-    def _is_binary(x: np.ndarray) -> bool:
-        return ((x == 0) | (x == 1)).all()
-
-    def _is_ternary(x: np.ndarray) -> bool:
-        return ((x == 0) | (x == 1) | (x == 2)).all()
-
-    def _is_multiclass(x: np.ndarray) -> bool:
-        # check if image is not uniquely labelled
-        # test to see number unique labels is not the same as the max label
-        return np.max(label(x)) != np.max(x)
+    def _is_unique(x: np.ndarray) -> bool:
+        # check if image is not uniquely labelled (necessary for regionprops)
+        return not np.max(label(x)) != np.max(x)
 
     if use_weighted_centroid and intensity_image is not None:
         CENTROID_PROPERTY = "weighted_centroid"
@@ -70,19 +64,47 @@ def _centroids_from_single_arr(
     if CENTROID_PROPERTY not in properties:
         properties = (CENTROID_PROPERTY,) + properties
 
-    # check to see whether this is a binary segmentation or multiclass
-    if _is_binary(segmentation):
-        labeled = label(segmentation)
-    elif _is_ternary(segmentation):
-        labeled = label(segmentation)
-    elif _is_multiclass(segmentation):
-        labeled = label(segmentation)
-    else:
-        labeled = segmentation
+    # if class id is specified then extract that property first
+    if assign_class_ID:
+        # check to see if class ID can be read from segmentation
+        # there are a few cases where this wouldnt work ie if there is a single
+        # instance of any one cell type, maybe best to just skip this check
+        # if _is_unique(segmentation):
+        #     raise ValueError("Segmentation is instance-wise, not semantic.")
 
-    _centroids = regionprops_table(
-        labeled, intensity_image=intensity_image, properties=properties,
-    )
+        # ensure regionprops can properly read label image
+        labeled = label(segmentation)
+
+        # pull class_ID from segments using pixel intensity
+        _class_ID_centroids = regionprops_table(
+            labeled,
+            intensity_image=segmentation,
+            properties=('max_intensity',),
+        )
+
+        # rename class_ID column and remove keyword from properties
+        _class_ID_centroids['class id'] = _class_ID_centroids.pop(
+            'max_intensity'
+        )
+
+        # run regionprops to record other intensity image properties
+        _centroids = regionprops_table(
+            labeled, intensity_image=intensity_image, properties=properties,
+        )
+
+        # merge centroids with class ID centroids
+        _centroids.update(_class_ID_centroids)
+
+    else:
+        # check to see whether the segmentation is unique
+        if not _is_unique(segmentation):
+            labeled = label(segmentation)
+        else:
+            labeled = segmentation
+
+        _centroids = regionprops_table(
+            labeled, intensity_image=intensity_image, properties=properties,
+        )
 
     # add time to the array
     _centroids['t'] = np.full(
@@ -125,6 +147,7 @@ def segmentation_to_objects(
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
+    assign_class_ID: bool = False,
 ) -> list:
     """Convert segmentation to a set of btrack.PyTrackObject.
 
@@ -140,8 +163,8 @@ def segmentation_to_objects(
 
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
-        properties are added as metadata to the btrack objects. See
-        skimage.measure.regionprops for more info.
+        properties are added as metadata to the btrack objects.
+        See skimage.measure.regionprops for more info.
 
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
@@ -150,6 +173,11 @@ def segmentation_to_objects(
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
         weighted centroid. See skimage.measure.regionprops for more info.
+
+    assign_class_ID : bool, default False
+        If specified, assign a class label for each individual object based on
+        the pixel intensity found in the mask. Requires semantic segmentation,
+        i.e. object type 1 will have pixel value 1. Assumes there is more than
 
     Returns
     -------
@@ -199,6 +227,7 @@ def segmentation_to_objects(
                 intensity_image=intens,
                 scale=scale,
                 use_weighted_centroid=USE_WEIGHTED,
+                assign_class_ID=assign_class_ID,
             )
 
             # concatenate the centroids
@@ -217,6 +246,7 @@ def segmentation_to_objects(
                 intensity_image=intens,
                 scale=scale,
                 use_weighted_centroid=USE_WEIGHTED,
+                assign_class_ID=assign_class_ID,
             )
 
             # concatenate the centroids
@@ -243,6 +273,7 @@ def segmentation_to_objects(
                     intensity_image=intens,
                     scale=scale,
                     use_weighted_centroid=USE_WEIGHTED,
+                    assign_class_ID=assign_class_ID,
                 )
 
                 # concatenate the centroids

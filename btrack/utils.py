@@ -18,6 +18,7 @@ __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
 
+import dataclasses
 import json
 import logging
 import os
@@ -27,7 +28,7 @@ import numpy as np
 # import core
 from . import btypes, constants
 from ._localization import segmentation_to_objects
-from .optimise import hypothesis
+from .models import HypothesisModel, MotionModel, ObjectModel
 
 # get the logger instance
 logger = logging.getLogger("worker_process")
@@ -37,8 +38,8 @@ logger = logging.getLogger("worker_process")
 segmentation_to_objects = segmentation_to_objects
 
 
-def load_config(filename):
-    """ Load a tracking configuration file """
+def load_config(filename: os.PathLike) -> dict:
+    """Load a tracking configuration file."""
     if not os.path.exists(filename):
         # check whether it exists in the user model directory
         _, fn = os.path.split(filename)
@@ -63,14 +64,14 @@ def load_config(filename):
     t_config = {
         "MotionModel": read_motion_model(config),
         "ObjectModel": read_object_model(config),
-        "HypothesisModel": hypothesis.read_hypothesis_model(config),
+        "HypothesisModel": read_hypothesis_model(config),
     }
 
     return t_config
 
 
 def log_error(err_code):
-    """ Take an error code from the tracker and log an error for the user. """
+    """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
     if (
         error != constants.Errors.SUCCESS
@@ -82,7 +83,7 @@ def log_error(err_code):
 
 
 def log_stats(stats):
-    """ Take the statistics from the track and log the output """
+    """Take the statistics from the track and log the output."""
 
     if log_error(stats["error"]):
         return
@@ -108,13 +109,25 @@ def log_stats(stats):
     )
 
 
-# def read_motion_model(filename):
-def read_motion_model(config):
-    """ read_motion_model
+def read_motion_model(config: dict) -> MotionModel:
+    """Read a motion model from a configuration dictionary.
 
     Read in a motion model description file and return a dictionary containing
-    the appropriate parameters.
+    the appropriate parameters. See `models.MotionModel` for more details of the
+    parameters.
 
+    Parameters
+    ----------
+    config : dict
+        A dictionary describing the motion model.
+
+    Returns
+    -------
+    model : MotionModel
+        A `models.MotionModel` instance to configure BayesianTracker.
+
+    Notes
+    -----
     Motion models can be described using JSON format, with a basic structure
     as follows:
 
@@ -138,60 +151,70 @@ def read_motion_model(config):
     represents the integration limits when determining the probabilities from
     the multivariate normal distribution.
 
-    Args:
-        filename: a JSON file describing the motion model.
+    Note that the matrices are stored as 1D matrices here. In the future,
+    this could form part of a Python only motion model.
 
-    Returns:
-        model: a btypes.MotionModel instance for passing to BayesianTracker
-
-    Notes:
-        Note that the matrices are stored as 1D matrices here. In the future,
-        this could form part of a Python only motion model.
-
-        TODO(arl): More parsing of the data/reshaping arrays. Raise an
-        appropriate error if there is something wrong with the model
-        definition.
+    TODO(arl): More parsing of the data/reshaping arrays. Raise an
+    appropriate error if there is something wrong with the model
+    definition.
     """
-    matrices = frozenset(["A", "H", "P", "G", "R"])
-    model = btypes.MotionModel()
 
     if "MotionModel" not in list(config.keys()):
-        raise ValueError("Not a valid motion model file")
+        raise ValueError("Not a valid motion model in configuration.")
 
-    m = config["MotionModel"]
-    if not m:
+    motion_config = config["MotionModel"]
+    if not motion_config:
         return None
 
-    # set some standard params
-    model.name = m["name"].encode("utf-8")
-    model.dt = m["dt"]
-    model.measurements = m["measurements"]
-    model.states = m["states"]
-    model.accuracy = m["accuracy"]
-    model.prob_not_assign = m["prob_not_assign"]
-    model.max_lost = m["max_lost"]
+    matrices = frozenset(["A", "H", "P", "G", "R"])
+    fields = [f.name for f in dataclasses.fields(MotionModel)]
 
-    for matrix in matrices:
-        if "sigma" in m[matrix]:
-            sigma = m[matrix]["sigma"]
+    model_kwargs = {}
+
+    for field in fields:
+        if field not in motion_config.keys():
+            logger.error(f"Key {field} not found in `MotionModel` config.")
+
+        # if this is a matrix, prepare it
+        if field in matrices:
+            if "sigma" in motion_config[field]:
+                sigma = motion_config[field]["sigma"]
+            else:
+                sigma = 1.0
+            matrix = np.matrix(
+                motion_config[field]["matrix"], dtype=np.float64
+            )
+            model_kwargs[field] = matrix * sigma
         else:
-            sigma = 1.0
-        m_data = np.matrix(m[matrix]["matrix"], dtype="float")
-        setattr(model, matrix, m_data * sigma)
+            model_kwargs[field] = motion_config[field]
+
+    # set some standard params
+    model = MotionModel(**model_kwargs)
 
     # call the reshape function to set the matrices to the correct shapes
     model.reshape()
-
     return model
 
 
-# def read_object_model(filename):
-def read_object_model(config):
-    """ read_object_model
+def read_object_model(config: dict) -> ObjectModel:
+    """Read an object model from a configuration dictionary.
 
     Read in a object model description file and return a dictionary containing
-    the appropriate parameters.
+    the appropriate parameters. See `models.ObjectModel` for more details of the
+    parameters.
 
+    Parameters
+    ----------
+    config : dict
+        A dictionary describing the object model.
+
+    Returns
+    -------
+    model : ObjectModel
+        A `models.ObjectModel` instance to configure BayesianTracker.
+
+    Notes
+    -----
     Object models can be described using JSON format, with a basic structure
     as follows:
 
@@ -207,36 +230,29 @@ def read_object_model(config):
 
     Matrices are flattened JSON arrays.
 
-    Args:
-        filename: a JSON file describing the object model.
+    Note that the matrices are stored as 1D matrices here. In the future,
+    this could form part of a Python only object model.
 
-    Returns:
-        model: a core.ObjectModel instance for passing to BayesianTracker
-
-    Notes:
-        Note that the matrices are stored as 1D matrices here. In the future,
-        this could form part of a Python only object model.
-
-        TODO(arl): More parsing of the data/reshaping arrays. Raise an
-        appropriate error if there is something wrong with the model definition
+    TODO(arl): More parsing of the data/reshaping arrays. Raise an
+    appropriate error if there is something wrong with the model definition
     """
-
-    m = config["ObjectModel"]
-    if not m:
-        return None
-
     matrices = frozenset(["transition", "emission", "start"])
-    model = btypes.ObjectModel()
 
     if "ObjectModel" not in list(config.keys()):
         raise ValueError("Not a valid object model file")
 
+    object_config = config["ObjectModel"]
+    if not object_config:
+        return None
+
+    model = ObjectModel()
+
     # set some standard params
-    model.name = m["name"].encode("utf-8")
-    model.states = m["states"]
+    model.name = object_config["name"].encode("utf-8")
+    model.states = object_config["states"]
 
     for matrix in matrices:
-        m_data = np.matrix(m[matrix]["matrix"], dtype="float")
+        m_data = np.matrix(object_config[matrix]["matrix"], dtype="float")
         setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes
@@ -244,8 +260,54 @@ def read_object_model(config):
     return model
 
 
+def read_hypothesis_model(config: dict) -> HypothesisModel:
+    """Read a hypothesis model from a configuration dictionary.
+
+    Read in a hypothesis model description file and return a dictionary
+    containing the appropriate parameters. See `models.ObjectModel` for more
+    details of the parameters.
+
+    Parameters
+    ----------
+    config : dict
+        A dictionary describing the object model.
+
+    Returns
+    -------
+    model : HypothesisModel
+        A `models.HypothesistModel` instance to configure BayesianTracker.
+
+    Read in a set of hypothesis parameters from a JSON description file.  The
+    JSON file should contain the parameters of the PyHypothesisParams structure
+    and the function will return an instantiated PyHypothesisParams to be
+    passed to the optimisation engine.
+
+    Args:
+        filename: the filename of the parameter file
+
+    Notes:
+        None
+    """
+    if "ObjectModel" not in list(config.keys()):
+        raise ValueError("Not a valid object model file")
+
+    hypothesis_config = config["HypothesisModel"]
+    if not hypothesis_config:
+        return None
+
+    fields = [f.name for f in dataclasses.fields(HypothesisModel)]
+
+    for field in fields:
+        if field not in hypothesis_config.keys():
+            logger.error(f"Key {field} not found in `HypothesisModel` config.")
+
+    model = HypothesisModel(**hypothesis_config)
+
+    return model
+
+
 def crop_volume(objects, volume=constants.VOLUME):
-    """ Return a list of objects that fall within a certain volume """
+    """Return a list of objects that fall within a certain volume."""
     axes = zip(["x", "y", "z", "t"], volume)
 
     def within(o):
@@ -256,18 +318,8 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def import_HDF(*args, **kwargs):
-    """ Import the HDF data. """
-    raise DeprecationWarning("Use dataio.HDF5FileHandler instead")
-
-
-def import_JSON(filename):
-    """ Import JSON data """
-    raise DeprecationWarning("Use dataio.import_JSON instead")
-
-
 def _cat_tracks_as_dict(tracks: list, properties: list):
-    """ Concatenate all tracks a dictionary. """
+    """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
     data = {}

@@ -22,7 +22,7 @@ import logging
 
 import numpy as np
 
-from . import btypes, constants, libwrapper, utils
+from . import btypes, constants, libwrapper, models, utils
 from .dataio import export_delegator, localizations_to_objects
 from .optimise import optimiser
 
@@ -361,7 +361,7 @@ class BayesianTracker:
             A motion model to be used by the tracker.
         """
 
-        if isinstance(new_model, btypes.MotionModel):
+        if isinstance(new_model, models.MotionModel):
             # TODO(arl): model parsing for a user defined model
             model = new_model
         else:
@@ -403,7 +403,7 @@ class BayesianTracker:
         new_model : ObjectModel
         """
 
-        if isinstance(new_model, btypes.ObjectModel):
+        if isinstance(new_model, models.ObjectModel):
             # this could be a user defined model
             # TODO(arl): model parsing
             model = new_model
@@ -568,7 +568,7 @@ class BayesianTracker:
 
         n_hypotheses = self._lib.create_hypotheses(
             self._engine,
-            self.hypothesis_model,
+            self.hypothesis_model.as_ctype(),
             self.frame_range[0],
             self.frame_range[1],
         )
@@ -731,7 +731,9 @@ class BayesianTracker:
     def to_napari(self, ndim: int = 3, replace_nan: bool = True):
         """Return the data in a format for a napari tracks layer.
         See `utils.tracks_to_napari`."""
-        return utils.tracks_to_napari(self.tracks, ndim, replace_nan=replace_nan)
+        return utils.tracks_to_napari(
+            self.tracks, ndim, replace_nan=replace_nan
+        )
 
 
 if __name__ == "__main__":

@@ -158,7 +158,7 @@ def segmentation_to_objects(
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
-        See skimage.measure.regionprops for more info.
+        See `skimage.measure.regionprops` for more info.
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.

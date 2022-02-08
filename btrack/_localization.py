@@ -250,9 +250,9 @@ def segmentation_to_objects(
                 raise ValueError("Segmentation array must have 3 or 4 dims.")
 
             for frame in range(segmentation.shape[0]):
-                seg = segmentation[frame, ...].compute().astype(np.uint16)
+                seg = segmentation[frame, ...].compute()
                 intens = (
-                    intensity_image[frame, ...].compute().astype(np.uint16)
+                    intensity_image[frame, ...].compute()
                     if USE_INTENSITY
                     else None
                 )

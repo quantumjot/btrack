@@ -172,7 +172,7 @@ def segmentation_to_objects(
     assign_class_ID : bool, default False
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,
-        i.e. object type 1 will have pixel value 1. Assumes there is more than
+        i.e. object type 1 will have pixel value 1.
 
     Returns
     -------

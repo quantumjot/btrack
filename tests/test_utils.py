@@ -4,21 +4,61 @@ import pytest
 from btrack import btypes, utils
 
 
-def _make_test_image(size=128, ndim=2, nobj=10, binary=True):
-    shape = (size,) * ndim
+def _make_test_image(
+    boxsize: int = 150,
+    ndim: int = 2,
+    nobj: int = 10,
+    binsize: int = 5,
+    binary: bool = True,
+):
+    """Make a test image that ensures that no two pixels are in contact."""
+    shape = (boxsize,) * ndim
     img = np.zeros(shape, dtype=np.uint16)
+
+    # return an empty image if we have no objects
     if nobj == 0:
         return img, None
-    centroids = np.random.choice(128, size=(ndim, nobj), replace=False)
-    vals = 1 if binary else 1 + np.arange(nobj)
-    img[tuple(centroids.tolist())] = vals
+
+    # split this into voxels
+    bins = boxsize // binsize
+
+    def _sample():
+        _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
+        _coord = tuple(
+            np.random.randint(1, binsize - 1, size=(ndim,)).tolist()
+        )
+        _img[_coord] = 1
+        assert np.sum(_img) == 1
+        return _img, _coord
+
+    # now we update nobj grid positions with a sample
+    grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
+        -1, ndim
+    )
+    rng = np.random.default_rng()
+    rbins = rng.choice(grid, size=(nobj,), replace=False)
+
+    # iterate over the bins and add a smaple
+    centroids = []
+    for v, bin in enumerate(rbins):
+        sample, point = _sample()
+        slices = tuple(
+            [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
+        )
+        val = 1 if binary else v + 1
+        img[slices] = sample * val
+
+        # shift the actual coordinates back to image space
+        point = point + bin * binsize  # - 0.5
+        centroids.append(point)
 
     # sort the centroids by axis
-    centroids = np.transpose(centroids)
+    centroids = np.array(centroids)
     centroids = centroids[
         np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
     ]
 
+    assert centroids.shape[0] == nobj
     return img, centroids
 
 
@@ -60,7 +100,7 @@ def test_segmentation_to_objects_type_generator():
 
 
 @pytest.mark.parametrize("ndim", [2, 3])
-@pytest.mark.parametrize("nobj", [0, 1, 10, 30])
+@pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
 @pytest.mark.parametrize("binary", [True, False])
 def test_segmentation_to_objects(ndim, nobj, binary):
     """Test different types of segmentation images."""
@@ -75,3 +115,6 @@ def test_segmentation_to_objects_scale(scale):
     img, centroids = _make_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], scale=scale)
     _validate_centroids(centroids, objects, scale)
+
+
+_make_test_image(nobj=300, ndim=3)

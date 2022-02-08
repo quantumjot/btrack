@@ -155,7 +155,6 @@ def segmentation_to_objects(
     intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See skimage.measure.regionprops for more info.
-
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.

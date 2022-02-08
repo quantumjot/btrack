@@ -161,7 +161,6 @@ def segmentation_to_objects(
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
-
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
         weighted centroid. See `skimage.measure.regionprops` for more info.

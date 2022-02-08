@@ -151,24 +151,19 @@ def segmentation_to_objects(
     segmentation : np.ndarray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-
     intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See skimage.measure.regionprops for more info.
-
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
-        See skimage.measure.regionprops for more info.
-
+        See `skimage.measure.regionprops` for more info.
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
-
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
-        weighted centroid. See skimage.measure.regionprops for more info.
-
+        weighted centroid. See `skimage.measure.regionprops` for more info.
     assign_class_ID : bool, default False
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,

@@ -115,6 +115,3 @@ def test_segmentation_to_objects_scale(scale):
     img, centroids = _make_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], scale=scale)
     _validate_centroids(centroids, objects, scale)
-
-
-_make_test_image(nobj=300, ndim=3)

@@ -619,7 +619,6 @@ class HDF5FileHandler:
             )
             props_grp.create_dataset(key, data=data[key], dtype='float32')
 
-
     @property
     @h5check_property_exists('tracks')
     def tracks(self):

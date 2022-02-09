@@ -605,9 +605,8 @@ class HDF5FileHandler:
             if key in props_grp:
                 if overwrite is False:
                     logger.info(f"Property '{key}' already written in the file")
-                    raise TypeError(f"Property '{key}' already written in the "
-                                     "file -> change the 'overwrite' param to "
-                                     "True to replace the existing property")
+                    raise TypeError(f"Property '{key}' already in file -> "
+                    "switch on 'overwrite' param to replace existing property")
                     continue
                 else:
                     del self._hdf[f'objects/{self.object_type}/properties'][key]

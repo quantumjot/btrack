@@ -68,7 +68,7 @@ def _centroids_from_single_arr(
     if assign_class_ID:
 
         # ensure regionprops can properly read label image
-        labeled = label(segmentation)
+        labeled = label(segmentation, connectivity=1)
 
         # pull class_ID from segments using pixel intensity
         _class_ID_centroids = regionprops_table(
@@ -93,7 +93,7 @@ def _centroids_from_single_arr(
     else:
         # check to see whether the segmentation is unique
         if not _is_unique(segmentation):
-            labeled = label(segmentation)
+            labeled = label(segmentation, connectivity=1)
         else:
             labeled = segmentation
 

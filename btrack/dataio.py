@@ -570,7 +570,7 @@ class HDF5FileHandler:
         self.write_properties(props)
 
     @h5check_property_exists('objects')
-    def write_properties(self, data: dict):
+    def write_properties(self, data: dict, overwrite: bool = False):
         """Write object properties to HDF file.
 
         Parameters
@@ -588,19 +588,37 @@ class HDF5FileHandler:
 
         if 'properties' not in grp.keys():
             props_grp = grp.create_group('properties')
+        else:
+            props_grp = self._hdf[f'objects/{self.object_type}']['properties']
 
         n_objects = len(self.objects)
 
         for key, values in data.items():
+            # Manage the property data:
             if not values:
                 logger.warning("Property {key} is empty.")
                 continue
             values = np.array(values)
+            assert values.shape[0] == n_objects
+
+            # Check if the property is already in the props_grp:
+            if key in props_grp:
+                if overwrite is False:
+                    logger.info(f"Property '{key}' already written in the file")
+                    raise TypeError(f"Property '{key}' already written in the "
+                                     "file -> change the 'overwrite' param to "
+                                     "True to replace the existing property")
+                    continue
+                else:
+                    del self._hdf[f'objects/{self.object_type}/properties'][key]
+                    logger.info(f"Property '{key}' erased to be overwritten...")
+
+            # Now that you handled overwriting, write the values:
             logger.info(
                 f'Writing properties/{self.object_type}/{key} {values.shape}'
             )
-            assert values.shape[0] == n_objects
             props_grp.create_dataset(key, data=data[key], dtype='float32')
+
 
     @property
     @h5check_property_exists('tracks')

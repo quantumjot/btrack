@@ -23,26 +23,6 @@ If you don't currently have a working scientific Python distribution then follow
 .. note::
    Miniconda is a lighter version of conda. But all the commands are the same.
 
-
-
-
-..
-   Installing btrack using (Mini)conda
-   -----------------------------------
-
-   To install sunpy launch a system command prompt or the 'Anaconda Prompt' (under Windows).
-   First configure conda for to add the `conda-forge channel <https://conda-forge.org/>`__::
-
-       conda config --add channels conda-forge
-       conda config --set channel_priority strict
-
-   and now to install sunpy within the default conda virtual environment::
-
-       $ conda install sunpy
-
-   This will install sunpy and every package it needs to function.
-
-
 Setting up a conda environment
 ------------------------------
 

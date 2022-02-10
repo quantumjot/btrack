@@ -118,7 +118,7 @@ class PyTrackObject(ctypes.Structure):
 
 
 class PyTrackingInfo(ctypes.Structure):
-    """ PyTrackingInfo
+    """PyTrackingInfo
 
     Primitive class to store information about the tracking output.
 
@@ -155,7 +155,7 @@ class PyTrackingInfo(ctypes.Structure):
     ]
 
     def to_dict(self):
-        """ Return a dictionary of the statistics """
+        """Return a dictionary of the statistics"""
         # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?
         stats = {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
@@ -163,7 +163,7 @@ class PyTrackingInfo(ctypes.Structure):
 
     @property
     def tracker_active(self):
-        """ return the current status """
+        """return the current status"""
         no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
         return no_error and not self.complete
 
@@ -374,7 +374,7 @@ class Tracklet:
 
     def mu(self, index):
         """Return the Kalman filter mu. Note that we are only returning the mu
-         for the positions (e.g. 3x1)."""
+        for the positions (e.g. 3x1)."""
         return np.matrix(self.kalman[index, 1:4]).reshape(3, 1)
 
     def covar(self, index):
@@ -383,7 +383,7 @@ class Tracklet:
         return np.matrix(self.kalman[index, 4:13]).reshape(3, 3)
 
     def predicted(self, index):
-        """ Return the motion model prediction for the given timestep. """
+        """Return the motion model prediction for the given timestep."""
         return np.matrix(self.kalman[index, 13:]).reshape(3, 1)
 
     def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
@@ -396,8 +396,8 @@ class Tracklet:
         return data
 
     def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
-        """ Return a numpy array of the tracklet which can be used for MATLAB
-        export. """
+        """Return a numpy array of the tracklet which can be used for MATLAB
+        export."""
         data = self.to_dict(properties)
         tmp_track = np.zeros((len(self), len(data.keys())), dtype=np.float32)
         for idx, key in enumerate(data.keys()):

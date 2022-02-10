@@ -1,3 +1,5 @@
+.. _using Napari:
+
 ==================================
 Visualizing track data with napari
 ==================================
@@ -16,9 +18,6 @@ visualize the output of `btrack`:
    viewer.add_tracks(data, properties=properties, graph=graph)
 
 
-| Read more about the tracks API here:
-| https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks
+Read more about `the tracks API at Napari's documentation <https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks>`_.
 
-| In addition, we provide a plugin for napari that enables users to
-  visualize lineage trees:
-| https://github.com/quantumjot/arboretum
+In addition, we provide a `plugin for napari that enables users to visualize lineage trees (arboretum) <https://github.com/quantumjot/arboretum>`_.

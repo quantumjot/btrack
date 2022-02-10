@@ -54,7 +54,7 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 ### Cell tracking in time-lapse imaging data
 
 [![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
-*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](#visualizing-track-data-with-napari).
+*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
 
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  

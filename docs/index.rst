@@ -18,8 +18,7 @@ accounts for all observations.
 
 | |LineageTree|
 | *Automated cell tracking and lineage tree reconstruction*.
-  Visualization is provided by our plugin to Napari,
-  `arboretum <#Usage-with-Napari>`__.
+  Visualization is provided by our plugin to Napari, :ref:`arboretum<using Napari>`.
 
 | |CellTracking|
 | *Video of tracking, showing automatic lineage determination*
@@ -65,7 +64,6 @@ Indices and tables
 
 .. |logo| image:: /_static/btrack_logo.png
    :alt: Btrack Logo
-   :align: centre
 .. |LineageTree| image:: https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png
    :target: http://lowe.cs.ucl.ac.uk/cellx.html
 .. |CellTracking| image:: http://lowe.cs.ucl.ac.uk/images/youtube.png

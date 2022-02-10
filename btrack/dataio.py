@@ -596,7 +596,7 @@ class HDF5FileHandler:
         for key, values in data.items():
             # Manage the property data:
             if not values:
-                logger.warning(f"Property {key} is empty.")
+                logger.warning(f"Property '{key}' is empty.")
                 continue
             values = np.array(values)
             assert values.shape[0] == n_objects

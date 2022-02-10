@@ -579,6 +579,9 @@ class HDF5FileHandler:
             A dictionary of key-value pairs of properties to be written. The
             values should be an array equal in length to the number of objects
             and with D dimensions.
+        allow_overwrite : bool
+            Allow to delete the existing property keys from the HDF5 file and
+            overwrite with new values from the data dict. Defaults to False.
         """
 
         if not isinstance(data, dict):

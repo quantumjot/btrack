@@ -604,14 +604,20 @@ class HDF5FileHandler:
             # Check if the property is already in the props_grp:
             if key in props_grp:
                 if allow_overwrite is False:
-                    logger.info(f"Property '{key}' already written in the file")
-                    raise ValueError(
+                    logger.info(
+                        f"Property '{key}' already written in the file"
+                    )
+                    raise KeyError(
                         f"Property '{key}' already in file -> switch on "
                         "'overwrite' param to replace existing property "
                     )
                 else:
-                    del self._hdf[f'objects/{self.object_type}/properties'][key]
-                    logger.info(f"Property '{key}' erased to be overwritten...")
+                    del self._hdf[f'objects/{self.object_type}/properties'][
+                        key
+                    ]
+                    logger.info(
+                        f"Property '{key}' erased to be overwritten..."
+                    )
 
             # Now that you handled overwriting, write the values:
             logger.info(

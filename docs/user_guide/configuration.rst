@@ -6,10 +6,9 @@ This is a short guide to the configuration parameters for ``btrack``
 Miscellaneous parameters
 ------------------------
 
--  ``max_search_radius`` - the maximum search radius in isotropic unit
-   of the data
--  ``mode`` - the update mode for the tracker
--  ``volume`` - estimate of the dimensions of the imaging volume
+- ``max_search_radius`` - the maximum search radius in isotropic unit of the data
+- ``mode`` - the update mode for the tracker
+- ``volume`` - estimate of the dimensions of the imaging volume
 
 Motion model
 ------------
@@ -59,23 +58,20 @@ Motion model
      }
    }
 
--  ``name`` - this is the name of the model
--  ``measurements`` - the number of measurements of the system (e.g. x,
-   y, z)
--  ``states`` - the number of states of the system (typically >=
-   measurements)
--  ``A`` - State transition matrix
--  ``B`` - Control matrix
--  ``H`` - Observation matrix
--  ``P`` - Initial covariance estimate
--  ``Q`` - Estimated error in process
--  ``R`` - Estimated error in measurements
--  ``accuracy`` - integration limits for calculating the probabilities
--  ``dt`` - time difference, always 1
--  ``max_lost`` - number of frames without observation before marking a
-   track as lost
--  ``prob_not_assign`` - the default probability to not assign a track
--  ``sigma`` - a scalar multiplication factor used for each matrix
+- ``name`` - this is the name of the model
+- ``measurements`` - the number of measurements of the system (e.g. x, y, z)
+- ``states`` - the number of states of the system (typically >= measurements)
+- ``A`` - State transition matrix
+- ``B`` - Control matrix
+- ``H`` - Observation matrix
+- ``P`` - Initial covariance estimate
+- ``Q`` - Estimated error in process
+- ``R`` - Estimated error in measurements
+- ``accuracy`` - integration limits for calculating the probabilities
+- ``dt`` - time difference, always 1
+- ``max_lost`` - number of frames without observation before marking a track as lost
+- ``prob_not_assign`` - the default probability to not assign a track
+- ``sigma`` - a scalar multiplication factor used for each matrix
 
 Hypothesis model
 ----------------
@@ -110,11 +106,11 @@ The parameters are, as follows:
 - ``lambda_dist`` - a scaling factor for the influence of distance at the border when determining initialization or termination hypotheses
 - ``lambda_link`` - a scaling factor for the influence of track-to-track distance on linking probability
 - ``lambda_branch`` - a scaling factor for the influence of cell state and position on division (mitosis/branching) probability
--  ``eta`` - default low probability
+- ``eta`` - default low probability
 - ``theta_dist`` - a threshold (in pixels) for the distance from the edge of the FOV to add an initialization or termination hypothesis
 - ``theta_time`` - a threshold (in frames) for the time from the beginning or end of movie to add an initialization or termination hypothesis
 - ``dist_thresh`` - bin size for considering hypotheses
--  ``time_thresh`` - bin size for considering hypotheses
+- ``time_thresh`` - bin size for considering hypotheses
 - ``apop_thresh`` - number of apoptotic detections, counted consecutively from the back of the track, to be considered a real apoptosis
 - ``segmentation_miss_rate`` - miss rate for the segmentation, e.g. 1/100 segmentations incorrect = 0.01
 - ``apoptosis_rate`` - rate of apoptosis detections

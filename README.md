@@ -12,24 +12,17 @@
 
 # Bayesian Tracker (btrack) :microscope::computer:
 
-BayesianTracker (`btrack`) is a Python library for multi object tracking,
-used to reconstruct trajectories in crowded fields. Here, we use a
-probabilistic network of information to perform the trajectory linking. This
-method uses spatial information as well as appearance information for track linking.
+BayesianTracker (`btrack`) is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
+Here, we use a probabilistic network of information to perform the trajectory linking.
+This method uses spatial information as well as appearance information for track linking.
 
-The tracking algorithm assembles reliable sections of track that do not
-contain splitting events (tracklets). Each new tracklet initiates a
-probabilistic model, and utilises this to predict future states (and error in
-states) of each of the objects in the field of view.  We assign new observations
-to the growing tracklets (linking) by evaluating the posterior probability of
-each potential linkage from a Bayesian belief matrix for all possible linkages.
+The tracking algorithm assembles reliable sections of track that do not contain splitting events (tracklets).
+Each new tracklet initiates a probabilistic model, and utilises this to predict future states (and error in states) of each of the objects in the field of view.
+We assign new observations to the growing tracklets (linking) by evaluating the posterior probability of each potential linkage from a Bayesian belief matrix for all possible linkages.
 
-The tracklets are then assembled into tracks by using multiple hypothesis
-testing and integer programming to identify a globally optimal solution. The
-likelihood of each hypothesis is calculated for some or all of the tracklets
-based on heuristics. The global solution identifies a sequence of
-high-likelihood hypotheses that accounts for all observations.
-
+The tracklets are then assembled into tracks by using multiple hypothesis testing and integer programming to identify a globally optimal solution.
+The likelihood of each hypothesis is calculated for some or all of the tracklets based on heuristics.
+The global solution identifies a sequence of high-likelihood hypotheses that accounts for all observations.
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
@@ -42,10 +35,11 @@ You can also --> :star: :wink:
 BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
 
 
- #### Installing the latest stable version
- ```sh
- $ pip install btrack
- ```
+#### Installing the latest stable version
+
+```sh
+$ pip install btrack
+```
 
 ## Usage examples
 
@@ -64,17 +58,14 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 
 ## Development
 
-The tracker and hypothesis engine are mostly written in C++ with a Python
-wrapper.
-If you would like to contribute to btrack, you will need to install the latest
-version from GitHub. Follow the [instructions on our developer guide][docs-dev].
+The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
+If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide][docs-dev].
 
 
 ---
 ### Citation
 
-More details of how this type of tracking approach can be applied to tracking
-cells in time-lapse microscopy data can be found in the following publications:
+More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:
 
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
 Ulicna K, Vallardi G, Charras G and Lowe AR.  

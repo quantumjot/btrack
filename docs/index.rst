@@ -13,8 +13,7 @@ We assign new observations to the growing tracklets (linking) by evaluating the 
 
 The tracklets are then assembled into tracks by using multiple hypothesis testing and integer programming to identify a globally optimal solution.
 The likelihood of each hypothesis is calculated for some or all of the tracklets based on heuristics.
-The global solution identifies a sequence of high-likelihood hypotheses that
-accounts for all observations.
+The global solution identifies a sequence of high-likelihood hypotheses that accounts for all observations.
 
 | |LineageTree|
 | *Automated cell tracking and lineage tree reconstruction*.
@@ -23,8 +22,8 @@ accounts for all observations.
 | |CellTracking|
 | *Video of tracking, showing automatic lineage determination*
 
-| Read about the science:
-| http://lowe.cs.ucl.ac.uk/cellx.html
+`Read about the science <http://lowe.cs.ucl.ac.uk/cellx.html>`_.
+
 
 .. panels::
 

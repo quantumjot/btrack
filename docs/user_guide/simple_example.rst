@@ -3,7 +3,11 @@ A simple example
 
 A simple pipeline is shown below. Others can be found in the `examples folder of the repository <https://github.com/quantumjot/BayesianTracker/tree/master/examples>`_.
 
-This example shows .... ::
+This example shows ....
+
+
+.. code:: python
+
 
   import btrack
   from skimage.io import imread
@@ -46,7 +50,10 @@ This example shows .... ::
 
 
 
-Tracks themselves are python objects with properties::
+Tracks themselves are python objects with properties
+
+.. code:: python
+
 
     # get the first track
     track_zero = tracks[0]

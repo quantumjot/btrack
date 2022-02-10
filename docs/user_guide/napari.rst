@@ -4,9 +4,7 @@
 Visualizing track data with napari
 ==================================
 
-We developed the `Tracks` layer that is now part of the multidimensional image
-viewer `napari <https://napari.org/>`__ -- you can use this to
-visualize the output of `btrack`:
+We developed the ``Tracks`` layer that is now part of the multidimensional image viewer `napari <https://napari.org/>`__ -- you can use this to visualize the output of ``btrack``:
 
 
 .. code:: python

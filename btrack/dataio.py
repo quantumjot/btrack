@@ -570,7 +570,7 @@ class HDF5FileHandler:
         self.write_properties(props)
 
     @h5check_property_exists('objects')
-    def write_properties(self, data: dict, overwrite: bool = False):
+    def write_properties(self, data: dict, allow_overwrite: bool = False):
         """Write object properties to HDF file.
 
         Parameters
@@ -596,20 +596,19 @@ class HDF5FileHandler:
         for key, values in data.items():
             # Manage the property data:
             if not values:
-                logger.warning("Property {key} is empty.")
+                logger.warning(f"Property {key} is empty.")
                 continue
             values = np.array(values)
             assert values.shape[0] == n_objects
 
             # Check if the property is already in the props_grp:
             if key in props_grp:
-                if overwrite is False:
+                if allow_overwrite is False:
                     logger.info(f"Property '{key}' already written in the file")
-                    raise TypeError(
+                    raise ValueError(
                         f"Property '{key}' already in file -> switch on "
                         "'overwrite' param to replace existing property "
                     )
-                    continue
                 else:
                     del self._hdf[f'objects/{self.object_type}/properties'][key]
                     logger.info(f"Property '{key}' erased to be overwritten...")

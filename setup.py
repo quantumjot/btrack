@@ -14,7 +14,6 @@ def get_install_required(extra=None):
     return [r.rstrip() for r in requirements]
 
 
-
 def get_version():
     with open("./btrack/VERSION.txt", "r") as ver:
         version = ver.readline()

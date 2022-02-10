@@ -91,7 +91,7 @@ class MotionModel:
 
     @property
     def Q(self):
-        """ Return a Q matrix from the G matrix. """
+        """Return a Q matrix from the G matrix."""
         return self.G.transpose() * self.G
 
     def reshape(self):
@@ -133,7 +133,7 @@ class MotionModel:
 
     @staticmethod
     def load(filename):
-        """ Load a model from file """
+        """Load a model from file"""
         return utils.read_motion_model(filename)
 
 
@@ -166,7 +166,7 @@ class ObjectModel:
     name: str = "Default"
 
     def reshape(self):
-        """ Reshapes matrices to the correct dimensions. Only need to call this
+        """Reshapes matrices to the correct dimensions. Only need to call this
         if loading a model from a JSON file.
 
         Notes:
@@ -185,7 +185,7 @@ class ObjectModel:
 
     @staticmethod
     def load(filename):
-        """ Load a model from file """
+        """Load a model from file"""
         return utils.read_object_model(filename)
 
 

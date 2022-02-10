@@ -33,13 +33,13 @@ logger = logging.getLogger('worker_process')
 
 
 def numpy_pointer_decorator(func):
-    """ simple decorator for numpy ctypes pointers """
+    """simple decorator for numpy ctypes pointers"""
     return func()
 
 
 @numpy_pointer_decorator
 def np_dbl_p():
-    """ Temporary function. Will remove in final release """
+    """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
         dtype=np.double, ndim=2, flags='C_CONTIGUOUS'
     )
@@ -47,7 +47,7 @@ def np_dbl_p():
 
 @numpy_pointer_decorator
 def np_dbl_pc():
-    """ Temporary function. Will remove in final release """
+    """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
         dtype=np.double, ndim=2, flags='F_CONTIGUOUS'
     )
@@ -55,7 +55,7 @@ def np_dbl_pc():
 
 @numpy_pointer_decorator
 def np_uint_p():
-    """ Temporary function. Will remove in final release """
+    """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
         dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS'
     )
@@ -63,13 +63,13 @@ def np_uint_p():
 
 @numpy_pointer_decorator
 def np_int_p():
-    """ Temporary function. Will remove in final release """
+    """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags='C_CONTIGUOUS')
 
 
 @numpy_pointer_decorator
 def np_int_vec_p():
-    """ Temporary function. Will remove in final release """
+    """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
         dtype=np.int32, ndim=1
     )  # , flags='C_CONTIGUOUS')

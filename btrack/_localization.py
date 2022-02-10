@@ -84,7 +84,9 @@ def _centroids_from_single_arr(
 
         # run regionprops to record other intensity image properties
         _centroids = regionprops_table(
-            labeled, intensity_image=intensity_image, properties=properties,
+            labeled,
+            intensity_image=intensity_image,
+            properties=properties,
         )
 
         # merge centroids with class ID centroids
@@ -98,7 +100,9 @@ def _centroids_from_single_arr(
             labeled = segmentation
 
         _centroids = regionprops_table(
-            labeled, intensity_image=intensity_image, properties=properties,
+            labeled,
+            intensity_image=intensity_image,
+            properties=properties,
         )
 
     # add time to the array

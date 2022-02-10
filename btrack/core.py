@@ -241,7 +241,7 @@ class BayesianTracker:
 
     @update_method.setter
     def update_method(self, method):
-        """Set the method for updates, EXACT, APPROXIMATE, CUDA etc... """
+        """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         assert method in constants.BayesianUpdates
         logger.info(f'Setting Bayesian update method to: {method}')
         self._lib.set_update_mode(self._engine, method.value)
@@ -268,7 +268,7 @@ class BayesianTracker:
     @property
     def refs(self):
         """Return tracks as a list of IDs (essentially pointers) to the original
-        objects. Use this to write out HDF5 tracks. """
+        objects. Use this to write out HDF5 tracks."""
         tracks = []
         for i in range(self.n_tracks):
             # get the track length
@@ -316,7 +316,7 @@ class BayesianTracker:
         return [_lbep_table(t) for t in self.tracks]
 
     def _sort(self, tracks):
-        """ Return a sorted list of tracks """
+        """Return a sorted list of tracks"""
         return sorted(tracks, key=lambda t: len(t), reverse=True)
 
     @property
@@ -395,7 +395,7 @@ class BayesianTracker:
 
     @object_model.setter
     def object_model(self, new_model):
-        """ Set a new object model. Must be of type ObjectModel, either loaded
+        """Set a new object model. Must be of type ObjectModel, either loaded
         from file or instantiating an ObjectModel.
 
         Parameters
@@ -470,7 +470,7 @@ class BayesianTracker:
         self._objects += objects
 
     def _stats(self, info_ptr):
-        """ Cast the info pointer back to an object """
+        """Cast the info pointer back to an object"""
 
         if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
             raise TypeError('Stats requires the pointer to the object')
@@ -478,7 +478,7 @@ class BayesianTracker:
         return info_ptr.contents
 
     def track(self):
-        """ Run the actual tracking algorithm """
+        """Run the actual tracking algorithm"""
 
         if not self._initialised:
             logger.error('Tracker has not been configured')
@@ -695,7 +695,7 @@ class BayesianTracker:
 
         # get the size of the Kalman arrays
         sz_mu = self.motion_model.measurements + 1
-        sz_cov = self.motion_model.measurements ** 2 + 1
+        sz_cov = self.motion_model.measurements**2 + 1
 
         # otherwise grab the kalman filter data
         kal_mu = np.zeros((n, sz_mu), dtype=np.float64)  # kalman filtered

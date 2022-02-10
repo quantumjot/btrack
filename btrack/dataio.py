@@ -435,7 +435,7 @@ class HDF5FileHandler:
     @h5check_property_exists('objects')
     def filtered_objects(self, f_expr=None):
         """A filtered list of objects based on metadata. f_expr should be of the
-         format `flag==1`."""
+        format `flag==1`."""
 
         if self.object_type not in self.object_types:
             raise ValueError(f'Object type {self.object_type} not recognized')

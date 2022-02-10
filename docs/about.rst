@@ -6,17 +6,17 @@ More details of how this type of tracking approach can be applied to
 tracking cells in time-lapse microscopy data can be found in the
 following publications:
 
-| **Automated deep lineage tree analysis using a Bayesian single cell
-  tracking approach**
+| **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
 | Ulicna K, Vallardi G, Charras G and Lowe AR.
 | *Front in Comp Sci* (2021)
-| https://www.frontiersin.org/article/10.3389/fcomp.2021.734559
+| |DOI-U2021|
 
-| **Local cellular neighbourhood controls proliferation in cell
-  competition**
+
+| **Local cellular neighbourhood controls proliferation in cell competition**
 | Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 | *Mol. Biol. Cell* (2017)
-| https://doi.org/10.1091/mbc.E17-06-0368
+| |DOI-B2017|
+
 
 ::
 
@@ -47,3 +47,10 @@ following publications:
      eprint = {http://www.molbiolcell.org/content/28/23/3215.full.pdf+html},
      journal = {Molecular Biology of the Cell}
    }
+
+
+
+.. |DOI-U2021| image:: https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue
+   :target: https://doi.org/10.3389/fcomp.2021.734559
+.. |DOI-B2017| image:: https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue
+   :target: https://doi.org/10.1091/mbc.E17-06-0368

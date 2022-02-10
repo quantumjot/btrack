@@ -79,13 +79,13 @@ cells in time-lapse microscopy data can be found in the following publications:
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
 Ulicna K, Vallardi G, Charras G and Lowe AR.  
 *Front in Comp Sci* (2021)  
-<https://www.frontiersin.org/article/10.3389/fcomp.2021.734559>
+[![doi:10.3389/fcomp.2021.734559](https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue)](https://doi.org/10.3389/fcomp.2021.734559)
 
 
 **Local cellular neighbourhood controls proliferation in cell competition**  
 Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
 *Mol. Biol. Cell* (2017)  
-<https://doi.org/10.1091/mbc.E17-06-0368>
+[![doi:10.1091/mbc.E17-06-0368](https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue)](https://doi.org/10.1091/mbc.E17-06-0368)
 
 ```
 @ARTICLE {10.3389/fcomp.2021.734559,

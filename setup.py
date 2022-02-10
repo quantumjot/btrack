@@ -7,10 +7,12 @@ linkages. """
 from setuptools import find_packages, setup
 
 
-def get_install_required():
-    with open("./requirements.txt", "r") as reqs:
+def get_install_required(extra=None):
+    extra = f"-{extra}" if extra is not None else ""
+    with open(f"./requirements{extra}.txt", "r") as reqs:
         requirements = reqs.readlines()
     return [r.rstrip() for r in requirements]
+
 
 
 def get_version():
@@ -35,6 +37,7 @@ setup(
     packages=find_packages(),
     package_data={'btrack': ['libs/libtracker*', 'VERSION.txt']},
     install_requires=get_install_required(),
+    extras_require={'docs': get_install_required('docs')},
     python_requires='>=3.6',
     license='LICENSE.md',
     classifiers=[

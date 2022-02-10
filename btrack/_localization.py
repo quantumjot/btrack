@@ -37,10 +37,6 @@ except ImportError:
 logger = logging.getLogger("worker_process")
 
 
-def label_segmentation(segmentation: np.array, connectivity: int = 1):
-    return label(segmentation, connectivity)
-
-
 def _centroids_from_single_arr(
     segmentation: Union[np.ndarray, Generator],
     properties: Tuple[str],
@@ -72,7 +68,7 @@ def _centroids_from_single_arr(
     if assign_class_ID:
 
         # ensure regionprops can properly read label image
-        labeled = label_segmentation(segmentation)
+        labeled = label(segmentation)
 
         # pull class_ID from segments using pixel intensity
         _class_ID_centroids = regionprops_table(
@@ -97,7 +93,7 @@ def _centroids_from_single_arr(
     else:
         # check to see whether the segmentation is unique
         if not _is_unique(segmentation):
-            labeled = label_segmentation(segmentation)
+            labeled = label(segmentation)
         else:
             labeled = segmentation
 

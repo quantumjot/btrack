@@ -3,7 +3,6 @@ repos:
     rev: 5.3.2
     hooks:
     - id: isort
-      args: ["--profile", "black", "--line-length=79"]
 -   repo: https://github.com/python/black
     rev: 19.10b0
     hooks:

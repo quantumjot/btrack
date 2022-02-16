@@ -23,12 +23,16 @@ import logging
 import os
 import re
 from functools import wraps
+from typing import TYPE_CHECKING, Optional
 
 import h5py
 import numpy as np
 
 # import core
 from . import btypes, constants
+
+if TYPE_CHECKING:
+    from .core import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger('worker_process')
@@ -153,7 +157,12 @@ def import_CSV(filename: str):
     return objects
 
 
-def export_delegator(filename, tracker, obj_type=None, filter_by=None):
+def export_delegator(
+    filename: os.PathLike,
+    tracker: 'BayesianTracker',
+    obj_type: Optional[str] = None,
+    filter_by: Optional[str] = None,
+) -> None:
     """Export data from the tracker using the appropriate exporter.
 
     Parameters
@@ -173,13 +182,8 @@ def export_delegator(filename, tracker, obj_type=None, filter_by=None):
     -----
     This uses the appropriate exporter dependent on the given file extension.
     """
-    # assert(isinstance(tracker, BayesianTracker))
-    assert isinstance(filename, str)
-
     export_dir, export_fn = os.path.split(filename)
     _, ext = os.path.splitext(filename)
-
-    assert os.path.exists(export_dir)
 
     if ext == '.json':
         raise DeprecationWarning('JSON export is deprecated')

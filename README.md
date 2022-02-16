@@ -41,6 +41,16 @@ BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
 $ pip install btrack
 ```
 
+## Installing on M1 Mac/Apple Silicon/osx-arm64
+
+Best done with [conda](https://github.com/conda-forge/miniforge)
+
+```sh
+conda env create -f environment.yml
+conda activate btrack
+pip install btrack
+```
+
 ## Usage examples
 
 Visit [btrack documentation][docs] to learn how to use it and see other examples.

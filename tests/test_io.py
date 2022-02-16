@@ -1,7 +1,13 @@
 import os
+from pathlib import Path
 
 import numpy as np
-from _utils import create_test_object, create_test_properties
+import pytest
+from _utils import (
+    create_test_object,
+    create_test_properties,
+    simple_tracker_example,
+)
 
 import btrack
 
@@ -57,3 +63,23 @@ def test_hdf5_write_with_properties(tmp_path):
             np.testing.assert_allclose(getattr(orig, p), getattr(read, p))
         for p in extra_props:
             np.testing.assert_allclose(orig.properties[p], read.properties[p])
+
+
+@pytest.mark.parametrize("export_format", ["", ".csv", ".h5"])
+def test_tracker_export(tmp_path, export_format):
+    """Test that file export works using the `export_delegator`."""
+
+    tracker, _ = simple_tracker_example()
+
+    export_filename = f"test{export_format}"
+
+    # string type path
+    fn = os.path.join(tmp_path, export_filename)
+    tracker.export(fn, obj_type="obj_type_1")
+
+    # Pathlib type path
+    fn = Path(tmp_path) / export_filename
+    tracker.export(fn, obj_type="obj_type_1")
+
+    if export_format:
+        assert os.path.exists(fn)

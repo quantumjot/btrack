@@ -47,6 +47,7 @@ Best done with [conda](https://github.com/conda-forge/miniforge)
 
 ```sh
 conda env create -f environment.yml
+conda activate btrack
 pip install btrack
 ```
 

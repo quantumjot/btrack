@@ -26,4 +26,4 @@ Later, tracks can then be loaded using the inbuilt track reader, as follows:
   ) as reader:
     tracks = reader.tracks
 
-`tracks` will now be a Python list of Tracklet objects.
+``tracks`` will now be a Python list of Tracklet objects.

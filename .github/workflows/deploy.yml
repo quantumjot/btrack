@@ -1,4 +1,4 @@
-ame: deploy
+name: deploy
 
 on: [push, pull_request]
 

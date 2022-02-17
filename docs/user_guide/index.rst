@@ -13,6 +13,7 @@ Welcome to the user guide for btrack.
    simple_example
    configuration
    napari
+   saving_tracks
    large_datasets
 ..
    Add other stuff

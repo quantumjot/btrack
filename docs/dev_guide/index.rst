@@ -33,7 +33,7 @@ Releases are published to PyPI automatically when a tag is pushed to GitHub.
 
    # Create tags
    git commit --allow-empty -m "Release $RELEASE"
-   git tag -a $RELEASE -m "v$RELEASE"
+   git tag -a v$RELEASE -m "v$RELEASE"
 
    # Push
    git push upstream --tags

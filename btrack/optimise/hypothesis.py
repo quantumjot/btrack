@@ -62,14 +62,7 @@ class Hypothesis(ctypes.Structure):
 
     @property
     def type(self):
-        # return H_TYPES[self.hypothesis]
         return constants.Fates(self.hypothesis)
-
-    @property
-    def score(self):
-        raise DeprecationWarning(
-            'score is deprecated. Use log_likelihood now.'
-        )
 
     @property
     def log_likelihood(self):

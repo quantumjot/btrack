@@ -238,7 +238,6 @@ class HypothesisModel:
         """Load a model from file."""
         return utils.read_hypotheis_model(filename)
 
-    @property
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
         h_bin = ''.join(
@@ -254,5 +253,8 @@ class HypothesisModel:
         for k, v in dataclasses.asdict(self).items():
             if k in fields:
                 setattr(h_params, k, v)
+
+        # set the hypotheses to generate
+        h_params.hypotheses_to_generate = self.hypotheses_to_generate()
 
         return h_params

@@ -48,6 +48,17 @@ def create_test_tracklet(track_len: int):
     return tracklet, data, properties, track_ID
 
 
+def full_tracker_example(objects):
+    # run the tracking
+    tracker = btrack.BayesianTracker()
+    tracker.configure_from_file("./models/cell_config.json")
+    tracker.append(objects)
+    tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
+    tracker.track_interactive(step_size=100)
+    tracker.optimize()
+    return tracker
+
+
 def simple_tracker_example():
     """Run a simple tracker example with some data."""
     x = np.array([200, 201, 202, 203, 204, 207, 208])
@@ -58,12 +69,5 @@ def simple_tracker_example():
     objects_dict = {'x': x, 'y': y, 'z': z, 't': t}
     objects = btrack.dataio.objects_from_dict(objects_dict)
 
-    # run the tracking
-    tracker = btrack.BayesianTracker()
-    tracker.configure_from_file("./models/cell_config.json")
-    tracker.append(objects)
-    tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
-    tracker.track_interactive(step_size=100)
-    tracker.optimize()
-
+    tracker = full_tracker_example(objects)
     return tracker, objects_dict

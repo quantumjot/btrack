@@ -57,11 +57,11 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 
 ### Cell tracking in time-lapse imaging data
 
-[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)  
+[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)
 *Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
 
 
-[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
+[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
 *Video of tracking, showing automatic lineage determination*
 
 ---
@@ -77,15 +77,15 @@ If you would like to contribute to btrack, you will need to install the latest v
 
 More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:
 
-**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
-Ulicna K, Vallardi G, Charras G and Lowe AR.  
-*Front in Comp Sci* (2021)  
+**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
+Ulicna K, Vallardi G, Charras G and Lowe AR.
+*Front in Comp Sci* (2021)
 [![doi:10.3389/fcomp.2021.734559](https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue)](https://doi.org/10.3389/fcomp.2021.734559)
 
 
-**Local cellular neighbourhood controls proliferation in cell competition**  
-Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
-*Mol. Biol. Cell* (2017)  
+**Local cellular neighbourhood controls proliferation in cell competition**
+Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
+*Mol. Biol. Cell* (2017)
 [![doi:10.1091/mbc.E17-06-0368](https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue)](https://doi.org/10.1091/mbc.E17-06-0368)
 
 ```

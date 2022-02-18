@@ -1,3 +1,4 @@
+#!/bin/sh
 echo "Building btrack..."
 # make compilation directories
 mkdir ./btrack/libs

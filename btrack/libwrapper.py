@@ -29,7 +29,7 @@ from .constants import BTRACK_PATH
 from .optimise import hypothesis
 
 # get the logger instance
-logger = logging.getLogger('worker_process')
+logger = logging.getLogger(__name__)
 
 
 def numpy_pointer_decorator(func):

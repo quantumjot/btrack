@@ -29,7 +29,7 @@ from .optimise import optimiser
 __version__ = constants.get_version()
 
 # get the logger instance
-logger = logging.getLogger('worker_process')
+logger = logging.getLogger(__name__)
 
 # if we don't have any handlers, set one up
 if not logger.handlers:

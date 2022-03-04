@@ -34,7 +34,7 @@ except ImportError:
     DASK_INSTALLED = False
 
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
 def _centroids_from_single_arr(

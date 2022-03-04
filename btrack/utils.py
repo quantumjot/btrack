@@ -31,7 +31,7 @@ from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
 # add an alias here

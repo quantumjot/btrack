@@ -14,6 +14,7 @@
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import btrack
 
 # -- Project information -----------------------------------------------------
 
@@ -21,8 +22,9 @@ project = 'Bayesian Tracker (btrack) 🔬💻'
 copyright = '2022, Alan R Lowe'
 author = 'Alan R Lowe'
 
+
 # The full version, including alpha/beta/rc tags
-release = 'v0.4.2'
+release = 'v' + btrack.__version__
 
 
 # -- General configuration ---------------------------------------------------

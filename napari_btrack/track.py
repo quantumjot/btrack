@@ -1,5 +1,4 @@
 import btrack
-import json
 import napari
 
 from btrack.utils import segmentation_to_objects

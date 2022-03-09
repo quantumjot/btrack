@@ -2,14 +2,9 @@ name: napari-btrack
 schema_version: 0.1.0
 contributions:
   commands:
-  - id: napari-btrack.ExampleQWidget
-    title: Create Example Q Widget
-    python_name: napari_btrack._dock_widget:ExampleQWidget
-  - id: napari-btrack.example_magic_widget
-    title: Create example_magic_widget
-    python_name: napari_btrack._dock_widget:example_magic_widget
+  - id: napari-btrack.track
+    title: Create Track
+    python_name: napari_btrack._dock_widget:track
   widgets:
-  - command: napari-btrack.ExampleQWidget
-    display_name: Example Q Widget
-  - command: napari-btrack.example_magic_widget
-    display_name: example_magic_widget
+  - command: napari-btrack.track
+    display_name: Track

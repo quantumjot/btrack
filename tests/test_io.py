@@ -21,14 +21,14 @@ def test_hdf5_write(tmp_path):
         obj, _ = create_test_object(id=i)
         objects.append(obj)
 
-    with btrack.dataio.HDF5FileHandler(fn, 'w') as h:
+    with btrack.dataio.HDF5FileHandler(fn, "w") as h:
         h.write_objects(objects)
 
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(fn, 'r') as h:
+    with btrack.dataio.HDF5FileHandler(fn, "r") as h:
         objects_from_file = h.objects
 
-    properties = ['x', 'y', 'z', 't', 'label', 'ID']
+    properties = ["x", "y", "z", "t", "label", "ID"]
 
     for orig, read in zip(objects, objects_from_file):
         for p in properties:
@@ -46,16 +46,16 @@ def test_hdf5_write_with_properties(tmp_path):
         obj.properties = create_test_properties()
         objects.append(obj)
 
-    with btrack.dataio.HDF5FileHandler(fn, 'w') as h:
+    with btrack.dataio.HDF5FileHandler(fn, "w") as h:
         h.write_objects(objects)
 
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(fn, 'r') as h:
+    with btrack.dataio.HDF5FileHandler(fn, "r") as h:
         objects_from_file = h.objects
 
     extra_props = list(create_test_properties().keys())
 
-    properties = ['x', 'y', 'z', 't', 'label', 'ID']
+    properties = ["x", "y", "z", "t", "label", "ID"]
 
     for orig, read in zip(objects, objects_from_file):
         for p in properties:

@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 if not logger.handlers:
     # configure stream handler
     log_fmt = logging.Formatter(
-        '[%(levelname)s][%(asctime)s] %(message)s',
-        datefmt='%Y/%m/%d %I:%M:%S %p',
+        "[%(levelname)s][%(asctime)s] %(message)s",
+        datefmt="%Y/%m/%d %I:%M:%S %p",
     )
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(log_fmt)
@@ -172,9 +172,9 @@ class BayesianTracker:
         # sanity check library version
         version_tuple = constants.get_version_tuple()
         if not self._lib.check_library_version(self._engine, *version_tuple):
-            logger.warning(f'btrack (v{__version__}) shared library mismatch.')
+            logger.warning(f"btrack (v{__version__}) shared library mismatch.")
         else:
-            logger.info(f'btrack (v{__version__}) library imported')
+            logger.info(f"btrack (v{__version__}) library imported")
 
         # silently set the update method to EXACT
         self._bayesian_update_method = constants.BayesianUpdates.EXACT
@@ -189,11 +189,11 @@ class BayesianTracker:
         self.return_kalman = False
 
     def __enter__(self):
-        logger.info('Starting BayesianTracker session')
+        logger.info("Starting BayesianTracker session")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        logger.info('Ending BayesianTracker session')
+        logger.info("Ending BayesianTracker session")
         self._lib.del_interface(self._engine)
 
     def configure_from_file(self, filename: str):
@@ -213,7 +213,7 @@ class BayesianTracker:
         """
 
         if not isinstance(config, dict):
-            raise TypeError('configuration must be a dictionary')
+            raise TypeError("configuration must be a dictionary")
 
         # store the models locally
         self.motion_model = config.get("MotionModel", None)
@@ -232,7 +232,7 @@ class BayesianTracker:
     def max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
         assert max_search_radius > 0.0
-        logger.info(f'Setting max XYZ search radius to: {max_search_radius}')
+        logger.info(f"Setting max XYZ search radius to: {max_search_radius}")
         self._lib.max_search_radius(self._engine, max_search_radius)
 
     @property
@@ -243,7 +243,7 @@ class BayesianTracker:
     def update_method(self, method):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         assert method in constants.BayesianUpdates
-        logger.info(f'Setting Bayesian update method to: {method}')
+        logger.info(f"Setting Bayesian update method to: {method}")
         self._lib.set_update_mode(self._engine, method.value)
         self._bayesian_update_method = method
 
@@ -275,7 +275,7 @@ class BayesianTracker:
             n = self._lib.track_length(self._engine, i)
 
             # set up some space for the output and  get the track data
-            refs = np.zeros((n,), dtype='int32')
+            refs = np.zeros((n,), dtype="int32")
             _ = self._lib.get_refs(self._engine, refs, i)
             tracks.append(refs.tolist())
 
@@ -324,7 +324,7 @@ class BayesianTracker:
         """Return the imaging volume in the format xyzt. This is effectively
         the range of each dimension: [(xlo, xhi), ..., (zlo, zhi), (tlo, thi)].
         """
-        vol = np.zeros((3, 2), dtype='float')
+        vol = np.zeros((3, 2), dtype="float")
         self._lib.get_volume(self._engine, vol)
         return [tuple(vol[i, :].tolist()) for i in range(3)] + [
             self.frame_range
@@ -340,11 +340,11 @@ class BayesianTracker:
             A tuple describing the imaging volume.
         """
         if not isinstance(volume, tuple):
-            raise TypeError('Volume must be a tuple')
+            raise TypeError("Volume must be a tuple")
         if len(volume) != 3 or any([len(v) != 2 for v in volume]):
-            raise ValueError('Volume must contain three tuples (xyz)')
-        self._lib.set_volume(self._engine, np.array(volume, dtype='float64'))
-        logger.info(f'Set volume to {volume}')
+            raise ValueError("Volume must contain three tuples (xyz)")
+        self._lib.set_volume(self._engine, np.array(volume, dtype="float64"))
+        logger.info(f"Set volume to {volume}")
 
     @property
     def motion_model(self):
@@ -366,12 +366,12 @@ class BayesianTracker:
             model = new_model
         else:
             raise TypeError(
-                'Motion model needs to be defined in /models/ or'
-                'provided as a MotionModel object'
+                "Motion model needs to be defined in /models/ or"
+                "provided as a MotionModel object"
             )
 
         self._motion_model = model
-        logger.info(f'Loading motion model: {model.name}')
+        logger.info(f"Loading motion model: {model.name}")
 
         # need to populate fields in the C++ library
         self._lib.motion(
@@ -411,12 +411,12 @@ class BayesianTracker:
             return
         else:
             raise TypeError(
-                'Object model needs to be defined in /models/ or'
-                'provided as a ObjectModel object'
+                "Object model needs to be defined in /models/ or"
+                "provided as a ObjectModel object"
             )
 
         self._object_model = model
-        logger.info(f'Loading object model: {model.name}')
+        logger.info(f"Loading object model: {model.name}")
 
         # need to populate fields in the C++ library
         self._lib.model(
@@ -434,9 +434,9 @@ class BayesianTracker:
     @frame_range.setter
     def frame_range(self, frame_range: tuple):
         if not isinstance(frame_range, tuple):
-            raise TypeError('Frame range must be specified as a tuple')
+            raise TypeError("Frame range must be specified as a tuple")
         if frame_range[1] < frame_range[0]:
-            raise ValueError('Frame range must be low->high')
+            raise ValueError("Frame range must be low->high")
         self._frame_range = frame_range
 
     @property
@@ -461,7 +461,7 @@ class BayesianTracker:
         for idx, obj in enumerate(objects):
             obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
-                raise TypeError('track_object must be a PyTrackObject')
+                raise TypeError("track_object must be a PyTrackObject")
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)
@@ -473,7 +473,7 @@ class BayesianTracker:
         """Cast the info pointer back to an object"""
 
         if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
-            raise TypeError('Stats requires the pointer to the object')
+            raise TypeError("Stats requires the pointer to the object")
 
         return info_ptr.contents
 
@@ -481,10 +481,10 @@ class BayesianTracker:
         """Run the actual tracking algorithm"""
 
         if not self._initialised:
-            logger.error('Tracker has not been configured')
+            logger.error("Tracker has not been configured")
             return
 
-        logger.info('Starting tracking... ')
+        logger.info("Starting tracking... ")
         # ret, tm = timeit( lib.track,  self._engine )
         ret = self._lib.track(self._engine)
 
@@ -494,8 +494,8 @@ class BayesianTracker:
         if not utils.log_error(stats.error):
             logger.info(
                 (
-                    f'SUCCESS. Found {self.n_tracks} tracks in'
-                    f'{1+self._frame_range[1]} frames'
+                    f"SUCCESS. Found {self.n_tracks} tracks in"
+                    f"{1+self._frame_range[1]} frames"
                 )
             )
 
@@ -515,10 +515,10 @@ class BayesianTracker:
 
         # TODO(arl): this needs cleaning up to have some decent output
         if not self._initialised:
-            logger.error('Tracker has not been configured')
+            logger.error("Tracker has not been configured")
             return
 
-        logger.info('Starting tracking... ')
+        logger.info("Starting tracking... ")
 
         stats = self.step()
         frm = 0
@@ -527,9 +527,9 @@ class BayesianTracker:
         while stats.tracker_active:
             logger.info(
                 (
-                    f'Tracking objects in frames {frm} to '
-                    f'{min(frm+step_size-1, self._frame_range[1]+1)} '
-                    f'(of {self._frame_range[1]+1})...'
+                    f"Tracking objects in frames {frm} to "
+                    f"{min(frm+step_size-1, self._frame_range[1]+1)} "
+                    f"(of {self._frame_range[1]+1})..."
                 )
             )
 
@@ -538,18 +538,18 @@ class BayesianTracker:
             frm += step_size
 
         if not utils.log_error(stats.error):
-            logger.info('SUCCESS.')
+            logger.info("SUCCESS.")
             logger.info(
                 (
-                    f' - Found {self.n_tracks} tracks in '
-                    f'{1+self._frame_range[1]} frames '
-                    f'(in {stats.t_total_time}s)'
+                    f" - Found {self.n_tracks} tracks in "
+                    f"{1+self._frame_range[1]} frames "
+                    f"(in {stats.t_total_time}s)"
                 )
             )
             logger.info(
                 (
-                    f' - Inserted {self.n_dummies} dummy objects to fill '
-                    'tracking gaps'
+                    f" - Inserted {self.n_dummies} dummy objects to fill "
+                    "tracking gaps"
                 )
             )
 
@@ -564,7 +564,7 @@ class BayesianTracker:
         """Calculate and return hypotheses using the hypothesis engine."""
         # raise NotImplementedError
         if not self.hypothesis_model:
-            raise AttributeError('Hypothesis model has not been specified.')
+            raise AttributeError("Hypothesis model has not been specified.")
 
         n_hypotheses = self._lib.create_hypotheses(
             self._engine,
@@ -603,16 +603,16 @@ class BayesianTracker:
         renumbering and assignment of branches.
         """
 
-        logger.info(f'Loading hypothesis model: {self.hypothesis_model.name}')
+        logger.info(f"Loading hypothesis model: {self.hypothesis_model.name}")
 
         logger.info(
-            f'Calculating hypotheses (relax: {self.hypothesis_model.relax})...'
+            f"Calculating hypotheses (relax: {self.hypothesis_model.relax})..."
         )
         hypotheses = self.hypotheses()
 
         # if we don't have any hypotheses return
         if not hypotheses:
-            logger.warning('No hypotheses could be found.')
+            logger.warning("No hypotheses could be found.")
             return []
 
         # set up the track optimiser
@@ -622,7 +622,7 @@ class BayesianTracker:
         optimised = [hypotheses[i] for i in selected_hypotheses]
 
         if not optimised:
-            logger.warning('Optimization failed.')
+            logger.warning("Optimization failed.")
             return []
 
         h_original = [h.type for h in hypotheses]
@@ -632,18 +632,18 @@ class BayesianTracker:
         for h_type in h_types:
             logger.info(
                 (
-                    f' - {h_type}: {h_optimise.count(h_type)}'
-                    f' (of {h_original.count(h_type)})'
+                    f" - {h_type}: {h_optimise.count(h_type)}"
+                    f" (of {h_original.count(h_type)})"
                 )
             )
-        logger.info(f' - TOTAL: {len(hypotheses)} hypotheses')
+        logger.info(f" - TOTAL: {len(hypotheses)} hypotheses")
 
         # now that we have generated the optimal sequence, merge all of the
         # tracks, delete fragments and assign divisions
-        h_array = np.array(selected_hypotheses, dtype='uint32')
+        h_array = np.array(selected_hypotheses, dtype="uint32")
         h_array = h_array[np.newaxis, ...]
         self._lib.merge(self._engine, h_array, len(selected_hypotheses))
-        logger.info(f'Completed optimization with {self.n_tracks} tracks')
+        logger.info(f"Completed optimization with {self.n_tracks} tracks")
 
         return optimised
 

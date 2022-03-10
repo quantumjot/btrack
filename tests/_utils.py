@@ -66,7 +66,7 @@ def simple_tracker_example():
     t = np.array([0, 1, 2, 3, 4, 5, 6])
     z = np.zeros(x.shape)
 
-    objects_dict = {'x': x, 'y': y, 'z': z, 't': t}
+    objects_dict = {"x": x, "y": y, "z": z, "t": t}
     objects = btrack.dataio.objects_from_dict(objects_dict)
 
     tracker = full_tracker_example(objects)

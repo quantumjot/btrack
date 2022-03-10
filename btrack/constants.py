@@ -23,7 +23,7 @@ EXPORT_FORMATS = frozenset([".json", ".mat", ".hdf5"])
 VOLUME = ((0, 1024), (0, 1024), (-1e5, 1e5))
 HDF_CHUNK_CACHE = 100 * 1024 * 1024
 USER_MODEL_DIR = ""
-GLPK_OPTIONS = {}
+GLPK_OPTIONS: dict = {}
 
 
 DEFAULT_OBJECT_KEYS = ["t", "x", "y", "z", "label"]

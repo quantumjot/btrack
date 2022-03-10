@@ -236,7 +236,7 @@ class HypothesisModel:
     @staticmethod
     def load(filename: os.PathLike):
         """Load a model from file."""
-        return utils.read_hypotheis_model(filename)
+        return utils.read_hypothesis_model(filename)
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""

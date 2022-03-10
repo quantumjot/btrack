@@ -15,3 +15,4 @@ bworker.py
 *.DS_store
 *.o
 *.pyc
+.vscode

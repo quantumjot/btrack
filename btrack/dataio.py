@@ -408,7 +408,7 @@ class HDF5FileHandler:
             raise ValueError('Object type must start with ``obj_type_``')
         self._object_type = obj_type
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists('segmentation')
     def segmentation(self):
         segmentation = self._hdf['segmentation']['images'][:].astype(np.uint16)
@@ -634,7 +634,7 @@ class HDF5FileHandler:
             )
             props_grp.create_dataset(key, data=data[key], dtype='float32')
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists('tracks')
     def tracks(self):
         """Return the tracks in the file."""
@@ -770,7 +770,7 @@ class HDF5FileHandler:
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset('fates', data=fate_table, dtype='int32')
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists('tracks')
     def lbep(self):
         """Return the LBEP data."""

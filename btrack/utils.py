@@ -22,6 +22,7 @@ import dataclasses
 import json
 import logging
 import os
+from typing import Optional
 
 import numpy as np
 
@@ -109,7 +110,7 @@ def log_stats(stats):
     )
 
 
-def read_motion_model(config: dict) -> MotionModel:
+def read_motion_model(config: dict) -> Optional[MotionModel]:
     """Read a motion model from a configuration dictionary.
 
     Read in a motion model description file and return a dictionary containing
@@ -123,7 +124,7 @@ def read_motion_model(config: dict) -> MotionModel:
 
     Returns
     -------
-    model : MotionModel
+    model : Optional[MotionModel]
         A `models.MotionModel` instance to configure BayesianTracker.
 
     Notes
@@ -196,7 +197,7 @@ def read_motion_model(config: dict) -> MotionModel:
     return model
 
 
-def read_object_model(config: dict) -> ObjectModel:
+def read_object_model(config: dict) -> Optional[ObjectModel]:
     """Read an object model from a configuration dictionary.
 
     Read in a object model description file and return a dictionary containing
@@ -210,7 +211,7 @@ def read_object_model(config: dict) -> ObjectModel:
 
     Returns
     -------
-    model : ObjectModel
+    model : Optional[ObjectModel]
         A `models.ObjectModel` instance to configure BayesianTracker.
 
     Notes
@@ -260,7 +261,7 @@ def read_object_model(config: dict) -> ObjectModel:
     return model
 
 
-def read_hypothesis_model(config: dict) -> HypothesisModel:
+def read_hypothesis_model(config: dict) -> Optional[HypothesisModel]:
     """Read a hypothesis model from a configuration dictionary.
 
     Read in a hypothesis model description file and return a dictionary
@@ -274,7 +275,7 @@ def read_hypothesis_model(config: dict) -> HypothesisModel:
 
     Returns
     -------
-    model : HypothesisModel
+    model : Optional[HypothesisModel]
         A `models.HypothesistModel` instance to configure BayesianTracker.
 
     Read in a set of hypothesis parameters from a JSON description file.  The

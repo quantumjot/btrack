@@ -53,12 +53,12 @@ def _make_test_image(
         centroids.append(point)
 
     # sort the centroids by axis
-    centroids = np.array(centroids)
-    centroids = centroids[
-        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    centroids_arr = np.array(centroids)
+    centroids_sorted = centroids[
+        np.lexsort([centroids_arr[:, dim] for dim in range(ndim)][::-1])
     ]
 
-    assert centroids.shape[0] == nobj
+    assert centroids_sorted.shape[0] == nobj
     return img, centroids
 
 

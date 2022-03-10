@@ -167,7 +167,7 @@ def export_delegator(
 
     Parameters
     ----------
-    filename : str
+    filename : os.PathLike
         The filename to export the data. The extension (e.g. .h5) is used
         to select the correct export function.
     tracker : BayesianTracker
@@ -202,7 +202,7 @@ def check_track_type(tracks):
 
 
 def export_CSV(
-    filename: str,
+    filename: os.PathLike,
     tracks: list,
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
     obj_type=None,
@@ -211,7 +211,7 @@ def export_CSV(
 
     Parameters
     ----------
-    filename : str
+    filename : os.PathLike
         The filename of the file to be exported.
     tracks : list[Tracklet]
         A list of Tracklet objects to be exported.
@@ -258,7 +258,9 @@ def export_LBEP(filename: str, tracks: list):
             lbep_file.write(f'{lbep}\n')
 
 
-def _export_HDF(filename: str, tracker, obj_type=None, filter_by: str = None):
+def _export_HDF(
+    filename: os.PathLike, tracker, obj_type=None, filter_by: str = None
+):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
@@ -300,7 +302,7 @@ class HDF5FileHandler:
 
     Parameters
     ----------
-    filename : str
+    filename : os.PathLike
         The filename of the hdf5 file to be used.
     read_write : str
         A read/write mode for the file, e.g. `w`, `r`, `a` etc.
@@ -366,7 +368,7 @@ class HDF5FileHandler:
 
     def __init__(
         self,
-        filename: str,
+        filename: os.PathLike,
         read_write: str = 'r',
         obj_type: str = 'obj_type_1',
     ):

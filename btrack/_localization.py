@@ -209,7 +209,8 @@ def segmentation_to_objects(
     # objects
     if 'label' in properties:
         logger.warning("Cannot use scikit-image label as a property.")
-        del properties['label']
+        # TODO: following line makes no sense as properties is immutable
+        del properties['label']  # type: ignore
 
     if isinstance(segmentation, np.ndarray):
 

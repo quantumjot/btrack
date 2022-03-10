@@ -323,26 +323,31 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
     """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
-    data = {}
+    # mypy doesn't like the list values becoming an array
+    # so to get around this we have to create two separate dicts
+    data_initial: dict[str, list] = {}
+    data_output: dict[str, np.ndarray] = {}
 
     for track in tracks:
         trk = track.to_dict(properties)
 
-        if not data:
-            data = {k: [] for k in trk.keys()}
+        if not data_initial:
+            data_initial = {k: [] for k in trk.keys()}
 
-        for key in data.keys():
+        for key in data_initial.keys():
             property = trk[key]
             if not isinstance(property, (list, np.ndarray)):
                 property = [property] * len(track)
 
             assert len(property) == len(track)
-            data[key].append(property)
+            data_initial[key].append(property)
 
-    for key in data.keys():
-        data[key] = np.concatenate(data[key])
+    for key in data_initial.keys():
+        data_output[key] = np.concatenate(data_initial[key])
+        # unecessary but just in case the unused dictionary is large
+        del data_initial[key]
 
-    return data
+    return data_output
 
 
 def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):

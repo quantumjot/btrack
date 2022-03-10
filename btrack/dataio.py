@@ -35,12 +35,12 @@ if TYPE_CHECKING:
     from .core import BayesianTracker
 
 # get the logger instance
-logger = logging.getLogger('worker_process')
+logger = logging.getLogger("worker_process")
 
 
 class _PyTrackObjectFactory:
     def __init__(self):
-        raise DeprecationWarning('_PyTrackObjectFactory has been deprecated.')
+        raise DeprecationWarning("_PyTrackObjectFactory has been deprecated.")
 
 
 def localizations_to_objects(localizations):
@@ -57,7 +57,7 @@ def localizations_to_objects(localizations):
         A list of PyTrackObject objects that represent the localizations.
     """
 
-    logger.info(f'Objects are of type: {type(localizations)}')
+    logger.info(f"Objects are of type: {type(localizations)}")
 
     if isinstance(localizations, list):
         if all(
@@ -75,14 +75,14 @@ def localizations_to_objects(localizations):
                 c: np.asarray(localizations[c]) for c in localizations
             }
         except ValueError:
-            logger.error(f'Unknown localization type: {type(localizations)}')
+            logger.error(f"Unknown localization type: {type(localizations)}")
             raise TypeError(
-                f'Unknown localization type: {type(localizations)}'
+                f"Unknown localization type: {type(localizations)}"
             )
 
     # how many objects are there
-    n_objects = objects_dict['t'].shape[0]
-    objects_dict['ID'] = np.arange(n_objects)
+    n_objects = objects_dict["t"].shape[0]
+    objects_dict["ID"] = np.arange(n_objects)
 
     return objects_from_dict(objects_dict)
 
@@ -91,7 +91,7 @@ def objects_from_dict(objects_dict: dict):
     """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
-    n_objects = int(objects_dict['t'].shape[0])
+    n_objects = int(objects_dict["t"].shape[0])
 
     assert all([v.shape[0] == n_objects for k, v in objects_dict.items()])
 
@@ -115,18 +115,18 @@ def objects_from_array(
 
     keys = default_keys[:n_features]
     objects_dict = {keys[i]: objects_arr[:, i] for i in range(n_features)}
-    objects_dict['ID'] = np.arange(n_objects)
+    objects_dict["ID"] = np.arange(n_objects)
     return objects_from_dict(objects_dict)
 
 
 def import_JSON(filename: str):
     """Generic JSON importer for localisations from other software."""
-    with open(filename, 'r') as json_file:
+    with open(filename, "r") as json_file:
         data = json.load(json_file)
     objects = []
 
     for i, _obj in enumerate(data.values()):
-        _obj.update({'ID': i})
+        _obj.update({"ID": i})
         obj = btypes.PyTrackObject.from_dict(_obj)
         objects.append(obj)
 
@@ -147,11 +147,11 @@ def import_CSV(filename: str):
     """
 
     objects = []
-    with open(filename, 'r') as csv_file:
-        csvreader = csv.DictReader(csv_file, delimiter=',', quotechar='|')
+    with open(filename, "r") as csv_file:
+        csvreader = csv.DictReader(csv_file, delimiter=",", quotechar="|")
         for i, row in enumerate(csvreader):
             data = {k: float(v) for k, v in row.items()}
-            data.update({'ID': i})
+            data.update({"ID": i})
             obj = btypes.PyTrackObject.from_dict(data)
             objects.append(obj)
     return objects
@@ -159,7 +159,7 @@ def import_CSV(filename: str):
 
 def export_delegator(
     filename: os.PathLike,
-    tracker: 'BayesianTracker',
+    tracker: "BayesianTracker",
     obj_type: Optional[str] = None,
     filter_by: Optional[str] = None,
 ) -> None:
@@ -185,16 +185,16 @@ def export_delegator(
     export_dir, export_fn = os.path.split(filename)
     _, ext = os.path.splitext(filename)
 
-    if ext == '.json':
-        raise DeprecationWarning('JSON export is deprecated')
-    elif ext == '.mat':
-        raise DeprecationWarning('MATLAB export is deprecated')
-    elif ext == '.csv':
+    if ext == ".json":
+        raise DeprecationWarning("JSON export is deprecated")
+    elif ext == ".mat":
+        raise DeprecationWarning("MATLAB export is deprecated")
+    elif ext == ".csv":
         export_CSV(filename, tracker.tracks, obj_type=obj_type)
-    elif ext in ('.hdf', '.hdf5', '.h5'):
+    elif ext in (".hdf", ".hdf5", ".h5"):
         _export_HDF(filename, tracker, obj_type=obj_type, filter_by=filter_by)
     else:
-        logger.error(f'Export file format {ext} not recognized.')
+        logger.error(f"Export file format {ext} not recognized.")
 
 
 def check_track_type(tracks):
@@ -223,17 +223,17 @@ def export_CSV(
     """
 
     if not tracks:
-        logger.error(f'No tracks found when exporting to: {filename}')
+        logger.error(f"No tracks found when exporting to: {filename}")
         return
 
     if not check_track_type(tracks):
-        logger.error('Tracks of incorrect type')
+        logger.error("Tracks of incorrect type")
 
-    logger.info(f'Writing out CSV files to: {filename}')
+    logger.info(f"Writing out CSV files to: {filename}")
     export_track = np.vstack([t.to_array(properties) for t in tracks])
 
-    with open(filename, 'w', newline='') as csv_file:
-        csvwriter = csv.writer(csv_file, delimiter=' ')
+    with open(filename, "w", newline="") as csv_file:
+        csvwriter = csv.writer(csv_file, delimiter=" ")
         csvwriter.writerow(properties)
         for i in range(export_track.shape[0]):
             csvwriter.writerow(export_track[i, :].tolist())
@@ -242,33 +242,33 @@ def export_CSV(
 def export_LBEP(filename: str, tracks: list):
     """Export the LBEP table as a text file."""
     if not tracks:
-        logger.error(f'No tracks found when exporting to: {filename}')
+        logger.error(f"No tracks found when exporting to: {filename}")
         return
 
     if not check_track_type(tracks):
-        logger.error('Tracks of incorrect type')
+        logger.error("Tracks of incorrect type")
 
     tracks.sort(key=lambda t: t.ID)
-    if not filename.endswith('.txt'):
-        filename += '.txt'
-    with open(filename, 'w') as lbep_file:
-        logger.info(f'Writing LBEP file: {filename}...')
+    if not filename.endswith(".txt"):
+        filename += ".txt"
+    with open(filename, "w") as lbep_file:
+        logger.info(f"Writing LBEP file: {filename}...")
         for track in tracks:
-            lbep = f'{track.ID} {track.t[0]} {track.t[-1]} {track.parent}'
-            lbep_file.write(f'{lbep}\n')
+            lbep = f"{track.ID} {track.t[0]} {track.t[-1]} {track.parent}"
+            lbep_file.write(f"{lbep}\n")
 
 
 def _export_HDF(filename: str, tracker, obj_type=None, filter_by: str = None):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
-    if not ext == '.h5':
-        filename = filename_noext + '.h5'
-        logger.warning(f'Changing HDF filename to {filename}')
+    if not ext == ".h5":
+        filename = filename_noext + ".h5"
+        logger.warning(f"Changing HDF filename to {filename}")
 
-    with HDF5FileHandler(filename, read_write='a', obj_type=obj_type) as hdf:
+    with HDF5FileHandler(filename, read_write="a", obj_type=obj_type) as hdf:
         # if there are no objects, write them out
-        if f'objects/{obj_type}' not in hdf._hdf:
+        if f"objects/{obj_type}" not in hdf._hdf:
             hdf.write_objects(tracker)
         # write the tracks
         hdf.write_tracks(tracker, f_expr=filter_by)
@@ -284,7 +284,7 @@ def h5check_property_exists(property):
             assert isinstance(self, HDF5FileHandler)
             if property not in self._hdf:
                 logger.error(
-                    f'{property.capitalize()} not found in {self.filename}'
+                    f"{property.capitalize()} not found in {self.filename}"
                 )
                 return None
             return fn(*args, **kwargs)
@@ -367,8 +367,8 @@ class HDF5FileHandler:
     def __init__(
         self,
         filename: str,
-        read_write: str = 'r',
-        obj_type: str = 'obj_type_1',
+        read_write: str = "r",
+        obj_type: str = "obj_type_1",
     ):
 
         self._f_expr = None  # DO NOT USE
@@ -376,13 +376,13 @@ class HDF5FileHandler:
         self.object_type = obj_type
 
         self.filename = filename
-        logger.info(f'Opening HDF file: {self.filename}...')
+        logger.info(f"Opening HDF file: {self.filename}...")
         self._hdf = h5py.File(filename, read_write)
         self._states = list(constants.States)
 
     @property
     def object_types(self):
-        return list(self._hdf['objects'].keys())
+        return list(self._hdf["objects"].keys())
 
     def __enter__(self):
         return self
@@ -393,7 +393,7 @@ class HDF5FileHandler:
     def close(self):
         if not self._hdf:
             return
-        logger.info(f'Closing HDF file: {self.filename}')
+        logger.info(f"Closing HDF file: {self.filename}")
         self._hdf.close()
 
     @property
@@ -402,15 +402,15 @@ class HDF5FileHandler:
 
     @object_type.setter
     def object_type(self, obj_type: str):
-        if not obj_type.startswith('obj_type_'):
-            raise ValueError('Object type must start with ``obj_type_``')
+        if not obj_type.startswith("obj_type_"):
+            raise ValueError("Object type must start with ``obj_type_``")
         self._object_type = obj_type
 
     @property
-    @h5check_property_exists('segmentation')
+    @h5check_property_exists("segmentation")
     def segmentation(self):
-        segmentation = self._hdf['segmentation']['images'][:].astype(np.uint16)
-        logger.info(f'Loading segmentation {segmentation.shape}')
+        segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
+        logger.info(f"Loading segmentation {segmentation.shape}")
         return segmentation
 
     def write_segmentation(self, segmentation: np.ndarray):
@@ -422,12 +422,12 @@ class HDF5FileHandler:
             A numpy array representing the segmentation data. T(Z)YX, uint16
         """
         # write the segmentation out
-        grp = self._hdf.create_group('segmentation')
+        grp = self._hdf.create_group("segmentation")
         grp.create_dataset(
-            'images',
+            "images",
             data=segmentation,
-            dtype='uint16',
-            compression='gzip',
+            dtype="uint16",
+            compression="gzip",
             compression_opts=7,
         )
 
@@ -436,30 +436,30 @@ class HDF5FileHandler:
         """Return the objects in the file."""
         return self.filtered_objects()
 
-    @h5check_property_exists('objects')
+    @h5check_property_exists("objects")
     def filtered_objects(self, f_expr=None):
         """A filtered list of objects based on metadata. f_expr should be of the
         format `flag==1`."""
 
         if self.object_type not in self.object_types:
-            raise ValueError(f'Object type {self.object_type} not recognized')
+            raise ValueError(f"Object type {self.object_type} not recognized")
 
-        grp = self._hdf['objects'][self.object_type]
+        grp = self._hdf["objects"][self.object_type]
 
         # read the whole dataset into memory
-        txyz = grp['coords'][:]
-        if 'labels' not in grp:
-            logger.warning('Labels missing from objects in HDF file')
+        txyz = grp["coords"][:]
+        if "labels" not in grp:
+            logger.warning("Labels missing from objects in HDF file")
             labels = np.zeros((txyz.shape[0], 6))
         else:
-            labels = self._hdf['objects'][self.object_type]['labels'][:]
+            labels = self._hdf["objects"][self.object_type]["labels"][:]
 
         # get properties if we have them (note, this assumes that the same
         # properties exist for each object)
         properties = {}
-        if 'properties' in grp:
+        if "properties" in grp:
             properties = {
-                k: grp['properties'][k][:] for k in grp['properties']
+                k: grp["properties"][k][:] for k in grp["properties"]
             }
             assert all([len(p) == len(txyz) for p in properties.values()])
 
@@ -467,26 +467,26 @@ class HDF5FileHandler:
         # TODO(arl): this should now reference the `properties`
         if f_expr is not None:
             assert isinstance(f_expr, str)
-            pattern = r'(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)'
+            pattern = r"(?P<name>\w+)(?P<op>[\>\<\=]+)(?P<cmp>[0-9]+)"
             m = re.match(pattern, f_expr)
 
             if m is None:
-                raise ValueError(f'Cannot filter objects by {f_expr}')
+                raise ValueError(f"Cannot filter objects by {f_expr}")
 
-            f_eval = f'x{m["op"]}{m["cmp"]}'  # e.g. x > 10
+            f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
             # old files have these stored differently
-            if 'properties' in grp.keys():
-                property_group = grp['properties']
+            if "properties" in grp.keys():
+                property_group = grp["properties"]
             else:
                 property_group = grp
 
-            if m['name'] in property_group.keys():
+            if m["name"] in property_group.keys():
                 # logger.info(f"Property {m['name']} found in {property_group}.")
-                data = property_group[m['name']][:]
+                data = property_group[m["name"]][:]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
-                raise ValueError(f'Cannot filter objects by {f_expr}')
+                raise ValueError(f"Cannot filter objects by {f_expr}")
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
@@ -494,20 +494,20 @@ class HDF5FileHandler:
         # sanity check that coordinates matches labels
         assert txyz.shape[0] == labels.shape[0]
         logger.info(
-            f'Loading objects/{self.object_type} {txyz.shape} '
-            f'({len(filtered_idx)} filtered: {f_expr})'
+            f"Loading objects/{self.object_type} {txyz.shape} "
+            f"({len(filtered_idx)} filtered: {f_expr})"
         )
 
         txyz_filtered = txyz[filtered_idx, :]
         labels_filtered = labels[filtered_idx, :]
 
         objects_dict = {
-            't': txyz_filtered[:, 0],
-            'x': txyz_filtered[:, 1],
-            'y': txyz_filtered[:, 2],
-            'z': txyz_filtered[:, 3],
-            'label': labels_filtered[:, 0],
-            'ID': np.asarray(filtered_idx),
+            "t": txyz_filtered[:, 0],
+            "x": txyz_filtered[:, 1],
+            "y": txyz_filtered[:, 2],
+            "z": txyz_filtered[:, 3],
+            "label": labels_filtered[:, 0],
+            "ID": np.asarray(filtered_idx),
         }
 
         # add the filtered properties
@@ -529,7 +529,7 @@ class HDF5FileHandler:
 
         if isinstance(data, list):
             objects = data
-        elif hasattr(data, 'objects'):
+        elif hasattr(data, "objects"):
             objects = data.objects
         else:
             raise TypeError("Object type not recognized.")
@@ -538,9 +538,9 @@ class HDF5FileHandler:
         if not all([isinstance(o, btypes.PyTrackObject) for o in objects]):
             raise TypeError("Object type not recognized.")
 
-        if 'objects' not in self._hdf:
-            self._hdf.create_group('objects')
-        grp = self._hdf['objects'].create_group(self.object_type)
+        if "objects" not in self._hdf:
+            self._hdf.create_group("objects")
+        grp = self._hdf["objects"].create_group(self.object_type)
         props = {k: [] for k in objects[0].properties.keys()}
 
         n_objects = len(objects)
@@ -563,17 +563,17 @@ class HDF5FileHandler:
 
         fmap[1:, 0] = fmap[:-1, 1]
 
-        logger.info(f'Writing objects/{self.object_type}')
-        grp.create_dataset('coords', data=txyz, dtype='float32')
-        grp.create_dataset('map', data=fmap, dtype='uint32')
+        logger.info(f"Writing objects/{self.object_type}")
+        grp.create_dataset("coords", data=txyz, dtype="float32")
+        grp.create_dataset("map", data=fmap, dtype="uint32")
 
-        logger.info(f'Writing labels/{self.object_type}')
-        grp.create_dataset('labels', data=labels, dtype='float32')
+        logger.info(f"Writing labels/{self.object_type}")
+        grp.create_dataset("labels", data=labels, dtype="float32")
 
         # finally, write any properties
         self.write_properties(props)
 
-    @h5check_property_exists('objects')
+    @h5check_property_exists("objects")
     def write_properties(self, data: dict, allow_overwrite: bool = False):
         """Write object properties to HDF file.
 
@@ -591,12 +591,12 @@ class HDF5FileHandler:
         if not isinstance(data, dict):
             raise TypeError("Properties must be a dictionary.")
 
-        grp = self._hdf[f'objects/{self.object_type}']
+        grp = self._hdf[f"objects/{self.object_type}"]
 
-        if 'properties' not in grp.keys():
-            props_grp = grp.create_group('properties')
+        if "properties" not in grp.keys():
+            props_grp = grp.create_group("properties")
         else:
-            props_grp = self._hdf[f'objects/{self.object_type}']['properties']
+            props_grp = self._hdf[f"objects/{self.object_type}"]["properties"]
 
         n_objects = len(self.objects)
 
@@ -619,7 +619,7 @@ class HDF5FileHandler:
                         "'overwrite' param to replace existing property "
                     )
                 else:
-                    del self._hdf[f'objects/{self.object_type}/properties'][
+                    del self._hdf[f"objects/{self.object_type}/properties"][
                         key
                     ]
                     logger.info(
@@ -628,24 +628,24 @@ class HDF5FileHandler:
 
             # Now that you handled overwriting, write the values:
             logger.info(
-                f'Writing properties/{self.object_type}/{key} {values.shape}'
+                f"Writing properties/{self.object_type}/{key} {values.shape}"
             )
-            props_grp.create_dataset(key, data=data[key], dtype='float32')
+            props_grp.create_dataset(key, data=data[key], dtype="float32")
 
     @property
-    @h5check_property_exists('tracks')
+    @h5check_property_exists("tracks")
     def tracks(self):
         """Return the tracks in the file."""
 
-        logger.info(f'Loading tracks/{self.object_type}')
-        track_map = self._hdf['tracks'][self.object_type]['map'][:]
-        track_refs = self._hdf['tracks'][self.object_type]['tracks'][:]
-        lbep = self._hdf['tracks'][self.object_type]['LBEPR'][:]
-        fates = self._hdf['tracks'][self.object_type]['fates'][:]
+        logger.info(f"Loading tracks/{self.object_type}")
+        track_map = self._hdf["tracks"][self.object_type]["map"][:]
+        track_refs = self._hdf["tracks"][self.object_type]["tracks"][:]
+        lbep = self._hdf["tracks"][self.object_type]["LBEPR"][:]
+        fates = self._hdf["tracks"][self.object_type]["fates"][:]
 
         # if there are dummies, make new dummy objects
-        if 'dummies' in self._hdf['tracks'][self.object_type]:
-            dummies = self._hdf['tracks'][self.object_type]['dummies'][:]
+        if "dummies" in self._hdf["tracks"][self.object_type]:
+            dummies = self._hdf["tracks"][self.object_type]["dummies"][:]
             dummy_obj = objects_from_array(dummies[:, :4])
             for d in dummy_obj:
                 d.ID = -(d.ID + 1)  # restore the -ve ID
@@ -653,10 +653,10 @@ class HDF5FileHandler:
 
         # TODO(arl): this needs to be stored in the HDF folder
         if (
-            'f_expr' in self._hdf['tracks'][self.object_type].attrs
+            "f_expr" in self._hdf["tracks"][self.object_type].attrs
             and self._f_expr is None
         ):
-            f_expr = self._hdf['tracks'][self.object_type].attrs['f_expr']
+            f_expr = self._hdf["tracks"][self.object_type].attrs["f_expr"]
         elif self._f_expr is not None:
             f_expr = self._f_expr
         else:
@@ -700,7 +700,7 @@ class HDF5FileHandler:
 
         return tracks
 
-    @h5check_property_exists('objects')
+    @h5check_property_exists("objects")
     def write_tracks(self, tracker, f_expr=None):
         """Write tracks to HDF file.
 
@@ -713,7 +713,7 @@ class HDF5FileHandler:
             prior to tracking, e.g. `area>100.0`
         """
         if not tracker.tracks:
-            logger.error(f'No tracks found when exporting to: {self.filename}')
+            logger.error(f"No tracks found when exporting to: {self.filename}")
             return
 
         tracks = tracker.refs
@@ -723,7 +723,7 @@ class HDF5FileHandler:
         # sanity check
         assert lbep_table.shape[0] == len(tracks)
 
-        logger.info(f'Writing tracks/{self.object_type}')
+        logger.info(f"Writing tracks/{self.object_type}")
         hdf_tracks = np.concatenate(tracks, axis=0)
 
         hdf_frame_map = np.zeros((len(tracks), 2), dtype=np.int32)
@@ -734,46 +734,46 @@ class HDF5FileHandler:
                 offset = 0
             hdf_frame_map[i, :] = np.array([0, len(track)]) + offset
 
-        if 'tracks' not in self._hdf:
-            self._hdf.create_group('tracks')
+        if "tracks" not in self._hdf:
+            self._hdf.create_group("tracks")
 
-        if self.object_type in self._hdf['tracks']:
-            logger.warning(f'Removing tracks/{self.object_type}.')
-            del self._hdf['tracks'][self.object_type]
+        if self.object_type in self._hdf["tracks"]:
+            logger.warning(f"Removing tracks/{self.object_type}.")
+            del self._hdf["tracks"][self.object_type]
 
-        grp = self._hdf['tracks'].create_group(self.object_type)
-        grp.create_dataset('tracks', data=hdf_tracks, dtype='int32')
-        grp.create_dataset('map', data=hdf_frame_map, dtype='uint32')
+        grp = self._hdf["tracks"].create_group(self.object_type)
+        grp.create_dataset("tracks", data=hdf_tracks, dtype="int32")
+        grp.create_dataset("map", data=hdf_frame_map, dtype="uint32")
 
         # if we have used the f_expr we can save it as an attribute here
         if f_expr is not None and isinstance(f_expr, str):
-            grp.attrs['f_expr'] = f_expr
+            grp.attrs["f_expr"] = f_expr
 
         # also save the version number as an attribute
-        grp.attrs['version'] = constants.get_version()
+        grp.attrs["version"] = constants.get_version()
 
         # write out dummies
         if dummies:
-            logger.info(f'Writing dummies/{self.object_type}')
+            logger.info(f"Writing dummies/{self.object_type}")
             o = self.object_types.index(self.object_type) + 1
             txyz = np.stack([[d.t, d.x, d.y, d.z, o] for d in dummies], axis=0)
-            grp.create_dataset('dummies', data=txyz, dtype='float32')
+            grp.create_dataset("dummies", data=txyz, dtype="float32")
 
         # write out the LBEP table
-        logger.info(f'Writing LBEP/{self.object_type}')
-        grp.create_dataset('LBEPR', data=lbep_table, dtype='int32')
+        logger.info(f"Writing LBEP/{self.object_type}")
+        grp.create_dataset("LBEPR", data=lbep_table, dtype="int32")
 
         # write out cell fates
-        logger.info(f'Writing fates/{self.object_type}')
+        logger.info(f"Writing fates/{self.object_type}")
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
-        grp.create_dataset('fates', data=fate_table, dtype='int32')
+        grp.create_dataset("fates", data=fate_table, dtype="int32")
 
     @property
-    @h5check_property_exists('tracks')
+    @h5check_property_exists("tracks")
     def lbep(self):
         """Return the LBEP data."""
-        logger.info(f'Loading LBEP/{self.object_type}')
-        return self._hdf['tracks'][self.obj_type]['LBEPR'][:]
+        logger.info(f"Loading LBEP/{self.object_type}")
+        return self._hdf["tracks"][self.obj_type]["LBEPR"][:]
 
 
 if __name__ == "__main__":

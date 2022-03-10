@@ -420,7 +420,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, '__len__'):
+    if hasattr(obj, "__len__"):
         n_items = len(obj)
     else:
         n_items = 1
@@ -431,7 +431,7 @@ def _pandas_html_repr(obj):
         elif isinstance(v, np.ndarray):
             ndim = 0 if n_items == 1 else 1
             if v.ndim > ndim:
-                obj_as_dict[k] = [f'{v.shape[ndim:]} array'] * n_items
+                obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
 
     return pd.DataFrame.from_dict(obj_as_dict).to_html()
 

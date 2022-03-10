@@ -74,12 +74,12 @@ def _centroids_from_single_arr(
         _class_ID_centroids = regionprops_table(
             labeled,
             intensity_image=segmentation,
-            properties=('max_intensity',),
+            properties=("max_intensity",),
         )
 
         # rename class_ID column and remove keyword from properties
-        _class_ID_centroids['class id'] = _class_ID_centroids.pop(
-            'max_intensity'
+        _class_ID_centroids["class id"] = _class_ID_centroids.pop(
+            "max_intensity"
         )
 
         # run regionprops to record other intensity image properties
@@ -106,7 +106,7 @@ def _centroids_from_single_arr(
         )
 
     # add time to the array
-    _centroids['t'] = np.full(
+    _centroids["t"] = np.full(
         _centroids[f"{CENTROID_PROPERTY}-0"].shape, frame
     )
 
@@ -200,16 +200,16 @@ def segmentation_to_objects(
         USE_WEIGHTED = use_weighted_centroid and USE_INTENSITY
 
     if USE_INTENSITY:
-        logger.info('Found intensity_image data')
+        logger.info("Found intensity_image data")
 
     if USE_WEIGHTED:
-        logger.info('Calculating weighted centroids using intensity_image')
+        logger.info("Calculating weighted centroids using intensity_image")
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
-    if 'label' in properties:
+    if "label" in properties:
         logger.warning("Cannot use scikit-image label as a property.")
-        del properties['label']
+        del properties["label"]
 
     if isinstance(segmentation, np.ndarray):
 

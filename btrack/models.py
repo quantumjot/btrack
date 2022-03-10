@@ -240,7 +240,7 @@ class HypothesisModel:
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
-        h_bin = ''.join(
+        h_bin = "".join(
             [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
         )
         return int(h_bin[::-1], 2)

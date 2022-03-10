@@ -75,4 +75,4 @@ def test_tracker_frames():
 
     assert len(tracks) == 1
     track = tracks[0]
-    np.testing.assert_equal(track.t, objects['t'])
+    np.testing.assert_equal(track.t, objects["t"])

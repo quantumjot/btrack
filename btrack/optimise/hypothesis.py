@@ -22,13 +22,13 @@ import ctypes
 from btrack import constants
 
 H_TYPES = [
-    'P_FP',
-    'P_init',
-    'P_term',
-    'P_link',
-    'P_branch',
-    'P_dead',
-    'P_merge',
+    "P_FP",
+    "P_init",
+    "P_term",
+    "P_link",
+    "P_branch",
+    "P_dead",
+    "P_merge",
 ]
 
 
@@ -50,14 +50,14 @@ class Hypothesis(ctypes.Structure):
     """
 
     _fields_ = [
-        ('hypothesis', ctypes.c_uint),
-        ('ID', ctypes.c_uint),
-        ('probability', ctypes.c_double),
-        ('link_ID', ctypes.c_uint),
-        ('child_one_ID', ctypes.c_uint),
-        ('child_two_ID', ctypes.c_uint),
-        ('parent_one_ID', ctypes.c_uint),
-        ('parent_two_ID', ctypes.c_uint),
+        ("hypothesis", ctypes.c_uint),
+        ("ID", ctypes.c_uint),
+        ("probability", ctypes.c_double),
+        ("link_ID", ctypes.c_uint),
+        ("child_one_ID", ctypes.c_uint),
+        ("child_two_ID", ctypes.c_uint),
+        ("parent_one_ID", ctypes.c_uint),
+        ("parent_two_ID", ctypes.c_uint),
     ]
 
     @property
@@ -95,18 +95,18 @@ class PyHypothesisParams(ctypes.Structure):
     """
 
     _fields_ = [
-        ('lambda_time', ctypes.c_double),
-        ('lambda_dist', ctypes.c_double),
-        ('lambda_link', ctypes.c_double),
-        ('lambda_branch', ctypes.c_double),
-        ('eta', ctypes.c_double),
-        ('theta_dist', ctypes.c_double),
-        ('theta_time', ctypes.c_double),
-        ('dist_thresh', ctypes.c_double),
-        ('time_thresh', ctypes.c_double),
-        ('apop_thresh', ctypes.c_uint),
-        ('segmentation_miss_rate', ctypes.c_double),
-        ('apoptosis_rate', ctypes.c_double),
-        ('relax', ctypes.c_bool),
-        ('hypotheses_to_generate', ctypes.c_uint),
+        ("lambda_time", ctypes.c_double),
+        ("lambda_dist", ctypes.c_double),
+        ("lambda_link", ctypes.c_double),
+        ("lambda_branch", ctypes.c_double),
+        ("eta", ctypes.c_double),
+        ("theta_dist", ctypes.c_double),
+        ("theta_time", ctypes.c_double),
+        ("dist_thresh", ctypes.c_double),
+        ("time_thresh", ctypes.c_double),
+        ("apop_thresh", ctypes.c_uint),
+        ("segmentation_miss_rate", ctypes.c_double),
+        ("apoptosis_rate", ctypes.c_double),
+        ("relax", ctypes.c_bool),
+        ("hypotheses_to_generate", ctypes.c_uint),
     ]

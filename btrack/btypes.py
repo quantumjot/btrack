@@ -288,7 +288,7 @@ class Tracklet:
         for k, v in properties.items():
             if len(v) != len(self):
                 raise ValueError(
-                    'The number of properties and track objects must be equal.'
+                    "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
             if type(v) != np.ndarray:

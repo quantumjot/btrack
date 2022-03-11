@@ -6,13 +6,11 @@ name: tests
 on:
   push:
     branches:
-      - master
       - main
     tags:
       - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
   pull_request:
     branches:
-      - master
       - main
   workflow_dispatch:
 
@@ -52,7 +50,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
 
       - name: Coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"

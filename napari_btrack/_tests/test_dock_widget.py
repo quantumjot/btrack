@@ -1,6 +1,7 @@
 import pytest
 from ..track import track
 
+
 def test_something_with_viewer(make_napari_viewer):
     viewer = make_napari_viewer()
     num_dw = len(list(viewer.window._dock_widgets))

@@ -7,6 +7,7 @@ from magicgui.widgets import FunctionGui
 from pathlib import Path
 from typing import Optional
 
+
 def run_tracker(objects, config_file_path):
     with btrack.BayesianTracker() as tracker:
         # configure the tracker using a config file
@@ -17,7 +18,7 @@ def run_tracker(objects, config_file_path):
         tracker.append(objects)
 
         # set the volume
-        tracker.volume=((0, 1600), (0, 1200), (-1e5, 64.))
+        tracker.volume = ((0, 1600), (0, 1200), (-1e5, 64.0))
 
         # track them (in interactive mode)
         tracker.track_interactive(step_size=100)
@@ -28,6 +29,7 @@ def run_tracker(objects, config_file_path):
         # get the tracks in a format for napari visualization
         data, properties, graph = tracker.to_napari(ndim=2)
         return data, properties, graph
+
 
 def track() -> FunctionGui:
     @magicgui(
@@ -40,8 +42,10 @@ def track() -> FunctionGui:
         viewer: napari.Viewer,
         segmentation: napari.layers.Image,
         config_file_path: Optional[Path],
-        reset_button):
-        segmented_objects = segmentation_to_objects(segmentation.data[:100, ...])   
+        reset_button,
+    ):
+        segmented_objects = segmentation_to_objects(segmentation.data[:100, ...])
         data, properties, graph = run_tracker(segmented_objects, config_file_path)
         viewer.add_tracks(data=data, properties=properties, graph=graph, name="btrack")
+
     return widget

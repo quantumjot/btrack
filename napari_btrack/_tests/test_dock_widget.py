@@ -1,6 +1,7 @@
 from napari_btrack import napari_experimental_provide_dock_widget
 import pytest
 
+"""
 # this is your plugin name declared in your napari.plugins entry point
 MY_PLUGIN_NAME = "napari-btrack"
 # the name of your widget(s)
@@ -15,3 +16,4 @@ def test_something_with_viewer(widget_name, make_napari_viewer):
         plugin_name=MY_PLUGIN_NAME, widget_name=widget_name
     )
     assert len(viewer.window._dock_widgets) == num_dw + 1
+"""

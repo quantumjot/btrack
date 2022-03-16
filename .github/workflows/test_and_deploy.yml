@@ -3,7 +3,7 @@
 
 name: tests
 
-on: 
+on:
   push:
     branches:
       - master
@@ -33,21 +33,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      # these libraries, along with pytest-xvfb (added in the `deps` in tox.ini),
-      # enable testing on Qt on linux
-      - name: Install Linux libraries
-        if: runner.os == 'Linux'
-        run: |
-          sudo apt-get install -y libdbus-1-3 libxkbcommon-x11-0 libxcb-icccm4 \
-            libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 \
-            libxcb-xinerama0 libxcb-xinput0 libxcb-xfixes0
-
-      # strategy borrowed from vispy for installing opengl libs on windows
-      - name: Install Windows OpenGL
-        if: runner.os == 'Windows'
-        run: |
-          git clone --depth 1 git://github.com/pyvista/gl-ci-helpers.git
-          powershell gl-ci-helpers/appveyor/install_opengl.ps1
+      # these libraries enable testing on Qt on linux
+      - uses: tlambert03/setup-qt-libs@v1
 
       # note: if you need dependencies from conda, considering using
       # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
@@ -69,7 +56,7 @@ jobs:
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your 
+    # and requires that you have put your twine API key in your
     # github secrets (see readme for details)
     needs: [test]
     runs-on: ubuntu-latest

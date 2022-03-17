@@ -46,7 +46,7 @@ class MotionModel:
         Observation matrix.
     P : array (states, states)
         Initial covariance estimate.
-    G : array (states, )
+    G : array (1, states)
         Estimated error in process.
     R : array (measurements, measurements)
         Estimated error in measurements.
@@ -92,7 +92,8 @@ class MotionModel:
     @property
     def Q(self):
         """Return a Q matrix from the G matrix."""
-        return self.G.transpose() * self.G
+        # return self.G.transpose() * self.G
+        return self.G.T @ self.G
 
     def reshape(self):
         """Reshapes matrices to the correct dimensions. Only need to call this
@@ -113,7 +114,13 @@ class MotionModel:
         # if we defined a model, restructure matrices to the correct shapes
         # do some parsing to check that the model is specified correctly
         if s and m:
-            shapes = {"A": (s, s), "H": (m, s), "P": (s, s), "R": (m, m)}
+            shapes = {
+                "A": (s, s),
+                "H": (m, s),
+                "P": (s, s),
+                "R": (m, m),
+                "G": (1, s),
+            }
             for m_name in shapes:
                 try:
                     m_array = getattr(self, m_name)

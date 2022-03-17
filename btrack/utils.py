@@ -181,9 +181,7 @@ def read_motion_model(config: dict) -> MotionModel:
                 sigma = motion_config[field]["sigma"]
             else:
                 sigma = 1.0
-            matrix = np.matrix(
-                motion_config[field]["matrix"], dtype=np.float64
-            )
+            matrix = np.array(motion_config[field]["matrix"], dtype=np.float64)
             model_kwargs[field] = matrix * sigma
         else:
             model_kwargs[field] = motion_config[field]
@@ -252,7 +250,7 @@ def read_object_model(config: dict) -> ObjectModel:
     model.states = object_config["states"]
 
     for matrix in matrices:
-        m_data = np.matrix(object_config[matrix]["matrix"], dtype="float")
+        m_data = np.array(object_config[matrix]["matrix"], dtype="float")
         setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes

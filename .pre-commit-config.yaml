@@ -3,8 +3,6 @@ repos:
       rev: 5.10.1
       hooks:
           - id: isort
-            types: [text]
-            types_or: [python, cython]
             args: ["--profile", "black"]
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v4.1.0

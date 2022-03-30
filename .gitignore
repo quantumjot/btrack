@@ -80,3 +80,6 @@ target/
 
 # specific to this repo
 examples/
+
+# direnv
+.envrc

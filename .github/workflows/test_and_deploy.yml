@@ -3,7 +3,7 @@
 
 name: tests
 
-on: 
+on:
   push:
     branches:
       - master
@@ -69,7 +69,7 @@ jobs:
 
   deploy:
     # this will run when you have tagged a commit, starting with "v*"
-    # and requires that you have put your twine API key in your 
+    # and requires that you have put your twine API key in your
     # github secrets (see readme for details)
     needs: [test]
     runs-on: ubuntu-latest

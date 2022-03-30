@@ -1,5 +1,6 @@
-from napari_btrack import napari_experimental_provide_dock_widget
 import pytest
+
+from napari_btrack import napari_experimental_provide_dock_widget  # noqa: F401
 
 # this is your plugin name declared in your napari.plugins entry point
 MY_PLUGIN_NAME = "napari-btrack"

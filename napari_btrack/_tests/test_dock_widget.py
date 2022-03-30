@@ -1,4 +1,3 @@
-import pytest
 from ..track import track
 
 

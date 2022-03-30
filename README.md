@@ -5,6 +5,7 @@
 [![Python Version](https://img.shields.io/pypi/pyversions/napari-btrack.svg?color=green)](https://python.org)
 [![tests](https://github.com/quantumjot/napari-btrack/workflows/tests/badge.svg)](https://github.com/quantumjot/napari-btrack/actions)
 [![codecov](https://codecov.io/gh/quantumjot/napari-btrack/branch/master/graph/badge.svg)](https://codecov.io/gh/quantumjot/napari-btrack)
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 A plugin to use btrack from napari
 

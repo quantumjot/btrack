@@ -1,11 +1,11 @@
+from pathlib import Path
+from typing import Optional
+
 import btrack
 import napari
-
 from btrack.utils import segmentation_to_objects
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui
-from pathlib import Path
-from typing import Optional
 
 
 def run_tracker(objects, config_file_path):

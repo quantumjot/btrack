@@ -19,5 +19,5 @@ segmentation = datasets.example_segmentation()
 config = datasets.cell_config()
 
 # example objects
-obj_file = datasets.example_objects()
+track_objects = datasets.example_track_objects()
 ```

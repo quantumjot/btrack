@@ -1,39 +1,68 @@
 import os
+from typing import List
 
+import numpy as np
 import pooch
+from skimage.io import imread
+
+from .btypes import PyTrackObject
+from .dataio import import_CSV
 
 BASE_URL = (
     "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
 )
 
+CACHE_PATH = pooch.os_cache("btrack-examples")
+
+
+def _remote_registry() -> os.PathLike:
+    file_path = pooch.retrieve(
+        # URL to one of Pooch's test files
+        path=CACHE_PATH,
+        url=BASE_URL + "registry.txt",
+        known_hash="673de62c62eeb6f356fb1bff968748566d23936f567201cf61493d031d42d480",
+    )
+    return file_path
+
+
 POOCH = pooch.create(
-    path=pooch.os_cache("btrack-examples"),
+    path=CACHE_PATH,
     base_url=BASE_URL,
     version_dev="main",
     registry=None,
 )
-
-# Get registry file using pooch itself
-registry_file = pooch.retrieve(
-    url=BASE_URL + "registry.txt",
-    known_hash=None,
-    fname="registry.txt",
-    path=POOCH.path,
-)
-# Load this registry file
-POOCH.load_registry(registry_file)
+POOCH.load_registry(_remote_registry())
 
 
-def example_cell_config() -> os.PathLike:
+def cell_config() -> os.PathLike:
+    """Return the file path to the example `cell_config`."""
     file_path = POOCH.fetch("examples/cell_config.json")
     return file_path
 
 
-def example_segmentation() -> os.PathLike:
+def particle_config() -> os.PathLike:
+    """Return the file path to the example `particle_config`."""
+    file_path = POOCH.fetch("examples/particle_config.json")
+    return file_path
+
+
+def example_segmentation_file() -> os.PathLike:
     file_path = POOCH.fetch("examples/segmented.tif")
     return file_path
 
 
-def example_objects() -> os.PathLike:
+def example_segmentation() -> np.array:
+    file_path = example_segmentation_file()
+    segmentation = imread(file_path)
+    return segmentation
+
+
+def example_objects_file() -> os.PathLike:
     file_path = POOCH.fetch("examples/objects.csv")
     return file_path
+
+
+def example_objects() -> List[PyTrackObject]:
+    file_path = example_objects_file()
+    objects = import_CSV(file_path)
+    return objects

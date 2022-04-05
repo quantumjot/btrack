@@ -62,7 +62,7 @@ def example_objects_file() -> os.PathLike:
     return file_path
 
 
-def example_objects() -> List[PyTrackObject]:
+def example_track_objects() -> List[PyTrackObject]:
     file_path = example_objects_file()
     objects = import_CSV(file_path)
     return objects

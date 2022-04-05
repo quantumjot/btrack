@@ -122,6 +122,7 @@ def get_library():
     # check the version number
     lib.check_library_version.restype = ctypes.c_bool
     lib.check_library_version.argtypes = [
+        ctypes.c_void_p,
         ctypes.c_uint,
         ctypes.c_uint,
         ctypes.c_uint,

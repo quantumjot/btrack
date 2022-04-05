@@ -355,7 +355,6 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
 
-
     Returns
     -------
     data : array (N, D+1)

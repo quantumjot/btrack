@@ -198,7 +198,7 @@ class ObjectModel:
 
 @dataclasses.dataclass
 class HypothesisModel:
-    """The `btrack` hypothesis model.
+    r"""The `btrack` hypothesis model.
 
     This is a class to deal with hypothesis generation in the optimization step
     of the tracking algorithm.
@@ -208,20 +208,54 @@ class HypothesisModel:
     name : str
         A name identifier for the model.
     hypotheses : list[str]
-        A list of hypotheses to be generated. See `optimise.hypothesis.H_TYPES`
+        A list of hypotheses to be generated. See `optimise.hypothesis.H_TYPES`.
     lambda_time : float
+        A scaling factor for the influence of time when determining
+        initialization or termination hypotheses. See notes.
     lambda_dist : float
+        A a scaling factor for the influence of distance at the border when
+        determining initialization or termination hypotheses. See notes.
     lambda_link : float
+        A scaling factor for the influence of track-to-track distance on linking
+        probability. See notes.
     lambda_branch : float
+        A scaling factor for the influence of cell state and position on
+        division (mitosis/branching) probability. See notes.
     eta : float
+        Default value for a low probability event (e.g. 1E-10) to prevent
+        divide-by-zero.
     theta_dist : float
+        A threshold distance from the edge of the FOV to add an initialization
+        or termination hypothesis.
     theta_time : float
+        A threshold time from the beginning or end of movie to add an
+        initialization or termination hypothesis.
     dist_thresh : float
+        Isotropic spatial bin size for considering hypotheses. Larger bin sizes
+        generate more hypothesese for each tracklet.
     time_thresh : float
+        Temporal bin size for considering hypotheses. Larger bin sizes generate
+        more hypothesese for each tracklet.
     apop_thresh : int
+        Number of apoptotic detections, counted consecutively from the back of
+        the track, to be considered a real apoptosis.
     segmentation_miss_rate : float
+        Miss rate for the segmentation, e.g. 1/100 segmentations incorrect gives
+        a segmentation miss rate or 0.01.
     apoptosis_rate : float
+        Rate of apoptosis detections.
     relax : bool
+        Disables the `theta_dist` and `theta_time` thresholds when creating
+        termination and initialization hypotheses. This means that tracks can
+        initialize or terminate anywhere (or time) in the dataset.
+
+
+    Notes
+    -----
+    The `lambda` (:math:`\lambda`) factors scale the probability according to
+    the following function:
+
+    .. math:: e^{(-d / \lambda)}
     """
 
     hypotheses: List[str]

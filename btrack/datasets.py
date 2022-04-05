@@ -47,22 +47,28 @@ def particle_config() -> os.PathLike:
 
 
 def example_segmentation_file() -> os.PathLike:
+    """Return the file path to the example U-Net segmentation image file."""
     file_path = POOCH.fetch("examples/segmented.tif")
     return file_path
 
 
 def example_segmentation() -> np.array:
+    """Return the U-Net segmentation as a numpy array of dimensions (T, Y, X)."""
     file_path = example_segmentation_file()
     segmentation = imread(file_path)
     return segmentation
 
 
-def example_objects_file() -> os.PathLike:
+def example_track_objects_file() -> os.PathLike:
+    """Return the file path to the example localized and classified objects
+    stored in a CSV file."""
     file_path = POOCH.fetch("examples/objects.csv")
     return file_path
 
 
 def example_track_objects() -> List[PyTrackObject]:
-    file_path = example_objects_file()
+    """Return the example localized and classified objects stored in a CSV file
+    as a list `PyTrackObject`s to be used by the tracker."""
+    file_path = example_track_objects_file()
     objects = import_CSV(file_path)
     return objects

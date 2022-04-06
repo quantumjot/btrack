@@ -34,7 +34,7 @@ setup(
     author_email="a.lowe@ucl.ac.uk",
     url="https://github.com/quantumjot/BayesianTracker",
     packages=find_packages(),
-    package_data={"btrack": ["libs/libtracker*", "VERSION.txt"]},
+    # package_data={"btrack": ["libs/libtracker*", "VERSION.txt"]},
     install_requires=get_install_required(),
     extras_require={"docs": get_install_required("docs")},
     python_requires=">=3.6",

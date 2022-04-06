@@ -16,3 +16,6 @@ bworker.py
 *.o
 *.pyc
 .vscode
+.tox
+.coverage
+coverage.xml

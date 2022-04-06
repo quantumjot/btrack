@@ -16,3 +16,4 @@ bworker.py
 *.o
 *.pyc
 .vscode
+.tox

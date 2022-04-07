@@ -20,7 +20,7 @@ __email__ = "code@arlowe.co.uk"
 
 import dataclasses
 import os
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
@@ -46,8 +46,11 @@ class MotionModel:
         Observation matrix.
     P : array (states, states)
         Initial covariance estimate.
-    G : array (1, states)
-        Estimated error in process.
+    G : array (1, states), optional
+        Estimated error in process. Is used to calculate Q using Q = G.T @ G.
+        Either G or Q must be defined.
+    Q : array (states, states), optional
+        Estimated error in process. Either G or Q must be defined.
     R : array (measurements, measurements)
         Estimated error in measurements.
     dt : float
@@ -81,19 +84,27 @@ class MotionModel:
     A: np.ndarray
     H: np.ndarray
     P: np.ndarray
-    G: np.ndarray
     R: np.ndarray
+    G: Optional[np.ndarray] = None
+    Q: Optional[np.ndarray] = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    @property
-    def Q(self):
-        """Return a Q matrix from the G matrix."""
-        # return self.G.transpose() * self.G
-        return self.G.T @ self.G
+    def __post_init__(self):
+        """Set up the process covariance matrix Q."""
+        process_cov = [f for f in ("G", "Q") if getattr(self, f) is not None]
+
+        if not process_cov:
+            raise ValueError(
+                "Process covariance matrix (G or Q) is not defined."
+            )
+
+        if "Q" not in process_cov:
+            self.G = np.reshape(self.G, (1, self.states), order="C")
+            self.Q = self.G.T @ self.G
 
     def reshape(self):
         """Reshapes matrices to the correct dimensions. Only need to call this
@@ -119,9 +130,13 @@ class MotionModel:
                 "H": (m, s),
                 "P": (s, s),
                 "R": (m, m),
-                "G": (1, s),
+                "Q": (s, s),
             }
             for m_name in shapes:
+
+                if getattr(self, m_name) is None:
+                    continue
+
                 try:
                     m_array = getattr(self, m_name)
                     r_matrix = np.reshape(m_array, shapes[m_name], order="C")

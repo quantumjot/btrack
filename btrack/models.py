@@ -64,6 +64,8 @@ class MotionModel:
 
     Notes
     -----
+    Uses a Kalman filter [1]_:
+
     'Is an algorithm which uses a series of measurements observed over time,
     containing noise (random variations) and other inaccuracies, and produces
     estimates of unknown variables that tend to be more precise than those that
@@ -75,7 +77,7 @@ class MotionModel:
 
     References
     ----------
-    'A new approach to linear filtering and prediction problems.'
+    .. [1] A new approach to linear filtering and prediction problems.'
     Kalman RE, 1960 Journal of Basic Engineering
     """
 

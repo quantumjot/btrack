@@ -31,7 +31,7 @@ from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
-__all__ = ['segmentation_to_objects']
+__all__ = ["segmentation_to_objects"]
 
 # get the logger instance
 logger = logging.getLogger(__name__)

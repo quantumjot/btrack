@@ -34,8 +34,8 @@ release = "v" + btrack.__version__
 # ones.
 extensions = [
     "sphinx_panels",
-    'sphinx_automodapi.automodapi',
-    'numpydoc',
+    "sphinx_automodapi.automodapi",
+    "numpydoc",
 ]
 
 numpydoc_show_class_members = False

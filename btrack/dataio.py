@@ -39,7 +39,7 @@ logger = logging.getLogger("worker_process")
 
 
 # Choose a subset of classes/functions to document in public facing API
-__all__ = ['import_CSV']
+__all__ = ["import_CSV"]
 
 
 class _PyTrackObjectFactory:

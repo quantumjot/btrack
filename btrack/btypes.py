@@ -25,7 +25,7 @@ import numpy as np
 
 from . import constants, utils
 
-__all__ = ['PyTrackObject', 'PyTrackingInfo', 'Tracklet']
+__all__ = ["PyTrackObject", "PyTrackingInfo", "Tracklet"]
 
 
 class PyTrackObject(ctypes.Structure):

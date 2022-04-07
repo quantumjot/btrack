@@ -27,7 +27,7 @@ import numpy as np
 from . import constants, utils
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
-__all__ = ['MotionModel', 'ObjectModel']
+__all__ = ['MotionModel', 'ObjectModel', 'HypothesisModel']
 
 
 @dataclasses.dataclass

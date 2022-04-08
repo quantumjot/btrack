@@ -22,6 +22,7 @@ import dataclasses
 import json
 import logging
 import os
+from typing import Optional
 
 import numpy as np
 
@@ -166,25 +167,27 @@ def read_motion_model(config: dict) -> MotionModel:
     if not motion_config:
         return None
 
-    matrices = frozenset(["A", "H", "P", "G", "R"])
-    fields = [f.name for f in dataclasses.fields(MotionModel)]
+    fields = dataclasses.fields(MotionModel)
+    matrices = [
+        f.name for f in fields if f.type in (np.ndarray, Optional[np.ndarray])
+    ]
+    params = [f.name for f in fields if f.name not in matrices]
 
     model_kwargs = {}
 
-    for field in fields:
-        if field not in motion_config.keys():
-            logger.error(f"Key {field} not found in `MotionModel` config.")
+    # set the parameters
+    for field in params:
+        model_kwargs[field] = motion_config[field]
 
-        # if this is a matrix, prepare it
-        if field in matrices:
+    # set the matrices
+    for field in matrices:
+        if field in motion_config:
             if "sigma" in motion_config[field]:
                 sigma = motion_config[field]["sigma"]
             else:
                 sigma = 1.0
             matrix = np.array(motion_config[field]["matrix"], dtype=np.float64)
             model_kwargs[field] = matrix * sigma
-        else:
-            model_kwargs[field] = motion_config[field]
 
     # set some standard params
     model = MotionModel(**model_kwargs)

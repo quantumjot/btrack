@@ -27,7 +27,7 @@ import numpy as np
 
 from . import btypes, config, constants, libwrapper, models, utils
 from .dataio import export_delegator, localizations_to_objects
-from .optimise import optimiser
+from .optimise import hypothesis, optimiser
 
 __version__ = constants.get_version()
 
@@ -348,7 +348,12 @@ class BayesianTracker:
         volume : tuple
             A tuple describing the imaging volume.
         """
-        self.configuration.volume = volume
+        self.configuration.volume = btypes.ImagingVolume(*volume)
+
+        # if we've only provided 2 dims, set the last one to a default
+        if self.configuration.volume.ndim == 2:
+            volume = volume + ((-1e5, 1e5),)
+
         self._lib.set_volume(self._engine, np.array(volume, dtype=float))
         logger.info(f"Set volume to {volume}")
 
@@ -454,7 +459,7 @@ class BayesianTracker:
         # store a copy of the list of objects
         self._objects += objects
 
-    def _stats(self, info_ptr):
+    def _stats(self, info_ptr: ctypes.POINTER) -> btypes.PyTrackingInfo:
         """Cast the info pointer back to an object"""
 
         if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
@@ -538,14 +543,14 @@ class BayesianTracker:
                 )
             )
 
-    def step(self, n_steps: int = 1):
+    def step(self, n_steps: int = 1) -> btypes.PyTrackingInfo:
         """Run an iteration (or more) of the tracking. Mostly for interactive
         mode tracking."""
         if not self._initialised:
             return None
         return self._stats(self._lib.step(self._engine, n_steps))
 
-    def hypotheses(self):
+    def hypotheses(self) -> List[hypothesis.Hypothesis]:
         """Calculate and return hypotheses using the hypothesis engine."""
 
         if not self.hypothesis_model:
@@ -568,7 +573,9 @@ class BayesianTracker:
     def optimize(self, **kwargs):
         return self.optimise(**kwargs)
 
-    def optimise(self, options: Optional[dict] = None) -> List[int]:
+    def optimise(
+        self, options: Optional[dict] = None
+    ) -> List[hypothesis.Hypothesis]:
         """Optimize the tracks.
 
         Parameters
@@ -720,10 +727,16 @@ class BayesianTracker:
         )
 
     def to_napari(
-        self, ndim: int = 3, replace_nan: bool = True
+        self,
+        replace_nan: bool = True,
+        ndim: Optional[int] = None,
     ) -> Tuple[np.array, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See `utils.tracks_to_napari`."""
+
+        if ndim is None:
+            ndim = self.configuration.volume.ndim
+
         return utils.tracks_to_napari(
             self.tracks, ndim, replace_nan=replace_nan
         )

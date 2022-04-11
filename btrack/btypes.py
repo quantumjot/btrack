@@ -42,6 +42,26 @@ class PyTrackObject(ctypes.Structure):
 
     Attributes
     ----------
+    ID : int
+        The unique ID of the object.
+    x : float
+        The x coordinate.
+    y : float
+        The y coordinate.
+    z : float
+        The z coordinate.
+    t : int
+        The timestamp.
+    dummy: bool
+        Flag for whether the objects is real or a dummy (inserted by the
+        tracker when no observation can be linked).
+    states : int
+        The number of states of the object. This corresponds to the number of
+        possible labels.
+    label : int
+        The label of the object.
+    prob : float
+        The probability of the label.
 
     Notes
     -----
@@ -139,19 +159,33 @@ class PyTrackingInfo(ctypes.Structure):
 
     Primitive class to store information about the tracking output.
 
-    Params:
-        error: error code from the tracker
-        n_tracks: total number of tracks initialised during tracking
-        n_active: number of active tracks
-        n_conflicts: number of conflicts
-        n_lost: number of lost tracks
-        t_update_belief: time to update belief matrix in ms
-        t_update_link: time to update links in ms
-        t_total_time: total time to track objects
-        p_link: typical probability of association
-        p_lost: typical probability of losing track
+    Attributes
+    ----------
+    error :
+        Error code from the tracker.
+    n_tracks : int
+        Total number of tracks initialised during tracking.
+    n_active : int
+        Number of active tracks.
+    n_conflicts : int
+        Number of conflicts.
+    n_lost : int
+        Number of lost tracks.
+    t_update_belief : float
+        Time to update belief matrix in ms.
+    t_update_link : float
+        Time to update links in ms.
+    t_total_time : float
+        Total time to track objects.
+    p_link : float
+        Typical probability of association.
+    p_lost : float
+        Typical probability of losing track.
+    complete : bool
+        Flag denoting that the tracking is complete.
 
-    Notes:
+    Notes
+    -----
         TODO(arl): should update to give more useful statistics, perhaps
         histogram of probabilities and timings.
 

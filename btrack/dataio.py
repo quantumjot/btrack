@@ -38,11 +38,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger("worker_process")
 
 
-class _PyTrackObjectFactory:
-    def __init__(self):
-        raise DeprecationWarning("_PyTrackObjectFactory has been deprecated.")
-
-
 def localizations_to_objects(localizations):
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 

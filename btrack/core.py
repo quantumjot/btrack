@@ -186,13 +186,7 @@ class BayesianTracker:
 
         # default parameters and space for stored objects
         self._objects = []
-        # self._motion_model = None
-        # self._object_model = None
         self._frame_range = [0, 0]
-        # self.max_search_radius = constants.MAX_SEARCH_RADIUS
-        # self.return_kalman = False
-        # self.verbose = verbose
-        # self.optimizer_options = constants.GLPK_OPTIONS
 
     def __enter__(self):
         logger.info("Starting BayesianTracker session")

@@ -19,11 +19,17 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 from collections import OrderedDict
-from typing import Dict, Union
+from typing import Dict, NamedTuple, Tuple, Union
 
 import numpy as np
 
 from . import constants, utils
+
+
+class ImagingVolume(NamedTuple):
+    x: Tuple[float, float]
+    y: Tuple[float, float]
+    z: Tuple[float, float]
 
 
 class PyTrackObject(ctypes.Structure):

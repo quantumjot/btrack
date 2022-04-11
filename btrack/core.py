@@ -19,10 +19,13 @@ __email__ = "a.lowe@ucl.ac.uk"
 import ctypes
 import itertools
 import logging
+import os
+import warnings
+from typing import List, Union
 
 import numpy as np
 
-from . import btypes, constants, libwrapper, models, utils
+from . import btypes, config, constants, libwrapper, models, utils
 from .dataio import export_delegator, localizations_to_objects
 from .optimise import optimiser
 
@@ -30,6 +33,7 @@ __version__ = constants.get_version()
 
 # get the logger instance
 logger = logging.getLogger(__name__)
+
 
 # if we don't have any handlers, set one up
 if not logger.handlers:
@@ -56,9 +60,6 @@ class BayesianTracker:
     ----------
     verbose : bool
         A flag to set the verbosity level while logging the output.
-    max_search_radius : int, float
-        The maximum search radius of the algorithm in isotropic units of the
-        data. Should be greater than zero.
 
     Attributes
     ----------
@@ -157,7 +158,6 @@ class BayesianTracker:
     def __init__(
         self,
         verbose: bool = True,
-        max_search_radius: int = constants.MAX_SEARCH_RADIUS,
     ):
         """Initialise the BayesianTracker C++ engine and parameters."""
 
@@ -169,6 +169,9 @@ class BayesianTracker:
         if not verbose:
             logger.setLevel(logging.WARNING)
 
+        # store a default config
+        self._config = config.TrackerConfig(verbose=verbose)
+
         # sanity check library version
         version_tuple = constants.get_version_tuple()
         if not self._lib.check_library_version(self._engine, *version_tuple):
@@ -177,16 +180,19 @@ class BayesianTracker:
             logger.info(f"btrack (v{__version__}) library imported")
 
         # silently set the update method to EXACT
-        self._bayesian_update_method = constants.BayesianUpdates.EXACT
-        self._lib.set_update_mode(self._engine, self.update_method.value)
+        self._lib.set_update_mode(
+            self._engine, self.configuration.update_method.value
+        )
 
         # default parameters and space for stored objects
         self._objects = []
-        self._motion_model = None
-        self._object_model = None
+        # self._motion_model = None
+        # self._object_model = None
         self._frame_range = [0, 0]
-        self.max_search_radius = max_search_radius
-        self.return_kalman = False
+        # self.max_search_radius = constants.MAX_SEARCH_RADIUS
+        # self.return_kalman = False
+        # self.verbose = verbose
+        # self.optimizer_options = constants.GLPK_OPTIONS
 
     def __enter__(self):
         logger.info("Starting BayesianTracker session")
@@ -196,56 +202,65 @@ class BayesianTracker:
         logger.info("Ending BayesianTracker session")
         self._lib.del_interface(self._engine)
 
-    def configure_from_file(self, filename: str):
+    def configure_from_file(self, filename: os.PathLike):
         """Configure the tracker from a configuration file. See `configure`."""
-        config = utils.load_config(filename)
-        self.configure(config)
+        warnings.warn(
+            "This function will be deprecated. Use `.configure()` instead.",
+            DeprecationWarning,
+        )
+        self.configure(filename)
 
-    def configure(self, config: dict):
+    def configure(
+        self, configuration: Union[dict, os.PathLike, config.TrackerConfig]
+    ) -> None:
         """Configure the tracker with a motion model, an object model and
         hypothesis generation_parameters.
 
         Parameters
         ----------
-        config : dict
+        configuration : dict, os.PathLike, config.TrackerConfig
             A dictionary containing the configuration options for a tracking
             session.
         """
+        if isinstance(configuration, dict):
+            configuration = config.TrackerConfig(**configuration)
+        elif isinstance(configuration, (str, os.PathLike)):
+            configuration = config.load_config(configuration)
 
-        if not isinstance(config, dict):
-            raise TypeError("configuration must be a dictionary")
-
-        # store the models locally
-        self.motion_model = config.get("MotionModel", None)
-        self.object_model = config.get("ObjectModel", None)
-        self.hypothesis_model = config.get("HypothesisModel", None)
+        self.motion_model = configuration.motion_model
+        # self.object_model = configuration.object_model
+        self._config = configuration
         self._initialised = True
+
+    @property
+    def configuration(self) -> config.TrackerConfig:
+        """Get the current configuration."""
+        return self._config
 
     def __len__(self):
         return self.n_tracks
 
     @property
     def max_search_radius(self):
-        return self._max_search_radius
+        return self.configuration.max_search_radius
 
     @max_search_radius.setter
     def max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
-        assert max_search_radius > 0.0
         logger.info(f"Setting max XYZ search radius to: {max_search_radius}")
+        self.configuration.max_search_radius = max_search_radius
         self._lib.max_search_radius(self._engine, max_search_radius)
 
     @property
     def update_method(self):
-        return self._bayesian_update_method
+        return self.configuration.update_method
 
     @update_method.setter
-    def update_method(self, method):
+    def update_method(self, method: Union[str, constants.BayesianUpdates]):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
-        assert method in constants.BayesianUpdates
         logger.info(f"Setting Bayesian update method to: {method}")
+        self.configuration.update_method = method
         self._lib.set_update_mode(self._engine, method.value)
-        self._bayesian_update_method = method
 
     @property
     def n_tracks(self):
@@ -320,18 +335,18 @@ class BayesianTracker:
         return sorted(tracks, key=lambda t: len(t), reverse=True)
 
     @property
-    def volume(self):
+    def volume(self) -> btypes.ImagingVolume:
         """Return the imaging volume in the format xyzt. This is effectively
-        the range of each dimension: [(xlo, xhi), ..., (zlo, zhi), (tlo, thi)].
+        the range of each dimension: [(xlo, xhi), ..., (zlo, zhi)].
         """
-        vol = np.zeros((3, 2), dtype="float")
+        vol = np.zeros((3, 2), dtype=float)
         self._lib.get_volume(self._engine, vol)
-        return [tuple(vol[i, :].tolist()) for i in range(3)] + [
-            self.frame_range
-        ]
+        return btypes.ImagingVolume(
+            *[tuple(vol[i, :].tolist()) for i in range(3)]
+        )
 
     @volume.setter
-    def volume(self, volume: tuple):
+    def volume(self, volume: Union[tuple, btypes.ImagingVolume]):
         """Set the imaging volume.
 
         Parameters
@@ -339,39 +354,26 @@ class BayesianTracker:
         volume : tuple
             A tuple describing the imaging volume.
         """
-        if not isinstance(volume, tuple):
-            raise TypeError("Volume must be a tuple")
-        if len(volume) != 3 or any([len(v) != 2 for v in volume]):
-            raise ValueError("Volume must contain three tuples (xyz)")
-        self._lib.set_volume(self._engine, np.array(volume, dtype="float64"))
+        self.configuration.volume = volume
+        self._lib.set_volume(self._engine, np.array(volume, dtype=float))
         logger.info(f"Set volume to {volume}")
 
     @property
-    def motion_model(self):
-        return self._motion_model
+    def motion_model(self) -> models.MotionModel:
+        return self.configuration.motion_model
 
     @motion_model.setter
-    def motion_model(self, new_model):
+    def motion_model(self, model: models.MotionModel) -> None:
         """Set a new motion model. Must be of type MotionModel, either loaded
         from file or instantiating a MotionModel.
 
         Parameters
         ----------
-        new_model : MotionModel
+        model : MotionModel
             A motion model to be used by the tracker.
         """
-
-        if isinstance(new_model, models.MotionModel):
-            # TODO(arl): model parsing for a user defined model
-            model = new_model
-        else:
-            raise TypeError(
-                "Motion model needs to be defined in /models/ or"
-                "provided as a MotionModel object"
-            )
-
-        self._motion_model = model
         logger.info(f"Loading motion model: {model.name}")
+        self.configuration.motion_model = model
 
         # need to populate fields in the C++ library
         self._lib.motion(
@@ -390,33 +392,20 @@ class BayesianTracker:
         )
 
     @property
-    def object_model(self):
-        return self._object_model
+    def object_model(self) -> models.ObjectModel:
+        return self.configuration.object_model
 
     @object_model.setter
-    def object_model(self, new_model):
+    def object_model(self, model: models.ObjectModel) -> None:
         """Set a new object model. Must be of type ObjectModel, either loaded
         from file or instantiating an ObjectModel.
 
         Parameters
         ----------
-        new_model : ObjectModel
+        model : ObjectModel
         """
-
-        if isinstance(new_model, models.ObjectModel):
-            # this could be a user defined model
-            # TODO(arl): model parsing
-            model = new_model
-        elif new_model is None:
-            return
-        else:
-            raise TypeError(
-                "Object model needs to be defined in /models/ or"
-                "provided as a ObjectModel object"
-            )
-
-        self._object_model = model
         logger.info(f"Loading object model: {model.name}")
+        self.configuration.object_model = model
 
         # need to populate fields in the C++ library
         self._lib.model(
@@ -428,22 +417,25 @@ class BayesianTracker:
         )
 
     @property
-    def frame_range(self):
-        return self._frame_range
+    def hypothesis_model(self) -> models.HypothesisModel:
+        return self.configuration.hypothesis_model
 
-    @frame_range.setter
-    def frame_range(self, frame_range: tuple):
-        if not isinstance(frame_range, tuple):
-            raise TypeError("Frame range must be specified as a tuple")
-        if frame_range[1] < frame_range[0]:
-            raise ValueError("Frame range must be low->high")
-        self._frame_range = frame_range
+    @hypothesis_model.setter
+    def hypotheses_model(self, model: models.HypothesisModel) -> None:
+        logger.info(f"Loading hypothesis model: {model.name}")
+        self.configuration.hypotheses_model = model
+
+    @property
+    def frame_range(self):
+        return self.configuration.frame_range
 
     @property
     def objects(self):
         return self._objects
 
-    def append(self, objects):
+    def append(
+        self, objects: Union[List[btypes.PyTrackObject], np.array]
+    ) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
@@ -451,7 +443,6 @@ class BayesianTracker:
 
         Parameters
         ----------
-
         objects : list, np.ndarray
             A list of objects to track.
         """
@@ -461,7 +452,7 @@ class BayesianTracker:
         for idx, obj in enumerate(objects):
             obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
-                raise TypeError("track_object must be a PyTrackObject")
+                raise TypeError("track_object must be a `PyTrackObject`")
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)
@@ -477,7 +468,7 @@ class BayesianTracker:
 
         return info_ptr.contents
 
-    def track(self):
+    def track(self) -> None:
         """Run the actual tracking algorithm"""
 
         if not self._initialised:
@@ -569,8 +560,8 @@ class BayesianTracker:
         n_hypotheses = self._lib.create_hypotheses(
             self._engine,
             self.hypothesis_model.as_ctype(),
-            self.frame_range[0],
-            self.frame_range[1],
+            self._frame_range[0],
+            self._frame_range[1],
         )
 
         # now get all of the hypotheses
@@ -602,7 +593,6 @@ class BayesianTracker:
         optimiser and then performs track merging, removal of track fragments,
         renumbering and assignment of branches.
         """
-
         logger.info(f"Loading hypothesis model: {self.hypothesis_model.name}")
 
         logger.info(
@@ -690,7 +680,7 @@ class BayesianTracker:
         trk.root = self._lib.get_root(self._engine, idx)
         trk.generation = self._lib.get_generation(self._engine, idx)
 
-        if not self.return_kalman:
+        if not self.configuration.return_kalman:
             return trk
 
         # get the size of the Kalman arrays

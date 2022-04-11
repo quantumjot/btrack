@@ -107,17 +107,23 @@ class PyTrackObject(ctypes.Structure):
     def from_dict(properties: dict):
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = [k for k, _ in PyTrackObject._fields_]
-        attr = [k for k in fields if k in properties.keys()]
+        fields = {k: kt for k, kt in PyTrackObject._fields_}
+        attr = [k for k in fields.keys() if k in properties.keys()]
         for key in attr:
-            try:
-                setattr(obj, key, properties[key])
-            except TypeError:
-                setattr(obj, key, int(properties[key]))
+
+            new_data = properties[key]
+
+            # fix for implicit type conversion
+            if key in ("ID", "t", "states", "label"):
+                setattr(obj, key, int(new_data))
+            elif key in ("dummy",):
+                setattr(obj, key, bool(new_data))
+            else:
+                setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
         obj.properties = {
-            k: v for k, v in properties.items() if k not in fields
+            k: v for k, v in properties.items() if k not in fields.keys()
         }
         return obj
 

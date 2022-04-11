@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 from collections import OrderedDict
-from typing import Dict, NamedTuple, Tuple, Union
+from typing import Dict, NamedTuple, Optional, Tuple, Union
 
 import numpy as np
 
@@ -29,7 +29,12 @@ from . import constants, utils
 class ImagingVolume(NamedTuple):
     x: Tuple[float, float]
     y: Tuple[float, float]
-    z: Tuple[float, float]
+    z: Optional[Tuple[float, float]] = None
+
+    @property
+    def ndim(self) -> int:
+        """Infer the dimensionality from the volume."""
+        return 2 if self.z is None else 3
 
 
 class PyTrackObject(ctypes.Structure):

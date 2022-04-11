@@ -18,11 +18,7 @@ __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
 
-import dataclasses
-import json
 import logging
-import os
-from typing import Optional
 
 import numpy as np
 
@@ -31,47 +27,14 @@ from . import btypes, constants
 from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
+# Choose a subset of classes/functions to document in public facing API
+__all__ = ["segmentation_to_objects"]
+
 # get the logger instance
 logger = logging.getLogger(__name__)
 
 
-# add an alias here
-segmentation_to_objects = segmentation_to_objects
-
-
-def load_config(filename: os.PathLike) -> dict:
-    """Load a tracking configuration file."""
-    if not os.path.exists(filename):
-        # check whether it exists in the user model directory
-        _, fn = os.path.split(filename)
-        local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
-
-        if not os.path.exists(local_filename):
-            logger.error(f"Configuration file {filename} not found")
-            raise IOError(f"Configuration file {filename} not found")
-        else:
-            filename = local_filename
-
-    with open(filename, "r") as config_file:
-        config = json.load(config_file)
-
-    if "TrackerConfig" not in config:
-        logger.error("Configuration file is malformed.")
-        raise Exception("Tracking config is malformed")
-
-    config = config["TrackerConfig"]
-
-    logger.info(f"Loading configuration file: {filename}")
-    t_config = {
-        "MotionModel": read_motion_model(config),
-        "ObjectModel": read_object_model(config),
-        "HypothesisModel": read_hypothesis_model(config),
-    }
-
-    return t_config
-
-
-def log_error(err_code):
+def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
     if (
@@ -83,7 +46,7 @@ def log_error(err_code):
     return False
 
 
-def log_stats(stats):
+def log_stats(stats: dict) -> None:
     """Take the statistics from the track and log the output."""
 
     if log_error(stats["error"]):
@@ -110,201 +73,25 @@ def log_stats(stats):
     )
 
 
-def read_motion_model(config: dict) -> MotionModel:
-    """Read a motion model from a configuration dictionary.
-
-    Read in a motion model description file and return a dictionary containing
-    the appropriate parameters. See `models.MotionModel` for more details of the
-    parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the motion model.
-
-    Returns
-    -------
-    model : MotionModel
-        A `models.MotionModel` instance to configure BayesianTracker.
-
-    Notes
-    -----
-    Motion models can be described using JSON format, with a basic structure
-    as follows:
-
-        {
-          "MotionModel":{
-            "name": "ConstantVelocity",
-            "dt": 1.0,
-            "measurements": 3,
-            "states": 6,
-            "accuracy": 2.0,
-            "A": {
-              "matrix": [1,0,0,1,0,0,...
-              ...
-              ] }
-            }
-        }
-
-    Matrices are flattened JSON arrays.
-
-    Most are self explanatory, except accuracy (perhaps a misnoma) - this
-    represents the integration limits when determining the probabilities from
-    the multivariate normal distribution.
-
-    Note that the matrices are stored as 1D matrices here. In the future,
-    this could form part of a Python only motion model.
-
-    TODO(arl): More parsing of the data/reshaping arrays. Raise an
-    appropriate error if there is something wrong with the model
-    definition.
-    """
-
-    if "MotionModel" not in list(config.keys()):
-        raise ValueError("Not a valid motion model in configuration.")
-
-    motion_config = config["MotionModel"]
-    if not motion_config:
+def read_motion_model(cfg: dict) -> MotionModel:
+    cfg = cfg.get("MotionModel", None)
+    if not cfg:
         return None
-
-    fields = dataclasses.fields(MotionModel)
-    matrices = [
-        f.name for f in fields if f.type in (np.ndarray, Optional[np.ndarray])
-    ]
-    params = [f.name for f in fields if f.name not in matrices]
-
-    model_kwargs = {}
-
-    # set the parameters
-    for field in params:
-        model_kwargs[field] = motion_config[field]
-
-    # set the matrices
-    for field in matrices:
-        if field in motion_config:
-            if "sigma" in motion_config[field]:
-                sigma = motion_config[field]["sigma"]
-            else:
-                sigma = 1.0
-            matrix = np.array(motion_config[field]["matrix"], dtype=np.float64)
-            model_kwargs[field] = matrix * sigma
-
-    # set some standard params
-    model = MotionModel(**model_kwargs)
-
-    # call the reshape function to set the matrices to the correct shapes
-    model.reshape()
-    return model
+    return MotionModel(**cfg)
 
 
-def read_object_model(config: dict) -> ObjectModel:
-    """Read an object model from a configuration dictionary.
-
-    Read in a object model description file and return a dictionary containing
-    the appropriate parameters. See `models.ObjectModel` for more details of the
-    parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the object model.
-
-    Returns
-    -------
-    model : ObjectModel
-        A `models.ObjectModel` instance to configure BayesianTracker.
-
-    Notes
-    -----
-    Object models can be described using JSON format, with a basic structure
-    as follows:
-
-        {
-          "ObjectModel":{
-            "name": "UniformState",
-            "states": 1,
-            "transition": {
-              "matrix": [1] }
-              ...
-            }
-        }
-
-    Matrices are flattened JSON arrays.
-
-    Note that the matrices are stored as 1D matrices here. In the future,
-    this could form part of a Python only object model.
-
-    TODO(arl): More parsing of the data/reshaping arrays. Raise an
-    appropriate error if there is something wrong with the model definition
-    """
-    matrices = frozenset(["transition", "emission", "start"])
-
-    if "ObjectModel" not in list(config.keys()):
-        raise ValueError("Not a valid object model file")
-
-    object_config = config["ObjectModel"]
-    if not object_config:
+def read_object_model(cfg: dict) -> ObjectModel:
+    cfg = cfg.get("ObjectModel", None)
+    if not cfg:
         return None
-
-    model = ObjectModel()
-
-    # set some standard params
-    model.name = object_config["name"].encode("utf-8")
-    model.states = object_config["states"]
-
-    for matrix in matrices:
-        m_data = np.array(object_config[matrix]["matrix"], dtype="float")
-        setattr(model, matrix, m_data)
-
-    # call the reshape function to set the matrices to the correct shapes
-    model.reshape()
-    return model
+    return ObjectModel(**cfg)
 
 
-def read_hypothesis_model(config: dict) -> HypothesisModel:
-    """Read a hypothesis model from a configuration dictionary.
-
-    Read in a hypothesis model description file and return a dictionary
-    containing the appropriate parameters. See `models.ObjectModel` for more
-    details of the parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the object model.
-
-    Returns
-    -------
-    model : HypothesisModel
-        A `models.HypothesistModel` instance to configure BayesianTracker.
-
-    Read in a set of hypothesis parameters from a JSON description file.  The
-    JSON file should contain the parameters of the PyHypothesisParams structure
-    and the function will return an instantiated PyHypothesisParams to be
-    passed to the optimisation engine.
-
-    Args:
-        filename: the filename of the parameter file
-
-    Notes:
-        None
-    """
-    if "ObjectModel" not in list(config.keys()):
-        raise ValueError("Not a valid object model file")
-
-    hypothesis_config = config["HypothesisModel"]
-    if not hypothesis_config:
+def read_hypothesis_model(cfg: dict) -> HypothesisModel:
+    cfg = cfg.get("HypothesisModel", None)
+    if not cfg:
         return None
-
-    fields = [f.name for f in dataclasses.fields(HypothesisModel)]
-
-    for field in fields:
-        if field not in hypothesis_config.keys():
-            logger.error(f"Key {field} not found in `HypothesisModel` config.")
-
-    model = HypothesisModel(**hypothesis_config)
-
-    return model
+    return HypothesisModel(**cfg)
 
 
 def crop_volume(objects, volume=constants.VOLUME):
@@ -357,7 +144,6 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
-
 
     Returns
     -------

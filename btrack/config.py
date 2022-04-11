@@ -22,6 +22,7 @@ class TrackerConfig(BaseModel):
     Parameters
     ----------
     name : str
+    version : str
     verbose : bool
     motion_model : Optional[MotionModel]
     object_model : Optional[ObjectModel]
@@ -34,6 +35,7 @@ class TrackerConfig(BaseModel):
     """
 
     name: str = "Default"
+    version: str = constants.get_version()
     verbose: bool = False
     motion_model: Optional[MotionModel] = None
     object_model: Optional[ObjectModel] = None

@@ -18,18 +18,16 @@ __author__ = "Alan R. Lowe"
 __email__ = "code@arlowe.co.uk"
 
 
-import dataclasses
-import os
 from typing import List, Optional
 
 import numpy as np
+from pydantic import BaseModel, root_validator, validator
 
-from . import constants, utils
+from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
 
-@dataclasses.dataclass
-class MotionModel:
+class MotionModel(BaseModel):
     """The `btrack` motion model.
 
     Parameters
@@ -54,7 +52,7 @@ class MotionModel:
     R : array (measurements, measurements)
         Estimated error in measurements.
     dt : float
-        Time difference (always 1)
+        Time difference (always 1).
     accuracy : float
         Integration limits for calculating the probabilities.
     max_lost : int
@@ -77,7 +75,7 @@ class MotionModel:
 
     References
     ----------
-    .. [1] A new approach to linear filtering and prediction problems.'
+    .. [1] 'A new approach to linear filtering and prediction problems.'
     Kalman RE, 1960 Journal of Basic Engineering
     """
 
@@ -95,74 +93,58 @@ class MotionModel:
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    def __post_init__(self):
-        """Set up the process covariance matrix Q."""
-        process_cov = [f for f in ("G", "Q") if getattr(self, f) is not None]
+    @validator("A", "H", "P", "R", "G", "Q", pre=True)
+    def parse_arrays(cls, v):
+        if isinstance(v, dict):
+            m = v.get("matrix", None)
+            s = v.get("sigma", 1.0)
+            return np.asarray(m, dtype=float) * s
+        return np.asarray(v, dtype=float)
 
-        if not process_cov:
-            raise ValueError(
-                "Process covariance matrix (G or Q) is not defined."
-            )
+    @validator("A")
+    def reshape_A(cls, a, values):
+        shape = (values["states"], values["states"])
+        return np.reshape(a, shape, order="C")
 
-        if "Q" not in process_cov:
-            self.G = np.reshape(self.G, (1, self.states), order="C")
-            self.Q = self.G.T @ self.G
+    @validator("H")
+    def reshape_H(cls, h, values):
+        shape = (values["measurements"], values["states"])
+        return np.reshape(h, shape, order="C")
 
-    def reshape(self):
-        """Reshapes matrices to the correct dimensions. Only need to call this
-        if loading a model from a JSON file.
+    @validator("P")
+    def reshape_P(cls, p, values):
+        shape = (values["states"], values["states"])
+        return np.reshape(p, shape, order="C")
 
-        Notes
-        -----
-        Internally:
-            Eigen::Matrix<double, m, s> H;
-            Eigen::Matrix<double, s, s> Q;
-            Eigen::Matrix<double, s, s> P;
-            Eigen::Matrix<double, m, m> R;
+    @validator("R")
+    def reshape_R(cls, r, values):
+        shape = (values["measurements"], values["measurements"])
+        return np.reshape(r, shape, order="C")
 
-        """
-        s = self.states
-        m = self.measurements
+    @validator("G")
+    def reshape_G(cls, g, values):
+        shape = (1, values["states"])
+        return np.reshape(g, shape, order="C")
 
-        # if we defined a model, restructure matrices to the correct shapes
-        # do some parsing to check that the model is specified correctly
-        if s and m:
-            shapes = {
-                "A": (s, s),
-                "H": (m, s),
-                "P": (s, s),
-                "R": (m, m),
-                "Q": (s, s),
-            }
-            for m_name in shapes:
+    @validator("Q")
+    def reshape_Q(cls, q, values):
+        shape = (values["states"], values["states"])
+        return np.reshape(q, shape, order="C")
 
-                if getattr(self, m_name) is None:
-                    continue
+    @root_validator
+    def validate_motion_model(cls, values):
+        if values["Q"] is None:
+            G = values.get("G", None)
+            if G is None:
+                raise ValueError("Either a `G` or `Q` matrix is required.")
+            values["Q"] = G.T @ G
+        return values
 
-                try:
-                    m_array = getattr(self, m_name)
-                    r_matrix = np.reshape(m_array, shapes[m_name], order="C")
-                except ValueError:
-                    raise ValueError(
-                        f"Matrx {m_name} is incorrecly specified."
-                        f" ({len(m_array)} entries for"
-                        f" {shapes[m_name][0]}x{shapes[m_name][1]} matrix.)"
-                    )
-
-                setattr(self, m_name, r_matrix)
-        else:
-            raise ValueError(
-                "Cannot reshape matrices as MotionModel is uninitialised."
-            )
-
-    @staticmethod
-    def load(filename):
-        """Load a model from file"""
-        return utils.read_motion_model(filename)
+    class Config:
+        arbitrary_types_allowed = True
 
 
-@dataclasses.dataclass
-class ObjectModel:
+class ObjectModel(BaseModel):
     """The `btrack` object model.
 
     This is a class to deal with state transitions in the object, essentially
@@ -183,38 +165,31 @@ class ObjectModel:
         Number of observable states.
     """
 
+    states: int
     emission: np.ndarray
     transition: np.ndarray
     start: np.ndarray
-    states: int
     name: str = "Default"
 
-    def reshape(self):
-        """Reshapes matrices to the correct dimensions. Only need to call this
-        if loading a model from a JSON file.
+    @validator("emission", "transition", "start", pre=True)
+    def parse_array(cls, v, values):
+        return np.asarray(v, dtype=float)
 
-        Notes:
-            Internally:
-                Eigen::Matrix<double, s, s> emission;
-                Eigen::Matrix<double, s, s> transition;
-                Eigen::Matrix<double, s, 1> start;
-        """
-        if not self.states:
-            raise ValueError(
-                "Cannot reshape matrices in `ObjectModel` as `states` are unknown."
-            )
-        s = self.states
-        self.emission = np.reshape(self.emission, (s, s), order="C")
-        self.transition = np.reshape(self.transition, (s, s), order="C")
+    @validator("emission", "transition", "start", pre=True)
+    def reshape_emission_transition(cls, v, values):
+        shape = (values["states"], values["states"])
+        return np.reshape(v, shape, order="C")
 
-    @staticmethod
-    def load(filename):
-        """Load a model from file"""
-        return utils.read_object_model(filename)
+    @validator("emission", "transition", "start", pre=True)
+    def reshape_start(cls, v, values):
+        shape = (1, values["states"])
+        return np.reshape(v, shape, order="C")
+
+    class Config:
+        arbitrary_types_allowed = True
 
 
-@dataclasses.dataclass
-class HypothesisModel:
+class HypothesisModel(BaseModel):
     r"""The `btrack` hypothesis model.
 
     This is a class to deal with hypothesis generation in the optimization step
@@ -266,7 +241,6 @@ class HypothesisModel:
         termination and initialization hypotheses. This means that tracks can
         initialize or terminate anywhere (or time) in the dataset.
 
-
     Notes
     -----
     The `lambda` (:math:`\lambda`) factors scale the probability according to
@@ -291,10 +265,11 @@ class HypothesisModel:
     relax: bool
     name: str = "Default"
 
-    @staticmethod
-    def load(filename: os.PathLike):
-        """Load a model from file."""
-        return utils.read_hypotheis_model(filename)
+    @validator("hypotheses", pre=True)
+    def parse_hypotheses(cls, hypotheses):
+        if not all([h in H_TYPES for h in hypotheses]):
+            raise ValueError
+        return hypotheses
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
@@ -308,11 +283,10 @@ class HypothesisModel:
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 
-        for k, v in dataclasses.asdict(self).items():
+        for k, v in self.dict().items():
             if k in fields:
                 setattr(h_params, k, v)
 
         # set the hypotheses to generate
         h_params.hypotheses_to_generate = self.hypotheses_to_generate()
-
         return h_params

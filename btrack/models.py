@@ -27,6 +27,12 @@ from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
 
+def _check_symmetric(
+    x: np.array, rtol: float = 1e-5, atol: float = 1e-8
+) -> bool:
+    return np.allclose(x, x.T, rtol=rtol, atol=atol)
+
+
 class MotionModel(BaseModel):
     """The `btrack` motion model.
 
@@ -37,7 +43,9 @@ class MotionModel(BaseModel):
     measurements : int
         The number of measurements of the system (e.g. 3 for x, y, z).
     states : int
-        The number of states of the system (typically >= measurements).
+        The number of states of the system (typically >= measurements). The
+        standard measurements for a constant velocity model are (x, y, z, dx,
+        dy, dz), i.e. 6 in total for 3 measurements.
     A : array (states, states)
         State transition matrix.
     H : array (measurements, states)
@@ -45,10 +53,10 @@ class MotionModel(BaseModel):
     P : array (states, states)
         Initial covariance estimate.
     G : array (1, states), optional
-        Estimated error in process. Is used to calculate Q using Q = G.T @ G.
-        Either G or Q must be defined.
+        Simplified estimated error in process. Is used to calculate Q using
+        Q = G.T @ G. Either G or Q must be defined.
     Q : array (states, states), optional
-        Estimated error in process. Either G or Q must be defined.
+        Full estimated error in process. Either G or Q must be defined.
     R : array (measurements, measurements)
         Estimated error in measurements.
     dt : float
@@ -114,12 +122,18 @@ class MotionModel(BaseModel):
     @validator("P")
     def reshape_P(cls, p, values):
         shape = (values["states"], values["states"])
-        return np.reshape(p, shape, order="C")
+        p = np.reshape(p, shape, order="C")
+        if not _check_symmetric(p):
+            raise ValueError("Matrix `P` is not symmetric.")
+        return p
 
     @validator("R")
     def reshape_R(cls, r, values):
         shape = (values["measurements"], values["measurements"])
-        return np.reshape(r, shape, order="C")
+        r = np.reshape(r, shape, order="C")
+        if not _check_symmetric(r):
+            raise ValueError("Matrix `R` is not symmetric.")
+        return r
 
     @validator("G")
     def reshape_G(cls, g, values):
@@ -129,7 +143,10 @@ class MotionModel(BaseModel):
     @validator("Q")
     def reshape_Q(cls, q, values):
         shape = (values["states"], values["states"])
-        return np.reshape(q, shape, order="C")
+        q = np.reshape(q, shape, order="C")
+        if not _check_symmetric(q):
+            raise ValueError("Matrix `Q` is not symmetric.")
+        return q
 
     @root_validator
     def validate_motion_model(cls, values):

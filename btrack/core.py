@@ -136,11 +136,11 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example.
 
-    Use optimise to generate hypotheses for global optimisation [3, 4]_. Read
+    Use optimise to generate hypotheses for global optimisation [3][4]_. Read
     the `optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
-    Full details of the implementation can be found in [5, 6]_.
+    Full details of the implementation can be found in [5][6]_.
 
     References
     ----------

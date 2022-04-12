@@ -74,7 +74,8 @@ class BayesianTracker:
     dummies : list
         The dummy objects inserted by the tracker.
     volume : tuple
-        The imaging volume as [(xlo, xhi), ..., (zlo, zhi), (tlo, thi)]
+        The imaging volume as [(xlo, xhi), ..., (zlo, zhi)]. See
+        `btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
     max_search_radius : int, float

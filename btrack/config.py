@@ -22,16 +22,44 @@ class TrackerConfig(BaseModel):
     Parameters
     ----------
     name : str
+        A name identifier for the model.
     version : str
+        A string representing the version of `btrack` used.
     verbose : bool
+        A flag to set the verbosity level while logging the output.
     motion_model : Optional[MotionModel]
+        The `btrack` motion model. See `models.MotionModel` for more details.
     object_model : Optional[ObjectModel]
+        The `btrack` object model. See `models.ObjectModel` for more details.
     hypothesis_model : Optional[HypothesisModel]
+        The `btrack` hypothesis model. See `models.HypothesisModel` for more
+        details.
     max_search_radius : float
+        The maximum search radius of the algorithm in isotropic units of the
+        data. Should be greater than zero.
     return_kalman : bool
+        Flag to request the Kalman debug info when returning tracks.
     volume : Optional[ImagingVolume]
+        The imaging volume as [(xlo, xhi), ..., (zlo, zhi)]. See
+        `btypes.ImagingVolume` for more details.
     update_method : constants.BayesianUpdates
+        The method to perform the bayesian updates during tracklet linking.
+            BayesianUpdates.EXACT
+                Use the exact Bayesian update method. Can be slow for systems
+                with many objects.
+            BayesianUpdates.APPROXIMATE
+                Use the approximate Bayesian update method. Useful for systems
+                with may objects.
+            BayesianUpdates.CUDA
+                Use the CUDA implementation of the Bayesian update method. Not
+                currently implemented.
     optimizer_options: dict
+        Additional options to pass to the optimizer. See `cvxopt.glpk` for more
+        details of options that can be passed.
+
+    Notes
+    -----
+    TODO(arl): add more validation to parameters.
     """
 
     name: str = "Default"

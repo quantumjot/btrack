@@ -314,12 +314,18 @@ class BayesianTracker:
 
         Notes
         -----
-        L - a unique label of the track (label of markers, 16-bit positive)
-        B - a zero-based temporal index of the frame in which the track begins
-        E - a zero-based temporal index of the frame in which the track ends
-        P - label of the parent track (0 is used when no parent is defined)
-        R - label of the root track
-        G - generational depth (from root)
+        L : int
+            A unique label of the track (label of markers, 16-bit positive).
+        B : int
+            A zero-based temporal index of the frame in which the track begins.
+        E : int
+            A zero-based temporal index of the frame in which the track ends.
+        P : int
+            Label of the parent track (0 is used when no parent is defined).
+        R : int
+            Label of the root track.
+        G : int
+            Generational depth (from root).
         """
 
         def _lbep_table(t):
@@ -369,6 +375,7 @@ class BayesianTracker:
 
     @property
     def motion_model(self) -> models.MotionModel:
+        """Return the current motion model."""
         return self.configuration.motion_model
 
     @motion_model.setter
@@ -402,6 +409,7 @@ class BayesianTracker:
 
     @property
     def object_model(self) -> models.ObjectModel:
+        """Return the current object model."""
         return self.configuration.object_model
 
     @object_model.setter
@@ -427,19 +435,23 @@ class BayesianTracker:
 
     @property
     def hypothesis_model(self) -> models.HypothesisModel:
+        """Return the current hypothesis model."""
         return self.configuration.hypothesis_model
 
     @hypothesis_model.setter
     def hypotheses_model(self, model: models.HypothesisModel) -> None:
+        """Set the current hypotheis model."""
         logger.info(f"Loading hypothesis model: {model.name}")
         self.configuration.hypotheses_model = model
 
     @property
     def frame_range(self) -> Tuple[int, int]:
+        """Return the frame range."""
         return tuple(self.configuration.frame_range)
 
     @property
     def objects(self) -> List[btypes.PyTrackObject]:
+        """Return the list of objects added through the append method."""
         return self._objects
 
     def append(
@@ -470,7 +482,7 @@ class BayesianTracker:
         self._objects += objects
 
     def _stats(self, info_ptr: ctypes.POINTER) -> btypes.PyTrackingInfo:
-        """Cast the info pointer back to an object"""
+        """Cast the info pointer back to an object."""
 
         if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
             raise TypeError("Stats requires the pointer to the object")
@@ -478,7 +490,7 @@ class BayesianTracker:
         return info_ptr.contents
 
     def track(self) -> None:
-        """Run the actual tracking algorithm"""
+        """Run the actual tracking algorithm."""
 
         if not self._initialised:
             logger.error("Tracker has not been configured")

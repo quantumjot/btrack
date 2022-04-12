@@ -30,6 +30,7 @@ from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 def _check_symmetric(
     x: np.array, rtol: float = 1e-5, atol: float = 1e-8
 ) -> bool:
+    """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
 

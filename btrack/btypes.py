@@ -40,7 +40,11 @@ class ImagingVolume(NamedTuple):
 class PyTrackObject(ctypes.Structure):
     """The base `btrack` track object.
 
-    Attributes
+    Primitive class to store information about an object. Essentially a single
+    object in a field of view, with some member variables to keep track of data
+    associated with an object.
+
+    Parameters
     ----------
     ID : int
         The unique ID of the object.
@@ -63,11 +67,13 @@ class PyTrackObject(ctypes.Structure):
     prob : float
         The probability of the label.
 
-    Notes
-    -----
-    Primitive class to store information about an object. Essentially a single
-    object in a field of view, with some member variables to keep track of data
-    associated with an object.
+    Attributes
+    ----------
+    properties : Dict[str, Union[int, float]]
+        Dictionary of properties associated with this object.
+    state : constants.States
+        A state label for the object. See `constants.States`
+
     """
 
     _fields_ = [
@@ -81,7 +87,6 @@ class PyTrackObject(ctypes.Structure):
         ("label", ctypes.c_int),
         ("prob", ctypes.c_double),
     ]
-    # ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
         super().__init__()
@@ -93,13 +98,13 @@ class PyTrackObject(ctypes.Structure):
         self._properties = {}
 
     @property
-    def properties(self) -> Dict[str, Union[int, float]]:
+    def properties(self) -> Dict[str, Union[bool, int, float]]:
         if self.dummy:
             return {}
         return self._properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, Union[int, float]]):
+    def properties(self, properties: Dict[str, Union[bool, int, float]]):
         """Set the object properties."""
         self._properties.update(properties)
 
@@ -114,17 +119,19 @@ class PyTrackObject(ctypes.Structure):
         self._raw_probability = probability
 
     @property
-    def state(self):
+    def state(self) -> constants.States:
         return constants.States(self.label)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Union[bool, int, float]]:
         """Return a dictionary of the fields and their values."""
         stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
         stats.update(self.properties)
         return stats
 
     @staticmethod
-    def from_dict(properties: dict):
+    def from_dict(
+        properties: Dict[str, Union[bool, int, float]]
+    ) -> "PyTrackObject":
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}
@@ -155,14 +162,12 @@ class PyTrackObject(ctypes.Structure):
 
 
 class PyTrackingInfo(ctypes.Structure):
-    """PyTrackingInfo
+    """Primitive class to store information about the tracking output.
 
-    Primitive class to store information about the tracking output.
-
-    Attributes
+    Parameters
     ----------
-    error :
-        Error code from the tracker.
+    error : int
+        Error code from the tracker. See `constants.Errors` for definitions.
     n_tracks : int
         Total number of tracks initialised during tracking.
     n_active : int
@@ -186,8 +191,8 @@ class PyTrackingInfo(ctypes.Structure):
 
     Notes
     -----
-        TODO(arl): should update to give more useful statistics, perhaps
-        histogram of probabilities and timings.
+    TODO(arl): should update to give more useful statistics, perhaps
+    histogram of probabilities and timings.
 
     """
 
@@ -205,7 +210,7 @@ class PyTrackingInfo(ctypes.Structure):
         ("complete", ctypes.c_bool),
     ]
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Union[bool, int, float]]:
         """Return a dictionary of the statistics"""
         # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?
@@ -213,8 +218,8 @@ class PyTrackingInfo(ctypes.Structure):
         return stats
 
     @property
-    def tracker_active(self):
-        """return the current status"""
+    def tracker_active(self) -> bool:
+        """Return the current status."""
         no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
         return no_error and not self.complete
 

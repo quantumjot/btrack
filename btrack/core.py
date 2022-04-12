@@ -52,9 +52,9 @@ if not logger.handlers:
 class BayesianTracker:
     """BayesianTracker.
 
-    BayesianTracker is a multi object tracking algorithm, specifically
-    used to reconstruct tracks in crowded fields. Here we use a probabilistic
-    network of information to perform the trajectory linking.
+    BayesianTracker is a multi object tracking algorithm, specifically used to
+    reconstruct tracks in crowded fields. Here we use a probabilistic network of
+    information to perform the trajectory linking.
 
     Parameters
     ----------
@@ -98,8 +98,10 @@ class BayesianTracker:
                 currently implemented.
     return_kalman : bool
         Flag to request the Kalman debug info when returning tracks.
-    lbep :
+    lbep : List[List]
         Return an LBEP table of the track lineages.
+    configuration : config.TrackerConfig
+        Return the current configuration.
 
     Notes
     -----
@@ -108,19 +110,18 @@ class BayesianTracker:
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
-    probabilistic model in the form of a Kalman filter (Kalman, 1960), and
+    probabilistic model in the form of a Kalman filter [1]_, and
     utilises this to predict future states (and error in states) of each of the
     objects in the field of view.  We assign new observations to the growing
     tracklets (linking) by evaluating the posterior probability of each
     potential linkage from a Bayesian belief matrix for all possible linkages
-    (Narayana and Haverkamp, 2007). The best linkages are those with the
-    highest posterior probability.
+    [2]_. The best linkages are those with the highest posterior probability.
 
     This class is a wrapper for the C++ implementation of the BayesianTracker.
 
     Data can be passed in in the following formats:
         - btrack PyTrackObject (defined in btypes)
-        - Optional JSON files using loaders
+        - CSV
         - HDF
 
     Can be used with ContextManager support, like this:
@@ -135,25 +136,33 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example.
 
-    Use the .tracks to return Tracklets, or .refs to return the references.
+    Use optimise to generate hypotheses for global optimisation [3, 4]_. Read
+    the `optimiser.TrackOptimiser` documentation for more information about the
+    track linker.
 
-    Use optimise to generate hypotheses for global optimisation. Read the
-    TrackLinker documentation for more information about the track linker.
+    Full details of the implementation can be found in [5, 6]_.
 
     References
     ----------
-    'A Bayesian algorithm for tracking multiple moving objects in outdoor
+    .. [1] 'A new approach to linear filtering and prediction problems.'
+    Kalman RE, 1960 Journal of Basic Engineering
+
+    .. [2] 'A Bayesian algorithm for tracking multiple moving objects in outdoor
     surveillance video', Narayana M and Haverkamp D 2007 IEEE
 
-    'Report Automated Cell Lineage Construction' Al-Kofahi et al.
+    .. [3] 'Report Automated Cell Lineage Construction' Al-Kofahi et al.
     Cell Cycle 2006 vol. 5 (3) pp. 327-335
 
-    'Reliable cell tracking by global data association', Bise et al.
+    .. [4] 'Reliable cell tracking by global data association', Bise et al.
     2011 IEEE Symposium on Biomedical Imaging pp. 1004-1010
 
-    'Local cellular neighbourhood controls proliferation in cell
+    .. [5] 'Local cellular neighbourhood controls proliferation in cell
     competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
     Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
+
+    .. [6] 'Automated deep lineage tree analysis using a Bayesian single cell
+    tracking approach', Ulicna K, Vallardi G, Charras G and Lowe AR 2021 Front.
+    Comput. Sci. 3
     """
 
     def __init__(

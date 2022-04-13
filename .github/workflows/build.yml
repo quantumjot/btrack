@@ -1,6 +1,12 @@
 name: btrack
 
-on: [push, pull_request]
+# run on all pull requests, but only pushes to main
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
 
 jobs:
   build:

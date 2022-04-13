@@ -231,8 +231,12 @@ class BayesianTracker:
         elif isinstance(configuration, (str, os.PathLike)):
             configuration = config.load_config(configuration)
 
+        # for key in configuration.__fields__.keys():
+        #     value = getattr(configuration, key)
+        #     if value:
+        #         setattr(self, key, value)
         self.motion_model = configuration.motion_model
-        # self.object_model = configuration.object_model
+        # # self.object_model = configuration.object_model
         self._config = configuration
         self._initialised = True
 
@@ -240,6 +244,10 @@ class BayesianTracker:
     def configuration(self) -> config.TrackerConfig:
         """Get the current configuration."""
         return self._config
+
+    def __getattr__(self, attr):
+        """Default to config if we do not have a specific getter/setter."""
+        return getattr(self.configuration, attr)
 
     def __len__(self) -> int:
         return self.n_tracks
@@ -265,6 +273,16 @@ class BayesianTracker:
         logger.info(f"Setting Bayesian update method to: {method}")
         self.configuration.update_method = method
         self._lib.set_update_mode(self._engine, method.value)
+
+    @property
+    def return_kalman(self) -> bool:
+        return self.configuration.return_kalman
+
+    @return_kalman.setter
+    def return_kalman(self, flag: bool) -> None:
+        """Set the tracker to return the full Kalman filter output."""
+        logger.info(f"Returning kalman matrices: {flag}")
+        self.configuration.return_kalman = flag
 
     @property
     def n_tracks(self) -> int:
@@ -349,11 +367,12 @@ class BayesianTracker:
         """Return the imaging volume in the format xyzt. This is effectively
         the range of each dimension: [(xlo, xhi), ..., (zlo, zhi)].
         """
-        vol = np.zeros((3, 2), dtype=float)
-        self._lib.get_volume(self._engine, vol)
-        return btypes.ImagingVolume(
-            *[tuple(vol[i, :].tolist()) for i in range(3)]
-        )
+        # vol = np.zeros((3, 2), dtype=float)
+        # self._lib.get_volume(self._engine, vol)
+        # return btypes.ImagingVolume(
+        #     *[tuple(vol[i, :].tolist()) for i in range(3)]
+        # )
+        return self.configuration.volume
 
     @volume.setter
     def volume(self, volume: Union[tuple, btypes.ImagingVolume]) -> None:
@@ -421,17 +440,18 @@ class BayesianTracker:
         ----------
         model : ObjectModel
         """
-        logger.info(f"Loading object model: {model.name}")
-        self.configuration.object_model = model
+        if model is not None:
+            logger.info(f"Loading object model: {model.name}")
+            self.configuration.object_model = model
 
-        # need to populate fields in the C++ library
-        self._lib.model(
-            self._engine,
-            model.states,
-            model.emission,
-            model.transition,
-            model.start,
-        )
+            # need to populate fields in the C++ library
+            self._lib.model(
+                self._engine,
+                model.states,
+                model.emission,
+                model.transition,
+                model.start,
+            )
 
     @property
     def hypothesis_model(self) -> models.HypothesisModel:
@@ -441,6 +461,7 @@ class BayesianTracker:
     @hypothesis_model.setter
     def hypotheses_model(self, model: models.HypothesisModel) -> None:
         """Set the current hypotheis model."""
+
         logger.info(f"Loading hypothesis model: {model.name}")
         self.configuration.hypotheses_model = model
 
@@ -708,7 +729,7 @@ class BayesianTracker:
         trk.root = self._lib.get_root(self._engine, idx)
         trk.generation = self._lib.get_generation(self._engine, idx)
 
-        if not self.configuration.return_kalman:
+        if not self.return_kalman:
             return trk
 
         # get the size of the Kalman arrays

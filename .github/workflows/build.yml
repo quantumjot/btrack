@@ -1,5 +1,10 @@
 name: btrack
+
+# run on all pull requests, but only pushes to main
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
 jobs:
@@ -35,4 +40,5 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
 
       - name: Coverage
+        if: runner.os == 'Linux' && matrix.python-version == 3.9
         uses: codecov/codecov-action@v2

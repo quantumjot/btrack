@@ -231,10 +231,7 @@ class BayesianTracker:
         elif isinstance(configuration, (str, os.PathLike)):
             configuration = config.load_config(configuration)
 
-        # for key in configuration.__fields__.keys():
-        #     value = getattr(configuration, key)
-        #     if value:
-        #         setattr(self, key, value)
+        # TODO(arl): need to run the setters for other options here
         self.motion_model = configuration.motion_model
         # # self.object_model = configuration.object_model
         self._config = configuration

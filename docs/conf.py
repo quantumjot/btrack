@@ -34,7 +34,12 @@ release = "v" + btrack.__version__
 # ones.
 extensions = [
     "sphinx_panels",
+    "sphinx_automodapi.automodapi",
+    "numpydoc",
 ]
+
+numpydoc_show_class_members = False
+automodapi_inheritance_diagram = False
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]

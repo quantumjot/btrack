@@ -31,12 +31,11 @@ from . import btypes, constants
 from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
+# Choose a subset of classes/functions to document in public facing API
+__all__ = ["segmentation_to_objects"]
+
 # get the logger instance
 logger = logging.getLogger(__name__)
-
-
-# add an alias here
-segmentation_to_objects = segmentation_to_objects
 
 
 def load_config(filename: os.PathLike) -> dict:
@@ -357,7 +356,6 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
-
 
     Returns
     -------

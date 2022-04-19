@@ -34,6 +34,7 @@ The global solution identifies a sequence of high-likelihood hypotheses that acc
 
       user_guide/installation
       user_guide/index
+      api
 
     ---
 

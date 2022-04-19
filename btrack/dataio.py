@@ -38,6 +38,10 @@ if TYPE_CHECKING:
 logger = logging.getLogger("worker_process")
 
 
+# Choose a subset of classes/functions to document in public facing API
+__all__ = ["import_CSV"]
+
+
 class _PyTrackObjectFactory:
     def __init__(self):
         raise DeprecationWarning("_PyTrackObjectFactory has been deprecated.")
@@ -134,16 +138,16 @@ def import_JSON(filename: str):
 
 
 def import_CSV(filename: str):
-    """Import localizations from a CSV file
+    """Import localizations from a CSV file.
 
     Notes
     -----
     CSV file should have one of the following formats:
 
-    t, x, y
-    t, x, y, label
-    t, x, y, z
-    t, x, y, z, label
+    - t, x, y
+    - t, x, y, label
+    - t, x, y, z
+    - t, x, y, z, label
     """
 
     objects = []

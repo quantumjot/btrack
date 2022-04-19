@@ -54,7 +54,8 @@ class BayesianTracker:
 
     BayesianTracker is a multi object tracking algorithm, specifically used to
     reconstruct tracks in crowded fields. Here we use a probabilistic network of
-    information to perform the trajectory linking.
+    information to perform the trajectory linking. This class is a wrapper for
+    the C++ implementation of the BayesianTracker.
 
     Parameters
     ----------
@@ -78,26 +79,6 @@ class BayesianTracker:
         `btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
-    max_search_radius : int, float
-        The maximum search radius of the algorithm in isotropic units of the
-        data. Should be greater than zero.
-    motion_model : MotionModel
-        A motion model to make motion predictions.
-    object_model : ObjectModel
-        An object model to make state predictions.
-    update_method : BayesianUpdates
-        The method to perform the bayesian updates during tracklet linking.
-            BayesianUpdates.EXACT
-                Use the exact Bayesian update method. Can be slow for systems
-                with many objects.
-            BayesianUpdates.APPROXIMATE
-                Use the approximate Bayesian update method. Useful for systems
-                with may objects.
-            BayesianUpdates.CUDA
-                Use the CUDA implementation of the Bayesian update method. Not
-                currently implemented.
-    return_kalman : bool
-        Flag to request the Kalman debug info when returning tracks.
     lbep : List[List]
         Return an LBEP table of the track lineages.
     configuration : config.TrackerConfig
@@ -110,37 +91,39 @@ class BayesianTracker:
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
-    probabilistic model in the form of a Kalman filter [1]_, and
-    utilises this to predict future states (and error in states) of each of the
-    objects in the field of view.  We assign new observations to the growing
-    tracklets (linking) by evaluating the posterior probability of each
-    potential linkage from a Bayesian belief matrix for all possible linkages
-    [2]_. The best linkages are those with the highest posterior probability.
-
-    This class is a wrapper for the C++ implementation of the BayesianTracker.
+    probabilistic model in the form of a Kalman filter [1], and utilises this to
+    predict future states (and error in states) of each of the objects in the
+    field of view.  We assign new observations to the growing tracklets
+    (linking) by evaluating the posterior probability of each potential linkage
+    from a Bayesian belief matrix for all possible linkages [2]. The best
+    linkages are those with the highest posterior probability.
 
     Data can be passed in in the following formats:
         - btrack PyTrackObject (defined in btypes)
         - CSV
         - HDF
 
-    Can be used with ContextManager support, like this:
-
-        >>> with BayesianTracker() as tracker:
-        >>>    tracker.append(observations)
-        >>>    tracker.track()
-
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
     data sets. The latter is useful if using only the first part of a tracking
     protocol, or other metadata is needed for further analysis. The references
-    can be used to make symbolic links in HDF5 files, for example.
-
-    Use optimise to generate hypotheses for global optimisation [3][4]_. Read
-    the `optimiser.TrackOptimiser` documentation for more information about the
+    can be used to make symbolic links in HDF5 files, for example. Use
+    `optimise` to generate hypotheses for global optimisation [3][4]. Read the
+    `optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
-    Full details of the implementation can be found in [5][6]_.
+    Full details of the implementation can be found in [5][6].
+
+    Examples
+    --------
+
+    Can be used with ContextManager support, like this:
+
+        >>> with BayesianTracker() as tracker:
+        >>>    tracker.configure("./models/cell_config.json")
+        >>>    tracker.append(observations)
+        >>>    tracker.track()
+        >>>    tracks = tracker.tracks
 
     References
     ----------
@@ -231,10 +214,12 @@ class BayesianTracker:
         elif isinstance(configuration, (str, os.PathLike)):
             configuration = config.load_config(configuration)
 
-        # TODO(arl): need to run the setters for other options here
-        self.motion_model = configuration.motion_model
-        # # self.object_model = configuration.object_model
         self._config = configuration
+
+        # set all configuration options using setattr
+        for attr in configuration.__fields__:
+            setattr(self, attr, getattr(configuration, attr))
+
         self._initialised = True
 
     @property
@@ -246,40 +231,40 @@ class BayesianTracker:
         """Default to config if we do not have a specific getter/setter."""
         return getattr(self.configuration, attr)
 
+    def __setattr__(self, attr, value):
+        if not attr.startswith("_") and self.configuration.verbose:
+            logger.info(f"Setting {attr} -> {value}")
+
+        if hasattr(config.TrackerConfig, attr):
+            setattr(self.configuration, attr, value)
+        else:
+            object.__setattr__(self, attr, value)
+
+        # if we need to update the C++ library instance, do it here
+        if attr in (
+            "motion_model",
+            "object_model",
+            "max_search_radius",
+            "volume",
+        ):
+            if value is not None:
+                update_lib_func = getattr(self, f"_{attr}")
+                update_lib_func(value)
+
     def __len__(self) -> int:
         return self.n_tracks
 
-    @property
-    def max_search_radius(self) -> float:
-        return self.configuration.max_search_radius
-
-    @max_search_radius.setter
-    def max_search_radius(self, max_search_radius: int):
+    def _max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
-        logger.info(f"Setting max XYZ search radius to: {max_search_radius}")
-        self.configuration.max_search_radius = max_search_radius
+        # logger.info(f"Setting max XYZ search radius to: {max_search_radius}")
+        # self.configuration.max_search_radius = max_search_radius
         self._lib.max_search_radius(self._engine, max_search_radius)
 
-    @property
-    def update_method(self) -> constants.BayesianUpdates:
-        return self.configuration.update_method
-
-    @update_method.setter
-    def update_method(self, method: Union[str, constants.BayesianUpdates]):
+    def _update_method(self, method: Union[str, constants.BayesianUpdates]):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
-        logger.info(f"Setting Bayesian update method to: {method}")
-        self.configuration.update_method = method
+        # logger.info(f"Setting Bayesian update method to: {method}")
+        # self.configuration.update_method = method
         self._lib.set_update_mode(self._engine, method.value)
-
-    @property
-    def return_kalman(self) -> bool:
-        return self.configuration.return_kalman
-
-    @return_kalman.setter
-    def return_kalman(self, flag: bool) -> None:
-        """Set the tracker to return the full Kalman filter output."""
-        logger.info(f"Returning kalman matrices: {flag}")
-        self.configuration.return_kalman = flag
 
     @property
     def n_tracks(self) -> int:
@@ -359,20 +344,7 @@ class BayesianTracker:
         """Return a sorted list of tracks"""
         return sorted(tracks, key=lambda t: len(t), reverse=True)
 
-    @property
-    def volume(self) -> btypes.ImagingVolume:
-        """Return the imaging volume in the format xyzt. This is effectively
-        the range of each dimension: [(xlo, xhi), ..., (zlo, zhi)].
-        """
-        # vol = np.zeros((3, 2), dtype=float)
-        # self._lib.get_volume(self._engine, vol)
-        # return btypes.ImagingVolume(
-        #     *[tuple(vol[i, :].tolist()) for i in range(3)]
-        # )
-        return self.configuration.volume
-
-    @volume.setter
-    def volume(self, volume: Union[tuple, btypes.ImagingVolume]) -> None:
+    def _volume(self, volume: Union[tuple, btypes.ImagingVolume]) -> None:
         """Set the imaging volume.
 
         Parameters
@@ -380,22 +352,16 @@ class BayesianTracker:
         volume : tuple
             A tuple describing the imaging volume.
         """
-        self.configuration.volume = btypes.ImagingVolume(*volume)
+        volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if self.configuration.volume.ndim == 2:
+        if volume.ndim == 2:
             volume = volume + ((-1e5, 1e5),)
 
         self._lib.set_volume(self._engine, np.array(volume, dtype=float))
-        logger.info(f"Set volume to {volume}")
+        # logger.info(f"Set volume to {volume}")
 
-    @property
-    def motion_model(self) -> models.MotionModel:
-        """Return the current motion model."""
-        return self.configuration.motion_model
-
-    @motion_model.setter
-    def motion_model(self, model: models.MotionModel) -> None:
+    def _motion_model(self, model: models.MotionModel) -> None:
         """Set a new motion model. Must be of type MotionModel, either loaded
         from file or instantiating a MotionModel.
 
@@ -404,8 +370,6 @@ class BayesianTracker:
         model : MotionModel
             A motion model to be used by the tracker.
         """
-        logger.info(f"Loading motion model: {model.name}")
-        self.configuration.motion_model = model
 
         # need to populate fields in the C++ library
         self._lib.motion(
@@ -423,13 +387,7 @@ class BayesianTracker:
             model.prob_not_assign,
         )
 
-    @property
-    def object_model(self) -> models.ObjectModel:
-        """Return the current object model."""
-        return self.configuration.object_model
-
-    @object_model.setter
-    def object_model(self, model: models.ObjectModel) -> None:
+    def _object_model(self, model: models.ObjectModel) -> None:
         """Set a new object model. Must be of type ObjectModel, either loaded
         from file or instantiating an ObjectModel.
 
@@ -437,30 +395,18 @@ class BayesianTracker:
         ----------
         model : ObjectModel
         """
-        if model is not None:
-            logger.info(f"Loading object model: {model.name}")
-            self.configuration.object_model = model
+        # if model is not None:
+        logger.info(f"Loading object model: {model.name}")
+        self.configuration.object_model = model
 
-            # need to populate fields in the C++ library
-            self._lib.model(
-                self._engine,
-                model.states,
-                model.emission,
-                model.transition,
-                model.start,
-            )
-
-    @property
-    def hypothesis_model(self) -> models.HypothesisModel:
-        """Return the current hypothesis model."""
-        return self.configuration.hypothesis_model
-
-    @hypothesis_model.setter
-    def hypotheses_model(self, model: models.HypothesisModel) -> None:
-        """Set the current hypotheis model."""
-
-        logger.info(f"Loading hypothesis model: {model.name}")
-        self.configuration.hypotheses_model = model
+        # need to populate fields in the C++ library
+        self._lib.model(
+            self._engine,
+            model.states,
+            model.emission,
+            model.transition,
+            model.start,
+        )
 
     @property
     def frame_range(self) -> Tuple[int, int]:

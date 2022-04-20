@@ -26,6 +26,8 @@ from pydantic import BaseModel, root_validator, validator
 from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
+__all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
+
 
 def _check_symmetric(
     x: np.array, rtol: float = 1e-5, atol: float = 1e-8

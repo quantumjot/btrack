@@ -1,2 +1,4 @@
+numpydoc
 sphinx
+sphinx-automodapi
 sphinx-panels

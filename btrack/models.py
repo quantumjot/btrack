@@ -160,6 +160,7 @@ class MotionModel(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        validate_assignment = True
 
 
 class ObjectModel(BaseModel):
@@ -205,6 +206,7 @@ class ObjectModel(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        validate_assignment = True
 
 
 class HypothesisModel(BaseModel):
@@ -308,3 +310,6 @@ class HypothesisModel(BaseModel):
         # set the hypotheses to generate
         h_params.hypotheses_to_generate = self.hypotheses_to_generate()
         return h_params
+
+    class Config:
+        validate_assignment = True

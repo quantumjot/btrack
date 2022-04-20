@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from . import constants
 from .btypes import ImagingVolume
@@ -74,8 +74,15 @@ class TrackerConfig(BaseModel):
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
 
+    @validator("volume", pre=True, always=True)
+    def parse_volume(cls, v):
+        if isinstance(v, tuple):
+            return ImagingVolume(*v)
+        return v
+
     class Config:
         arbitrary_types_allowed = True
+        validate_assignment = True
         json_encoders = {
             np.ndarray: lambda x: x.ravel().tolist(),
         }

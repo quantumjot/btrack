@@ -23,18 +23,18 @@ def _random_config():
 def _validate_config(
     cfg: Union[btrack.BayesianTracker, BaseModel], options: dict
 ):
-    if not options:
-        return
+    # if not isinstance(options, dict):
+    #     return
 
     for key, value in options.items():
         cfg_value = getattr(cfg, key)
 
         # takes care of recursive model definintions (i.e. MotionModel inside
         # TrackerConfig).
-        try:
-            np.testing.assert_equal(cfg_value, value)
-        except AssertionError:
+        if isinstance(cfg_value, BaseModel):
             _validate_config(cfg_value, value)
+        else:
+            np.testing.assert_equal(cfg_value, value)
 
 
 def test_config():
@@ -68,6 +68,8 @@ def test_config_tracker_setters():
     """Test configuring the tracker using setters."""
     options = _random_config()
     with btrack.BayesianTracker() as tracker:
+
+        # use the setters to apply the comfiguration
         for key, value in options.items():
             setattr(tracker, key, value)
 
@@ -103,7 +105,7 @@ def _cfg_pydantic():
 
 @pytest.mark.parametrize("get_cfg", [_cfg_file, _cfg_dict, _cfg_pydantic])
 def test_config_tracker(get_cfg):
-    """Test configuring the tracker from a file."""
+    """Test configuring the tracker from a file, dictionary or `TrackerConfig`."""
     # load motion and hypothesis models from file, and add random options
 
     cfg = get_cfg()

@@ -235,7 +235,7 @@ class BayesianTracker:
         if not attr.startswith("_") and self.configuration.verbose:
             logger.info(f"Setting {attr} -> {value}")
 
-        if hasattr(config.TrackerConfig, attr):
+        if attr in config.TrackerConfig.__fields__:
             setattr(self.configuration, attr, value)
         else:
             object.__setattr__(self, attr, value)
@@ -349,17 +349,17 @@ class BayesianTracker:
 
         Parameters
         ----------
-        volume : tuple
+        volume : tuple, ImagingVolume
             A tuple describing the imaging volume.
         """
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
         if volume.ndim == 2:
-            volume = volume + ((-1e5, 1e5),)
+            z = (-1e5, 1e5)
+            volume = btypes.ImagingVolume(volume.x, volume.y, z)
 
         self._lib.set_volume(self._engine, np.array(volume, dtype=float))
-        # logger.info(f"Set volume to {volume}")
 
     def _motion_model(self, model: models.MotionModel) -> None:
         """Set a new motion model. Must be of type MotionModel, either loaded

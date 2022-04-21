@@ -35,7 +35,7 @@ if TYPE_CHECKING:
     from .core import BayesianTracker
 
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
 # Choose a subset of classes/functions to document in public facing API

@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 from collections import OrderedDict
-from typing import Dict, NamedTuple, Optional, Tuple, Union
+from typing import Any, Dict, NamedTuple, Optional, Tuple
 
 import numpy as np
 
@@ -100,13 +100,13 @@ class PyTrackObject(ctypes.Structure):
         self._properties = {}
 
     @property
-    def properties(self) -> Dict[str, Union[bool, int, float]]:
+    def properties(self) -> Dict[str, Any]:
         if self.dummy:
             return {}
         return self._properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, Union[bool, int, float]]):
+    def properties(self, properties: Dict[str, Any]):
         """Set the object properties."""
         self._properties.update(properties)
 
@@ -124,16 +124,14 @@ class PyTrackObject(ctypes.Structure):
     def state(self) -> constants.States:
         return constants.States(self.label)
 
-    def to_dict(self) -> Dict[str, Union[bool, int, float]]:
+    def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
         stats.update(self.properties)
         return stats
 
     @staticmethod
-    def from_dict(
-        properties: Dict[str, Union[bool, int, float]]
-    ) -> "PyTrackObject":
+    def from_dict(properties: Dict[str, Any]) -> "PyTrackObject":
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}
@@ -212,7 +210,7 @@ class PyTrackingInfo(ctypes.Structure):
         ("complete", ctypes.c_bool),
     ]
 
-    def to_dict(self) -> Dict[str, Union[bool, int, float]]:
+    def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the statistics"""
         # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?

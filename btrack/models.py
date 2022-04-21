@@ -115,17 +115,17 @@ class MotionModel(BaseModel):
     @validator("A")
     def reshape_A(cls, a, values):
         shape = (values["states"], values["states"])
-        return np.reshape(a, shape, order="C")
+        return np.reshape(a, shape)
 
     @validator("H")
     def reshape_H(cls, h, values):
         shape = (values["measurements"], values["states"])
-        return np.reshape(h, shape, order="C")
+        return np.reshape(h, shape)
 
     @validator("P")
     def reshape_P(cls, p, values):
         shape = (values["states"], values["states"])
-        p = np.reshape(p, shape, order="C")
+        p = np.reshape(p, shape)
         if not _check_symmetric(p):
             raise ValueError("Matrix `P` is not symmetric.")
         return p
@@ -133,7 +133,7 @@ class MotionModel(BaseModel):
     @validator("R")
     def reshape_R(cls, r, values):
         shape = (values["measurements"], values["measurements"])
-        r = np.reshape(r, shape, order="C")
+        r = np.reshape(r, shape)
         if not _check_symmetric(r):
             raise ValueError("Matrix `R` is not symmetric.")
         return r
@@ -141,12 +141,12 @@ class MotionModel(BaseModel):
     @validator("G")
     def reshape_G(cls, g, values):
         shape = (1, values["states"])
-        return np.reshape(g, shape, order="C")
+        return np.reshape(g, shape)
 
     @validator("Q")
     def reshape_Q(cls, q, values):
         shape = (values["states"], values["states"])
-        q = np.reshape(q, shape, order="C")
+        q = np.reshape(q, shape)
         if not _check_symmetric(q):
             raise ValueError("Matrix `Q` is not symmetric.")
         return q
@@ -199,12 +199,12 @@ class ObjectModel(BaseModel):
     @validator("emission", "transition", "start", pre=True)
     def reshape_emission_transition(cls, v, values):
         shape = (values["states"], values["states"])
-        return np.reshape(v, shape, order="C")
+        return np.reshape(v, shape)
 
     @validator("emission", "transition", "start", pre=True)
     def reshape_start(cls, v, values):
         shape = (1, values["states"])
-        return np.reshape(v, shape, order="C")
+        return np.reshape(v, shape)
 
     class Config:
         arbitrary_types_allowed = True
@@ -290,7 +290,7 @@ class HypothesisModel(BaseModel):
     @validator("hypotheses", pre=True)
     def parse_hypotheses(cls, hypotheses):
         if not all(h in H_TYPES for h in hypotheses):
-            raise ValueError
+            raise ValueError("Unknown hypothesis type in `hypotheses`.")
         return hypotheses
 
     def hypotheses_to_generate(self) -> int:

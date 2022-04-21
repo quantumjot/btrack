@@ -7,6 +7,7 @@ Updates
 - Allow config export
 - Add imaging volume dimensionality inference
 - Fix warnings for implicit type conversion
+- Removed _PyTrackObjectFactory
 
 0.4.3
 -----

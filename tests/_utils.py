@@ -4,7 +4,9 @@ import numpy as np
 
 import btrack
 
-CONFIG_FILE = Path("./models/cell_config.json")
+CONFIG_FILE = (
+    Path(__file__).resolve().parent.parent / "models" / "cell_config.json"
+)
 
 
 def create_test_object(id=None):

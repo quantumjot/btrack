@@ -191,7 +191,7 @@ class BayesianTracker:
 
         Parameters
         ----------
-        configuration : dict, os.PathLike, config.TrackerConfig
+        configuration :
             A dictionary containing the configuration options for a tracking
             session.
         """

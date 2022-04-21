@@ -107,9 +107,9 @@ def load_config(filename: os.PathLike) -> TrackerConfig:
     with open(filename, "r") as json_file:
         json_data = json.load(json_file)
 
-    try:
+    if "TrackerConfig" in json_data:
         cfg = _load_legacy_config(json_data)
-    except KeyError:
+    else:
         cfg = _load_config(json_data)
 
     assert cfg.motion_model is not None

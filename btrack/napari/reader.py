@@ -57,7 +57,7 @@ def reader_function(path: PathLike) -> List[LayerDataTuple]:
         to layer_type=="image" if not provided
     """
     # handle both a string and a list of strings
-    paths = [path] if isinstance(path, str) else path
+    paths = [path] if not isinstance(path, list) else path
 
     # store the layers to be generated
     layers = []
@@ -66,6 +66,7 @@ def reader_function(path: PathLike) -> List[LayerDataTuple]:
         with HDF5FileHandler(_path, "r") as hdf:
 
             # get the segmentation if there is one
+            import pdb; pdb.set_trace()
             if "segmentation" in hdf._hdf:
                 segmentation = hdf.segmentation
                 layers.append((segmentation, {}, "labels"))

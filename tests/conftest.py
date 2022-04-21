@@ -22,6 +22,8 @@ def test_objects():
 def hdf5_file_path(tmp_path, test_objects) -> Path:
     """
     Create and save a btrack HDF5 file, and return the path.
+
+    Note that this only saves segmentation results, not tracking results.
     """
     fn = Path(tmp_path) / "test.h5"
 

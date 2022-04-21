@@ -1,3 +1,7 @@
+name: btrack
+display_name: btrack
+schema_version: 0.1.0
+
 contributions:
   commands:
   - id: btrack.read_btrack
@@ -7,5 +11,5 @@ contributions:
   readers:
   - command: btrack.read_btrack
     filename_patterns:
-    - ['*.h5', '*.hdf', '*.hdf5']
+    - '*.h5, *.hdf, *.hdf5'
     accepts_directories: false

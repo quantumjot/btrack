@@ -344,7 +344,12 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
     return data
 
 
-def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
+def tracks_to_napari(
+    tracks: list,
+    ndim: int = 3,
+    coords_axes: list = None,
+    replace_nan: bool = True
+):
     """Convert a list of Tracklets to napari format input.
 
     Parameters
@@ -353,10 +358,12 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
         A list of tracklet objects from BayesianTracker.
     ndim : int
         The number of spatial dimensions of the data. Must be 2 or 3.
+    coords_axes: list
+        The order of axes in the track objects. Defaults to ["z", "y", "x"].
+        For older files, use ["z", "x", "y"] to sync with segmentation mask.
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
-
 
     Returns
     -------
@@ -376,7 +383,10 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
     """
     # TODO: arl guess the dimensionality from the data
     assert ndim in (2, 3)
-    t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
+    coords_axes = ["z", "y", "x"] if coords_axes is None else coords_axes
+    assert isinstance(coords_axes, list)
+
+    t_header = ["ID", "t"] + coords_axes[-ndim:]
     p_header = ["t", "state", "generation", "root", "parent"]
 
     # ensure lexicographic ordering of tracks

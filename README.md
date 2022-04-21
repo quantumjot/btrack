@@ -1,8 +1,9 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/build.yml/badge.svg)](quantumjot/BayesianTracker/actions)
+[![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/quantumjot/BayesianTracker/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/BayesianTracker)
 
 [docs]: https://btrack.readthedocs.io/en/latest/
 [docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/

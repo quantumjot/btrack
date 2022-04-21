@@ -35,20 +35,6 @@ __version__ = constants.get_version()
 logger = logging.getLogger(__name__)
 
 
-# if we don't have any handlers, set one up
-if not logger.handlers:
-    # configure stream handler
-    log_fmt = logging.Formatter(
-        "[%(levelname)s][%(asctime)s] %(message)s",
-        datefmt="%Y/%m/%d %I:%M:%S %p",
-    )
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(log_fmt)
-
-    logger.addHandler(console_handler)
-    logger.setLevel(logging.DEBUG)
-
-
 class BayesianTracker:
     """BayesianTracker.
 
@@ -584,7 +570,9 @@ class BayesianTracker:
 
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
-        options = self.configuration.optimizer_options if not options else options
+        options = (
+            self.configuration.optimizer_options if not options else options
+        )
 
         # if we don't have any hypotheses return
         if not hypotheses:
@@ -687,7 +675,10 @@ class BayesianTracker:
         return trk
 
     def export(
-        self, filename: os.PathLike, obj_type=None, filter_by=None
+        self,
+        filename: os.PathLike,
+        obj_type: Optional[str] = None,
+        filter_by: Optional[str] = None,
     ) -> None:
         """Export tracks using the appropriate exporter.
 

@@ -348,7 +348,7 @@ def tracks_to_napari(
     tracks: list,
     ndim: int = 3,
     coords_axes: list = None,
-    replace_nan: bool = True
+    replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.
 

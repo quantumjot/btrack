@@ -20,12 +20,14 @@ __email__ = "code@arlowe.co.uk"
 
 import dataclasses
 import os
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 
 from . import constants, utils
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
+
+__all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
 @dataclasses.dataclass
@@ -46,8 +48,11 @@ class MotionModel:
         Observation matrix.
     P : array (states, states)
         Initial covariance estimate.
-    G : array (states, )
-        Estimated error in process.
+    G : array (1, states), optional
+        Estimated error in process. Is used to calculate Q using Q = G.T @ G.
+        Either G or Q must be defined.
+    Q : array (states, states), optional
+        Estimated error in process. Either G or Q must be defined.
     R : array (measurements, measurements)
         Estimated error in measurements.
     dt : float
@@ -61,6 +66,8 @@ class MotionModel:
 
     Notes
     -----
+    Uses a Kalman filter [1]_:
+
     'Is an algorithm which uses a series of measurements observed over time,
     containing noise (random variations) and other inaccuracies, and produces
     estimates of unknown variables that tend to be more precise than those that
@@ -72,7 +79,7 @@ class MotionModel:
 
     References
     ----------
-    'A new approach to linear filtering and prediction problems.'
+    .. [1] A new approach to linear filtering and prediction problems.'
     Kalman RE, 1960 Journal of Basic Engineering
     """
 
@@ -81,18 +88,27 @@ class MotionModel:
     A: np.ndarray
     H: np.ndarray
     P: np.ndarray
-    G: np.ndarray
     R: np.ndarray
+    G: Optional[np.ndarray] = None
+    Q: Optional[np.ndarray] = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    @property
-    def Q(self):
-        """Return a Q matrix from the G matrix."""
-        return self.G.transpose() * self.G
+    def __post_init__(self):
+        """Set up the process covariance matrix Q."""
+        process_cov = [f for f in ("G", "Q") if getattr(self, f) is not None]
+
+        if not process_cov:
+            raise ValueError(
+                "Process covariance matrix (G or Q) is not defined."
+            )
+
+        if "Q" not in process_cov:
+            self.G = np.reshape(self.G, (1, self.states), order="C")
+            self.Q = self.G.T @ self.G
 
     def reshape(self):
         """Reshapes matrices to the correct dimensions. Only need to call this
@@ -113,8 +129,18 @@ class MotionModel:
         # if we defined a model, restructure matrices to the correct shapes
         # do some parsing to check that the model is specified correctly
         if s and m:
-            shapes = {"A": (s, s), "H": (m, s), "P": (s, s), "R": (m, m)}
+            shapes = {
+                "A": (s, s),
+                "H": (m, s),
+                "P": (s, s),
+                "R": (m, m),
+                "Q": (s, s),
+            }
             for m_name in shapes:
+
+                if getattr(self, m_name) is None:
+                    continue
+
                 try:
                     m_array = getattr(self, m_name)
                     r_matrix = np.reshape(m_array, shapes[m_name], order="C")
@@ -191,7 +217,7 @@ class ObjectModel:
 
 @dataclasses.dataclass
 class HypothesisModel:
-    """The `btrack` hypothesis model.
+    r"""The `btrack` hypothesis model.
 
     This is a class to deal with hypothesis generation in the optimization step
     of the tracking algorithm.
@@ -201,20 +227,54 @@ class HypothesisModel:
     name : str
         A name identifier for the model.
     hypotheses : list[str]
-        A list of hypotheses to be generated. See `optimise.hypothesis.H_TYPES`
+        A list of hypotheses to be generated. See `optimise.hypothesis.H_TYPES`.
     lambda_time : float
+        A scaling factor for the influence of time when determining
+        initialization or termination hypotheses. See notes.
     lambda_dist : float
+        A a scaling factor for the influence of distance at the border when
+        determining initialization or termination hypotheses. See notes.
     lambda_link : float
+        A scaling factor for the influence of track-to-track distance on linking
+        probability. See notes.
     lambda_branch : float
+        A scaling factor for the influence of cell state and position on
+        division (mitosis/branching) probability. See notes.
     eta : float
+        Default value for a low probability event (e.g. 1E-10) to prevent
+        divide-by-zero.
     theta_dist : float
+        A threshold distance from the edge of the FOV to add an initialization
+        or termination hypothesis.
     theta_time : float
+        A threshold time from the beginning or end of movie to add an
+        initialization or termination hypothesis.
     dist_thresh : float
+        Isotropic spatial bin size for considering hypotheses. Larger bin sizes
+        generate more hypothesese for each tracklet.
     time_thresh : float
+        Temporal bin size for considering hypotheses. Larger bin sizes generate
+        more hypothesese for each tracklet.
     apop_thresh : int
+        Number of apoptotic detections, counted consecutively from the back of
+        the track, to be considered a real apoptosis.
     segmentation_miss_rate : float
+        Miss rate for the segmentation, e.g. 1/100 segmentations incorrect gives
+        a segmentation miss rate or 0.01.
     apoptosis_rate : float
+        Rate of apoptosis detections.
     relax : bool
+        Disables the `theta_dist` and `theta_time` thresholds when creating
+        termination and initialization hypotheses. This means that tracks can
+        initialize or terminate anywhere (or time) in the dataset.
+
+
+    Notes
+    -----
+    The `lambda` (:math:`\lambda`) factors scale the probability according to
+    the following function:
+
+    .. math:: e^{(-d / \lambda)}
     """
 
     hypotheses: List[str]
@@ -238,10 +298,9 @@ class HypothesisModel:
         """Load a model from file."""
         return utils.read_hypotheis_model(filename)
 
-    @property
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
-        h_bin = ''.join(
+        h_bin = "".join(
             [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
         )
         return int(h_bin[::-1], 2)
@@ -254,5 +313,8 @@ class HypothesisModel:
         for k, v in dataclasses.asdict(self).items():
             if k in fields:
                 setattr(h_params, k, v)
+
+        # set the hypotheses to generate
+        h_params.hypotheses_to_generate = self.hypotheses_to_generate()
 
         return h_params

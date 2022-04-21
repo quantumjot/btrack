@@ -1,32 +1,3 @@
-TODO
-====
-
-Python
-------
-
-C/C++ and CUDA
---------------
-- Add merge hypothesis
-- Prediction class defaults to six states, make this model agnostic
-- Update belief matrix using CUDA parallelisation
-- Give each track a unique hash to make sure we don't overwrite IDs
-- Test other motion model instantiation (sp. Prediction defaults to 6 states)
-- Use softmax score to weight hypothesis generation
-
-Misc
-----
-- Other motion models
-- Add documentation/wiki for configuration
-
-
-
-Thanks
-======
-- Thanks to Giulia V and Kristina U for helpful suggestions.
-- Thanks to Volker H for notebook extensions
-
-
-
 Updates
 =======
 0.4.3
@@ -35,6 +6,13 @@ Updates
 - Deprecate render package
 - Added dask array input capability for _localisation.py
 - Updated models to use dataclasses
+- Added more documentation, readthedocs page
+- Added example datasets using `pooch`
+- Replaced numpy matrices with arrays
+- Renamed logger instances
+- Fixed export delegator
+- Allow H5 writer to overwrite existing properties
+- Fixed version checker
 
 0.4.2
 -----

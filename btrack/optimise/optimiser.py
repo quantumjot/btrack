@@ -24,7 +24,7 @@ from cvxopt.glpk import ilp
 from btrack.constants import GLPK_OPTIONS, Fates
 
 # get the logger instance
-logger = logging.getLogger('worker_process')
+logger = logging.getLogger("worker_process")
 
 INIT_FATES = (
     Fates.INITIALIZE,
@@ -118,9 +118,9 @@ class TrackOptimiser:
             The list of selected hypotheses that forms the optimal solution.
         """
 
-        logger.info('Setting up constraints matrix for global optimisation...')
+        logger.info("Setting up constraints matrix for global optimisation...")
         if self.options:
-            logger.info(f'Using GLPK options: {self.options}...')
+            logger.info(f"Using GLPK options: {self.options}...")
 
         # anon function to renumber track ID from C++
         def trk_idx(_h):
@@ -132,8 +132,8 @@ class TrackOptimiser:
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...
-        A = spmatrix([], [], [], (2 * N, n_hypotheses), 'd')
-        rho = matrix(0.0, (n_hypotheses, 1), 'd')
+        A = spmatrix([], [], [], (2 * N, n_hypotheses), "d")
+        rho = matrix(0.0, (n_hypotheses, 1), "d")
 
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
@@ -198,27 +198,27 @@ class TrackOptimiser:
                 continue
 
             else:
-                raise ValueError(f'Unknown hypothesis: {h.type}')
+                raise ValueError(f"Unknown hypothesis: {h.type}")
 
-        logger.info('Optimizing...')
+        logger.info("Optimizing...")
 
         # now set up the ILP solver
-        G = spmatrix([], [], [], (2 * N, n_hypotheses), 'd')
-        h = matrix(0.0, (2 * N, 1), 'd')  # NOTE h cannot be a sparse matrix
+        G = spmatrix([], [], [], (2 * N, n_hypotheses), "d")
+        h = matrix(0.0, (2 * N, 1), "d")  # NOTE h cannot be a sparse matrix
         Ix = set()  # empty set of x which are integer
         B = set(range(n_hypotheses))  # signifies all are binary in x
-        b = matrix(1.0, (2 * N, 1), 'd')
+        b = matrix(1.0, (2 * N, 1), "d")
 
         # now try to solve it!!!
         status, x = ilp(-rho, -G, h, A, b, Ix, B, options=self.options)
 
         # log the warning if not optimal solution
-        if status != 'optimal':
-            logger.warning(f'Optimizer returned status: {status}')
+        if status != "optimal":
+            logger.warning(f"Optimizer returned status: {status}")
             return []
 
         # return only the selected hypotheses
         results = [i for i, h in enumerate(self.hypotheses) if x[i] > 0]
 
-        logger.info(f'Optimization complete. (Solution: {status})')
+        logger.info(f"Optimization complete. (Solution: {status})")
         return results

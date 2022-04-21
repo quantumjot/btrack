@@ -22,6 +22,7 @@ import dataclasses
 import json
 import logging
 import os
+from typing import Optional
 
 import numpy as np
 
@@ -30,12 +31,11 @@ from . import btypes, constants
 from ._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
+# Choose a subset of classes/functions to document in public facing API
+__all__ = ["segmentation_to_objects"]
+
 # get the logger instance
-logger = logging.getLogger("worker_process")
-
-
-# add an alias here
-segmentation_to_objects = segmentation_to_objects
+logger = logging.getLogger(__name__)
 
 
 def load_config(filename: os.PathLike) -> dict:
@@ -166,27 +166,27 @@ def read_motion_model(config: dict) -> MotionModel:
     if not motion_config:
         return None
 
-    matrices = frozenset(["A", "H", "P", "G", "R"])
-    fields = [f.name for f in dataclasses.fields(MotionModel)]
+    fields = dataclasses.fields(MotionModel)
+    matrices = [
+        f.name for f in fields if f.type in (np.ndarray, Optional[np.ndarray])
+    ]
+    params = [f.name for f in fields if f.name not in matrices]
 
     model_kwargs = {}
 
-    for field in fields:
-        if field not in motion_config.keys():
-            logger.error(f"Key {field} not found in `MotionModel` config.")
+    # set the parameters
+    for field in params:
+        model_kwargs[field] = motion_config[field]
 
-        # if this is a matrix, prepare it
-        if field in matrices:
+    # set the matrices
+    for field in matrices:
+        if field in motion_config:
             if "sigma" in motion_config[field]:
                 sigma = motion_config[field]["sigma"]
             else:
                 sigma = 1.0
-            matrix = np.matrix(
-                motion_config[field]["matrix"], dtype=np.float64
-            )
+            matrix = np.array(motion_config[field]["matrix"], dtype=np.float64)
             model_kwargs[field] = matrix * sigma
-        else:
-            model_kwargs[field] = motion_config[field]
 
     # set some standard params
     model = MotionModel(**model_kwargs)
@@ -252,7 +252,7 @@ def read_object_model(config: dict) -> ObjectModel:
     model.states = object_config["states"]
 
     for matrix in matrices:
-        m_data = np.matrix(object_config[matrix]["matrix"], dtype="float")
+        m_data = np.array(object_config[matrix]["matrix"], dtype="float")
         setattr(model, matrix, m_data)
 
     # call the reshape function to set the matrices to the correct shapes
@@ -430,7 +430,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, '__len__'):
+    if hasattr(obj, "__len__"):
         n_items = len(obj)
     else:
         n_items = 1
@@ -441,7 +441,7 @@ def _pandas_html_repr(obj):
         elif isinstance(v, np.ndarray):
             ndim = 0 if n_items == 1 else 1
             if v.ndim > ndim:
-                obj_as_dict[k] = [f'{v.shape[ndim:]} array'] * n_items
+                obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
 
     return pd.DataFrame.from_dict(obj_as_dict).to_html()
 

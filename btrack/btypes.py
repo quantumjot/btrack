@@ -25,12 +25,11 @@ import numpy as np
 
 from . import constants, utils
 
+__all__ = ["PyTrackObject", "PyTrackingInfo", "Tracklet"]
+
 
 class PyTrackObject(ctypes.Structure):
     """The base `btrack` track object.
-
-    Attributes
-    ----------
 
     Notes
     -----
@@ -288,7 +287,7 @@ class Tracklet:
         for k, v in properties.items():
             if len(v) != len(self):
                 raise ValueError(
-                    'The number of properties and track objects must be equal.'
+                    "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
             if type(v) != np.ndarray:

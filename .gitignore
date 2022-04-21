@@ -1,4 +1,6 @@
+.coverage
 .envrc
+.tox
 .vscode
 *.DS_store
 *.o
@@ -11,8 +13,10 @@ btrack/optimise/__pycache__
 btrack/render_movie.py
 build
 bworker.py
+coverage.xml
 deprecated
 dist
+docs/api/*
 examples/.ipynb_checkpoints
 examples/napari.png
 models/MDCK_*

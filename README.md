@@ -3,6 +3,7 @@
 [![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/build.yml/badge.svg)](quantumjot/BayesianTracker/actions)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
+[![codecov](https://codecov.io/gh/quantumjot/BayesianTracker/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/BayesianTracker)
 
 [docs]: https://btrack.readthedocs.io/en/latest/
 [docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/

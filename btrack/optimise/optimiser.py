@@ -24,7 +24,7 @@ from cvxopt.glpk import ilp
 from btrack.constants import GLPK_OPTIONS, Fates
 
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 INIT_FATES = (
     Fates.INITIALIZE,

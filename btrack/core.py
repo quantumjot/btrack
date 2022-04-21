@@ -256,14 +256,10 @@ class BayesianTracker:
 
     def _max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
-        # logger.info(f"Setting max XYZ search radius to: {max_search_radius}")
-        # self.configuration.max_search_radius = max_search_radius
         self._lib.max_search_radius(self._engine, max_search_radius)
 
     def _update_method(self, method: Union[str, constants.BayesianUpdates]):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
-        # logger.info(f"Setting Bayesian update method to: {method}")
-        # self.configuration.update_method = method
         self._lib.set_update_mode(self._engine, method.value)
 
     @property
@@ -461,7 +457,6 @@ class BayesianTracker:
             return
 
         logger.info("Starting tracking... ")
-        # ret, tm = timeit( lib.track,  self._engine )
         ret = self._lib.track(self._engine)
 
         # get the statistics

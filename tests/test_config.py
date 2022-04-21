@@ -23,12 +23,8 @@ def _random_config():
 def _validate_config(
     cfg: Union[btrack.BayesianTracker, BaseModel], options: dict
 ):
-    # if not isinstance(options, dict):
-    #     return
-
     for key, value in options.items():
         cfg_value = getattr(cfg, key)
-
         # takes care of recursive model definintions (i.e. MotionModel inside
         # TrackerConfig).
         if isinstance(cfg_value, BaseModel):
@@ -73,25 +69,24 @@ def test_config_tracker_setters():
         for key, value in options.items():
             setattr(tracker, key, value)
 
-        # use the getters
+        # use the getters or the config
         _validate_config(tracker, options)
-
-        # also check the configuration
         _validate_config(tracker.configuration, options)
 
 
 def _cfg_dict():
-    cfg = btrack.config.load_config(CONFIG_FILE)
-    options = _random_config()
-    options.update(cfg.dict())
-    assert isinstance(options, dict)
-    return options
+    cfg_raw = btrack.config.load_config(CONFIG_FILE)
+    cfg = _random_config()
+    cfg.update(cfg_raw.dict())
+    assert isinstance(cfg, dict)
+    return cfg, cfg
 
 
 def _cfg_file():
     filename = CONFIG_FILE
     assert isinstance(filename, Path)
-    return filename
+    cfg = btrack.config.load_config(filename)
+    return filename, cfg.dict()
 
 
 def _cfg_pydantic():
@@ -100,18 +95,14 @@ def _cfg_pydantic():
     for key, value in options.items():
         setattr(cfg, key, value)
     assert isinstance(cfg, btrack.config.TrackerConfig)
-    return cfg
+    return cfg, cfg.dict()
 
 
 @pytest.mark.parametrize("get_cfg", [_cfg_file, _cfg_dict, _cfg_pydantic])
 def test_config_tracker(get_cfg):
     """Test configuring the tracker from a file, dictionary or `TrackerConfig`."""
-    # load motion and hypothesis models from file, and add random options
-
-    cfg = get_cfg()
+    cfg, cfg_dict = get_cfg()
 
     with btrack.BayesianTracker() as tracker:
         tracker.configure(cfg)
-
-        # also check the configuration
-        _validate_config(tracker, tracker.configuration.dict())
+        _validate_config(tracker, cfg_dict)

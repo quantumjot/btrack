@@ -9,7 +9,7 @@ from pydantic import BaseModel
 import btrack
 
 
-def _random_config():
+def _random_config() -> dict:
     rng = np.random.default_rng()
     return {
         "max_search_radius": rng.uniform(1, 100),

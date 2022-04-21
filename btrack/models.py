@@ -289,7 +289,7 @@ class HypothesisModel(BaseModel):
 
     @validator("hypotheses", pre=True)
     def parse_hypotheses(cls, hypotheses):
-        if not all([h in H_TYPES for h in hypotheses]):
+        if not all(h in H_TYPES for h in hypotheses):
             raise ValueError
         return hypotheses
 

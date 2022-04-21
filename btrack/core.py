@@ -584,8 +584,7 @@ class BayesianTracker:
 
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
-        if not options:
-            options = self.configuration.optimizer_options
+        options = self.configuration.optimizer_options if not options else options
 
         # if we don't have any hypotheses return
         if not hypotheses:
@@ -715,8 +714,7 @@ class BayesianTracker:
         """Return the data in a format for a napari tracks layer.
         See `utils.tracks_to_napari`."""
 
-        if ndim is None:
-            ndim = self.configuration.volume.ndim
+        ndim = self.configuration.volume.ndim if ndim is None else ndim
 
         return utils.tracks_to_napari(
             self.tracks, ndim, replace_nan=replace_nan

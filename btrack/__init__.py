@@ -2,6 +2,8 @@ import logging
 
 from .core import BayesianTracker, __version__
 
+__all__ = ["BayesianTracker"]
+
 # get the logger instance
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,12 @@
+from pathlib import Path
+
 import numpy as np
 
 import btrack
+
+CONFIG_FILE = (
+    Path(__file__).resolve().parent.parent / "models" / "cell_config.json"
+)
 
 
 def create_test_object(id=None):
@@ -51,7 +57,7 @@ def create_test_tracklet(track_len: int):
 def full_tracker_example(objects):
     # run the tracking
     tracker = btrack.BayesianTracker()
-    tracker.configure_from_file("./models/cell_config.json")
+    tracker.configure(CONFIG_FILE)
     tracker.append(objects)
     tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
     tracker.track_interactive(step_size=100)

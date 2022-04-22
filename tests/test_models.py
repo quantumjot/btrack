@@ -2,10 +2,9 @@ import json
 
 import numpy as np
 import pytest
+from _utils import CONFIG_FILE
 
 from btrack import models, utils
-
-CONFIG_FILE = "./models/cell_config.json"
 
 
 def test_read_motion_model():

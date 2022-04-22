@@ -1,5 +1,14 @@
 Updates
 =======
+0.4.4
+-----
+- Allow Q matrix to be directly defined in config file
+- Use pydantic for tracker configuration
+- Allow config export
+- Add imaging volume dimensionality inference
+- Fix warnings for implicit type conversion
+- Removed _PyTrackObjectFactory
+
 0.4.3
 -----
 - Bug fix to remove indexing error for objects in the last frame

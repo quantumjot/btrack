@@ -21,9 +21,7 @@ PROB_NOT_ASSIGN = 0.1
 DEBUG = True
 EXPORT_FORMATS = frozenset([".json", ".mat", ".hdf5"])
 VOLUME = ((0, 1024), (0, 1024), (-1e5, 1e5))
-HDF_CHUNK_CACHE = 100 * 1024 * 1024
-USER_MODEL_DIR = ""
-GLPK_OPTIONS = {}
+GLPK_OPTIONS = {"tm_lim": 60_000}
 
 
 DEFAULT_OBJECT_KEYS = ["t", "x", "y", "z", "label"]

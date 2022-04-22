@@ -42,11 +42,6 @@ logger = logging.getLogger(__name__)
 __all__ = ["import_CSV"]
 
 
-class _PyTrackObjectFactory:
-    def __init__(self):
-        raise DeprecationWarning("_PyTrackObjectFactory has been deprecated.")
-
-
 def localizations_to_objects(localizations):
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 

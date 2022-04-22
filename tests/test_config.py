@@ -10,7 +10,7 @@ import btrack
 
 
 def _random_config() -> dict:
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed=1234)
     return {
         "max_search_radius": rng.uniform(1, 100),
         "update_method": rng.choice(btrack.constants.BayesianUpdates),

@@ -13,9 +13,7 @@
 # Created:  14/08/2014
 # -------------------------------------------------------------------------------
 
-
-__author__ = "Alan R. Lowe"
-__email__ = "a.lowe@ucl.ac.uk"
+from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
@@ -131,7 +129,7 @@ class PyTrackObject(ctypes.Structure):
         return stats
 
     @staticmethod
-    def from_dict(properties: Dict[str, Any]) -> "PyTrackObject":
+    def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}

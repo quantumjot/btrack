@@ -37,7 +37,7 @@ def _check_symmetric(
 
 
 class MotionModel(BaseModel):
-    """The `btrack` motion model.
+    r"""The `btrack` motion model.
 
     Parameters
     ----------
@@ -80,6 +80,14 @@ class MotionModel(BaseModel):
     estimates of unknown variables that tend to be more precise than those that
     would be based on a single measurement alone.'
 
+    Predicted estimate of state:
+
+    .. math:: \hat{x}_{t\vert~t-1} = A_t \hat{x}_{t-1\vert~t-1}
+
+    Predicted estimate of covariance:
+
+    .. math:: P_{t\vert~t-1} = A_t P_{t-1\vert~t-1} A_t^{\top} + Q_t
+
     This is just a wrapper for the data with a few convenience functions
     thrown in. Matrices must be stored Fortran style, because Eigen uses
     column major and Numpy uses row major storage.
@@ -87,7 +95,7 @@ class MotionModel(BaseModel):
     References
     ----------
     .. [1] 'A new approach to linear filtering and prediction problems.'
-    Kalman RE, 1960 Journal of Basic Engineering
+      Kalman RE, 1960 Journal of Basic Engineering
     """
 
     measurements: int

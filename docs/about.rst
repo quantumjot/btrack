@@ -1,5 +1,5 @@
 ==============================
-Acknowledging or Citing Btrack
+Acknowledging or citing btrack
 ==============================
 
 More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:

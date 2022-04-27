@@ -77,11 +77,11 @@ class BayesianTracker:
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
-    probabilistic model in the form of a Kalman filter [1], and utilises this to
+    probabilistic model in the form of a Kalman filter [1]_, and utilises this to
     predict future states (and error in states) of each of the objects in the
     field of view.  We assign new observations to the growing tracklets
     (linking) by evaluating the posterior probability of each potential linkage
-    from a Bayesian belief matrix for all possible linkages [2]. The best
+    from a Bayesian belief matrix for all possible linkages [2]_. The best
     linkages are those with the highest posterior probability.
 
     Data can be passed in in the following formats:
@@ -94,15 +94,14 @@ class BayesianTracker:
     data sets. The latter is useful if using only the first part of a tracking
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
-    `optimise` to generate hypotheses for global optimisation [3][4]. Read the
+    `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
     `optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
-    Full details of the implementation can be found in [5][6].
+    Full details of the implementation can be found in [5]_ and [6]_.
 
     Examples
     --------
-
     Can be used with ContextManager support, like this:
 
         >>> with BayesianTracker() as tracker:
@@ -114,24 +113,24 @@ class BayesianTracker:
     References
     ----------
     .. [1] 'A new approach to linear filtering and prediction problems.'
-    Kalman RE, 1960 Journal of Basic Engineering
+      Kalman RE, 1960 Journal of Basic Engineering
 
     .. [2] 'A Bayesian algorithm for tracking multiple moving objects in outdoor
-    surveillance video', Narayana M and Haverkamp D 2007 IEEE
+      surveillance video', Narayana M and Haverkamp D 2007 IEEE
 
     .. [3] 'Report Automated Cell Lineage Construction' Al-Kofahi et al.
-    Cell Cycle 2006 vol. 5 (3) pp. 327-335
+      Cell Cycle 2006 vol. 5 (3) pp. 327-335
 
     .. [4] 'Reliable cell tracking by global data association', Bise et al.
-    2011 IEEE Symposium on Biomedical Imaging pp. 1004-1010
+      2011 IEEE Symposium on Biomedical Imaging pp. 1004-1010
 
     .. [5] 'Local cellular neighbourhood controls proliferation in cell
-    competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
-    Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
+      competition', Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and
+      Lowe AR 2017 Mol. Biol. Cell vol 28 pp. 3215-3228
 
     .. [6] 'Automated deep lineage tree analysis using a Bayesian single cell
-    tracking approach', Ulicna K, Vallardi G, Charras G and Lowe AR 2021 Front.
-    Comput. Sci. 3
+      tracking approach', Ulicna K, Vallardi G, Charras G and Lowe AR 2021 Front.
+      Comput. Sci. 3
     """
 
     def __init__(
@@ -296,18 +295,25 @@ class BayesianTracker:
 
         Notes
         -----
-        L : int
-            A unique label of the track (label of markers, 16-bit positive).
-        B : int
-            A zero-based temporal index of the frame in which the track begins.
-        E : int
-            A zero-based temporal index of the frame in which the track ends.
-        P : int
-            Label of the parent track (0 is used when no parent is defined).
-        R : int
-            Label of the root track.
-        G : int
-            Generational depth (from root).
+
+        .. list-table:: LBEP table layout
+           :widths: 10 90
+           :header-rows: 1
+
+           * - Index
+             - Description
+           * - L
+             - A unique label of the track (label of markers, 16-bit positive).
+           * - B
+             - A zero-based temporal index of the frame in which the track begins.
+           * - E
+             - A zero-based temporal index of the frame in which the track ends.
+           * - P
+             - Label of the parent track (0 is used when no parent is defined).
+           * - R
+             - Label of the root track.
+           * - G
+             - Generational depth (from root).
         """
 
         def _lbep_table(t):

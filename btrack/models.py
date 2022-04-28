@@ -1,23 +1,3 @@
-#!/usr/bin/env python
-# -------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# -------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
-
-
 from typing import List, Optional
 
 import numpy as np
@@ -47,8 +27,8 @@ class MotionModel(BaseModel):
         The number of measurements of the system (e.g. 3 for x, y, z).
     states : int
         The number of states of the system (typically >= measurements). The
-        standard measurements for a constant velocity model are (x, y, z, dx,
-        dy, dz), i.e. 6 in total for 3 measurements.
+        standard states for a constant velocity model are (x, y, z, dx, dy, dz),
+        i.e. 6 in total for 3 measurements.
     A : array (states, states)
         State transition matrix.
     H : array (measurements, states)

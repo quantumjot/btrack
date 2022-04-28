@@ -1,21 +1,3 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# ------------------------------------------------------------------------------
-
-__author__ = "Alan R. Lowe"
-__email__ = "a.lowe@ucl.ac.uk"
-
 import ctypes
 import itertools
 import logging
@@ -85,9 +67,11 @@ class BayesianTracker:
     linkages are those with the highest posterior probability.
 
     Data can be passed in in the following formats:
-        - btrack PyTrackObject (defined in btypes)
-        - CSV
-        - HDF
+
+        * numpy arrays
+        * :py:meth:`btrack.btypes.PyTrackObject`
+        * CSV (see :py:meth:`btrack.dataio.import_CSV`)
+        * HDF (see :py:meth:`btrack.dataio.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
@@ -95,7 +79,7 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
     `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
-    `optimiser.TrackOptimiser` documentation for more information about the
+    :py:meth:`optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
     Full details of the implementation can be found in [5]_ and [6]_.
@@ -544,6 +528,7 @@ class BayesianTracker:
         return h
 
     def optimize(self, **kwargs):
+        """Proxy for `optimise` for our American friends ;)"""
         return self.optimise(**kwargs)
 
     def optimise(
@@ -709,7 +694,7 @@ class BayesianTracker:
         ndim: Optional[int] = None,
     ) -> Tuple[np.array, dict, dict]:
         """Return the data in a format for a napari tracks layer.
-        See `utils.tracks_to_napari`."""
+        See :py:meth:`btrack.utils.tracks_to_napari`."""
 
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 

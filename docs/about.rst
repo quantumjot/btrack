@@ -2,7 +2,7 @@
 Acknowledging or citing btrack
 ==============================
 
-More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:
+More details of the tracking algorithm can be found in the following publication:
 
 | **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
 | Ulicna K, Vallardi G, Charras G and Lowe AR.
@@ -10,15 +10,9 @@ More details of how this type of tracking approach can be applied to tracking ce
 | |DOI-U2021|
 
 
-| **Local cellular neighbourhood controls proliferation in cell competition**
-| Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
-| *Mol. Biol. Cell* (2017)
-| |DOI-B2017|
+.. code-block:: bibtex
 
-
-::
-
-   @ARTICLE {10.3389/fcomp.2021.734559,
+   @ARTICLE {Ulicna:2021,
       AUTHOR = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
       TITLE = {Automated Deep Lineage Tree Analysis Using a Bayesian Single Cell Tracking Approach},
       JOURNAL = {Frontiers in Computer Science},
@@ -30,25 +24,6 @@ More details of how this type of tracking approach can be applied to tracking ce
       ISSN = {2624-9898}
    }
 
-::
-
-   @ARTICLE {Bove07112017,
-     author = {Bove, Anna and Gradeci, Daniel and Fujita, Yasuyuki and Banerjee,
-       Shiladitya and Charras, Guillaume and Lowe, Alan R.},
-     title = {Local cellular neighborhood controls proliferation in cell competition},
-     volume = {28},
-     number = {23},
-     pages = {3215-3228},
-     year = {2017},
-     doi = {10.1091/mbc.E17-06-0368},
-     URL = {http://www.molbiolcell.org/content/28/23/3215.abstract},
-     eprint = {http://www.molbiolcell.org/content/28/23/3215.full.pdf+html},
-     journal = {Molecular Biology of the Cell}
-   }
-
-
 
 .. |DOI-U2021| image:: https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue
    :target: https://doi.org/10.3389/fcomp.2021.734559
-.. |DOI-B2017| image:: https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue
-   :target: https://doi.org/10.1091/mbc.E17-06-0368

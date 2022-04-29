@@ -1,29 +1,13 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# ------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
+from __future__ import annotations
 
 import inspect
 import logging
-from typing import Generator, Optional, Tuple, Union
+from typing import Generator, List, Optional, Tuple, Union
 
 import numpy as np
 from skimage.measure import label, regionprops_table
 
+from . import btypes
 from .dataio import localizations_to_objects
 
 try:
@@ -147,32 +131,27 @@ def segmentation_to_objects(
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
-) -> list:
-    """Convert segmentation to a set of btrack.PyTrackObject.
+) -> List[btypes.PyTrackObject]:
+    """Convert segmentation to a set of trackable objects.
 
     Parameters
     ----------
     segmentation : np.ndarray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-
     intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
-        additional properties. See skimage.measure.regionprops for more info.
-
+        additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
-        See skimage.measure.regionprops for more info.
-
+        See `skimage.measure.regionprops` for more info.
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
-
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
-        weighted centroid. See skimage.measure.regionprops for more info.
-
+        weighted centroid. See `skimage.measure.regionprops` for more info.
     assign_class_ID : bool, default False
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,
@@ -181,7 +160,7 @@ def segmentation_to_objects(
     Returns
     -------
     objects : list
-        A list of btrack.PyTrackObjects
+        A list of :py:meth:`btrack.btypes.PyTrackObject` trackable objects.
     """
 
     centroids = {}

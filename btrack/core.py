@@ -44,7 +44,7 @@ class BayesianTracker:
         The dummy objects inserted by the tracker.
     volume : tuple
         The imaging volume as [(xlo, xhi), ..., (zlo, zhi)]. See
-        `btypes.ImagingVolume` for more details.
+        :py:meth:`btrack.btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
     lbep : List[List]

@@ -30,7 +30,7 @@ This example shows ....
     # append the objects to be tracked
     tracker.append(objects)
 
-    # set the volume (Z axis volume is set very large for 2D data)
+    # set the volume (Z axis volume limits default to [-1e5, 1e5] for 2D data)
     tracker.volume = ((0, 1200), (0, 1600))
 
     # track them (in interactive mode)

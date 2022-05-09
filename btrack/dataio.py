@@ -1,29 +1,11 @@
-#!/usr/bin/env python
-# -------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# -------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
+from __future__ import annotations
 
 import csv
-import json
 import logging
 import os
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import h5py
 import numpy as np
@@ -32,7 +14,7 @@ import numpy as np
 from . import btypes, constants
 
 if TYPE_CHECKING:
-    from .core import BayesianTracker
+    from . import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -42,7 +24,9 @@ logger = logging.getLogger(__name__)
 __all__ = ["import_CSV"]
 
 
-def localizations_to_objects(localizations):
+def localizations_to_objects(
+    localizations: Union[np.array, List[btypes.PyTrackObject], Dict[str, Any]]
+) -> List[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
@@ -86,7 +70,7 @@ def localizations_to_objects(localizations):
     return objects_from_dict(objects_dict)
 
 
-def objects_from_dict(objects_dict: dict):
+def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
@@ -103,7 +87,7 @@ def objects_from_dict(objects_dict: dict):
 
 def objects_from_array(
     objects_arr: np.ndarray, default_keys=constants.DEFAULT_OBJECT_KEYS
-):
+) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
     assert objects_arr.ndim == 2
 
@@ -120,29 +104,40 @@ def objects_from_array(
 
 def import_JSON(filename: str):
     """Generic JSON importer for localisations from other software."""
-    with open(filename, "r") as json_file:
-        data = json.load(json_file)
-    objects = []
-
-    for i, _obj in enumerate(data.values()):
-        _obj.update({"ID": i})
-        obj = btypes.PyTrackObject.from_dict(_obj)
-        objects.append(obj)
-
-    return objects
+    raise DeprecationWarning("`import_JSON has been deprecated`")
 
 
-def import_CSV(filename: str):
+def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:
     """Import localizations from a CSV file.
+
+    Parameters
+    ----------
+    filename : PathLike
+        The filename of the CSV to import
+
+    Returns
+    -------
+    objects : List[btypes.PyTrackObject]
+        A list of objects in the CSV file.
 
     Notes
     -----
-    CSV file should have one of the following formats:
+    CSV file should have one of the following format.
 
-    - t, x, y
-    - t, x, y, label
-    - t, x, y, z
-    - t, x, y, z, label
+    .. list-table:: CSV header format
+       :widths: 20 20 20 20 20
+       :header-rows: 1
+
+       * - t
+         - x
+         - y
+         - z
+         - label
+       * - required
+         - required
+         - required
+         - optional
+         - optional
     """
 
     objects = []
@@ -158,7 +153,7 @@ def import_CSV(filename: str):
 
 def export_delegator(
     filename: os.PathLike,
-    tracker: "BayesianTracker",
+    tracker: BayesianTracker,
     obj_type: Optional[str] = None,
     filter_by: Optional[str] = None,
 ) -> None:

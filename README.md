@@ -39,7 +39,7 @@ BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
 #### Installing the latest stable version
 
 ```sh
-$ pip install btrack
+pip install btrack
 ```
 
 ## Installing on M1 Mac/Apple Silicon/osx-arm64
@@ -58,8 +58,7 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 
 ### Cell tracking in time-lapse imaging data
 
-[![LineageTree](https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png)](http://lowe.cs.ucl.ac.uk/cellx.html)
-*Automated cell tracking and lineage tree reconstruction*. Visualization is provided by our plugin to Napari, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
+ We provide integration with Napari, including a plugin for graph visualization, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
 
 
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)

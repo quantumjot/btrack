@@ -1,23 +1,3 @@
-#!/usr/bin/env python
-# -------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# -------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
-
-
 from typing import List, Optional
 
 import numpy as np
@@ -37,7 +17,7 @@ def _check_symmetric(
 
 
 class MotionModel(BaseModel):
-    """The `btrack` motion model.
+    r"""The `btrack` motion model.
 
     Parameters
     ----------
@@ -47,8 +27,8 @@ class MotionModel(BaseModel):
         The number of measurements of the system (e.g. 3 for x, y, z).
     states : int
         The number of states of the system (typically >= measurements). The
-        standard measurements for a constant velocity model are (x, y, z, dx,
-        dy, dz), i.e. 6 in total for 3 measurements.
+        standard states for a constant velocity model are (x, y, z, dx, dy, dz),
+        i.e. 6 in total for 3 measurements.
     A : array (states, states)
         State transition matrix.
     H : array (measurements, states)
@@ -80,6 +60,14 @@ class MotionModel(BaseModel):
     estimates of unknown variables that tend to be more precise than those that
     would be based on a single measurement alone.'
 
+    Predicted estimate of state:
+
+    .. math:: \hat{x}_{t\vert~t-1} = A_t \hat{x}_{t-1\vert~t-1}
+
+    Predicted estimate of covariance:
+
+    .. math:: P_{t\vert~t-1} = A_t P_{t-1\vert~t-1} A_t^{\top} + Q_t
+
     This is just a wrapper for the data with a few convenience functions
     thrown in. Matrices must be stored Fortran style, because Eigen uses
     column major and Numpy uses row major storage.
@@ -87,7 +75,7 @@ class MotionModel(BaseModel):
     References
     ----------
     .. [1] 'A new approach to linear filtering and prediction problems.'
-    Kalman RE, 1960 Journal of Basic Engineering
+      Kalman RE, 1960 Journal of Basic Engineering
     """
 
     measurements: int

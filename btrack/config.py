@@ -41,16 +41,17 @@ class TrackerConfig(BaseModel):
         Flag to request the Kalman debug info when returning tracks.
     volume : Optional[ImagingVolume]
         The imaging volume as [(xlo, xhi), ..., (zlo, zhi)]. See
-        `btypes.ImagingVolume` for more details.
+        :py:meth:`btrack.btypes.ImagingVolume` for more details.
     update_method : constants.BayesianUpdates
         The method to perform the bayesian updates during tracklet linking.
-            BayesianUpdates.EXACT
+
+            * BayesianUpdates.EXACT
                 Use the exact Bayesian update method. Can be slow for systems
                 with many objects.
-            BayesianUpdates.APPROXIMATE
+            * BayesianUpdates.APPROXIMATE
                 Use the approximate Bayesian update method. Useful for systems
                 with may objects.
-            BayesianUpdates.CUDA
+            * BayesianUpdates.CUDA
                 Use the CUDA implementation of the Bayesian update method. Not
                 currently implemented.
     optimizer_options: dict

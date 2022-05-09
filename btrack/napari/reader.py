@@ -66,7 +66,6 @@ def reader_function(path: PathLike) -> List[LayerDataTuple]:
         with HDF5FileHandler(_path, "r") as hdf:
 
             # get the segmentation if there is one
-            import pdb; pdb.set_trace()
             if "segmentation" in hdf._hdf:
                 segmentation = hdf.segmentation
                 layers.append((segmentation, {}, "labels"))

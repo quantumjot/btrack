@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from ._utils import (
     create_test_object,
     create_test_properties,

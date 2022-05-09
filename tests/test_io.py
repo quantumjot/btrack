@@ -3,13 +3,14 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+
+import btrack
+
 from ._utils import (
     create_test_object,
     create_test_properties,
     simple_tracker_example,
 )
-
-import btrack
 
 
 def test_hdf5_write(hdf5_file_path, test_objects):

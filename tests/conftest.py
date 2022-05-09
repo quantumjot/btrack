@@ -3,11 +3,8 @@ from pathlib import Path
 import pytest
 
 import btrack.dataio
-from ._utils import (
-    create_test_object,
-    create_test_properties,
-    simple_tracker_example,
-)
+
+from ._utils import create_test_object
 
 
 @pytest.fixture

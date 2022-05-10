@@ -90,3 +90,9 @@ class BayesianUpdates(enum.Enum):
     EXACT = 0
     APPROXIMATE = 1
     CUDA = 2
+
+
+class Dimensionality(enum.IntEnum):
+    TWO: int = 2
+    THREE: int = 3
+    FOUR: int = 4

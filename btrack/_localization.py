@@ -156,6 +156,15 @@ def segmentation_to_objects(
     -------
     objects : list
         A list of :py:meth:`btrack.btypes.PyTrackObject` trackable objects.
+
+    Examples
+    --------
+    >>> objects = btrack.utils.segmentation_to_objects(
+    ...   segmentation,
+    ...   properties=('area', ),
+    ...   scale=(1., 1.),
+    ...   assign_class_ID=True,
+    ... )
     """
 
     centroids = {}
@@ -209,16 +218,18 @@ def segmentation_to_objects(
 
     else:
 
-        # try to cast to numpy array, should work for dask arrays and implicitly
-        # call the `.compute()` method
-        segmentation = np.asarray(segmentation)
-
         if segmentation.ndim not in (3, 4):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
         for frame in range(segmentation.shape[0]):
-            seg = segmentation[frame, ...]
-            intens = intensity_image[frame, ...] if USE_INTENSITY else None
+            # try to cast to numpy array, should work for dask arrays and implicitly
+            # call the `.compute()` method
+            seg = np.asarray(segmentation[frame, ...])
+            intens = (
+                np.asarray(intensity_image[frame, ...])
+                if USE_INTENSITY
+                else None
+            )
             _centroids = _centroids_from_single_arr(
                 seg,
                 properties,

@@ -155,7 +155,7 @@ def test_assign_class_ID(ndim, nobj):
     # check that the values match
     for obj in objects:
         centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
-        assert obj.properties["class_id"] == img[centroid], centroid
+        assert obj.properties["class_id"] == img[centroid]
 
 
 def test_regionprops():
@@ -172,3 +172,21 @@ def test_regionprops():
     # check that the properties keys match
     for obj in objects:
         assert set(obj.properties.keys()) == set(properties)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+def test_intensity_image(ndim):
+    """Test using an intensity image."""
+    img, centroids = _make_test_image(ndim=ndim, binary=True)
+    rng = np.random.default_rng()
+    intensity_image = img * rng.uniform(size=img.shape)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...],
+        intensity_image=intensity_image[np.newaxis, ...],
+        use_weighted_centroid=True,
+        properties=("max_intensity",),
+    )
+    # check that the values match
+    for obj in objects:
+        centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
+        assert obj.properties["max_intensity"] == intensity_image[centroid]

@@ -24,7 +24,7 @@ from cvxopt.glpk import ilp
 
 from btrack.constants import GLPK_OPTIONS, Fates
 
-from .optimise import hypothesis
+from . import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)

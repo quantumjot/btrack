@@ -370,7 +370,7 @@ class HDF5FileHandler:
     ):
 
         self._f_expr = None  # DO NOT USE
-        self._object_type = None
+        self._object_type = ""
         self.object_type = obj_type
 
         self.filename = filename

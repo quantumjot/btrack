@@ -88,11 +88,11 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _cat_tracks_as_dict(tracks: list, properties: list):
+def _cat_tracks_as_dict(tracks: list, properties: list) -> dict:
     """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
-    data = {}
+    data: dict = {}
 
     for track in tracks:
         trk = track.to_dict(properties)

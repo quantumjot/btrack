@@ -59,6 +59,9 @@ def _make_test_image(
     ]
 
     assert centroids.shape[0] == nobj
+
+    vals = np.unique(img)
+    assert np.max(vals) == 1 if binary else nobj
     return img, centroids
 
 
@@ -78,9 +81,22 @@ def _validate_centroids(centroids, objects, scale=None):
     if scale is not None:
         centroids = centroids * np.array(scale)
 
+    ndim = centroids.shape[-1]
+
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if centroids.shape[-1] == 2:
+    if ndim == 2:
         obj_as_array = obj_as_array[:, 1:]
+
+    # sort the centroids by axis
+    centroids = np.array(centroids)
+    centroids = centroids[
+        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    ]
+
+    # sort the objects
+    obj_as_array = obj_as_array[
+        np.lexsort([obj_as_array[:, dim] for dim in range(ndim)][::-1])
+    ]
 
     np.testing.assert_equal(obj_as_array, centroids)
 
@@ -104,7 +120,18 @@ def test_segmentation_to_objects_type_generator():
 @pytest.mark.parametrize("binary", [True, False])
 def test_segmentation_to_objects(ndim, nobj, binary):
     """Test different types of segmentation images."""
-    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=True)
+    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=binary)
+    objects = utils.segmentation_to_objects(img[np.newaxis, ...])
+    _validate_centroids(centroids, objects)
+
+
+def test_dask_segmentation_to_objects():
+    """Test using a dask array as segmentation input."""
+    img, centroids = _make_test_image()
+    da = pytest.importorskip(
+        "dask.array", reason="Dask not installed in pytest environment."
+    )
+    img = da.from_array(img)
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
     _validate_centroids(centroids, objects)
 
@@ -115,3 +142,33 @@ def test_segmentation_to_objects_scale(scale):
     img, centroids = _make_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], scale=scale)
     _validate_centroids(centroids, objects, scale)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+@pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
+def test_assign_class_ID(ndim, nobj):
+    """Test mask class_id assignment."""
+    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=False)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], assign_class_ID=True
+    )
+    # check that the values match
+    for obj in objects:
+        centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
+        assert obj.properties["class_id"] == img[centroid], centroid
+
+
+def test_regionprops():
+    """Test using regionprops returns objects with correct property keys."""
+    img, centroids = _make_test_image()
+    properties = (
+        "area",
+        "axis_major_length",
+    )
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], properties=properties
+    )
+
+    # check that the properties keys match
+    for obj in objects:
+        assert set(obj.properties.keys()) == set(properties)

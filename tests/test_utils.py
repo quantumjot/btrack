@@ -35,7 +35,7 @@ def _make_test_image(
     grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
         -1, ndim
     )
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed=1234)
     rbins = rng.choice(grid, size=(nobj,), replace=False)
 
     # iterate over the bins and add a smaple
@@ -88,7 +88,6 @@ def _validate_centroids(centroids, objects, scale=None):
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis
-    centroids = np.array(centroids)
     centroids = centroids[
         np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
     ]
@@ -178,7 +177,7 @@ def test_regionprops():
 def test_intensity_image(ndim):
     """Test using an intensity image."""
     img, centroids = _make_test_image(ndim=ndim, binary=True)
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed=1234)
     intensity_image = img * rng.uniform(size=img.shape)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...],

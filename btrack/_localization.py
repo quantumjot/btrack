@@ -10,13 +10,6 @@ from skimage.measure import label, regionprops_table
 from . import btypes
 from .dataio import localizations_to_objects
 
-try:
-    import dask
-
-    DASK_INSTALLED = True
-except ImportError:
-    DASK_INSTALLED = False
-
 # get the logger instance
 logger = logging.getLogger(__name__)
 
@@ -62,7 +55,7 @@ def _centroids_from_single_arr(
         )
 
         # rename class_ID column and remove keyword from properties
-        _class_ID_centroids["class id"] = _class_ID_centroids.pop(
+        _class_ID_centroids["class_id"] = _class_ID_centroids.pop(
             "max_intensity"
         )
 
@@ -75,6 +68,8 @@ def _centroids_from_single_arr(
 
         # merge centroids with class ID centroids
         _centroids.update(_class_ID_centroids)
+
+        assert "class_id" in _centroids, _centroids.keys()
 
     else:
         # check to see whether the segmentation is unique
@@ -188,9 +183,35 @@ def segmentation_to_objects(
     # objects
     if "label" in properties:
         logger.warning("Cannot use scikit-image label as a property.")
-        del properties["label"]
+        properties = set(properties)
+        properties.remove("label")
+        properties = tuple(properties)
+        assert "label" not in properties
 
-    if isinstance(segmentation, np.ndarray):
+    if inspect.isgeneratorfunction(segmentation) or isinstance(
+        segmentation, Generator
+    ):
+
+        for frame, seg in enumerate(segmentation):
+            intens = next(intensity_image) if USE_INTENSITY else None
+            _centroids = _centroids_from_single_arr(
+                seg,
+                properties,
+                frame,
+                intensity_image=intens,
+                scale=scale,
+                use_weighted_centroid=USE_WEIGHTED,
+                assign_class_ID=assign_class_ID,
+            )
+
+            # concatenate the centroids
+            centroids = _concat_centroids(centroids, _centroids)
+
+    else:
+
+        # try to cast to numpy array, should work for dask arrays and implicitly
+        # call the `.compute()` method
+        segmentation = np.asarray(segmentation)
 
         if segmentation.ndim not in (3, 4):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
@@ -210,58 +231,6 @@ def segmentation_to_objects(
 
             # concatenate the centroids
             centroids = _concat_centroids(centroids, _centroids)
-
-    elif inspect.isgeneratorfunction(segmentation) or isinstance(
-        segmentation, Generator
-    ):
-
-        for frame, seg in enumerate(segmentation):
-            intens = next(intensity_image) if USE_INTENSITY else None
-            _centroids = _centroids_from_single_arr(
-                seg,
-                properties,
-                frame,
-                intensity_image=intens,
-                scale=scale,
-                use_weighted_centroid=USE_WEIGHTED,
-                assign_class_ID=assign_class_ID,
-            )
-
-            # concatenate the centroids
-            centroids = _concat_centroids(centroids, _centroids)
-
-    elif DASK_INSTALLED:
-
-        if isinstance(segmentation, dask.array.core.Array):
-
-            if segmentation.ndim not in (3, 4):
-                raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-            for frame in range(segmentation.shape[0]):
-                seg = segmentation[frame, ...].compute()
-                intens = (
-                    intensity_image[frame, ...].compute()
-                    if USE_INTENSITY
-                    else None
-                )
-                _centroids = _centroids_from_single_arr(
-                    seg,
-                    properties,
-                    frame,
-                    intensity_image=intens,
-                    scale=scale,
-                    use_weighted_centroid=USE_WEIGHTED,
-                    assign_class_ID=assign_class_ID,
-                )
-
-                # concatenate the centroids
-                centroids = _concat_centroids(centroids, _centroids)
-
-    else:
-
-        raise TypeError(
-            f"Segmentation of type {type(segmentation)} not accepted."
-        )
 
     if not centroids:
         logger.warning("...Found no objects.")

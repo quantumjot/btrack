@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import numpy as np
 
@@ -53,21 +54,21 @@ def log_stats(stats: dict) -> None:
     )
 
 
-def read_motion_model(cfg: dict) -> MotionModel:
+def read_motion_model(cfg: dict) -> Optional[MotionModel]:
     cfg = cfg.get("MotionModel", {})
     if not cfg:
         return None
     return MotionModel(**cfg)
 
 
-def read_object_model(cfg: dict) -> ObjectModel:
+def read_object_model(cfg: dict) -> Optional[ObjectModel]:
     cfg = cfg.get("ObjectModel", {})
     if not cfg:
         return None
     return ObjectModel(**cfg)
 
 
-def read_hypothesis_model(cfg: dict) -> HypothesisModel:
+def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
     cfg = cfg.get("HypothesisModel", {})
     if not cfg:
         return None

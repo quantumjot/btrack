@@ -17,11 +17,14 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
+from typing import List
 
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
 
 from btrack.constants import GLPK_OPTIONS, Fates
+
+from .optimise import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -98,7 +101,7 @@ class TrackOptimiser:
     """
 
     def __init__(self, options: dict = GLPK_OPTIONS):
-        self._hypotheses = []
+        self._hypotheses: List[hypothesis.Hypothesis] = []
         self.options = options  # TODO(arl): do some option parsing?
 
     @property

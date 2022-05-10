@@ -53,13 +53,13 @@ def _make_test_image(
         centroids.append(point)
 
     # sort the centroids by axis
-    centroids = np.array(centroids)
-    centroids = centroids[
-        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    centroids_sorted = np.array(centroids)
+    centroids_sorted = centroids_sorted[
+        np.lexsort([centroids_sorted[:, dim] for dim in range(ndim)][::-1])
     ]
 
-    assert centroids.shape[0] == nobj
-    return img, centroids
+    assert centroids_sorted.shape[0] == nobj
+    return img, centroids_sorted
 
 
 def _example_segmentation_generator():

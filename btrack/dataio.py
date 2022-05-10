@@ -25,7 +25,9 @@ __all__ = ["import_CSV"]
 
 
 def localizations_to_objects(
-    localizations: Union[np.array, List[btypes.PyTrackObject], Dict[str, Any]]
+    localizations: Union[
+        np.ndarray, List[btypes.PyTrackObject], Dict[str, Any]
+    ]
 ) -> List[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
@@ -196,7 +198,7 @@ def check_track_type(tracks):
 
 
 def export_CSV(
-    filename: str,
+    filename: os.PathLike,
     tracks: list,
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
     obj_type=None,
@@ -252,7 +254,9 @@ def export_LBEP(filename: str, tracks: list):
             lbep_file.write(f"{lbep}\n")
 
 
-def _export_HDF(filename: str, tracker, obj_type=None, filter_by: str = None):
+def _export_HDF(
+    filename: os.PathLike, tracker, obj_type=None, filter_by: str = None
+):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
@@ -360,7 +364,7 @@ class HDF5FileHandler:
 
     def __init__(
         self,
-        filename: str,
+        filename: os.PathLike,
         read_write: str = "r",
         obj_type: str = "obj_type_1",
     ):
@@ -400,7 +404,7 @@ class HDF5FileHandler:
             raise ValueError("Object type must start with ``obj_type_``")
         self._object_type = obj_type
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("segmentation")
     def segmentation(self):
         segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
@@ -626,7 +630,7 @@ class HDF5FileHandler:
             )
             props_grp.create_dataset(key, data=data[key], dtype="float32")
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("tracks")
     def tracks(self):
         """Return the tracks in the file."""
@@ -762,7 +766,7 @@ class HDF5FileHandler:
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset("fates", data=fate_table, dtype="int32")
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("tracks")
     def lbep(self):
         """Return the LBEP data."""

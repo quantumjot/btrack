@@ -8,6 +8,7 @@ import numpy as np
 from skimage.measure import label, regionprops_table
 
 from . import btypes
+from .constants import Dimensionality
 from .dataio import localizations_to_objects
 
 # get the logger instance
@@ -195,7 +196,6 @@ def segmentation_to_objects(
         properties = set(properties)
         properties.remove("label")
         properties = tuple(properties)
-        assert "label" not in properties
 
     if inspect.isgeneratorfunction(segmentation) or isinstance(
         segmentation, Generator
@@ -218,7 +218,10 @@ def segmentation_to_objects(
 
     else:
 
-        if segmentation.ndim not in (3, 4):
+        if segmentation.ndim not in (
+            Dimensionality.THREE,
+            Dimensionality.FOUR,
+        ):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
         for frame in range(segmentation.shape[0]):

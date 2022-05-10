@@ -5,6 +5,7 @@ import numpy as np
 # import core
 from . import btypes, constants
 from ._localization import segmentation_to_objects
+from .constants import Dimensionality
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
@@ -142,7 +143,9 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
         parents, but only one child) in the case of track merging.
     """
     # TODO: arl guess the dimensionality from the data
-    assert ndim in (2, 3)
+    if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
+        raise ValueError("ndim must be 2 or 3 dimensional.")
+
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
     p_header = ["t", "state", "generation", "root", "parent"]
 

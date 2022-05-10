@@ -1,5 +1,6 @@
 import enum
 import os
+from dataclasses import dataclass
 
 BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -90,3 +91,10 @@ class BayesianUpdates(enum.Enum):
     EXACT = 0
     APPROXIMATE = 1
     CUDA = 2
+
+
+@dataclass(frozen=True)
+class Dimensionality:
+    TWO = 2
+    THREE = 3
+    FOUR = 4

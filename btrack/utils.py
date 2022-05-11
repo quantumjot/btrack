@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 import numpy as np
 
@@ -54,21 +55,21 @@ def log_stats(stats: dict) -> None:
     )
 
 
-def read_motion_model(cfg: dict) -> MotionModel:
+def read_motion_model(cfg: dict) -> Optional[MotionModel]:
     cfg = cfg.get("MotionModel", {})
     if not cfg:
         return None
     return MotionModel(**cfg)
 
 
-def read_object_model(cfg: dict) -> ObjectModel:
+def read_object_model(cfg: dict) -> Optional[ObjectModel]:
     cfg = cfg.get("ObjectModel", {})
     if not cfg:
         return None
     return ObjectModel(**cfg)
 
 
-def read_hypothesis_model(cfg: dict) -> HypothesisModel:
+def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
     cfg = cfg.get("HypothesisModel", {})
     if not cfg:
         return None
@@ -87,11 +88,11 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _cat_tracks_as_dict(tracks: list, properties: list):
+def _cat_tracks_as_dict(tracks: list, properties: list) -> dict:
     """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
-    data = {}
+    data: dict = {}
 
     for track in tracks:
         trk = track.to_dict(properties)

@@ -147,7 +147,7 @@ class BayesianTracker:
         )
 
         # default parameters and space for stored objects
-        self._objects = []
+        self._objects: List[btypes.PyTrackObject] = []
         self._frame_range = [0, 0]
 
     def __enter__(self):
@@ -391,7 +391,7 @@ class BayesianTracker:
         return self._objects
 
     def append(
-        self, objects: Union[List[btypes.PyTrackObject], np.array]
+        self, objects: Union[List[btypes.PyTrackObject], np.ndarray]
     ) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
@@ -417,7 +417,7 @@ class BayesianTracker:
         # store a copy of the list of objects
         self._objects += objects
 
-    def _stats(self, info_ptr: ctypes.POINTER) -> btypes.PyTrackingInfo:
+    def _stats(self, info_ptr: ctypes.pointer) -> btypes.PyTrackingInfo:
         """Cast the info pointer back to an object."""
 
         if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
@@ -500,7 +500,7 @@ class BayesianTracker:
                 )
             )
 
-    def step(self, n_steps: int = 1) -> btypes.PyTrackingInfo:
+    def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
         """Run an iteration (or more) of the tracking. Mostly for interactive
         mode tracking."""
         if not self._initialised:
@@ -692,7 +692,7 @@ class BayesianTracker:
         self,
         replace_nan: bool = True,
         ndim: Optional[int] = None,
-    ) -> Tuple[np.array, dict, dict]:
+    ) -> Tuple[np.ndarray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 

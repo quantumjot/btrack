@@ -52,7 +52,7 @@ def example_segmentation_file() -> os.PathLike:
     return file_path
 
 
-def example_segmentation() -> np.array:
+def example_segmentation() -> np.ndarray:
     """Return the U-Net segmentation as a numpy array of dimensions (T, Y, X)."""
     file_path = example_segmentation_file()
     segmentation = imread(file_path)

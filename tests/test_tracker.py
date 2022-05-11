@@ -22,14 +22,14 @@ def _load_ground_truth():
     return ground_truth
 
 
-def _load_ground_truth_graph():
+def _load_ground_truth_graph() -> dict:
     with open("./tests/_test_data/test_graph.json", "r") as file:
         ground_truth_graph = json.load(file, object_hook=_gt_object_hook)
 
     return ground_truth_graph
 
 
-def _get_tracklet(tracks: list, idx: int) -> list:
+def _get_tracklet(tracks: dict, idx: int) -> list:
     """Get a tracklet by the first object ID"""
     target = [t for t in tracks.values() if t[0] == idx]
     if target:

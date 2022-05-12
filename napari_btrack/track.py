@@ -1,6 +1,7 @@
 from typing import List
 
 import btrack
+import napari
 from btrack import datasets
 from btrack.config import load_config
 from magicgui.widgets import Container, PushButton, create_widget
@@ -38,6 +39,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[dict]:
     """
     widgets: list = []
     if model:
+
         for parameter, default_value in model:
             widgets.append(create_widget(value=default_value, name=parameter))
     return widgets
@@ -54,19 +56,39 @@ def track() -> Container:
     ]
 
     widgets: list = []
-    for model in default_model_configs:
-        widgets.append(_create_per_model_widgets(model))
-    flattened_widgets = [item for sublist in widgets for item in sublist]
-
-    flattened_widgets.extend(
+    # napari-specific widgets
+    widgets.extend(
         [
-            create_widget(name="call_button", widget_type=PushButton, label="Run"),
-            create_widget(name="viewer"),
-            # create_widget(name="segmentation", value=None),
-            create_widget(
-                name="reset_button", widget_type=PushButton, label="Reset defaults"
-            ),
+            create_widget(name="segmentation", annotation=napari.layers.Image),
         ]
     )
 
-    return Container(widgets=flattened_widgets)
+    # widgets from pydantic model
+    model_widgets: list = []
+    for model in default_model_configs:
+        model_widgets.append(_create_per_model_widgets(model))
+    widgets.extend([item for sublist in model_widgets for item in sublist])
+
+    # button widgets
+    widgets.extend(
+        [
+            create_widget(
+                name="load_config_button",
+                widget_type=PushButton,
+                label="Load configuration",
+            ),
+            create_widget(
+                name="save_config_button",
+                widget_type=PushButton,
+                label="Save configuration",
+            ),
+            create_widget(
+                name="reset_button", widget_type=PushButton, label="Reset defaults"
+            ),
+            create_widget(name="call_button", widget_type=PushButton, label="Run"),
+        ]
+    )
+
+    # print(widgets.call_button)
+
+    return Container(widgets=widgets)

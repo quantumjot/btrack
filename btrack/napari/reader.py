@@ -53,7 +53,7 @@ def reader_function(path: PathLike) -> List[LayerDataTuple]:
         (data, metadata, layer_type), where data is a numpy array, metadata is
         a dict of keyword arguments for the corresponding viewer.add_* method
         in napari, and layer_type is a lower-case string naming the type of
-        layer. Both "meta", and "layer_type" are optional. napari will default
+        layer. Both "metadata" and "layer_type" are optional. napari will default
         to layer_type=="image" if not provided
     """
     # handle both a string and a list of strings

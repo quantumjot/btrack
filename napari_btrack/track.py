@@ -1,24 +1,13 @@
-from pathlib import Path
-from random import choices
-from typing import Optional
-
-from traitlets import default
+from typing import List
 
 import btrack
-import napari
-from btrack.utils import segmentation_to_objects
-from magicgui import magicgui
-from magicgui.widgets import FunctionGui
-
-from btrack.config import load_config
 from btrack import datasets
+from btrack.config import load_config
+from magicgui.widgets import Container, PushButton, create_widget
+from pydantic import BaseModel
 
 default_config = load_config(datasets.cell_config())
 
-hypothesis_model = default_config.hypothesis_model
-hypothesis_model_widgets = {}
-for parameter, default_value in hypothesis_model:
-    hypothesis_model_widgets[parameter]=dict(value=default_value)
 
 def run_tracker(objects, config_file_path):
     with btrack.BayesianTracker() as tracker:
@@ -43,39 +32,41 @@ def run_tracker(objects, config_file_path):
         return data, properties, graph
 
 
-def track() -> FunctionGui:
-    @magicgui(
-        call_button=True,
-        persist=True,
-        dt=dict(value=default_config.motion_model.dt, step=0.01),
-        **hypothesis_model_widgets,
-        reset_button=dict(widget_type="PushButton", text="Reset defaults"),
-    )
-    def widget(
-        viewer: napari.Viewer,
-        segmentation: napari.layers.Image,
-        dt: float,
-        name: str,
-        hypotheses: str,
-        lambda_time: float,
-        lambda_dist: float,
-        lambda_link: float,
-        lambda_branch: float,
-        eta: float,
-        theta_dist: float,
-        theta_time: float,
-        dist_thresh: int,
-        time_thresh: int,
-        apop_thresh: int,
-        segmentation_miss_rate: float,
-        apoptosis_rate: float,
-        relax: bool,
-        reset_button,
-    ):
-        segmented_objects = segmentation_to_objects(segmentation.data[:100, ...])
-        data, properties, graph = run_tracker(segmented_objects, datasets.cell_config())
-        viewer.add_tracks(
-            data=data, properties=properties, graph=graph, name=f"{segmentation}_btrack"
-        )
+def _create_per_model_widgets(model: BaseModel) -> List[dict]:
+    """
+    for a given model create a list of widgets
+    """
+    widgets: list = []
+    if model:
+        for parameter, default_value in model:
+            widgets.append(create_widget(value=default_value, name=parameter))
+    return widgets
 
-    return widget
+
+def track() -> Container:
+    """
+    Create a series of widgets programatically
+    """
+    default_model_configs = [
+        default_config.motion_model,
+        default_config.object_model,
+        default_config.hypothesis_model,
+    ]
+
+    widgets: list = []
+    for model in default_model_configs:
+        widgets.append(_create_per_model_widgets(model))
+    flattened_widgets = [item for sublist in widgets for item in sublist]
+
+    flattened_widgets.extend(
+        [
+            create_widget(name="call_button", widget_type=PushButton, label="Run"),
+            create_widget(name="viewer"),
+            # create_widget(name="segmentation", value=None),
+            create_widget(
+                name="reset_button", widget_type=PushButton, label="Reset defaults"
+            ),
+        ]
+    )
+
+    return Container(widgets=flattened_widgets)

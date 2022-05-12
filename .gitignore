@@ -83,3 +83,4 @@ examples/
 
 # direnv
 .envrc
+.vscode

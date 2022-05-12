@@ -7,6 +7,11 @@ from btrack.utils import segmentation_to_objects
 from magicgui import magicgui
 from magicgui.widgets import FunctionGui
 
+from btrack.config import load_config
+from btrack import datasets
+
+default_config = load_config(datasets.cell_config())
+
 
 def run_tracker(objects, config_file_path):
     with btrack.BayesianTracker() as tracker:
@@ -35,17 +40,17 @@ def track() -> FunctionGui:
     @magicgui(
         call_button=True,
         persist=True,
-        config_file_path=dict(value=Path.home()),
+        dt=dict(value=default_config.motion_model.dt, step=0.01),
         reset_button=dict(widget_type="PushButton", text="Reset defaults"),
     )
     def widget(
         viewer: napari.Viewer,
         segmentation: napari.layers.Image,
-        config_file_path: Optional[Path],
+        dt: float,
         reset_button,
     ):
         segmented_objects = segmentation_to_objects(segmentation.data[:100, ...])
-        data, properties, graph = run_tracker(segmented_objects, config_file_path)
+        data, properties, graph = run_tracker(segmented_objects, datasets.cell_config())
         viewer.add_tracks(
             data=data, properties=properties, graph=graph, name=f"{segmentation}_btrack"
         )

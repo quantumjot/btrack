@@ -16,10 +16,6 @@ _, btrack_widget = viewer.window.add_plugin_dock_widget(
     plugin_name="napari-btrack", widget_name="Track"
 )
 
-# populate with example config and data
-cell_config = datasets.cell_config()
-btrack_widget.config_file_path.value = cell_config
-
 
 segmentation = datasets.example_segmentation()
 viewer._add_layer_from_data(segmentation)

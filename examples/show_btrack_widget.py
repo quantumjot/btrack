@@ -1,10 +1,10 @@
 """
-Load and show sample data
+Show the btrack widget with example data
 =========================
 This example:
-- loads some sample data
-- adds the data to a napari viewer
-- loads the arboretum plugin
+- loads a sample segmentation and cell config
+- adds the segmentation to a napari viewer
+- loads the btrack plugin
 - opens the napari viewer
 """
 import napari

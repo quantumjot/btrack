@@ -7,8 +7,8 @@ This example:
 - loads the arboretum plugin
 - opens the napari viewer
 """
-from btrack import datasets
 import napari
+from btrack import datasets
 
 viewer = napari.Viewer()
 
@@ -22,11 +22,11 @@ btrack_widget.config_file_path.value = cell_config
 
 
 segmentation = datasets.example_segmentation()
-viewer._add_layer_from_data(segmentation)
+viewer.add_image(segmentation)
 # napari takes the first image layer as default anyway here, but better to be explicit
-btrack_widget.segmentation.value = viewer.layers['segmentation']
+btrack_widget.segmentation.value = viewer.layers["segmentation"]
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # The napari event loop needs to be run under here to allow the window
     # to be spawned from a Python script
     napari.run()

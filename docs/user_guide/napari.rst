@@ -16,6 +16,6 @@ We developed the ``Tracks`` layer that is now part of the multidimensional image
    viewer.add_tracks(data, properties=properties, graph=graph)
 
 
-Read more about `the tracks API at Napari's documentation <https://napari.org/api/stable/napari.layers.Tracks.html#napari.layers.Tracks>`_.
+Read more about `the tracks API at Napari's documentation <https://napari.org/api/napari.layers.Tracks.html>`_.
 
 In addition, we provide a `plugin for napari that enables users to visualize lineage trees (arboretum) <https://github.com/quantumjot/arboretum>`_.

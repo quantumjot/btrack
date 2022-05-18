@@ -84,19 +84,26 @@ double probability_cosine_similarity(
   const TrackObjectPtr obj
 )
 {
+  // calculate cosine similarity between two feature vectors
   double f_dot = trk_last->features.dot(obj->features);
   double f_mag = (trk_last->features).norm() * (obj->features).norm();
   double cosine_similarity = f_dot / f_mag;
-  // double cosine_similarity = 0.5;
 
   if (!(cosine_similarity>=-1.0 && cosine_similarity <=1.0)) {
-    std::cout << cosine_similarity << " f_mag: " << f_mag;
-    std::cout << " trk_norm: " << (trk_last->features);
-    std::cout << " obj_norm: " << (obj->features);
-    std::cout << std::endl;
-    return 0.5;
+    if (DEBUG) {
+      std::cout << cosine_similarity;
+      std::cout << " f_dot: " << f_dot;
+      std::cout << " f_mag: " << f_mag;
+      std::cout << " trk_features: " << (trk_last->features);
+      std::cout << " obj_features: " << (obj->features);
+      std::cout << std::endl;
+    }
+
+    // return a default value
+    cosine_similarity = 0.0;
   }
 
+  // rescale to 0.0-1.0
   return (cosine_similarity + 1.0) / 2.0;
 }
 
@@ -177,7 +184,7 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
 
 
 void BayesianTracker::set_update_features(const unsigned int update_features) {
-
+  // TODO(arl): set the order of updates
   if (DEBUG) std::cout << "Update features: " << update_features << std::endl;
 }
 
@@ -461,6 +468,12 @@ void BayesianTracker::step(const unsigned int steps)
 
       // first run the update with a uniform prior and the motion model
       cost_APPROXIMATE(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
+
+      // point at the correct update function
+      m_update_fn = &BayesianTracker::prob_update_visual;
+
+      // now run the update with visual information
+      cost_APPROXIMATE(belief, n_active, n_obs, USE_CURRENT_PRIOR);
 
     } else if (cost_function_mode == UPDATE_MODE_CUDA) {
       throw std::runtime_error("CUDA update method not supported");

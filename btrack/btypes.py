@@ -64,7 +64,10 @@ class PyTrackObject(ctypes.Structure):
         possible labels.
     label : int
         The label of the object.
-
+    features : array
+        A vector of feature values.
+    n_features : int
+        The length of the feature vector.
 
     Attributes
     ----------
@@ -136,9 +139,10 @@ class PyTrackObject(ctypes.Structure):
             raise KeyError(f"Feature(s) missing: {missing_features}.")
         # store a reference to the numpy array so that Python maintains
         # ownership of the memory allocated to the numpy array
-        features = np.asarray([self.properties[k] for k in keys])
-        # self._features = features  / np.linalg.norm(features)
-        self._features = features
+        features = np.asarray([self.properties[k] for k in keys]).ravel()
+
+        # NOTE(arl): do we want to normalise the features here???
+        self._features = features / np.linalg.norm(features)
         self.features = np.ctypeslib.as_ctypes(
             self._features.astype(np.float64)
         )

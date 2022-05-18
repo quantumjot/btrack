@@ -92,6 +92,11 @@ void Tracklet::append_dummy() {
   dummy.label = this->track.back()->label; // NOTE(arl): valid assumption?
   //dummy.label = STATE_dummy;
   dummy.dummy = true;
+  dummy.n_features = this->track.back()->n_features;
+
+  if (dummy.n_features != 0) {
+    dummy.features = this->track.back()->features;
+  }
 
   // make a shared pointer to this new obejct
   TrackObjectPtr dummy_ptr = std::make_shared<TrackObject>(dummy);

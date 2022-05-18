@@ -215,6 +215,7 @@ class BayesianTracker:
             "object_model",
             "max_search_radius",
             "volume",
+            "update_method",
         ):
             if value is not None:
                 update_lib_func = getattr(self, f"_{attr}")
@@ -410,6 +411,10 @@ class BayesianTracker:
             obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError("track_object must be a `PyTrackObject`")
+
+            # call the `obj.set_features` method for each object, which will
+            # set the pointer to the array for the tracker
+            obj.set_features(self.configuration.features)
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)

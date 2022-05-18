@@ -113,6 +113,10 @@ def get_library():
     lib.set_update_mode.restype = None
     lib.set_update_mode.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # set the features to use during the update method
+    lib.set_update_features.restype = None
+    lib.set_update_features.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+
     # set the motion model
     lib.motion.restype = None
     lib.motion.argtypes = [

@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 from pydantic import BaseModel, validator
@@ -74,6 +74,7 @@ class TrackerConfig(BaseModel):
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
+    features: List[str] = []
 
     @validator("volume", pre=True, always=True)
     def parse_volume(cls, v):

@@ -129,4 +129,9 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define USE_ABSOLUTE_APOPTOSIS_COUNTS true
 
 
+// flag to use a uniform prior
+#define USE_UNIFORM_PRIOR true
+#define USE_CURRENT_PRIOR false
+
+
 #endif

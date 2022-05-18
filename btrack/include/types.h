@@ -77,7 +77,8 @@ extern "C" struct PyTrackObject {
   bool dummy;
   unsigned int states;
   unsigned int label;
-  double* probability;
+  unsigned int n_features;
+  double* features;
 };
 
 // Output back to Python with some tracking statistics
@@ -110,13 +111,14 @@ class TrackObject
 {
   public:
     // Start a new tracklet without any prior information.
-    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
+    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0), n_features(0) {};
 
     // Instantiate a track object from an existing PyTrackObject
     TrackObject(const PyTrackObject& trk) :
                 ID(trk.ID),
                 x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
-                label(trk.label), states(trk.states), probability(trk.probability)
+                label(trk.label), states(trk.states), n_features(trk.n_features),
+                features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features))
                 {};
 
     // Default destructor
@@ -132,7 +134,10 @@ class TrackObject
     bool dummy;
     unsigned int label;
     unsigned int states;
-    double* probability;
+    unsigned int n_features;
+
+    // store object features
+    Eigen::VectorXd features;
 
     // return the current position of the track object
     Eigen::Vector3d position() const {

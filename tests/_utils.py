@@ -18,9 +18,7 @@ def create_test_object(id=None):
         "z": np.random.uniform(0.0, 1000.0),
         "t": np.random.randint(0, 1000),
         "dummy": False,
-        "states": 5,
         "label": 0,
-        "prob": 0.5,
     }
 
     obj = btrack.btypes.PyTrackObject().from_dict(data)

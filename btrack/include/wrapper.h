@@ -39,6 +39,9 @@ class InterfaceWrapper
     // set the update mode of the tracker (e.g. EXACT, APPROXIMATE, CUDA etc)
     void set_update_mode(const unsigned int a_update_mode);
 
+    // set the update features to use by the tracker (e.g. motion, visual)
+    void set_update_features(const unsigned int a_update_features);
+
     // tracking and basic data handling
     void set_motion_model(const unsigned int measurements,
                           const unsigned int states,

@@ -55,6 +55,11 @@ void InterfaceWrapper::set_update_mode(const unsigned int a_update_mode) {
   tracker.set_update_mode(a_update_mode);
 }
 
+// set the update mode of the tracker
+void InterfaceWrapper::set_update_features(const unsigned int a_update_features) {
+  tracker.set_update_features(a_update_features);
+}
+
 // tracking and basic data handling
 void InterfaceWrapper::set_motion_model(const unsigned int measurements,
                                         const unsigned int states,

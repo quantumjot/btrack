@@ -100,6 +100,9 @@ public:
   // set the cost function to use
   void set_update_mode(const unsigned int update_mode);
 
+  // set the features to use while updating the Bayesian belief matrix
+  void set_update_features(const unsigned int update_features);
+
   // set up the motion model. matrices are in the form of c-style linear arrays
   unsigned int set_motion_model(const unsigned int measurements,
                                 const unsigned int states,
@@ -167,20 +170,27 @@ public:
   // calculate the cost matrix using different methods
   void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
                   const size_t n_tracks,
-                  const size_t n_objects);
+                  const size_t n_objects,
+                  const bool use_uniform_prior);
 
   void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
                         const size_t n_tracks,
-                        const size_t n_objects);
+                        const size_t n_objects,
+                        const bool use_uniform_prior);
 
   void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief,
                  const size_t n_tracks,
-                 const size_t n_objects);
+                 const size_t n_objects,
+                 const bool use_uniform_prior);
 
   // calculate linkages based on belief matrix
   void link(Eigen::Ref<Eigen::MatrixXd> belief,
             const size_t n_tracks,
             const size_t n_objects);
+
+
+  double prob_update_motion(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
+  double prob_update_visual(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
 
   // somewhere to store the tracks
   TrackManager tracks;
@@ -209,6 +219,9 @@ private:
   //                                            const size_t n_tracks,
   //                                            const size_t n_objects);
   unsigned int cost_function_mode;
+
+  // reference to an update function
+  double (BayesianTracker::*m_update_fn)(const TrackletPtr&, const TrackObjectPtr&) const;
 
   // default tracking parameters
   double prob_not_assign = PROB_NOT_ASSIGN;

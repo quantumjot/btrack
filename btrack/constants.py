@@ -92,6 +92,12 @@ class BayesianUpdates(enum.Enum):
     CUDA = 2
 
 
+@enum.unique
+class BayesianUpdateFeatures(enum.Enum):
+    MOTION = int("0b1000000", 2)
+    VISUAL = int("0b1000010", 2)
+
+
 class Dimensionality(enum.IntEnum):
     TWO: int = 2
     THREE: int = 3

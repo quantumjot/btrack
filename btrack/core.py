@@ -215,6 +215,7 @@ class BayesianTracker:
             "object_model",
             "max_search_radius",
             "volume",
+            "update_method",
         ):
             if value is not None:
                 update_lib_func = getattr(self, f"_{attr}")

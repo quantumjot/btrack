@@ -9,6 +9,9 @@ By default, ``btrack`` uses a :py:class:`btrack.models.MotionModel` to make pred
 
 However, it is also possible to utilise other features, such as those derived from the images or segmentation during the Bayesian update step.
 
+.. warning::
+  The tracking update makes no assumption about the features being normalised. You should take this into account when designing features to be used for tracking, either by normalising them before tracking, or by using features that fall in a defined range.
+
 
 Adding features to objects
 ==========================

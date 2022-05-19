@@ -69,9 +69,9 @@ class BayesianTracker:
     Data can be passed in in the following formats:
 
         * numpy arrays
-        * :py:meth:`btrack.btypes.PyTrackObject`
+        * :py:class:`btrack.btypes.PyTrackObject`
         * CSV (see :py:meth:`btrack.dataio.import_CSV`)
-        * HDF (see :py:meth:`btrack.dataio.HDF5FileHandler`)
+        * HDF (see :py:class:`btrack.dataio.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
@@ -79,7 +79,7 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
     `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
-    :py:meth:`optimiser.TrackOptimiser` documentation for more information about the
+    :py:class:`optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
     Full details of the implementation can be found in [5]_ and [6]_.

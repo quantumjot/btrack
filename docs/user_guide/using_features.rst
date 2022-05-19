@@ -5,7 +5,7 @@ Using features during tracking
 .. note::
   This applies to versions of btrack>=0.5.
 
-By default, ``btrack`` uses a :py:class:`btrack.models.MotionModel` to make predictions about the future position of an object. These predictions can be used to link objects in time to produce the final tracks.
+By default, ``btrack`` uses a :py:class:`btrack.models.MotionModel` and :py:class:`btrack.btypes.PyTrackObject` labels to make predictions about the future position of an object. These predictions can be used to link objects in time to produce the final tracks.
 
 However, it is also possible to utilise other features, such as those derived from the images or segmentation during the Bayesian update step.
 
@@ -124,7 +124,7 @@ When running the tracking step, all that is required is to pass the list of feat
 
     ...
 
-If you do not specify any features, or pass ``tracker.features = []`` then only motion features will be used to perform the tracking updates.
+If you do not specify any features, or pass ``tracker.features = []``, then only motion features (and class labels, if specified) will be used to perform the tracking updates.
 
 .. warning::
   You must pass the list of features before using the :py:meth:`btrack.BayesianTracker.append` function to add the objects.

@@ -93,3 +93,35 @@ will return a table (assuming use of a Jupyter Notebook):
 
 Specifying features to use during tracking
 ==========================================
+
+When running the tracking step, all that is required is to pass the list of features that you want to use to the tracker:
+
+.. code:: python
+
+  # features to be used for tracking updates
+  FEATURES = [
+    "area",
+    "major_axis_length",
+    "minor_axis_length",
+    "orientation",
+    "solidity",
+  ]
+
+  # initialise a tracker session using a context manager
+  with btrack.BayesianTracker() as tracker:
+
+    # configure the tracker using a config file
+    tracker.configure('/path/to/your/models/cell_config.json')
+
+    # set up the features to use as a list
+    tracker.features = FEATURES
+
+    # append the objects to be tracked
+    tracker.append(objects)
+
+    ...
+
+If you do not specify any features, or pass ``tracker.features = []`` then only motion features will be used to perform the tracking updates.
+
+.. warning::
+  You must pass the list of features before using the :py:meth:`btrack.BayesianTracker.append` function to add the objects.

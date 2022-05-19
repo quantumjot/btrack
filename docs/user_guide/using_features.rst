@@ -71,7 +71,6 @@ will return a table (assuming use of a Jupyter Notebook):
          - dummy
          - states
          - label
-         - n_features
          - area
          - major_axis_length
          - minor_axis_length
@@ -85,7 +84,6 @@ will return a table (assuming use of a Jupyter Notebook):
          - False
          - 7
          - 5
-         - 0
          - 577
          - 33.260603
          - 22.856213

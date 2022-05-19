@@ -408,9 +408,10 @@ class BayesianTracker:
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
-            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError("track_object must be a `PyTrackObject`")
+
+            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
 
             # call the `obj.set_features` method for each object, which will
             # set the pointer to the array for the tracker
@@ -465,29 +466,41 @@ class BayesianTracker:
             of the step size provided.
         """
 
-        # TODO(arl): this needs cleaning up to have some decent output
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
         logger.info("Starting tracking... ")
 
+        # default is to use the motion model only
+        features_to_use = [
+            constants.BayesianUpdateFeatures.MOTION,
+        ]
+
+        # if we have features specified, use the visual updates also
+        if len(self.configuration.features) > 0:
+            features_to_use.append(constants.BayesianUpdateFeatures.VISUAL)
+
+        logger.info(f"Update using: {[f.name for f in features_to_use]}")
+
+        # bitwise OR is equivalent to int sum here
+        self._lib.set_update_features(
+            self._engine,
+            sum([int(f.value) for f in features_to_use]),
+        )
+
         stats = self.step()
-        frm = 0
+        step = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
                 (
-                    f"Tracking objects in frames {frm} to "
-                    f"{min(frm+step_size-1, self._frame_range[1]+1)} "
+                    f"Tracking objects in frames {step} to "
+                    f"{min(step+step_size-1, self._frame_range[1]+1)} "
                     f"(of {self._frame_range[1]+1})..."
                 )
             )
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
-            frm += step_size
+            step += step_size
 
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")

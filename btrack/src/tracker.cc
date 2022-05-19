@@ -184,8 +184,22 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
 
 
 void BayesianTracker::set_update_features(const unsigned int update_features) {
+  m_update_features = update_features;
+
+  unsigned int bitmask_motion = std::pow(2, USE_MOTION_FEATURES);
+  unsigned int bitmask_visual = std::pow(2, USE_VISUAL_FEATURES);
+
+  m_use_motion_features = ((update_features & bitmask_motion) == bitmask_motion);
+  m_use_visual_features = ((update_features & bitmask_visual) == bitmask_visual);
+
+
+
   // TODO(arl): set the order of updates
-  if (DEBUG) std::cout << "Update features: " << update_features << std::endl;
+  if (DEBUG) {
+    std::cout << "Use motion features: " << m_use_motion_features << std::endl;
+    std::cout << "Use visual features: " << m_use_visual_features << std::endl;
+    std::cout << "Update features: " << update_features << std::endl;
+  }
 }
 
 
@@ -447,34 +461,28 @@ void BayesianTracker::step(const unsigned int steps)
     //switch(cost_function_mode) {
 
     if (cost_function_mode == UPDATE_MODE_EXACT) {
-
-      // point at the correct update function
+      // point at the correct update function, run the update with a uniform
+      // prior and the motion model
       m_update_fn = &BayesianTracker::prob_update_motion;
-
-      // first run the update with a uniform prior and the motion model
       cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
 
-      // point at the correct update function
-      m_update_fn = &BayesianTracker::prob_update_visual;
-
-      // now run the update with visual information
-      cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
-
+      if (m_use_visual_features) {
+        // point at the correct function, run the update with visual information
+        m_update_fn = &BayesianTracker::prob_update_visual;
+        cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
+      }
 
     } else if (cost_function_mode == UPDATE_MODE_APPROXIMATE) {
-
-      // point at the correct update function
+      // point at the correct update function, run the update with a uniform
+      // prior and the motion model
       m_update_fn = &BayesianTracker::prob_update_motion;
+      cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
 
-      // first run the update with a uniform prior and the motion model
-      cost_APPROXIMATE(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
-
-      // point at the correct update function
-      m_update_fn = &BayesianTracker::prob_update_visual;
-
-      // now run the update with visual information
-      cost_APPROXIMATE(belief, n_active, n_obs, USE_CURRENT_PRIOR);
-
+      if (m_use_visual_features) {
+        // point at the correct function, run the update with visual information
+        m_update_fn = &BayesianTracker::prob_update_visual;
+        cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
+      }
     } else if (cost_function_mode == UPDATE_MODE_CUDA) {
       throw std::runtime_error("CUDA update method not supported");
     } else {

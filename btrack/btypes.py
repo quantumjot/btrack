@@ -132,28 +132,34 @@ class PyTrackObject(ctypes.Structure):
 
     def set_features(self, keys: List[str]) -> None:
         """Set features to be used by the tracking update."""
+
+        if not keys:
+            self.n_features = 0
+            return
+
         if not all(k in self.properties.keys() for k in keys):
             missing_features = list(
                 set(keys).difference(set(self.properties.keys()))
             )
             raise KeyError(f"Feature(s) missing: {missing_features}.")
+
         # store a reference to the numpy array so that Python maintains
         # ownership of the memory allocated to the numpy array
-        features = np.asarray([self.properties[k] for k in keys]).ravel()
+        self._features = np.concatenate(
+            [np.asarray(self.properties[k]).ravel() for k in keys], axis=-1
+        ).astype(np.float64)
 
         # NOTE(arl): do we want to normalise the features here???
-        self._features = features / np.linalg.norm(features)
-        self.features = np.ctypeslib.as_ctypes(
-            self._features.astype(np.float64)
-        )
-        self.n_features = len(keys)
+        # self._features = features / np.linalg.norm(features)
+        self.features = np.ctypeslib.as_ctypes(self._features)
+        self.n_features = len(self._features)
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         stats = {
             k: getattr(self, k)
             for k, _ in PyTrackObject._fields_
-            if k != "features"
+            if k not in ("features", "n_features")
         }
         stats.update(self.properties)
         return stats

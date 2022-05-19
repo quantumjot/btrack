@@ -94,8 +94,8 @@ class BayesianUpdates(enum.Enum):
 
 @enum.unique
 class BayesianUpdateFeatures(enum.Enum):
-    MOTION = int("0b1000000", 2)
-    VISUAL = int("0b1000010", 2)
+    MOTION = 0b0000001
+    VISUAL = 0b0000010
 
 
 class Dimensionality(enum.IntEnum):

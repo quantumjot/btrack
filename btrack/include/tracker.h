@@ -205,6 +205,10 @@ public:
 
 private:
 
+  unsigned int m_update_features;
+  bool m_use_motion_features = true;
+  bool m_use_visual_features = false;
+
   // verbose output to stdio
   bool verbose = false;
 

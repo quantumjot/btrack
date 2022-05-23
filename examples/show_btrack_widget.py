@@ -1,10 +1,10 @@
 """
-Load and show sample data
+Show the btrack widget with example data
 =========================
 This example:
-- loads some sample data
-- adds the data to a napari viewer
-- loads the arboretum plugin
+- loads a sample segmentation and cell config
+- adds the segmentation to a napari viewer
+- loads the btrack plugin
 - opens the napari viewer
 """
 import napari
@@ -18,7 +18,7 @@ _, btrack_widget = viewer.window.add_plugin_dock_widget(
 
 
 segmentation = datasets.example_segmentation()
-viewer._add_layer_from_data(segmentation)
+viewer.add_image(segmentation)
 # napari takes the first image layer as default anyway here, but better to be explicit
 btrack_widget.segmentation.value = viewer.layers["segmentation"]
 

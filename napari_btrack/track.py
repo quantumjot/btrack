@@ -72,16 +72,22 @@ def track() -> Container:
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
     # button widgets
-    widget_details = [
-        ("load_config_button", "Load configuration"),
-        ("save_config_button", "Save configuration"),
-        ("reset_button", "Reset defaults"),
-        ("call_button", "Run"),
+    widget_names = [
+        "load_config_button",
+        "save_config_button",
+        "reset_button",
+        "call_button",
+    ]
+    widget_labels = [
+        "Load configuration",
+        "Save configuration",
+        "Reset defaults",
+        "Run",
     ]
     widgets.extend(
         [
             create_widget(name=widget_name, label=widget_label, widget_type=PushButton)
-            for widget_name, widget_label in widget_details
+            for widget_name, widget_label in zip(widget_names, widget_labels)
         ]
     )
 

@@ -66,9 +66,9 @@ def track() -> Container:
     widgets.append(create_widget(name="segmentation", annotation=napari.layers.Image))
 
     # widgets from pydantic model
-    model_widgets: list = []
-    for model in default_model_configs:
-        model_widgets.append(_create_per_model_widgets(model))
+    model_widgets = [
+        _create_per_model_widgets(model) for model in default_model_configs
+    ]
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
     # button widgets

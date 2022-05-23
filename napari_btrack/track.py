@@ -39,9 +39,12 @@ def _create_per_model_widgets(model: BaseModel) -> List[dict]:
     """
     widgets: list = []
     if model:
-
-        for parameter, default_value in model:
-            widgets.append(create_widget(value=default_value, name=parameter))
+        widgets.extend(
+            [
+                create_widget(value=default_value, name=parameter)
+                for parameter, default_value in model
+            ]
+        )
     return widgets
 
 

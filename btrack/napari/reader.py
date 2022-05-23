@@ -34,7 +34,7 @@ def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
     return reader_function
 
 
-def reader_function(path: PathLike) -> List[LayerDataTuple]:
+def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
     """Take a path or list of paths and return a list of LayerData tuples.
 
     Readers are expected to return data as a list of tuples, where each tuple

@@ -49,19 +49,18 @@ def track() -> Container:
     """
     Create a series of widgets programatically
     """
+    # the different model types
     default_model_configs = [
         default_config.motion_model,
         default_config.object_model,
         default_config.hypothesis_model,
     ]
 
+    # initialise a list for all widgets
     widgets: list = []
+
     # napari-specific widgets
-    widgets.extend(
-        [
-            create_widget(name="segmentation", annotation=napari.layers.Image),
-        ]
-    )
+    widgets.append(create_widget(name="segmentation", annotation=napari.layers.Image))
 
     # widgets from pydantic model
     model_widgets: list = []
@@ -70,22 +69,16 @@ def track() -> Container:
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
     # button widgets
+    widget_details = [
+        ("load_config_button", "Load configuration"),
+        ("save_config_button", "Save configuration"),
+        ("reset_button", "Reset defaults"),
+        ("call_button", "Run"),
+    ]
     widgets.extend(
         [
-            create_widget(
-                name="load_config_button",
-                widget_type=PushButton,
-                label="Load configuration",
-            ),
-            create_widget(
-                name="save_config_button",
-                widget_type=PushButton,
-                label="Save configuration",
-            ),
-            create_widget(
-                name="reset_button", widget_type=PushButton, label="Reset defaults"
-            ),
-            create_widget(name="call_button", widget_type=PushButton, label="Run"),
+            create_widget(name=widget_name, label=widget_label, widget_type=PushButton)
+            for widget_name, widget_label in widget_details
         ]
     )
 

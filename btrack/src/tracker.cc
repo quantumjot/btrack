@@ -17,95 +17,7 @@
 
 #include "tracker.h"
 
-
-// we can assume that the covar matrix is diagonal from the MotionModel
-// since only position obeservations are made, therefore we can decompose
-// multivariate gaussian into product of univariate gaussians
-// http://cs229.stanford.edu/section/gaussians.pdf
-
-double cheat_trivariate_PDF(const Eigen::Vector3d& x, Prediction p)
-{
-
-    double prob_density =
-
-    (1./(kRootTwoPi*sqrt(p.covar(0,0)))) * exp(-(1./(2.*p.covar(0,0))) *
-    (x(0)-p.mu(0)) * (x(0)-p.mu(0)) ) *
-    (1./(kRootTwoPi*sqrt(p.covar(1,1)))) * exp(-(1./(2.*p.covar(1,1))) *
-    (x(1)-p.mu(1)) * (x(1)-p.mu(1)) ) *
-    (1./(kRootTwoPi*sqrt(p.covar(2,2)))) * exp(-(1./(2.*p.covar(2,2))) *
-    (x(2)-p.mu(2)) * (x(2)-p.mu(2)) );
-
-    return prob_density;
-
-}
-
-
-
-// we can assume that the covar matrix is diagonal from the MotionModel
-// since only position observations are made, therefore we can decompose
-// multivariate gaussian into product of univariate gaussians
-// http://cs229.stanford.edu/section/gaussians.pdf
-
-// also we need to calculate the probability (the integral), so we use erf
-// http://en.cppreference.com/w/cpp/numeric/math/erf
-
-double probability_erf( const Eigen::Vector3d& x,
-                        const Prediction p,
-                        const double accuracy=2. )
-{
-
-  double phi = 1.;
-  double phi_x, std_x, d_x;
-
-  for (unsigned int axis=0; axis<3; axis++) {
-
-    std_x = std::sqrt(p.covar(axis,axis));
-    d_x = x(axis)-p.mu(axis);
-
-    // intergral +/- accuracy
-    phi_x = std::erf((d_x+accuracy) / (std_x*kRootTwo)) -
-            std::erf((d_x-accuracy) / (std_x*kRootTwo));
-
-    // calculate product of integrals for the axes i.e. joint probability?
-    phi *= .5*phi_x;
-
-  }
-
-  // we don't want a NaN!
-  assert(!std::isnan(phi));
-
-  return phi;
-}
-
-
-
-double probability_cosine_similarity(
-  const TrackObjectPtr trk_last,
-  const TrackObjectPtr obj
-)
-{
-  // calculate cosine similarity between two feature vectors
-  double f_dot = trk_last->features.dot(obj->features);
-  double f_mag = (trk_last->features).norm() * (obj->features).norm();
-  double cosine_similarity = f_dot / f_mag;
-
-  if (!(cosine_similarity>=-1.0 && cosine_similarity <=1.0)) {
-    if (DEBUG) {
-      std::cout << cosine_similarity;
-      std::cout << " f_dot: " << f_dot;
-      std::cout << " f_mag: " << f_mag;
-      std::cout << " trk_features: " << (trk_last->features);
-      std::cout << " obj_features: " << (obj->features);
-      std::cout << std::endl;
-    }
-
-    // return a default value
-    cosine_similarity = 0.0;
-  }
-
-  // rescale to 0.0-1.0
-  return (cosine_similarity + 1.0) / 2.0;
-}
+using namespace ProbabilityDensityFunctions;
 
 
 
@@ -583,9 +495,7 @@ double BayesianTracker::prob_update_motion(
   double prob_assign = 0.;
 
   // calculate the probability that this is the correct track
-  prob_assign = probability_erf(obj->position(),
-                                trk->predict(),
-                                this->accuracy);
+  prob_assign = ProbabilityDensityFunctions::multivariate_erf(trk, obj, this->accuracy);
 
   // set the probability of assignment to zero if the track is currently
   // in a metaphase state and the object to link to is anaphase
@@ -625,7 +535,7 @@ double BayesianTracker::prob_update_visual(
 ) const
 {
   double prob_assign = 0.;
-  prob_assign = probability_cosine_similarity(trk->track.back(), obj);
+  prob_assign = ProbabilityDensityFunctions::cosine_similarity(trk, obj);
   return prob_assign;
 }
 

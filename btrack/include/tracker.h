@@ -35,6 +35,7 @@
 #include "manager.h"
 #include "defs.h"
 #include "hyperbin.h"
+#include "pdf.h"
 
 
 // #define PROB_NOT_ASSIGN 0.01

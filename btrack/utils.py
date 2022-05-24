@@ -2,6 +2,7 @@ import logging
 from typing import Optional
 
 import numpy as np
+from skimage.util import map_array
 
 # import core
 from . import btypes, constants
@@ -10,7 +11,7 @@ from .constants import Dimensionality
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
-__all__ = ["segmentation_to_objects"]
+__all__ = ["segmentation_to_objects", "update_segmentation"]
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -205,6 +206,63 @@ def _pandas_html_repr(obj):
                 obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
 
     return pd.DataFrame.from_dict(obj_as_dict).to_html()
+
+
+def update_segmentation(
+    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
+) -> np.ndarray:
+    """
+    Map btrack output tracks back into a masked array.
+
+    Parameters
+    ----------
+    segmentation : np.array
+        Array containing a timeseries of single cell masks. Dimensions should be
+        ordered T(Z)YX.
+    tracks : list[btypes.Tracklet]
+        btrack output (tracker.tracks)
+
+    Returns
+    -------
+    relabeled : np.array
+        Array containing the same masks as segmentation but relabeled to
+        maintain single cell identity over time.
+
+    Example
+    -------
+
+    import btrack
+    tracker = btrack.BayesianTracker()
+    objects = btrack.utils.segmentation_to_objects(segmentation)
+    tracker.append(objects)
+    ...
+    tracker.optimize()
+    tracks = tracker.tracks
+
+    tracked_segmentation = btrack.utils.update_segmentation(
+                                    segmentation, tracks)
+    """
+
+    coords_arr = np.concatenate(
+        [
+            track.to_array()[~np.array(track.dummy)][:, :5].astype(int)
+            for track in tracks
+        ]
+    )
+    relabeled = np.zeros_like(segmentation)
+    for t, single_segmentation in enumerate(segmentation):
+        frame_coords = coords_arr[coords_arr[:, 1] == t]
+        new_id, tc, xc, yc, zc = tuple(frame_coords.T)
+        if single_segmentation.ndim == 2:
+            old_id = single_segmentation[yc, xc]
+        elif single_segmentation.ndim == 3:
+            old_id = single_segmentation[zc, yc, xc]
+
+        relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
+            single_segmentation > 0
+        )
+
+    return relabeled
 
 
 if __name__ == "__main__":

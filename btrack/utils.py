@@ -208,9 +208,7 @@ def _pandas_html_repr(obj):
     return pd.DataFrame.from_dict(obj_as_dict).to_html()
 
 
-def update_segmentation(
-    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
-) -> np.ndarray:
+def update_segmentation(segmentation: np.ndarray, tracks: list) -> np.ndarray:
     """
     Map btrack output tracks back into a masked array.
 

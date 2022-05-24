@@ -1,7 +1,9 @@
+import h5py
 import numpy as np
 import pytest
 
 from btrack import btypes, utils
+from btrack.dataio import HDF5FileHandler
 
 
 def _make_test_image(
@@ -189,3 +191,37 @@ def test_intensity_image(ndim):
     for obj in objects:
         centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
         assert obj.properties["max_intensity"] == intensity_image[centroid]
+
+
+def _load_segmentation_and_tracks():
+    f = h5py.File("./tests/_test_data/update_segmentation_data.h5", "r")
+    coords = tuple(f[c][:] for c in ["tc", "yc", "xc"])
+    in_segmentation = np.zeros((10, 1024, 1020), dtype=f["in_values"].dtype)
+    out_segmentation = np.zeros((10, 1024, 1020), dtype=f["out_values"].dtype)
+    in_segmentation[coords] = f["in_values"][:]
+    out_segmentation[coords] = f["out_values"][:]
+    tracks = HDF5FileHandler("./tests/_test_data/tracks.h5").tracks
+    return in_segmentation, out_segmentation, tracks
+
+
+def test_update_segmentation_2d():
+    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)
+
+
+def test_update_segmentation_3d():
+    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+
+    in_segmentation = np.broadcast_to(
+        in_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    out_segmentation = np.broadcast_to(
+        out_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)

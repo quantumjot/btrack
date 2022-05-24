@@ -1,4 +1,4 @@
-from typing import List, Set
+from typing import List
 
 import btrack
 import napari
@@ -34,7 +34,7 @@ def run_tracker(objects, config_file_path):
 
 
 def _create_per_model_widgets(
-    model: BaseModel, *, non_standard_widget_names: Set[str] = set()
+    model: BaseModel, non_standard_widget_names: List[str]
 ) -> List[Widget]:
     """
     for a given model create a list of widgets but skip the
@@ -63,15 +63,13 @@ def _create_pydantic_default_widgets(
     widgets: List[Widget],
     model_configs: List[BaseModel],
     *,
-    non_standard_widget_types: Set[str] = set()
+    non_standard_widget_names: List[str] = []
 ) -> None:
     """
     create the widgets which are detected automatically by napari
     """
     model_widgets = [
-        _create_per_model_widgets(
-            model, non_standard_widget_names=non_standard_widget_types
-        )
+        _create_per_model_widgets(model, non_standard_widget_names)
         for model in model_configs
     ]
     widgets.extend([item for sublist in model_widgets for item in sublist])
@@ -117,13 +115,18 @@ def track() -> Container:
     ]
 
     # widgets for which the default widget type is incorrect
-    non_standard_widgets = {"hypotheses"}
+    non_standard_widgets = [create_widget(name="hypotheses")]
 
     # create all the widgets
     _create_napari_specific_widgets(widgets)
     _create_pydantic_default_widgets(
-        widgets, default_model_configs, non_standard_widget_types=non_standard_widgets
+        widgets,
+        default_model_configs,
+        non_standard_widget_names=[w.name for w in non_standard_widgets],
     )
+    widgets.extend(non_standard_widgets)
     _create_button_widgets(widgets)
+
+    widgets.append(create_widget())
 
     return Container(widgets=widgets)

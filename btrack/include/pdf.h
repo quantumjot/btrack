@@ -20,13 +20,7 @@
 #include "eigen/Eigen/Dense"
 #include <vector>
 #include <iostream>
-#include <map>
 #include <cmath>
-#include <limits>
-#include <algorithm>
-#include <set>
-#include <ctime>
-#include <fstream>
 
 #include "defs.h"
 #include "types.h"
@@ -48,8 +42,7 @@ namespace ProbabilityDensityFunctions
 
   double cosine_similarity(
     const TrackletPtr& trk,
-    const TrackObjectPtr& obj,
-    const double scaling
+    const TrackObjectPtr& obj
   );
 
 }

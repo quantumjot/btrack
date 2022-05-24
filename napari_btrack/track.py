@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Set
 
 import btrack
 import napari
 from btrack import datasets
 from btrack.config import load_config
-from magicgui.widgets import Container, PushButton, create_widget
+from magicgui.widgets import Container, PushButton, Widget, create_widget
 from pydantic import BaseModel
 
 default_config = load_config(datasets.cell_config())
@@ -33,45 +33,55 @@ def run_tracker(objects, config_file_path):
         return data, properties, graph
 
 
-def _create_per_model_widgets(model: BaseModel) -> List[dict]:
+def _create_per_model_widgets(
+    model: BaseModel, *, non_standard_widget_names: Set[str] = set()
+) -> List[Widget]:
     """
-    for a given model create a list of widgets
+    for a given model create a list of widgets but skip the
+    ones in which napari guesses the incorrect type
     """
-    widgets: list = []
+    widgets: List[Widget] = []
     if model:
         widgets.extend(
             [
                 create_widget(value=default_value, name=parameter)
                 for parameter, default_value in model
+                if parameter not in non_standard_widget_names
             ]
         )
     return widgets
 
 
-def track() -> Container:
+def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     """
-    Create a series of widgets programatically
+    add the widgets which interact with napari itself
     """
-    # the different model types
-    default_model_configs = [
-        default_config.motion_model,
-        default_config.object_model,
-        default_config.hypothesis_model,
-    ]
-
-    # initialise a list for all widgets
-    widgets: list = []
-
-    # napari-specific widgets
     widgets.append(create_widget(name="segmentation", annotation=napari.layers.Image))
 
-    # widgets from pydantic model
+
+def _create_pydantic_default_widgets(
+    widgets: List[Widget],
+    model_configs: List[BaseModel],
+    *,
+    non_standard_widget_types: Set[str] = set()
+) -> None:
+    """
+    create the widgets which are detected automatically by napari
+    """
     model_widgets = [
-        _create_per_model_widgets(model) for model in default_model_configs
+        _create_per_model_widgets(
+            model, non_standard_widget_names=non_standard_widget_types
+        )
+        for model in model_configs
     ]
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
-    # button widgets
+
+def _create_button_widgets(widgets: List[Widget]) -> None:
+    """
+    create the set of button widgets at the bottom of the widget with
+    appropriate callbacks to enable functionality
+    """
     widget_names = [
         "load_config_button",
         "save_config_button",
@@ -91,6 +101,29 @@ def track() -> Container:
         ]
     )
 
-    # print(widgets.call_button)
+
+def track() -> Container:
+    """
+    Create a series of widgets programatically
+    """
+    # initialise a list for all widgets
+    widgets: list = []
+
+    # the different model types
+    default_model_configs = [
+        default_config.motion_model,
+        default_config.object_model,
+        default_config.hypothesis_model,
+    ]
+
+    # widgets for which the default widget type is incorrect
+    non_standard_widgets = {"hypotheses"}
+
+    # create all the widgets
+    _create_napari_specific_widgets(widgets)
+    _create_pydantic_default_widgets(
+        widgets, default_model_configs, non_standard_widget_types=non_standard_widgets
+    )
+    _create_button_widgets(widgets)
 
     return Container(widgets=widgets)

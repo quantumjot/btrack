@@ -115,7 +115,15 @@ def track() -> Container:
     ]
 
     # widgets for which the default widget type is incorrect
-    non_standard_widgets = [create_widget(name="hypotheses")]
+    non_standard_widgets = [
+        create_widget(
+            name="hypotheses",
+            value=getattr(default_config.hypothesis_model, "hypotheses")[0],
+            options=dict(
+                choices=getattr(default_config.hypothesis_model, "hypotheses")
+            ),
+        )
+    ]
 
     # create all the widgets
     _create_napari_specific_widgets(widgets)
@@ -126,7 +134,5 @@ def track() -> Container:
     )
     widgets.extend(non_standard_widgets)
     _create_button_widgets(widgets)
-
-    widgets.append(create_widget())
 
     return Container(widgets=widgets)

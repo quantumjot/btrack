@@ -200,7 +200,8 @@ def _load_segmentation_and_tracks():
     out_segmentation = np.zeros((10, 1024, 1020), dtype=f["out_values"].dtype)
     in_segmentation[coords] = f["in_values"][:]
     out_segmentation[coords] = f["out_values"][:]
-    tracks = HDF5FileHandler("./tests/_test_data/tracks.h5").tracks
+    with HDF5FileHandler("./tests/_test_data/tracks.h5") as hdf:
+        tracks = hdf.tracks
     return in_segmentation, out_segmentation, tracks
 
 

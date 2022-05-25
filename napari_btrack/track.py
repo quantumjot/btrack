@@ -135,4 +135,31 @@ def track() -> Container:
     widgets.extend(non_standard_widgets)
     _create_button_widgets(widgets)
 
-    return Container(widgets=widgets)
+    btrack_widget = Container(widgets=widgets)
+
+    @btrack_widget.reset_button.changed.connect
+    def restore_defaults():
+        # widgets for which the default widget type is incorrect
+        btrack_widget.hypotheses.value = getattr(
+            default_config.hypothesis_model, "hypotheses"
+        )[0]
+
+        for model in default_model_configs:
+            if model:
+                for parameter, default_value in model:
+                    if parameter == "hypotheses":
+                        btrack_widget[parameter].value = default_value
+
+    @btrack_widget.call_button.changed.connect
+    def run():
+        print("run")
+
+    @btrack_widget.save_config_button.changed.connect
+    def save_config():
+        print("save config")
+
+    @btrack_widget.load_config_button.changed.connect
+    def load_config():
+        print("load config")
+
+    return btrack_widget

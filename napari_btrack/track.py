@@ -4,6 +4,7 @@ import btrack
 import napari
 from btrack import datasets
 from btrack.config import load_config
+from btrack.utils import segmentation_to_objects
 from magicgui.widgets import Container, PushButton, Widget, create_widget
 from pydantic import BaseModel
 
@@ -63,7 +64,7 @@ def _create_pydantic_default_widgets(
     widgets: List[Widget],
     model_configs: List[BaseModel],
     *,
-    non_standard_widget_names: List[str] = []
+    non_standard_widget_names: List[str] = [],
 ) -> None:
     """
     create the widgets which are detected automatically by napari
@@ -139,7 +140,7 @@ def track() -> Container:
 
     @btrack_widget.reset_button.changed.connect
     def restore_defaults():
-        # widgets for which the default widget type is incorrect
+        # treat hypotheses different for now
         btrack_widget.hypotheses.value = getattr(
             default_config.hypothesis_model, "hypotheses"
         )[0]
@@ -152,14 +153,20 @@ def track() -> Container:
 
     @btrack_widget.call_button.changed.connect
     def run():
-        print("run")
+        segmentation = btrack_widget.segmentation.value
+        segmented_objects = segmentation_to_objects(segmentation.data[:100, ...])
+        data, properties, graph = run_tracker(segmented_objects, datasets.cell_config())
+        viewer = napari.current_viewer()
+        viewer.add_tracks(
+            data=data, properties=properties, graph=graph, name=f"{segmentation}_btrack"
+        )
 
     @btrack_widget.save_config_button.changed.connect
-    def save_config():
+    def save_config_to_json():
         print("save config")
 
     @btrack_widget.load_config_button.changed.connect
-    def load_config():
+    def load_config_from_json():
         print("load config")
 
     return btrack_widget

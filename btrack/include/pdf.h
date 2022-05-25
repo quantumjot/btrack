@@ -45,6 +45,11 @@ namespace ProbabilityDensityFunctions
     const TrackObjectPtr& obj
   );
 
+  double soft_cosine_similarity(
+    const TrackletPtr& trk,
+    const TrackObjectPtr& obj
+  );
+
 }
 
 #endif

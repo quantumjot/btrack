@@ -57,6 +57,10 @@ class TrackerConfig(BaseModel):
     optimizer_options: dict
         Additional options to pass to the optimizer. See `cvxopt.glpk` for more
         details of options that can be passed.
+    features : list
+        A list of feature names to be used during tracking updates. These must
+        correspond to named features found in the properties of each
+        `:py:class:btrack.btypes.PyTrackObject` in the dataset.
 
     Notes
     -----

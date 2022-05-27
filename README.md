@@ -77,18 +77,13 @@ If you would like to contribute to btrack, you will need to install the latest v
 
 More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:
 
+
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
 Ulicna K, Vallardi G, Charras G and Lowe AR.
 *Front in Comp Sci* (2021)
 [![doi:10.3389/fcomp.2021.734559](https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue)](https://doi.org/10.3389/fcomp.2021.734559)
 
-
-**Local cellular neighbourhood controls proliferation in cell competition**
-Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
-*Mol. Biol. Cell* (2017)
-[![doi:10.1091/mbc.E17-06-0368](https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue)](https://doi.org/10.1091/mbc.E17-06-0368)
-
-```
+```bibtex
 @ARTICLE {10.3389/fcomp.2021.734559,
    AUTHOR = {Ulicna, Kristina and Vallardi, Giulia and Charras, Guillaume and Lowe, Alan R.},
    TITLE = {Automated Deep Lineage Tree Analysis Using a Bayesian Single Cell Tracking Approach},
@@ -102,7 +97,12 @@ Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
 }
 ```
 
-```
+**Local cellular neighbourhood controls proliferation in cell competition**
+Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
+*Mol. Biol. Cell* (2017)
+[![doi:10.1091/mbc.E17-06-0368](https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue)](https://doi.org/10.1091/mbc.E17-06-0368)
+
+```bibtex
 @ARTICLE {Bove07112017,
   author = {Bove, Anna and Gradeci, Daniel and Fujita, Yasuyuki and Banerjee,
     Shiladitya and Charras, Guillaume and Lowe, Alan R.},

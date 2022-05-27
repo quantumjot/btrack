@@ -28,6 +28,8 @@
 #include "tracklet.h"
 #include "hyperbin.h"
 #include "defs.h"
+#include "pdf.h"
+#include "features.h"
 
 // #define TYPE_Pfalse 0
 // #define TYPE_Pinit 1
@@ -257,7 +259,7 @@ double safe_log(double value);
 //   6. P_dead: an apoptosis event
 //   7. P_extrude: a cell extrusion event. A cell is removed from the tissue.
 
-class HypothesisEngine
+class HypothesisEngine: public UpdateFeatures
 {
   public:
     // constructors and destructors

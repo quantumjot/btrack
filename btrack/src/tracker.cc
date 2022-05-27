@@ -24,8 +24,10 @@ using namespace ProbabilityDensityFunctions;
 
 
 
-void write_belief_matrix_to_CSV(std::string a_filename,
-                                Eigen::Ref<Eigen::MatrixXd> a_belief)
+void write_belief_matrix_to_CSV(
+  std::string a_filename,
+  Eigen::Ref<Eigen::MatrixXd> a_belief
+)
 {
   std::cout << a_filename << std::endl;
   std::ofstream belief_file;
@@ -33,24 +35,6 @@ void write_belief_matrix_to_CSV(std::string a_filename,
   belief_file << a_belief.format(CSVFormat);
   belief_file.close();
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-// BayesianTracker::BayesianTracker(const bool verbose) {
-//   // default behaviour is to use exact updates
-//   BayesianTracker(verbose, UPDATE_MODE_EXACT);
-// }
-
 
 
 
@@ -93,27 +77,6 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
   cost_function_mode = update_mode;
   if (DEBUG) std::cout << "Update mode: " << cost_function_mode << std::endl;
 }
-
-
-void BayesianTracker::set_update_features(const unsigned int update_features) {
-  m_update_features = update_features;
-
-  unsigned int bitmask_motion = std::pow(2, USE_MOTION_FEATURES);
-  unsigned int bitmask_visual = std::pow(2, USE_VISUAL_FEATURES);
-
-  m_use_motion_features = ((update_features & bitmask_motion) == bitmask_motion);
-  m_use_visual_features = ((update_features & bitmask_visual) == bitmask_visual);
-
-
-
-  // TODO(arl): set the order of updates
-  if (DEBUG) {
-    std::cout << "Use motion features: " << m_use_motion_features << std::endl;
-    std::cout << "Use visual features: " << m_use_visual_features << std::endl;
-    std::cout << "Update features: " << update_features << std::endl;
-  }
-}
-
 
 
 unsigned int BayesianTracker::set_motion_model(
@@ -378,7 +341,7 @@ void BayesianTracker::step(const unsigned int steps)
       m_update_fn = &BayesianTracker::prob_update_motion;
       cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
 
-      if (m_use_visual_features) {
+      if (use_visual_features()) {
         // point at the correct function, run the update with visual information
         m_update_fn = &BayesianTracker::prob_update_visual;
         cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
@@ -390,7 +353,7 @@ void BayesianTracker::step(const unsigned int steps)
       m_update_fn = &BayesianTracker::prob_update_motion;
       cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
 
-      if (m_use_visual_features) {
+      if (use_visual_features()) {
         // point at the correct function, run the update with visual information
         m_update_fn = &BayesianTracker::prob_update_visual;
         cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);

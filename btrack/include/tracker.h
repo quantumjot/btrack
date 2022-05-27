@@ -36,6 +36,7 @@
 #include "defs.h"
 #include "hyperbin.h"
 #include "pdf.h"
+#include "features.h"
 
 
 // #define PROB_NOT_ASSIGN 0.01
@@ -81,7 +82,7 @@ typedef std::pair<unsigned int, double> LinkHypothesis;
 // (Narayana and Haverkamp, 2007). The best linkages are those with the highest
 // posterior probability.
 
-class BayesianTracker
+class BayesianTracker: public UpdateFeatures
 {
 public:
   // Constructor
@@ -100,9 +101,6 @@ public:
 
   // set the cost function to use
   void set_update_mode(const unsigned int update_mode);
-
-  // set the features to use while updating the Bayesian belief matrix
-  void set_update_features(const unsigned int update_features);
 
   // set up the motion model. matrices are in the form of c-style linear arrays
   unsigned int set_motion_model(const unsigned int measurements,
@@ -205,10 +203,6 @@ public:
   }
 
 private:
-
-  unsigned int m_update_features;
-  bool m_use_motion_features = true;
-  bool m_use_visual_features = false;
 
   // verbose output to stdio
   bool verbose = false;

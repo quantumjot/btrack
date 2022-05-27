@@ -57,7 +57,10 @@ void InterfaceWrapper::set_update_mode(const unsigned int a_update_mode) {
 
 // set the update mode of the tracker
 void InterfaceWrapper::set_update_features(const unsigned int a_update_features) {
+
+  // set the update mode for the main tracker
   tracker.set_update_features(a_update_features);
+
 }
 
 // tracking and basic data handling
@@ -286,6 +289,9 @@ unsigned int InterfaceWrapper::create_hypotheses( const PyHypothesisParams a_par
   // set up a new hypothesis engine with the parameters supplied
   h_engine = HypothesisEngine(a_start_n, a_end_n, a_params);
   h_engine.volume = tracker.volume;
+
+  // set the hypothesis engine update features to match the tracker
+  h_engine.set_update_features(tracker.get_update_features());
 
   // add all of the tracks to the engine
   for (size_t i=0; i<size(); i++) {

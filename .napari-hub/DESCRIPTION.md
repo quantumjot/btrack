@@ -11,6 +11,8 @@
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields. We developed `btrack` for cell tracking in time-lapse microscopy data.
 
+![logo](../docs/_static/napari_btrack.png)
+
 
 ## napari plugins
 
@@ -21,9 +23,16 @@ dependencies needed to use these plugins, install the ``napari`` extra via:
 pip install btrack[napari]
 ```
 
-![logo](../docs/_static/napari_btrack.png)
 
-## How to Cite
+
+## related plugins
+
+We have also developed a napari plugin, arboretrum, that can be used to visualise track properties and lineage trees:
+
+[![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-arboretum)](https://napari-hub.org/plugins/napari-arboretum)
+
+
+## how to cite
 
 **Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
 Ulicna K, Vallardi G, Charras G and Lowe AR.

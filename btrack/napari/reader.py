@@ -65,10 +65,9 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
         with HDF5FileHandler(_path, "r") as hdf:
 
             # get the segmentation if there is one
-            if "segmentation" in hdf._hdf:
-                segmentation = hdf.segmentation
-                if segmentation is not None:
-                    layers.append((segmentation, {}, "labels"))
+            segmentation = hdf.segmentation
+            if segmentation is not None:
+                layers.append((segmentation, {}, "labels"))
 
             # iterate over object types and create a layer for each
             for obj_type in hdf.object_types:

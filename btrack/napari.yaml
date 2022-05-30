@@ -11,5 +11,7 @@ contributions:
   readers:
   - command: btrack.read_btrack
     filename_patterns:
-    - '*.h5, *.hdf, *.hdf5'
+    - '*.h5'
+    - '*.hdf'
+    - '*.hdf5'
     accepts_directories: false

@@ -23,6 +23,8 @@ def get_version():
 DESCRIPTION = "A framework for Bayesian multi-object tracking"
 LONG_DESCRIPTION = __doc__
 
+extras = ["docs", "napari"]
+extras_require = {extra: get_install_required(extra) for extra in extras}
 
 setup(
     version=get_version(),
@@ -32,7 +34,7 @@ setup(
     packages=find_packages(),
     package_data={"btrack": ["libs/libtracker*", "VERSION.txt"]},
     install_requires=get_install_required(),
-    extras_require={"docs": get_install_required("docs")},
+    extras_require=extras_require,
     python_requires=">=3.6",
     license="LICENSE.md",
 )

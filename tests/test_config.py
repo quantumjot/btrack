@@ -3,10 +3,11 @@ from typing import Tuple, Union
 
 import numpy as np
 import pytest
-from _utils import CONFIG_FILE
 from pydantic import BaseModel
 
 import btrack
+
+from ._utils import CONFIG_FILE
 
 
 def _random_config() -> dict:

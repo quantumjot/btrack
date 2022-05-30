@@ -7,7 +7,6 @@
 
 ![logo](../docs/_static/btrack_logo.png)
 
-# btrack :microscope::computer:
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields. We developed `btrack` for cell tracking in time-lapse microscopy data.
 
@@ -23,7 +22,22 @@ dependencies needed to use these plugins, install the ``napari`` extra via:
 pip install btrack[napari]
 ```
 
+## quickstart
 
+The `napari-btrack` plugin allows users to configure and run `btrack` from within napari.
+
+You will need to segment your timelapse images using another algorithm. There are many plugins available on the napari hub to perform segmentation. (For example: [these plugins](https://www.napari-hub.org/?sort=recentlyUpdated&workflowStep=Image+Segmentation)).
+
+For detailed descriptions of each of the parameters, see the documentation: [btrack.readthedocs.io](https://btrack.readthedocs.io)
+
+## how it works
+
+The `btrack` algorithm works in two stages:
+
+1. New observations are assigned to tracklets by evaluating the posterior probability of each potential linkage from a Bayesian belief matrix for all possible inkages.
+2. The tracklets are then assembled into tracks by using multiple hypothesis testing and integer programming to identify a globally optimal solution.
+
+The results are visualised using the napari Tracks layer.
 
 ## related plugins
 

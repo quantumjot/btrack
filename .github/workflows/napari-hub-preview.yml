@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: napari hub Preview Page Builder
         uses: chanzuckerberg/napari-hub-preview-action@v0.1.5

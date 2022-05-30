@@ -1,7 +1,7 @@
 """
 This module is a reader plugin btrack files for napari.
 """
-from pathlib import Path
+import os
 from typing import Callable, List, Optional, Sequence, Union
 
 from napari.types import LayerDataTuple
@@ -11,8 +11,7 @@ from btrack.dataio import HDF5FileHandler
 from btrack.utils import tracks_to_napari
 
 # Type definitions
-PathLike = Union[str, Path]
-PathOrPaths = Union[PathLike, Sequence[PathLike]]
+PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
 ReaderFunction = Callable[[PathOrPaths], List[LayerDataTuple]]
 
 
@@ -60,7 +59,7 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
     paths = [path] if not isinstance(path, list) else path
 
     # store the layers to be generated
-    layers = []
+    layers: List[tuple] = []
 
     for _path in paths:
         with HDF5FileHandler(_path, "r") as hdf:
@@ -68,7 +67,8 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
             # get the segmentation if there is one
             if "segmentation" in hdf._hdf:
                 segmentation = hdf.segmentation
-                layers.append((segmentation, {}, "labels"))
+                if segmentation is not None:
+                    layers.append((segmentation, {}, "labels"))
 
             # iterate over object types and create a layer for each
             for obj_type in hdf.object_types:

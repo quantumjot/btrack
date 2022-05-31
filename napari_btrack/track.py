@@ -133,7 +133,7 @@ class Matrices:
         return (np.asarray(cls().unscaled_matrices[name]) * sigma).tolist()
 
     @classmethod
-    def get_sigma(cls, name: str, scaled_matrix: npt.NDArray[np.float64]) -> float:
+    def get_sigma(cls, name: str, scaled_matrix: npt.NDArray) -> float:
         return scaled_matrix[0][0] / cls().unscaled_matrices[name][0]
 
 

@@ -161,22 +161,55 @@ def run_tracker(
         return data, properties, graph
 
 
-def _create_per_model_widgets(
-    model: BaseModel, non_standard_widget_names: List[str]
-) -> List[Widget]:
+def html_label_widget(label: str, tag: str = "b") -> dict:
     """
-    for a given model create a list of widgets but skip the
-    ones in which napari guesses the incorrect type
+    Create a HMTL label widget.
+    """
+    return dict(
+        widget_type="Label",
+        label=f"<{tag}>{label}</{tag}>",
+    )
+
+
+def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
+    """
+    For a given model create a list of widgets, ignoring entries in `ignored_names`.
+    The items "hypotheses" and the various matrices need customisation,
+    otherwise we can use the napari default.
     """
     widgets: List[Widget] = []
     if model:
-        widgets.extend(
-            [
-                create_widget(value=default_value, name=parameter)
-                for parameter, default_value in model
-                if parameter not in non_standard_widget_names
-            ]
-        )
+        widgets.extend([create_widget(**html_label_widget(type(model).__name__))])
+        for parameter, default_value in model:
+            if parameter in hidden_variable_names:
+                continue
+            if parameter in Matrices().names:
+                # just expose the scalar sigma to user
+                sigma = Matrices.get_sigma(parameter, default_value)
+                widgets.extend(
+                    [
+                        create_widget(
+                            value=sigma, name=f"{parameter}_sigma", annotation=float
+                        )
+                    ]
+                )
+            if (
+                parameter == "hypotheses"
+            ):  # this list should be represented as a series of checkboxes
+                for choice in default_value:
+                    widgets.extend(
+                        [create_widget(value=True, name=choice, annotation=bool)]
+                    )
+            else:  # use napari default
+                widgets.extend(
+                    [
+                        create_widget(
+                            value=default_value,
+                            name=parameter,
+                            annotation=type(default_value),
+                        )
+                    ]
+                )
     return widgets
 
 
@@ -184,23 +217,79 @@ def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     """
     add the widgets which interact with napari itself
     """
+    widgets.append(create_widget(**html_label_widget("Segmentation")))
     widgets.append(create_widget(name="segmentation", annotation=napari.layers.Image))
 
 
 def _create_pydantic_default_widgets(
-    widgets: List[Widget],
-    model_configs: List[BaseModel],
-    *,
-    non_standard_widget_names: List[str] = [],
+    widgets: List[Widget], model_configs: List[BaseModel]
 ) -> None:
     """
     create the widgets which are detected automatically by napari
     """
-    model_widgets = [
-        _create_per_model_widgets(model, non_standard_widget_names)
-        for model in model_configs
-    ]
+    model_widgets = [_create_per_model_widgets(model) for model in model_configs]
     widgets.extend([item for sublist in model_widgets for item in sublist])
+
+
+def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
+    motion_model_dict = {}
+    hypothesis_model_dict = {}
+
+    motion_model_keys = getattr(default_cell_config, "motion_model").dict().keys()
+    hypothesis_model_keys = (
+        getattr(default_cell_config, "hypothesis_model").dict().keys()
+    )
+    hypotheses = []
+    for widget in container:
+        # setup motion model
+        if widget.name in Matrices().names:  # matrices need special treatment
+            sigma = getattr(container, f"{widget.name}_sigma").value
+            matrix = Matrices.get_scaled_matrix(widget.name, sigma)
+            motion_model_dict[widget.name] = matrix
+        else:
+            if widget.name in motion_model_keys:
+                motion_model_dict[widget.name] = widget.value
+        # setup hypothesis model
+        if widget.name in hypothesis_model_keys:
+            hypothesis_model_dict[widget.name] = widget.value
+        if widget.name in all_hypotheses:  # hypotheses need special treatment
+            if getattr(container, widget.name).value:
+                hypotheses.append(widget.name)
+
+    # add some non-exposed default values to the motion model
+    for default_name, default_value in zip(
+        ["measurements", "states", "dt", "prob_not_assign"], [3, 6, 1.0, 0.001]
+    ):
+        motion_model_dict[default_name] = default_value
+
+    # add some non-exposed default value to the hypothesis model
+    for default_name, default_value in zip(["apoptosis_rate", "eta"], [0.001, 1.0e-10]):
+        hypothesis_model_dict[default_name] = default_value
+
+    # add hypotheses to hypothesis model
+    hypothesis_model_dict["hypotheses"] = hypotheses
+    motion_model = MotionModel(**motion_model_dict)
+    hypothesis_model = HypothesisModel(**hypothesis_model_dict)
+    return TrackerConfig(motion_model=motion_model, hypothesis_model=hypothesis_model)
+
+
+def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
+    for model in ["motion_model", "hypothesis_model", "object_model"]:
+        model_config = getattr(config, model)
+        if model_config:
+            for parameter, value in model_config:
+                if parameter in hidden_variable_names:
+                    continue
+                if parameter in Matrices().names:
+                    sigma = Matrices.get_sigma(parameter, value)
+                    getattr(container, f"{parameter}_sigma").value = sigma
+                if parameter == "hypotheses":
+                    for hypothesis in all_hypotheses:
+                        getattr(container, hypothesis).value = False
+                    for hypothesis in value:
+                        getattr(container, hypothesis).value = True
+                else:
+                    getattr(container, parameter).value = value
 
 
 def _create_button_widgets(widgets: List[Widget]) -> None:

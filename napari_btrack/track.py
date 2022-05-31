@@ -1,15 +1,37 @@
-from typing import List
+from dataclasses import dataclass, field
+from typing import List, Tuple
 
 import btrack
 import napari
 from btrack import datasets
-from btrack.config import load_config
+from btrack.btypes import PyTrackObject
+from btrack.config import (
+    HypothesisModel,
+    MotionModel,
+    TrackerConfig,
+    load_config,
+    save_config,
+)
 from btrack.utils import segmentation_to_objects
+from magicgui.application import use_app
+from magicgui.types import FileDialogMode
 from magicgui.widgets import Container, PushButton, Widget, create_widget
+from numpy import asarray, ndarray
 from pydantic import BaseModel
 
-default_config = load_config(datasets.cell_config())
+default_cell_config = load_config(datasets.cell_config())
 
+# widgets for which the default widget type is incorrect
+hidden_variable_names = [
+    "name",
+    "measurements",
+    "states",
+    "dt",
+    "apoptosis_rate",
+    "prob_not_assign",
+    "eta",
+]
+all_hypotheses = ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"]
 
 def run_tracker(objects, config_file_path):
     with btrack.BayesianTracker() as tracker:

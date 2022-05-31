@@ -1,5 +1,6 @@
 Updates
 =======
+
 0.5.0
 -----
 - Factored out model specific updates from Bayesian update code
@@ -14,6 +15,11 @@ Updates
 - Add imaging volume dimensionality inference
 - Fix warnings for implicit type conversion
 - Removed _PyTrackObjectFactory
+- Fix logging errors
+- Add napari-hub manifest
+- Add napari-btrack package
+- Refactor localization to remove dask dependency
+- Increase test coverage
 
 0.4.3
 -----

@@ -44,7 +44,7 @@ class Matrices:
     default_sigmas: List[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
-    unscaled_matrices: dict[str, List[float]] = field(
+    unscaled_matrices: Dict[str, List[float]] = field(
         default_factory=lambda: dict(
             A=[
                 1,

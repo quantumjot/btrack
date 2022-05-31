@@ -2,9 +2,10 @@ import json
 
 import numpy as np
 import pytest
-from _utils import CONFIG_FILE
 
 from btrack import models, utils
+
+from ._utils import CONFIG_FILE
 
 
 def test_read_motion_model():

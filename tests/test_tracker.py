@@ -1,9 +1,10 @@
 import json
 
 import numpy as np
-from _utils import full_tracker_example, simple_tracker_example
 
 import btrack
+
+from ._utils import full_tracker_example, simple_tracker_example
 
 
 def _gt_object_hook(d):

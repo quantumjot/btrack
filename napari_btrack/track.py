@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import btrack
 import napari
+import numpy as np
+import numpy.typing as npt
 from btrack import datasets
 from btrack.btypes import PyTrackObject
 from btrack.config import (
@@ -16,9 +18,8 @@ from btrack.utils import segmentation_to_objects
 from magicgui.application import use_app
 from magicgui.types import FileDialogMode
 from magicgui.widgets import Container, PushButton, Widget, create_widget
-from numpy import asarray, ndarray
 from pydantic import BaseModel
-from qtpy.QtWidgets import QScrollArea
+from PyQt5.QtWidgets import QScrollArea
 
 default_cell_config = load_config(datasets.cell_config())
 
@@ -129,16 +130,16 @@ class Matrices:
 
     @classmethod
     def get_scaled_matrix(cls, name: str, sigma: float) -> List[float]:
-        return (asarray(cls().unscaled_matrices[name]) * sigma).tolist()
+        return (np.asarray(cls().unscaled_matrices[name]) * sigma).tolist()
 
     @classmethod
-    def get_sigma(cls, name: str, scaled_matrix: ndarray[float]) -> float:
+    def get_sigma(cls, name: str, scaled_matrix: npt.NDArray[np.float64]) -> float:
         return scaled_matrix[0][0] / cls().unscaled_matrices[name][0]
 
 
 def run_tracker(
     objects: List[PyTrackObject], tracker_config: TrackerConfig
-) -> Tuple[ndarray, dict, dict]:
+) -> Tuple[npt.NDArray, dict, dict]:
     with btrack.BayesianTracker() as tracker:
         tracker.configure(tracker_config)
         tracker.max_search_radius = 50
@@ -232,7 +233,7 @@ def _create_pydantic_default_widgets(
 
 
 def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
-    motion_model_dict = {}
+    motion_model_dict: Dict[str, Any] = {}
     hypothesis_model_dict = {}
 
     motion_model_keys = getattr(default_cell_config, "motion_model").dict().keys()

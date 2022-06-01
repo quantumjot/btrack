@@ -67,7 +67,7 @@ def create_test_tracklet(
     return tracklet, data, properties, track_ID
 
 
-def create_realistc_tracklet(
+def create_realistic_tracklet(
     start_x: float,
     start_y: float,
     dx: float,
@@ -179,14 +179,14 @@ def create_test_segmentation_and_tracks(
 
     # create tracks moving from each corner of the segmentation at a constant
     # velocity towards another corner. these tracks do not intersect.
-    track_A = create_realistc_tracklet(padding, padding, dxy, 0, nframes, 1)
-    track_B = create_realistc_tracklet(
+    track_A = create_realistic_tracklet(padding, padding, dxy, 0, nframes, 1)
+    track_B = create_realistic_tracklet(
         boxsize - padding, boxsize - padding, -dxy, 0, nframes, 2
     )
-    track_C = create_realistc_tracklet(
+    track_C = create_realistic_tracklet(
         padding, boxsize - padding, 0, -dxy, nframes, 3
     )
-    track_D = create_realistc_tracklet(
+    track_D = create_realistic_tracklet(
         boxsize - padding, padding, 0, dxy, nframes, 4
     )
 

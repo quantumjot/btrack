@@ -23,28 +23,18 @@ def get_version():
 DESCRIPTION = "A framework for Bayesian multi-object tracking"
 LONG_DESCRIPTION = __doc__
 
+extras = ["docs", "napari"]
+extras_require = {extra: get_install_required(extra) for extra in extras}
 
 setup(
-    name="btrack",
     version=get_version(),
     description=DESCRIPTION,
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
-    author="Alan R. Lowe",
-    author_email="a.lowe@ucl.ac.uk",
-    url="https://github.com/quantumjot/BayesianTracker",
     packages=find_packages(),
     package_data={"btrack": ["libs/libtracker*", "VERSION.txt"]},
     install_requires=get_install_required(),
-    extras_require={"docs": get_install_required("docs")},
+    extras_require=extras_require,
     python_requires=">=3.6",
     license="LICENSE.md",
-    classifiers=[
-        "Programming Language :: C++",
-        "Programming Language :: Python",
-        "Programming Language :: Python :: 3 :: Only",
-        "Topic :: Scientific/Engineering",
-        "Topic :: Scientific/Engineering :: Bio-Informatics",
-        "Topic :: Scientific/Engineering :: Image Recognition",
-    ],
 )

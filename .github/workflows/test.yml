@@ -1,4 +1,4 @@
-name: btrack
+name: Run tests
 
 # run on all pull requests, but only pushes to main
 on:
@@ -13,8 +13,15 @@ jobs:
     runs-on: ${{ matrix.platform }}
     strategy:
       matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.7, 3.8, 3.9]
+        # Run all supported Python versions on linux
+        python-version: ["3.7", "3.8", "3.9"]
+        platform: [ubuntu-latest]
+        # Include one windows and macos run
+        include:
+        - platform: macos-latest
+          python-version: "3.9"
+        - platform: windows-latest
+          python-version: "3.9"
 
     steps:
       - uses: actions/checkout@v3
@@ -24,6 +31,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+
       # note: if you need dependencies from conda, considering using
       # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
       # and
@@ -31,14 +43,10 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools tox tox-gh-actions
+          python -m pip install tox tox-gh-actions tox-conda
 
-      # this runs the platform-specific tests declared in tox.ini
       - name: Test with tox
         run: tox
-        env:
-          PLATFORM: ${{ matrix.platform }}
 
       - name: Coverage
-        if: runner.os == 'Linux' && matrix.python-version == 3.9
         uses: codecov/codecov-action@v2

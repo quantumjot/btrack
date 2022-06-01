@@ -1,7 +1,9 @@
+import h5py
 import numpy as np
 import pytest
 
 from btrack import btypes, utils
+from btrack.dataio import HDF5FileHandler
 
 
 def _make_test_image(
@@ -35,7 +37,7 @@ def _make_test_image(
     grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
         -1, ndim
     )
-    rng = np.random.default_rng()
+    rng = np.random.default_rng(seed=1234)
     rbins = rng.choice(grid, size=(nobj,), replace=False)
 
     # iterate over the bins and add a smaple
@@ -53,13 +55,16 @@ def _make_test_image(
         centroids.append(point)
 
     # sort the centroids by axis
-    centroids = np.array(centroids)
-    centroids = centroids[
-        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    centroids_sorted = np.array(centroids)
+    centroids_sorted = centroids_sorted[
+        np.lexsort([centroids_sorted[:, dim] for dim in range(ndim)][::-1])
     ]
 
-    assert centroids.shape[0] == nobj
-    return img, centroids
+    assert centroids_sorted.shape[0] == nobj
+
+    vals = np.unique(img)
+    assert np.max(vals) == 1 if binary else nobj
+    return img, centroids_sorted
 
 
 def _example_segmentation_generator():
@@ -78,9 +83,21 @@ def _validate_centroids(centroids, objects, scale=None):
     if scale is not None:
         centroids = centroids * np.array(scale)
 
+    ndim = centroids.shape[-1]
+
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if centroids.shape[-1] == 2:
+    if ndim == 2:
         obj_as_array = obj_as_array[:, 1:]
+
+    # sort the centroids by axis
+    centroids = centroids[
+        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    ]
+
+    # sort the objects
+    obj_as_array = obj_as_array[
+        np.lexsort([obj_as_array[:, dim] for dim in range(ndim)][::-1])
+    ]
 
     np.testing.assert_equal(obj_as_array, centroids)
 
@@ -104,7 +121,18 @@ def test_segmentation_to_objects_type_generator():
 @pytest.mark.parametrize("binary", [True, False])
 def test_segmentation_to_objects(ndim, nobj, binary):
     """Test different types of segmentation images."""
-    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=True)
+    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=binary)
+    objects = utils.segmentation_to_objects(img[np.newaxis, ...])
+    _validate_centroids(centroids, objects)
+
+
+def test_dask_segmentation_to_objects():
+    """Test using a dask array as segmentation input."""
+    img, centroids = _make_test_image()
+    da = pytest.importorskip(
+        "dask.array", reason="Dask not installed in pytest environment."
+    )
+    img = da.from_array(img)
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
     _validate_centroids(centroids, objects)
 
@@ -115,3 +143,86 @@ def test_segmentation_to_objects_scale(scale):
     img, centroids = _make_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], scale=scale)
     _validate_centroids(centroids, objects, scale)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+@pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
+def test_assign_class_ID(ndim, nobj):
+    """Test mask class_id assignment."""
+    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=False)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], assign_class_ID=True
+    )
+    # check that the values match
+    for obj in objects:
+        centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
+        assert obj.properties["class_id"] == img[centroid]
+
+
+def test_regionprops():
+    """Test using regionprops returns objects with correct property keys."""
+    img, centroids = _make_test_image()
+    properties = (
+        "area",
+        "axis_major_length",
+    )
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], properties=properties
+    )
+
+    # check that the properties keys match
+    for obj in objects:
+        assert set(obj.properties.keys()) == set(properties)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+def test_intensity_image(ndim):
+    """Test using an intensity image."""
+    img, centroids = _make_test_image(ndim=ndim, binary=True)
+    rng = np.random.default_rng(seed=1234)
+    intensity_image = img * rng.uniform(size=img.shape)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...],
+        intensity_image=intensity_image[np.newaxis, ...],
+        use_weighted_centroid=True,
+        properties=("max_intensity",),
+    )
+    # check that the values match
+    for obj in objects:
+        centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
+        assert obj.properties["max_intensity"] == intensity_image[centroid]
+
+
+def _load_segmentation_and_tracks():
+    f = h5py.File("./tests/_test_data/update_segmentation_data.h5", "r")
+    coords = tuple(f[c][:] for c in ["tc", "yc", "xc"])
+    in_segmentation = np.zeros((10, 1024, 1020), dtype=f["in_values"].dtype)
+    out_segmentation = np.zeros((10, 1024, 1020), dtype=f["out_values"].dtype)
+    in_segmentation[coords] = f["in_values"][:]
+    out_segmentation[coords] = f["out_values"][:]
+    with HDF5FileHandler("./tests/_test_data/tracks.h5") as hdf:
+        tracks = hdf.tracks
+    return in_segmentation, out_segmentation, tracks
+
+
+def test_update_segmentation_2d():
+    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)
+
+
+def test_update_segmentation_3d():
+    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+
+    in_segmentation = np.broadcast_to(
+        in_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    out_segmentation = np.broadcast_to(
+        out_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)

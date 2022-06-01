@@ -1,29 +1,11 @@
-#!/usr/bin/env python
-# -------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# -------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
+from __future__ import annotations
 
 import csv
-import json
 import logging
 import os
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 import h5py
 import numpy as np
@@ -32,22 +14,21 @@ import numpy as np
 from . import btypes, constants, utils
 
 if TYPE_CHECKING:
-    from .core import BayesianTracker
+    from . import BayesianTracker
 
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
 # Choose a subset of classes/functions to document in public facing API
 __all__ = ["import_CSV"]
 
 
-class _PyTrackObjectFactory:
-    def __init__(self):
-        raise DeprecationWarning("_PyTrackObjectFactory has been deprecated.")
-
-
-def localizations_to_objects(localizations):
+def localizations_to_objects(
+    localizations: Union[
+        np.ndarray, List[btypes.PyTrackObject], Dict[str, Any]
+    ]
+) -> List[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
@@ -91,7 +72,7 @@ def localizations_to_objects(localizations):
     return objects_from_dict(objects_dict)
 
 
-def objects_from_dict(objects_dict: dict):
+def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
@@ -108,7 +89,7 @@ def objects_from_dict(objects_dict: dict):
 
 def objects_from_array(
     objects_arr: np.ndarray, default_keys=constants.DEFAULT_OBJECT_KEYS
-):
+) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
     assert objects_arr.ndim == 2
 
@@ -125,29 +106,40 @@ def objects_from_array(
 
 def import_JSON(filename: str):
     """Generic JSON importer for localisations from other software."""
-    with open(filename, "r") as json_file:
-        data = json.load(json_file)
-    objects = []
-
-    for i, _obj in enumerate(data.values()):
-        _obj.update({"ID": i})
-        obj = btypes.PyTrackObject.from_dict(_obj)
-        objects.append(obj)
-
-    return objects
+    raise DeprecationWarning("`import_JSON has been deprecated`")
 
 
-def import_CSV(filename: str):
+def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:
     """Import localizations from a CSV file.
+
+    Parameters
+    ----------
+    filename : PathLike
+        The filename of the CSV to import
+
+    Returns
+    -------
+    objects : List[btypes.PyTrackObject]
+        A list of objects in the CSV file.
 
     Notes
     -----
-    CSV file should have one of the following formats:
+    CSV file should have one of the following format.
 
-    - t, x, y
-    - t, x, y, label
-    - t, x, y, z
-    - t, x, y, z, label
+    .. list-table:: CSV header format
+       :widths: 20 20 20 20 20
+       :header-rows: 1
+
+       * - t
+         - x
+         - y
+         - z
+         - label
+       * - required
+         - required
+         - required
+         - optional
+         - optional
     """
 
     objects = []
@@ -163,7 +155,7 @@ def import_CSV(filename: str):
 
 def export_delegator(
     filename: os.PathLike,
-    tracker: "BayesianTracker",
+    tracker: BayesianTracker,
     obj_type: Optional[str] = None,
     filter_by: Optional[str] = None,
 ) -> None:
@@ -206,7 +198,7 @@ def check_track_type(tracks):
 
 
 def export_CSV(
-    filename: str,
+    filename: os.PathLike,
     tracks: list,
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
     obj_type=None,
@@ -262,7 +254,9 @@ def export_LBEP(filename: str, tracks: list):
             lbep_file.write(f"{lbep}\n")
 
 
-def _export_HDF(filename: str, tracker, obj_type=None, filter_by: str = None):
+def _export_HDF(
+    filename: os.PathLike, tracker, obj_type=None, filter_by: str = None
+):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
@@ -370,13 +364,12 @@ class HDF5FileHandler:
 
     def __init__(
         self,
-        filename: str,
+        filename: os.PathLike,
         read_write: str = "r",
         obj_type: str = "obj_type_1",
     ):
 
         self._f_expr = None  # DO NOT USE
-        self._object_type = None
         self.object_type = obj_type
 
         self.filename = filename
@@ -410,7 +403,7 @@ class HDF5FileHandler:
             raise ValueError("Object type must start with ``obj_type_``")
         self._object_type = obj_type
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("segmentation")
     def segmentation(self):
         segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
@@ -636,7 +629,7 @@ class HDF5FileHandler:
             )
             props_grp.create_dataset(key, data=data[key], dtype="float32")
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("tracks")
     def tracks(self):
         """Return the tracks in the file."""
@@ -772,7 +765,7 @@ class HDF5FileHandler:
         fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset("fates", data=fate_table, dtype="int32")
 
-    @property
+    @property  # type: ignore
     @h5check_property_exists("tracks")
     def lbep(self):
         """Return the LBEP data."""

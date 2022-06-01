@@ -1,4 +1,4 @@
-Bayesian Tracker (btrack) 🔬💻's
+Bayesian Tracker (btrack) 🔬💻
 ================================
 
 |logo|
@@ -14,10 +14,6 @@ We assign new observations to the growing tracklets (linking) by evaluating the 
 The tracklets are then assembled into tracks by using multiple hypothesis testing and integer programming to identify a globally optimal solution.
 The likelihood of each hypothesis is calculated for some or all of the tracklets based on heuristics.
 The global solution identifies a sequence of high-likelihood hypotheses that accounts for all observations.
-
-| |LineageTree|
-| *Automated cell tracking and lineage tree reconstruction*.
-  Visualization is provided by our plugin to Napari, :ref:`arboretum<using Napari>`.
 
 | |CellTracking|
 | *Video of tracking, showing automatic lineage determination*
@@ -64,7 +60,5 @@ Indices and tables
 
 .. |logo| image:: /_static/btrack_logo.png
    :alt: Btrack Logo
-.. |LineageTree| image:: https://raw.githubusercontent.com/quantumjot/arboretum/master/examples/napari.png
-   :target: http://lowe.cs.ucl.ac.uk/cellx.html
 .. |CellTracking| image:: http://lowe.cs.ucl.ac.uk/images/youtube.png
    :target: https://youtu.be/EjqluvrJGCg

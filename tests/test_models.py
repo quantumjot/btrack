@@ -5,7 +5,7 @@ import pytest
 
 from btrack import models, utils
 
-CONFIG_FILE = "./models/cell_config.json"
+from ._utils import CONFIG_FILE
 
 
 def test_read_motion_model():

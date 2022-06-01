@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -9,7 +10,9 @@ CONFIG_FILE = (
 )
 
 
-def create_test_object(id=None):
+def create_test_object(
+    id: Optional[int] = None,
+) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
     """Create a test object."""
     data = {
         "ID": np.random.randint(0, 1000) if id is None else int(id),
@@ -27,7 +30,7 @@ def create_test_object(id=None):
     return obj, data
 
 
-def create_test_properties():
+def create_test_properties() -> Dict[str, float]:
     properties = {
         "speed": np.random.uniform(0.0, 1.0),
         "circularity": np.random.uniform(0.0, 1.0),
@@ -36,7 +39,14 @@ def create_test_properties():
     return properties
 
 
-def create_test_tracklet(track_len: int):
+def create_test_tracklet(
+    track_len: int,
+) -> Tuple[
+    btrack.btypes.Tracklet,
+    List[btrack.btypes.PyTrackObject],
+    List[Dict[str, Any]],
+    int,
+]:
     """Create a test track."""
     data = [create_test_object()[0] for i in range(track_len)]
     props = [create_test_properties() for i in range(track_len)]
@@ -54,7 +64,30 @@ def create_test_tracklet(track_len: int):
     return tracklet, data, properties, track_ID
 
 
-def full_tracker_example(objects):
+def create_test_segmentation_and_tracks(
+    ndim: int, binary: bool
+) -> Tuple[np.ndarray, List[btrack.btypes.Tracklet]]:
+    """Create a test segmentation with four tracks."""
+    segmentation = np.zeros(
+        tuple(
+            [
+                10,
+            ]
+            + [
+                128,
+            ]
+            * ndim
+        ),
+        dtype=np.int32,
+    )
+    tracks = None
+
+    return segmentation, tracks
+
+
+def full_tracker_example(
+    objects: List[btrack.btypes.PyTrackObject],
+) -> btrack.BayesianTracker:
     # run the tracking
     tracker = btrack.BayesianTracker()
     tracker.configure(CONFIG_FILE)
@@ -65,7 +98,7 @@ def full_tracker_example(objects):
     return tracker
 
 
-def simple_tracker_example():
+def simple_tracker_example() -> Tuple[btrack.BayesianTracker, Dict[str, Any]]:
     """Run a simple tracker example with some data."""
     x = np.array([200, 201, 202, 203, 204, 207, 208])
     y = np.array([503, 507, 499, 500, 510, 515, 518])

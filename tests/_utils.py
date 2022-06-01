@@ -10,6 +10,8 @@ CONFIG_FILE = (
     Path(__file__).resolve().parent.parent / "models" / "cell_config.json"
 )
 
+RANDOM_SEED = 1234
+
 
 def create_test_object(
     id: Optional[int] = None,
@@ -74,31 +76,19 @@ def create_realistc_tracklet(
     track_ID: int,
 ) -> btrack.btypes.Tracklet:
     """Create a realistic moving track."""
+
     data = {
-        "x": start_x,
-        "y": start_y,
-        "z": 0,
-        "t": 0,
-        "ID": (track_ID - 1) * track_len,
+        "x": np.array([start_x + dx * t for t in range(track_len)]),
+        "y": np.array([start_y + dy * t for t in range(track_len)]),
+        "t": np.arange(track_len),
+        "ID": np.array(
+            [(track_ID - 1) * track_len + t for t in range(track_len)]
+        ),
     }
 
-    objects = [
-        btrack.btypes.PyTrackObject.from_dict(data),
-    ]
-
-    for t in range(1, track_len):
-        new_data = {
-            "x": data["x"] + dx,
-            "y": data["y"] + dy,
-            "t": t,
-            "ID": (track_ID - 1) * track_len + t,
-        }
-        data.update(new_data)
-        objects.append(
-            btrack.btypes.PyTrackObject.from_dict(data),
-        )
-
-    return btrack.btypes.Tracklet(track_ID, objects)
+    objects = btrack.dataio.objects_from_dict(data)
+    track = btrack.btypes.Tracklet(track_ID, objects)
+    return track
 
 
 def create_test_image(
@@ -107,7 +97,7 @@ def create_test_image(
     nobj: int = 10,
     binsize: int = 5,
     binary: bool = True,
-) -> Tuple[np.ndarray, np.ndarray]:
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
     shape = (boxsize,) * ndim
     img = np.zeros(shape, dtype=np.uint16)
@@ -119,20 +109,22 @@ def create_test_image(
     # split this into voxels
     bins = boxsize // binsize
 
-    def _sample():
+    def _sample() -> Tuple[np.ndarray, Tuple[int]]:
         _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
         _coord = tuple(
             np.random.randint(1, binsize - 1, size=(ndim,)).tolist()
         )
         _img[_coord] = 1
-        assert np.sum(_img) == 1
+        assert (
+            np.sum(_img) == 1
+        ), "Test image voxel contains incorrect number of objects."
         return _img, _coord
 
     # now we update nobj grid positions with a sample
     grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
         -1, ndim
     )
-    rng = np.random.default_rng(seed=1234)
+    rng = np.random.default_rng(seed=RANDOM_SEED)
     rbins = rng.choice(grid, size=(nobj,), replace=False)
 
     # iterate over the bins and add a smaple
@@ -146,7 +138,7 @@ def create_test_image(
         img[slices] = sample * val
 
         # shift the actual coordinates back to image space
-        point = point + bin * binsize  # - 0.5
+        point = point + bin * binsize
         centroids.append(point)
 
     # sort the centroids by axis
@@ -155,14 +147,20 @@ def create_test_image(
         np.lexsort([centroids_sorted[:, dim] for dim in range(ndim)][::-1])
     ]
 
-    assert centroids_sorted.shape[0] == nobj
+    assert (
+        centroids_sorted.shape[0] == nobj
+    ), "Number of created centroids != requested in test image."
 
     vals = np.unique(img)
-    assert np.max(vals) == 1 if binary else nobj
+    assert (
+        np.max(vals) == 1 if binary else nobj
+    ), "Test image labels are incorrect."
     return img, centroids_sorted
 
 
 def create_test_segmentation_and_tracks(
+    boxsize: int = 128,
+    padding: int = 16,
     nframes: int = 10,
     ndim: int = 2,
     binary: bool = False,
@@ -173,18 +171,24 @@ def create_test_segmentation_and_tracks(
         raise ValueError("Only 2D-segmentation currently supported.")
 
     # make a segmentation volume (10, 128, 128) for ndim == 2
-    volume = tuple([nframes] + [128] * ndim)
+    volume = tuple([nframes] + [boxsize] * ndim)
     segmentation = np.zeros(volume, dtype=np.int32)
     ground_truth = np.zeros_like(segmentation)
 
-    dxy = (volume[1] - 32.0) / nframes
+    dxy = (boxsize - 2 * padding) / nframes
 
     # create tracks moving from each corner of the segmentation at a constant
-    # velocity towards another corner
-    track_A = create_realistc_tracklet(16, 16, dxy, 0, nframes, 1)
-    track_B = create_realistc_tracklet(128 - 16, 128 - 16, -dxy, 0, nframes, 2)
-    track_C = create_realistc_tracklet(16, 128 - 16, 0, -dxy, nframes, 3)
-    track_D = create_realistc_tracklet(128 - 16, 16, 0, dxy, nframes, 4)
+    # velocity towards another corner. these tracks do not intersect.
+    track_A = create_realistc_tracklet(padding, padding, dxy, 0, nframes, 1)
+    track_B = create_realistc_tracklet(
+        boxsize - padding, boxsize - padding, -dxy, 0, nframes, 2
+    )
+    track_C = create_realistc_tracklet(
+        padding, boxsize - padding, 0, -dxy, nframes, 3
+    )
+    track_D = create_realistc_tracklet(
+        boxsize - padding, padding, 0, dxy, nframes, 4
+    )
 
     tracks = [track_A, track_B, track_C, track_D]
 

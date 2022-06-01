@@ -3,7 +3,7 @@ import pytest
 
 from btrack import btypes, utils
 
-from ._utils import create_test_image
+from ._utils import RANDOM_SEED, create_test_image
 
 
 def _example_segmentation_generator():
@@ -118,7 +118,7 @@ def test_regionprops():
 def test_intensity_image(ndim):
     """Test using an intensity image."""
     img, centroids = create_test_image(ndim=ndim, binary=True)
-    rng = np.random.default_rng(seed=1234)
+    rng = np.random.default_rng(seed=RANDOM_SEED)
     intensity_image = img * rng.uniform(size=img.shape)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...],

@@ -25,6 +25,30 @@ def test_object_properties(properties: dict):
         assert obj.properties[k] == v
 
 
+@pytest.mark.parametrize("properties", [{}, create_test_properties()])
+def test_object_features(properties: dict):
+    """Test creating object and setting tracking features."""
+    obj, data = create_test_object()
+    obj.properties = properties
+    assert obj.n_features == 0
+    keys = list(properties.keys())
+    obj.set_features(keys)
+    assert obj.n_features == len(keys)
+
+
+def test_object_incorrect_features():
+    """Test creating object and setting tracking features."""
+    obj, data = create_test_object()
+    assert obj.n_features == 0
+    with pytest.raises(KeyError):
+        obj.set_features(
+            [
+                "this_key_does_not_exist",
+            ]
+        )
+    assert obj.n_features == 0
+
+
 @pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
 def test_tracklet(track_len: int):
     """Test that a track is correctly instantiated, and that the stored

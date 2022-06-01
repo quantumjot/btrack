@@ -6,3 +6,7 @@ labels:
   - Cell tracking
   - Cell lineage extraction
   - Object tracking
+  - 2D image
+  - 3D image
+  - Image time series
+  - Multi-channel image

@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+from skimage.measure import label
 
 import btrack
 
@@ -165,12 +166,16 @@ def create_test_segmentation_and_tracks(
     nframes: int = 10,
     ndim: int = 2,
     binary: bool = False,
-) -> Tuple[np.ndarray, List[btrack.btypes.Tracklet]]:
+) -> Tuple[np.ndarray, np.ndarray, List[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""
+
+    if ndim not in (btrack.constants.Dimensionality.TWO,):
+        raise ValueError("Only 2D-segmentation currently supported.")
 
     # make a segmentation volume (10, 128, 128) for ndim == 2
     volume = tuple([nframes] + [128] * ndim)
     segmentation = np.zeros(volume, dtype=np.int32)
+    ground_truth = np.zeros_like(segmentation)
 
     dxy = (volume[1] - 32.0) / nframes
 
@@ -185,10 +190,17 @@ def create_test_segmentation_and_tracks(
 
     # set the segmentation values
     for track in tracks:
-        coords = [track.t, track.y, track.x]
-        segmentation[coords] = 1
+        t, y, x = np.split(
+            track.to_array(properties=["t", "y", "x"]).astype(int), 3, 1
+        )
+        segmentation[t, y, x] = 1
+        ground_truth[t, y, x] = track.ID
 
-    return segmentation, tracks
+    if not binary:
+        for n in range(nframes):
+            segmentation[n, ...] = label(segmentation[n, ...])
+
+    return segmentation, ground_truth, tracks
 
 
 def full_tracker_example(

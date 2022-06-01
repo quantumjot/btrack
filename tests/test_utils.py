@@ -3,7 +3,7 @@ import pytest
 
 from btrack import btypes, utils
 
-from ._utils import create_test_image, create_test_segmentation_and_tracks
+from ._utils import create_test_image
 
 
 def _example_segmentation_generator():
@@ -132,6 +132,26 @@ def test_intensity_image(ndim):
         assert obj.properties["max_intensity"] == intensity_image[centroid]
 
 
-def test_segmentation_tracks():
-    seg, tracks = create_test_segmentation_and_tracks(ndim=2, binary=False)
-    assert seg.shape == (10, 128, 128)
+def test_update_segmentation_2d(test_segmentation_and_tracks):
+    """Test relabeling a 2D-segmentation with track ID."""
+    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)
+
+
+def test_update_segmentation_3d(test_segmentation_and_tracks):
+    """Test relabeling a 3D-segmentation with track ID."""
+    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
+
+    in_segmentation = np.broadcast_to(
+        in_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    out_segmentation = np.broadcast_to(
+        out_segmentation[:, None],
+        (in_segmentation.shape[0], 5, *in_segmentation.shape[-2:]),
+    )
+
+    relabeled = utils.update_segmentation(in_segmentation, tracks)
+    assert np.allclose(relabeled, out_segmentation)

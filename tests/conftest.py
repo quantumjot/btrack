@@ -5,7 +5,7 @@ import pytest
 
 import btrack.dataio
 
-from ._utils import create_test_object
+from ._utils import create_test_object, create_test_segmentation_and_tracks
 
 
 @pytest.fixture
@@ -57,3 +57,11 @@ def hdf5_file_path_or_paths(
         raise ValueError(
             "Invalid requests.param, must be one of 'single' or 'list'"
         )
+
+
+@pytest.fixture
+def test_segmentation_and_tracks():
+    """
+    Create a test segmentation, ground truth and example tracks.
+    """
+    return create_test_segmentation_and_tracks(ndim=2)

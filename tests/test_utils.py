@@ -1,75 +1,14 @@
-import h5py
 import numpy as np
 import pytest
 
 from btrack import btypes, utils
-from btrack.dataio import HDF5FileHandler
 
-
-def _make_test_image(
-    boxsize: int = 150,
-    ndim: int = 2,
-    nobj: int = 10,
-    binsize: int = 5,
-    binary: bool = True,
-):
-    """Make a test image that ensures that no two pixels are in contact."""
-    shape = (boxsize,) * ndim
-    img = np.zeros(shape, dtype=np.uint16)
-
-    # return an empty image if we have no objects
-    if nobj == 0:
-        return img, None
-
-    # split this into voxels
-    bins = boxsize // binsize
-
-    def _sample():
-        _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
-        _coord = tuple(
-            np.random.randint(1, binsize - 1, size=(ndim,)).tolist()
-        )
-        _img[_coord] = 1
-        assert np.sum(_img) == 1
-        return _img, _coord
-
-    # now we update nobj grid positions with a sample
-    grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
-        -1, ndim
-    )
-    rng = np.random.default_rng(seed=1234)
-    rbins = rng.choice(grid, size=(nobj,), replace=False)
-
-    # iterate over the bins and add a smaple
-    centroids = []
-    for v, bin in enumerate(rbins):
-        sample, point = _sample()
-        slices = tuple(
-            [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
-        )
-        val = 1 if binary else v + 1
-        img[slices] = sample * val
-
-        # shift the actual coordinates back to image space
-        point = point + bin * binsize  # - 0.5
-        centroids.append(point)
-
-    # sort the centroids by axis
-    centroids_sorted = np.array(centroids)
-    centroids_sorted = centroids_sorted[
-        np.lexsort([centroids_sorted[:, dim] for dim in range(ndim)][::-1])
-    ]
-
-    assert centroids_sorted.shape[0] == nobj
-
-    vals = np.unique(img)
-    assert np.max(vals) == 1 if binary else nobj
-    return img, centroids_sorted
+from ._utils import RANDOM_SEED, create_test_image
 
 
 def _example_segmentation_generator():
     for i in range(10):
-        img, centroids = _make_test_image()
+        img, centroids = create_test_image()
         yield img
 
 
@@ -104,7 +43,7 @@ def _validate_centroids(centroids, objects, scale=None):
 
 def test_segmentation_to_objects_type():
     """Test that btrack objects are returned."""
-    img, centroids = _make_test_image()
+    img, centroids = create_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
     assert all([isinstance(o, btypes.PyTrackObject) for o in objects])
 
@@ -121,14 +60,14 @@ def test_segmentation_to_objects_type_generator():
 @pytest.mark.parametrize("binary", [True, False])
 def test_segmentation_to_objects(ndim, nobj, binary):
     """Test different types of segmentation images."""
-    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=binary)
+    img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=binary)
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
     _validate_centroids(centroids, objects)
 
 
 def test_dask_segmentation_to_objects():
     """Test using a dask array as segmentation input."""
-    img, centroids = _make_test_image()
+    img, centroids = create_test_image()
     da = pytest.importorskip(
         "dask.array", reason="Dask not installed in pytest environment."
     )
@@ -140,7 +79,7 @@ def test_dask_segmentation_to_objects():
 @pytest.mark.parametrize("scale", [None, (1.0, 1.0), (1.0, 10.0), (10.0, 1.0)])
 def test_segmentation_to_objects_scale(scale):
     """Test anisotropic scaling."""
-    img, centroids = _make_test_image()
+    img, centroids = create_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], scale=scale)
     _validate_centroids(centroids, objects, scale)
 
@@ -149,7 +88,7 @@ def test_segmentation_to_objects_scale(scale):
 @pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
 def test_assign_class_ID(ndim, nobj):
     """Test mask class_id assignment."""
-    img, centroids = _make_test_image(ndim=ndim, nobj=nobj, binary=False)
+    img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=False)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...], assign_class_ID=True
     )
@@ -161,7 +100,7 @@ def test_assign_class_ID(ndim, nobj):
 
 def test_regionprops():
     """Test using regionprops returns objects with correct property keys."""
-    img, centroids = _make_test_image()
+    img, centroids = create_test_image()
     properties = (
         "area",
         "axis_major_length",
@@ -178,8 +117,8 @@ def test_regionprops():
 @pytest.mark.parametrize("ndim", [2, 3])
 def test_intensity_image(ndim):
     """Test using an intensity image."""
-    img, centroids = _make_test_image(ndim=ndim, binary=True)
-    rng = np.random.default_rng(seed=1234)
+    img, centroids = create_test_image(ndim=ndim, binary=True)
+    rng = np.random.default_rng(seed=RANDOM_SEED)
     intensity_image = img * rng.uniform(size=img.shape)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...],
@@ -193,26 +132,16 @@ def test_intensity_image(ndim):
         assert obj.properties["max_intensity"] == intensity_image[centroid]
 
 
-def _load_segmentation_and_tracks():
-    f = h5py.File("./tests/_test_data/update_segmentation_data.h5", "r")
-    coords = tuple(f[c][:] for c in ["tc", "yc", "xc"])
-    in_segmentation = np.zeros((10, 1024, 1020), dtype=f["in_values"].dtype)
-    out_segmentation = np.zeros((10, 1024, 1020), dtype=f["out_values"].dtype)
-    in_segmentation[coords] = f["in_values"][:]
-    out_segmentation[coords] = f["out_values"][:]
-    with HDF5FileHandler("./tests/_test_data/tracks.h5") as hdf:
-        tracks = hdf.tracks
-    return in_segmentation, out_segmentation, tracks
-
-
-def test_update_segmentation_2d():
-    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+def test_update_segmentation_2d(test_segmentation_and_tracks):
+    """Test relabeling a 2D-segmentation with track ID."""
+    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
     relabeled = utils.update_segmentation(in_segmentation, tracks)
     assert np.allclose(relabeled, out_segmentation)
 
 
-def test_update_segmentation_3d():
-    in_segmentation, out_segmentation, tracks = _load_segmentation_and_tracks()
+def test_update_segmentation_3d(test_segmentation_and_tracks):
+    """Test relabeling a 3D-segmentation with track ID."""
+    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
 
     in_segmentation = np.broadcast_to(
         in_segmentation[:, None],

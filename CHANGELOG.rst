@@ -1,5 +1,10 @@
 Updates
 =======
+0.4.5
+-----
+- Added util to relabel masks using track ID
+- Added extra test coverage
+
 0.4.4
 -----
 - Allow Q matrix to be directly defined in config file

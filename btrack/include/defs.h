@@ -31,19 +31,6 @@ static unsigned int v_build = VERSION_BUILD;
 static std::string build_date = __DATE__;
 static std::string build_time = __TIME__;
 
-// errors
-#define SUCCESS 900
-#define ERROR_empty_queue 901
-#define ERROR_no_tracks 902
-#define ERROR_no_useable_frames 903
-#define ERROR_track_empty 904
-#define ERROR_incorrect_motion_model 905
-#define ERROR_max_lost_out_of_range 906
-#define ERROR_accuracy_out_of_range 907
-#define ERROR_prob_not_assign_out_of_range 908
-#define ERROR_not_defined 909
-#define ERROR_none 910
-
 // constants
 const double kInfinity = std::numeric_limits<double>::infinity();
 
@@ -71,33 +58,6 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define RESERVE_NEW_OBJECTS 1000
 #define RESERVE_ACTIVE_TRACKS 1000
 
-// possible states of objects
-#define STATE_interphase 0
-#define STATE_prometaphase 1
-#define STATE_metaphase 2
-#define STATE_anaphase 3
-#define STATE_apoptosis 4
-#define STATE_null 5
-#define STATE_dummy 99
-
-// hypothesis and state types
-// ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-#define TYPE_Pfalse       0
-#define TYPE_Pinit        1
-#define TYPE_Pterm        2
-#define TYPE_Plink        3
-#define TYPE_Pdivn        4
-#define TYPE_Papop        5
-#define TYPE_Pmrge        6
-#define TYPE_Pextr        7
-#define TYPE_Pinit_border 10
-#define TYPE_Pinit_front  11
-#define TYPE_Pinit_lazy   12
-#define TYPE_Pterm_border 20
-#define TYPE_Pterm_back   21
-#define TYPE_Pterm_lazy   22
-#define TYPE_Pdead        666
-#define TYPE_undef        999
 
 // update methods
 #define UPDATE_MODE_EXACT 0
@@ -134,5 +94,97 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define USE_CURRENT_PRIOR false
 #define USE_MOTION_FEATURES 0
 #define USE_VISUAL_FEATURES 1
+
+
+
+/* Enumerated types
+*/
+
+
+// hypothesis and state types
+// ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
+#define TYPE_Pfalse       0
+#define TYPE_Pinit        1
+#define TYPE_Pterm        2
+#define TYPE_Plink        3
+#define TYPE_Pdivn        4
+#define TYPE_Papop        5
+#define TYPE_Pmrge        6
+#define TYPE_Pextr        7
+#define TYPE_Pinit_border 10
+#define TYPE_Pinit_front  11
+#define TYPE_Pinit_lazy   12
+#define TYPE_Pterm_border 20
+#define TYPE_Pterm_back   21
+#define TYPE_Pterm_lazy   22
+#define TYPE_Pdead        666
+#define TYPE_undef        999
+
+enum class HypothesisType: unsigned int {
+  false_positive  = 0,
+  init            = 1,
+  term            = 2,
+  link            = 3,
+  branch          = 4,
+  apop            = 5,
+  merge           = 6,
+  extrude         = 7,
+  init_border     = 10,
+  init_front      = 11,
+  init_lazy       = 12,
+  term_border     = 20,
+  term_back       = 21,
+  term_lazy       = 22,
+  dead            = 666,
+  undefined       = 999
+};
+
+
+// errors
+#define SUCCESS 900
+#define ERROR_empty_queue 901
+#define ERROR_no_tracks 902
+#define ERROR_no_useable_frames 903
+#define ERROR_track_empty 904
+#define ERROR_incorrect_motion_model 905
+#define ERROR_max_lost_out_of_range 906
+#define ERROR_accuracy_out_of_range 907
+#define ERROR_prob_not_assign_out_of_range 908
+#define ERROR_not_defined 909
+#define ERROR_none 910
+
+enum class TrackingError: unsigned int {
+  success                       = 900,
+  empty_queue                   = 901,
+  no_tracks                     = 902,
+  no_useable_frames             = 903,
+  track_empty                   = 904,
+  incorrect_motion_model        = 905,
+  max_lost_out_of_range         = 906,
+  accuracy_out_of_range         = 907,
+  prob_not_assign_out_of_range  = 908,
+  not_defined                   = 909,
+  none                          = 910
+};
+
+
+// possible states of objects
+#define STATE_interphase 0
+#define STATE_prometaphase 1
+#define STATE_metaphase 2
+#define STATE_anaphase 3
+#define STATE_apoptosis 4
+#define STATE_null 5
+#define STATE_dummy 99
+
+enum class ObjectStateLabel: unsigned int {
+  interphase    = 0,
+  prometaphase  = 1,
+  metaphase     = 2,
+  anaphase      = 3,
+  apoptosis     = 4,
+  null          = 5,
+  dummy         = 99
+};
 
 #endif

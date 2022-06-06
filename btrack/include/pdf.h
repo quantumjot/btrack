@@ -49,7 +49,6 @@ namespace ProbabilityDensityFunctions
     const TrackletPtr& trk,
     const TrackObjectPtr& obj
   );
-
 }
 
 #endif

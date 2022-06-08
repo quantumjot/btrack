@@ -24,6 +24,7 @@ from typing import Generator, Optional, Tuple, Union
 import numpy as np
 from skimage.measure import label, regionprops_table
 
+from tqdm.auto import tqdm
 from .dataio import localizations_to_objects
 
 try:
@@ -211,12 +212,14 @@ def segmentation_to_objects(
         logger.warning("Cannot use scikit-image label as a property.")
         del properties['label']
 
+    description = "Localising cell objects in segmentation frames"
+
     if isinstance(segmentation, np.ndarray):
 
         if segmentation.ndim not in (3, 4):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-        for frame in range(segmentation.shape[0]):
+        for frame in tqdm(range(segmentation.shape[0]), desc=description):
             seg = segmentation[frame, ...]
             intens = intensity_image[frame, ...] if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
@@ -236,7 +239,7 @@ def segmentation_to_objects(
         segmentation, Generator
     ):
 
-        for frame, seg in enumerate(segmentation):
+        for frame, seg in enumerate(tqdm(segmentation, desc=description)):
             intens = next(intensity_image) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
                 seg,
@@ -258,7 +261,7 @@ def segmentation_to_objects(
             if segmentation.ndim not in (3, 4):
                 raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-            for frame in range(segmentation.shape[0]):
+            for frame in tqdm(range(segmentation.shape[0]), desc=description):
                 seg = segmentation[frame, ...].compute()
                 intens = (
                     intensity_image[frame, ...].compute()

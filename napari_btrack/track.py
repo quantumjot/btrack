@@ -46,7 +46,7 @@ class Matrices:
     )
     unscaled_matrices: Dict[str, List[float]] = field(
         default_factory=lambda: dict(
-            A=[
+            A_cell=[
                 1,
                 0,
                 0,
@@ -65,6 +65,44 @@ class Matrices:
                 0,
                 0,
                 1,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+            ],
+            A_particle=[
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
                 0,
                 0,
                 0,
@@ -129,11 +167,20 @@ class Matrices:
     )
 
     @classmethod
-    def get_scaled_matrix(cls, name: str, sigma: float) -> List[float]:
+    def get_scaled_matrix(
+        cls, name: str, sigma: float, cell: bool = True
+    ) -> List[float]:
+        if name == "A":
+            if cell:
+                name = "A_cell"
+            else:
+                name = "A_particle"
         return (np.asarray(cls().unscaled_matrices[name]) * sigma).tolist()
 
     @classmethod
     def get_sigma(cls, name: str, scaled_matrix: npt.NDArray[np.float64]) -> float:
+        if name == "A":
+            name = "A_cell"  # doesn't matter which A we use here, as [0][0] is the same
         return scaled_matrix[0][0] / cls().unscaled_matrices[name][0]
 
 
@@ -232,6 +279,18 @@ def _create_pydantic_default_widgets(
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
 
+def _create_cell_or_particle_widget(widgets: List[Widget]) -> None:
+    """Create a dropdown menu to choose between cell or particle mode."""
+    widgets.extend([create_widget(**html_label_widget("Mode"))])
+    widgets.extend(
+        [
+            create_widget(
+                name="mode", value="cell", options={"choices": ["cell", "particle"]}
+            )
+        ]
+    )
+
+
 def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     motion_model_dict: Dict[str, Any] = {}
     hypothesis_model_dict = {}
@@ -245,7 +304,9 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
         # setup motion model
         if widget.name in Matrices().names:  # matrices need special treatment
             sigma = getattr(container, f"{widget.name}_sigma").value
-            matrix = Matrices.get_scaled_matrix(widget.name, sigma)
+            matrix = Matrices.get_scaled_matrix(
+                widget.name, sigma, container.mode.value == "cell"
+            )
             motion_model_dict[widget.name] = matrix
         else:
             if widget.name in motion_model_keys:
@@ -258,13 +319,17 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
                 hypotheses.append(widget.name)
 
     # add some non-exposed default values to the motion model
+    mode = getattr(container, "mode").value
     for default_name, default_value in zip(
-        ["measurements", "states", "dt", "prob_not_assign"], [3, 6, 1.0, 0.001]
+        ["measurements", "states", "dt", "prob_not_assign", "name"],
+        [3, 6, 1.0, 0.001, f"{mode}_motion"],
     ):
         motion_model_dict[default_name] = default_value
 
     # add some non-exposed default value to the hypothesis model
-    for default_name, default_value in zip(["apoptosis_rate", "eta"], [0.001, 1.0e-10]):
+    for default_name, default_value in zip(
+        ["apoptosis_rate", "eta", "name"], [0.001, 1.0e-10, f"{mode}_hypothesis"]
+    ):
         hypothesis_model_dict[default_name] = default_value
 
     # add hypotheses to hypothesis model
@@ -291,6 +356,9 @@ def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
                         getattr(container, hypothesis).value = True
                 else:
                     getattr(container, parameter).value = value
+    mode_is_cell = config.motion_model.A[0, 3] == 1
+    print("mode is cell: ", mode_is_cell)
+    container.mode.value = "cell" if mode_is_cell else "particle"
 
 
 def _create_button_widgets(widgets: List[Widget]) -> None:
@@ -335,6 +403,7 @@ def track() -> Container:
 
     # create all the widgets
     _create_napari_specific_widgets(widgets)
+    _create_cell_or_particle_widget(widgets)
     _create_pydantic_default_widgets(widgets, default_model_configs)
     _create_button_widgets(widgets)
 

@@ -1,12 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 
 import btrack
 import napari
 import numpy as np
 import numpy.typing as npt
 from btrack import datasets
-from btrack.btypes import PyTrackObject
 from btrack.config import (
     HypothesisModel,
     MotionModel,
@@ -185,18 +184,25 @@ class Matrices:
 
 
 def run_tracker(
-    objects: List[PyTrackObject], tracker_config: TrackerConfig
+    segmentation: Union[napari.layers.Image, napari.layers.Labels],
+    tracker_config: TrackerConfig,
 ) -> Tuple[npt.NDArray, dict, dict]:
     with btrack.BayesianTracker() as tracker:
         tracker.configure(tracker_config)
         tracker.max_search_radius = 50
 
         # append the objects to be tracked
-        tracker.append(objects)
+        segmented_objects = segmentation_to_objects(segmentation.data)
+        tracker.append(segmented_objects)
 
         # set the volume
-        # TODO set from objects.
-        tracker.volume = ((0, 1600), (0, 1200), (-1e5, 64.0))
+        segmentation_size = segmentation.level_shapes[0]
+        # btrack order of dimensions is opposite of napari
+        tracker.volume = (
+            (0, segmentation_size[2]),
+            (0, segmentation_size[1]),
+            (-1e5, segmentation_size[0]),
+        )
 
         # track them (in interactive mode)
         tracker.track_interactive(step_size=100)
@@ -417,10 +423,7 @@ def track() -> Container:
     def run() -> None:
         config = _widgets_to_tracker_config(btrack_widget)
         segmentation = btrack_widget.segmentation.value
-        segmented_objects = segmentation_to_objects(
-            segmentation.data[:100, ...]
-        )  # TODO
-        data, properties, graph = run_tracker(segmented_objects, config)
+        data, properties, graph = run_tracker(segmentation, config)
         viewer = napari.current_viewer()
         viewer.add_tracks(
             data=data, properties=properties, graph=graph, name=f"{segmentation}_btrack"

@@ -215,6 +215,28 @@ def run_tracker(
         return data, properties, graph
 
 
+def get_save_path():
+    show_file_dialog = use_app().get_obj("show_file_dialog")
+    save_path = show_file_dialog(
+        mode=FileDialogMode.OPTIONAL_FILE,
+        caption="Specify file to save btrack configuration",
+        start_path=None,
+        filter="*.json",
+    )
+    return save_path
+
+
+def get_load_path():
+    show_file_dialog = use_app().get_obj("show_file_dialog")
+    load_path = show_file_dialog(
+        mode=FileDialogMode.EXISTING_FILE,
+        caption="Choose JSON file containing btrack configuration",
+        start_path=None,
+        filter="*.json",
+    )
+    return load_path
+
+
 def html_label_widget(label: str, tag: str = "b") -> dict:
     """
     Create a HMTL label widget.
@@ -434,25 +456,13 @@ def track() -> Container:
 
     @btrack_widget.save_config_button.changed.connect
     def save_config_to_json() -> None:
-        show_file_dialog = use_app().get_obj("show_file_dialog")
-        save_path = show_file_dialog(
-            mode=FileDialogMode.OPTIONAL_FILE,
-            caption="Specify file to save btrack configuration",
-            start_path=None,
-            filter="*.json",
-        )
+        save_path = get_save_path()
         if save_path:  # save path is None if user cancels
             save_config(save_path, _widgets_to_tracker_config(btrack_widget))
 
     @btrack_widget.load_config_button.changed.connect
     def load_config_from_json() -> None:
-        show_file_dialog = use_app().get_obj("show_file_dialog")
-        load_path = show_file_dialog(
-            mode=FileDialogMode.EXISTING_FILE,
-            caption="Choose JSON file containing btrack configuration",
-            start_path=None,
-            filter="*.json",
-        )
+        load_path = get_load_path()
         if load_path:  # load path is None if user cancels
             config = load_config(load_path)
             _tracker_config_to_widgets(btrack_widget, config)

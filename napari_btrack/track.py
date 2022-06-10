@@ -272,7 +272,10 @@ def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     add the widgets which interact with napari itself
     """
     widgets.append(create_widget(**html_label_widget("Segmentation")))
-    widgets.append(create_widget(name="segmentation", annotation=napari.layers.Image))
+    segmentation_widget = create_widget(
+        name="segmentation", annotation=napari.layers.Labels
+    )
+    widgets.append(segmentation_widget)
 
 
 def _create_pydantic_default_widgets(

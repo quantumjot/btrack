@@ -37,7 +37,10 @@ all_hypotheses = ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"]
 
 @dataclass
 class Matrices:
-    """helper dataclass to adapt matrix representation to and from pydantic"""
+    """A helper dataclass to adapt matrix representation to and from pydantic.
+    This is needed because TrackerConfig stored "scaled" matrices, i.e.
+    doesn't store sigma and the "unscaled" matrix separately.
+    """
 
     names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R"])
     default_sigmas: List[float] = field(
@@ -80,10 +83,18 @@ class Matrices:
 
     @classmethod
     def get_scaled_matrix(
-        cls, name: str, sigma: float, cell: bool = True
+        cls, name: str, sigma: float, use_cell_config: bool = True
     ) -> List[float]:
+        """Returns the scaled version (i.e. the unscaled matrix multiplied by sigma)
+        of the matrix.
+
+        Keyword arguments:
+        name -- the matrix name (can be one of A, H, P, G, R)
+        sigma -- the factor to scale the matrix entries with
+        cell -- whether to use cell config matrices or not (default true)
+        """
         if name == "A":
-            if cell:
+            if use_cell_config:
                 name = "A_cell"
             else:
                 name = "A_particle"
@@ -91,6 +102,15 @@ class Matrices:
 
     @classmethod
     def get_sigma(cls, name: str, scaled_matrix: npt.NDArray[np.float64]) -> float:
+        """Returns the factor sigma which is the multiplier between the given scaled
+        matrix and the unscaled matrix of the given name.
+
+        Note: Calculation relies on the top-left entry of the matrix.
+
+        Keyword arguments:
+        name -- the matrix name (can be one of A, H, P, G, R)
+        scaled_matrix -- the scaled matrix to find sigma from.
+        """
         if name == "A":
             name = "A_cell"  # doesn't matter which A we use here, as [0][0] is the same
         return scaled_matrix[0][0] / cls().unscaled_matrices[name][0]
@@ -100,6 +120,9 @@ def run_tracker(
     segmentation: Union[napari.layers.Image, napari.layers.Labels],
     tracker_config: TrackerConfig,
 ) -> Tuple[npt.NDArray, dict, dict]:
+    """
+    Runs BayesianTracker with given segmentation and configuration.
+    """
     with btrack.BayesianTracker() as tracker:
         tracker.configure(tracker_config)
         tracker.max_search_radius = 50
@@ -129,6 +152,7 @@ def run_tracker(
 
 
 def get_save_path():
+    """Helper function to open a save configuration file dialog."""
     show_file_dialog = use_app().get_obj("show_file_dialog")
     save_path = show_file_dialog(
         mode=FileDialogMode.OPTIONAL_FILE,
@@ -140,6 +164,7 @@ def get_save_path():
 
 
 def get_load_path():
+    """Helper function to open a load configuration file dialog."""
     show_file_dialog = use_app().get_obj("show_file_dialog")
     load_path = show_file_dialog(
         mode=FileDialogMode.EXISTING_FILE,
@@ -162,7 +187,7 @@ def html_label_widget(label: str, tag: str = "b") -> dict:
 
 def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
     """
-    For a given model create a list of widgets, ignoring entries in `ignored_names`.
+    For a given model create the required list of widgets.
     The items "hypotheses" and the various matrices need customisation,
     otherwise we can use the napari default.
     """
@@ -204,7 +229,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
 
 def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     """
-    add the widgets which interact with napari itself
+    Add the widgets which interact with napari itself
     """
     widgets.append(create_widget(**html_label_widget("Segmentation")))
     segmentation_widget = create_widget(
@@ -217,7 +242,7 @@ def _create_pydantic_default_widgets(
     widgets: List[Widget], model_configs: List[BaseModel]
 ) -> None:
     """
-    create the widgets which are detected automatically by napari
+    Create the widgets which are detected automatically by napari
     """
     model_widgets = [_create_per_model_widgets(model) for model in model_configs]
     widgets.extend([item for sublist in model_widgets for item in sublist])
@@ -236,6 +261,7 @@ def _create_cell_or_particle_widget(widgets: List[Widget]) -> None:
 
 
 def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
+    """Helper function to convert from the widgets to a tracker configuration."""
     motion_model_dict: Dict[str, Any] = {}
     hypothesis_model_dict = {}
 
@@ -284,6 +310,9 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
 
 
 def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
+    """Helper function to update a container's widgets
+    with the values in a given tracker config.
+    """
     for model in ["motion_model", "hypothesis_model", "object_model"]:
         model_config = getattr(config, model)
         if model_config:
@@ -306,10 +335,8 @@ def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
 
 
 def _create_button_widgets(widgets: List[Widget]) -> None:
-    """
-    create the set of button widgets at the bottom of the widget with
-    appropriate callbacks to enable functionality
-    """
+    """Create the set of button widgets needed:
+    run, save/load configuration and reset."""
     widget_names = [
         "load_config_button",
         "save_config_button",

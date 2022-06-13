@@ -50,8 +50,8 @@ def test_save_button(user_config_path, track_widget):
         with patch("napari_btrack.track.get_save_path") as get_save_path:
             get_save_path.return_value = user_config_path
             track_widget.save_config_button.clicked()
-    assert save_config.call_args.args[0] == user_config_path
-    assert save_config.call_args.args[1].json() == load_config(cell_config()).json()
+    assert save_config.call_args[0][0] == user_config_path
+    assert save_config.call_args[0][1].json() == load_config(cell_config()).json()
 
 
 def test_load_button(user_config_path, track_widget):
@@ -62,7 +62,7 @@ def test_load_button(user_config_path, track_widget):
         with patch("napari_btrack.track.get_load_path") as get_load_path:
             get_load_path.return_value = user_config_path
             track_widget.load_config_button.clicked()
-    assert load_config.call_args.args[0] == user_config_path
+    assert load_config.call_args[0][0] == user_config_path
 
 
 def test_reset_button(track_widget):

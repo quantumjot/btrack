@@ -1,12 +1,15 @@
 import json
+from typing import Dict, Tuple
 from unittest.mock import patch
 
 import napari
 import numpy as np
+import numpy.typing as npt
 import pytest
 from btrack import datasets
 from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
+from magicgui.widgets import Container
 
 from ..track import _update_widgets_from_config, _widgets_to_tracker_config, track
 
@@ -20,7 +23,7 @@ def test_add_widget(make_napari_viewer):
 
 
 @pytest.fixture
-def track_widget():
+def track_widget() -> Container:
     """Provides an instance of the track widget to test"""
     return track()
 
@@ -38,7 +41,7 @@ def test_config_to_widgets_round_trip(track_widget, config):
 
 
 @pytest.fixture
-def user_config_path():
+def user_config_path() -> str:
     """Provides a (dummy) string to represent a user-provided config path."""
     return "user_config.json"
 
@@ -87,16 +90,18 @@ def test_reset_button(track_widget):
 
 
 @pytest.fixture
-def simplistic_tracker_outputs():
+def simplistic_tracker_outputs() -> Tuple[
+    npt.NDArray, Dict[str, npt.NDArray], Dict[int, list]
+]:
     """Provides simplistic return values of a btrack run.
 
-    They have the correct types and dimensions, but contain zeros or nothing.
+    They have the correct types and dimensions, but contain zeros.
     Useful for mocking the tracker.
     """
     N, D = 10, 3
     data = np.zeros((N, D + 1))
     properties = dict(some_property=np.zeros((N)))
-    graph = dict()
+    graph = {0: [0]}
     return data, properties, graph
 
 

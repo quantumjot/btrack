@@ -125,7 +125,6 @@ def run_tracker(
     """
     with btrack.BayesianTracker() as tracker:
         tracker.configure(tracker_config)
-        tracker.max_search_radius = 50
 
         # append the objects to be tracked
         segmented_objects = segmentation_to_objects(segmentation.data)
@@ -198,7 +197,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
             if parameter in hidden_variable_names:
                 continue
             if parameter in Matrices().names:
-                # just expose the scalar sigma to user
+                # only expose the scalar sigma to user
                 sigma = Matrices.get_sigma(parameter, default_value)
                 widgets.extend(
                     [

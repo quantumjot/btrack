@@ -105,7 +105,8 @@ class Matrices:
         """Returns the factor sigma which is the multiplier between the given scaled
         matrix and the unscaled matrix of the given name.
 
-        Note: The calculation is done with the top-left entry of the matrix, and all other entries are ignored.
+        Note: The calculation is done with the top-left entry of the matrix,
+        and all other entries are ignored.
 
         Keyword arguments:
         name -- the matrix name (can be one of A, H, P, G, R)
@@ -287,7 +288,9 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
         if widget.name in Matrices().names:  # matrices need special treatment
             sigma = getattr(container, f"{widget.name}_sigma").value
             matrix = Matrices.get_scaled_matrix(
-                widget.name, sigma, container.mode.value == "cell"
+                widget.name,
+                sigma=sigma,
+                use_cell_config=(container.mode.value == "cell"),
             )
             motion_model_dict[widget.name] = matrix
         else:

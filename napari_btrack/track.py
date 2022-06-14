@@ -38,7 +38,7 @@ all_hypotheses = ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"]
 @dataclass
 class Matrices:
     """A helper dataclass to adapt matrix representation to and from pydantic.
-    This is needed because TrackerConfig stored "scaled" matrices, i.e.
+    This is needed because TrackerConfig stores "scaled" matrices, i.e.
     doesn't store sigma and the "unscaled" matrix separately.
     """
 
@@ -83,7 +83,7 @@ class Matrices:
 
     @classmethod
     def get_scaled_matrix(
-        cls, name: str, sigma: float, use_cell_config: bool = True
+        cls, name: str, *, sigma: float, use_cell_config: bool = True
     ) -> List[float]:
         """Returns the scaled version (i.e. the unscaled matrix multiplied by sigma)
         of the matrix.
@@ -105,7 +105,7 @@ class Matrices:
         """Returns the factor sigma which is the multiplier between the given scaled
         matrix and the unscaled matrix of the given name.
 
-        Note: Calculation relies on the top-left entry of the matrix.
+        Note: The calculation is done with the top-left entry of the matrix, and all other entries are ignored.
 
         Keyword arguments:
         name -- the matrix name (can be one of A, H, P, G, R)

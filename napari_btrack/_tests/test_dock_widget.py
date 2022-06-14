@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 import napari
@@ -32,8 +33,8 @@ def test_config_to_widgets_round_trip(track_widget, config):
     expected_config = load_config(config)
     _tracker_config_to_widgets(track_widget, expected_config)
     actual_config = _widgets_to_tracker_config(track_widget)
-
-    assert actual_config.json() == expected_config.json()
+    # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
+    assert json.loads(actual_config.json()) == json.loads(expected_config.json())
 
 
 @pytest.fixture
@@ -51,7 +52,10 @@ def test_save_button(user_config_path, track_widget):
             get_save_path.return_value = user_config_path
             track_widget.save_config_button.clicked()
     assert save_config.call_args[0][0] == user_config_path
-    assert save_config.call_args[0][1].json() == load_config(cell_config()).json()
+    # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
+    assert json.loads(save_config.call_args[0][1].json()) == json.loads(
+        load_config(cell_config()).json()
+    )
 
 
 def test_load_button(user_config_path, track_widget):
@@ -76,7 +80,10 @@ def test_reset_button(track_widget):
     track_widget.reset_button.clicked()
     config_after_reset = _widgets_to_tracker_config(track_widget)
 
-    assert config_after_reset.json() == load_config(cell_config()).json()
+    # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
+    assert json.loads(config_after_reset.json()) == json.loads(
+        load_config(cell_config()).json()
+    )
 
 
 @pytest.fixture

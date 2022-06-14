@@ -251,11 +251,15 @@ def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
 
 
 def _create_pydantic_default_widgets(
-    widgets: List[Widget], model_configs: List[BaseModel]
+    widgets: List[Widget], config: TrackerConfig
 ) -> None:
     """
-    Create the widgets which are detected automatically by napari
+    Create the widgets which have a tracker config equivalent.
     """
+    widgets.extend(
+        [create_widget(name="max_search_radius", value=config.max_search_radius)]
+    )
+    model_configs = [config.motion_model, config.object_model, config.hypothesis_model]
     model_widgets = [_create_per_model_widgets(model) for model in model_configs]
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
@@ -318,13 +322,21 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     hypothesis_model_dict["hypotheses"] = hypotheses
     motion_model = MotionModel(**motion_model_dict)
     hypothesis_model = HypothesisModel(**hypothesis_model_dict)
-    return TrackerConfig(motion_model=motion_model, hypothesis_model=hypothesis_model)
+
+    # add parameters outside the internal models
+    max_search_radius = getattr(container, "max_search_radius").value
+    return TrackerConfig(
+        max_search_radius=max_search_radius,
+        motion_model=motion_model,
+        hypothesis_model=hypothesis_model,
+    )
 
 
 def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
     """Helper function to update a container's widgets
     with the values in a given tracker config.
     """
+    getattr(container, "max_search_radius").value = config.max_search_radius
     for model in ["motion_model", "hypothesis_model", "object_model"]:
         model_config = getattr(config, model)
         if model_config:
@@ -377,17 +389,10 @@ def track() -> Container:
     # initialise a list for all widgets
     widgets: list = []
 
-    # the different model types
-    default_model_configs = [
-        default_cell_config.motion_model,
-        default_cell_config.object_model,
-        default_cell_config.hypothesis_model,
-    ]
-
     # create all the widgets
     _create_napari_specific_widgets(widgets)
     _create_cell_or_particle_widget(widgets)
-    _create_pydantic_default_widgets(widgets, default_model_configs)
+    _create_pydantic_default_widgets(widgets, default_cell_config)
     _create_button_widgets(widgets)
 
     btrack_widget = Container(widgets=widgets)

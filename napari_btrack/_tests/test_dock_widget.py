@@ -8,7 +8,7 @@ from btrack import datasets
 from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
 
-from ..track import _tracker_config_to_widgets, _widgets_to_tracker_config, track
+from ..track import _update_widgets_from_config, _widgets_to_tracker_config, track
 
 
 def test_add_widget(make_napari_viewer):
@@ -31,7 +31,7 @@ def test_config_to_widgets_round_trip(track_widget, config):
     config objects and widgets works as expected.
     """
     expected_config = load_config(config)
-    _tracker_config_to_widgets(track_widget, expected_config)
+    _update_widgets_from_config(track_widget, expected_config)
     actual_config = _widgets_to_tracker_config(track_widget)
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(actual_config.json()) == json.loads(expected_config.json())
@@ -74,7 +74,7 @@ def test_reset_button(track_widget):
     particle-config-populated widgets resets to the default (i.e. cell-config)
     """
     # change config to particle
-    _tracker_config_to_widgets(track_widget, load_config(particle_config()))
+    _update_widgets_from_config(track_widget, load_config(particle_config()))
 
     # click reset button (default is cell_config)
     track_widget.reset_button.clicked()

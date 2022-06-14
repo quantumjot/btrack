@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import QScrollArea
 default_cell_config = load_config(datasets.cell_config())
 
 # widgets for which the default widget type is incorrect
-hidden_variable_names = [
+HIDDEN_VARIABLE_NAMES = [
     "name",
     "measurements",
     "states",
@@ -32,7 +32,7 @@ hidden_variable_names = [
     "prob_not_assign",
     "eta",
 ]
-all_hypotheses = ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"]
+ALL_HYPOTHESES = ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"]
 
 
 @dataclass
@@ -192,7 +192,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
     if model:
         widgets.extend([create_widget(**html_label_widget(type(model).__name__))])
         for parameter, default_value in model:
-            if parameter in hidden_variable_names:
+            if parameter in HIDDEN_VARIABLE_NAMES:
                 continue
             if parameter in Matrices().names:
                 # only expose the scalar sigma to user
@@ -297,7 +297,7 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
         # setup hypothesis model
         if widget.name in hypothesis_model_keys:
             hypothesis_model_dict[widget.name] = widget.value
-        if widget.name in all_hypotheses:  # hypotheses need special treatment
+        if widget.name in ALL_HYPOTHESES:  # hypotheses need special treatment
             if getattr(container, widget.name).value:
                 hypotheses.append(widget.name)
 
@@ -329,7 +329,7 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     )
 
 
-def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
+def _update_widgets_from_config(container: Container, config: TrackerConfig):
     """Helper function to update a container's widgets
     with the values in a given tracker config.
     """
@@ -338,13 +338,13 @@ def _tracker_config_to_widgets(container: Container, config: TrackerConfig):
         model_config = getattr(config, model)
         if model_config:
             for parameter, value in model_config:
-                if parameter in hidden_variable_names:
+                if parameter in HIDDEN_VARIABLE_NAMES:
                     continue
                 if parameter in Matrices().names:
                     sigma = Matrices.get_sigma(parameter, value)
                     getattr(container, f"{parameter}_sigma").value = sigma
                 if parameter == "hypotheses":
-                    for hypothesis in all_hypotheses:
+                    for hypothesis in ALL_HYPOTHESES:
                         getattr(container, hypothesis).value = False
                     for hypothesis in value:
                         getattr(container, hypothesis).value = True
@@ -396,7 +396,7 @@ def track() -> Container:
 
     @btrack_widget.reset_button.changed.connect
     def restore_defaults() -> None:
-        _tracker_config_to_widgets(btrack_widget, default_cell_config)
+        _update_widgets_from_config(btrack_widget, default_cell_config)
 
     @btrack_widget.call_button.changed.connect
     def run() -> None:
@@ -419,7 +419,7 @@ def track() -> Container:
         load_path = get_load_path()
         if load_path:  # load path is None if user cancels
             config = load_config(load_path)
-            _tracker_config_to_widgets(btrack_widget, config)
+            _update_widgets_from_config(btrack_widget, config)
 
     scroll = QScrollArea()
     scroll.setWidget(btrack_widget._widget._qwidget)

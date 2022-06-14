@@ -46,38 +46,41 @@ class Matrices:
     default_sigmas: List[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
-    unscaled_matrices: Dict[str, List[float]] = field(
+    unscaled_matrices: Dict[str, npt.NDArray[np.float64]] = field(
         default_factory=lambda: dict(
-            # stop black from reformatting here
-            # so we can read the matrix entries
-            # fmt: off
-            A_cell=[1, 0, 0, 1, 0, 0,
-                    0, 1, 0, 0, 1, 0,
-                    0, 0, 1, 0, 0, 1,
-                    0, 0, 0, 1, 0, 0,
-                    0, 0, 0, 0, 1, 0,
-                    0, 0, 0, 0, 0, 1
-                    ],
-            A_particle=[1, 0, 0, 0, 0, 0,
-                        0, 1, 0, 0, 0, 0,
-                        0, 0, 1, 0, 0, 0,
-                        0, 0, 0, 1, 0, 0,
-                        0, 0, 0, 0, 1, 0,
-                        0, 0, 0, 0, 0, 1],
-            H=[1, 0, 0, 0, 0, 0,
-               0, 1, 0, 0, 0, 0,
-               0, 0, 1, 0, 0, 0],
-            P=[0.1, 0, 0, 0, 0, 0,
-                0, 0.1, 0, 0, 0, 0,
-                0, 0, 0.1, 0, 0, 0,
-                0, 0, 0, 1, 0, 0,
-                0, 0, 0, 0, 1, 0,
-                0, 0, 0, 0, 0, 1],
-            G=[0.5, 0.5, 0.5, 1, 1, 1],
-            R=[1, 0, 0,
-                0, 1, 0,
-                0, 0, 1],
-            # fmt: on
+            A_cell=np.array(
+                [
+                    [1, 0, 0, 1, 0, 0],
+                    [0, 1, 0, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 1],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1],
+                ]
+            ),
+            A_particle=np.array(
+                [
+                    [1, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1],
+                ]
+            ),
+            H=np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0]]),
+            P=np.array(
+                [
+                    [0.1, 0, 0, 0, 0, 0],
+                    [0, 0.1, 0, 0, 0, 0],
+                    [0, 0, 0.1, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 1],
+                ]
+            ),
+            G=np.array([[0.5, 0.5, 0.5, 1, 1, 1]]),
+            R=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
         )
     )
 
@@ -114,7 +117,7 @@ class Matrices:
         """
         if name == "A":
             name = "A_cell"  # doesn't matter which A we use here, as [0][0] is the same
-        return scaled_matrix[0][0] / cls().unscaled_matrices[name][0]
+        return scaled_matrix[0][0] / cls().unscaled_matrices[name][0][0]
 
 
 def run_tracker(

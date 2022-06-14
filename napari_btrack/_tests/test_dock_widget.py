@@ -114,7 +114,8 @@ def test_run_button(make_napari_viewer, track_widget, simplistic_tracker_outputs
         viewer = make_napari_viewer()
         segmentation = datasets.example_segmentation()
         viewer.add_labels(segmentation)
+        assert len(viewer.layers) == 1
         track_widget.call_button.clicked()
     assert run_tracker.called
-    assert len(napari.current_viewer().layers) == 2
-    assert type(napari.current_viewer().layers[-1]) == napari.layers.Tracks
+    assert len(viewer.layers) == 2
+    assert type(viewer.layers[-1]) == napari.layers.Tracks

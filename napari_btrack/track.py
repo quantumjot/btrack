@@ -189,38 +189,37 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
     otherwise we can use the napari default.
     """
     widgets: List[Widget] = []
-    if model:
-        widgets.extend([create_widget(**html_label_widget(type(model).__name__))])
-        for parameter, default_value in model:
-            if parameter in HIDDEN_VARIABLE_NAMES:
-                continue
-            if parameter in Matrices().names:
-                # only expose the scalar sigma to user
-                sigma = Matrices.get_sigma(parameter, default_value)
-                widgets.extend(
-                    [
-                        create_widget(
-                            value=sigma, name=f"{parameter}_sigma", annotation=float
-                        )
-                    ]
-                )
-            if (
-                parameter == "hypotheses"
-            ):  # this list should be represented as a series of checkboxes
-                for choice in default_value:
-                    widgets.extend(
-                        [create_widget(value=True, name=choice, annotation=bool)]
+    widgets.extend([create_widget(**html_label_widget(type(model).__name__))])
+    for parameter, default_value in model:
+        if parameter in HIDDEN_VARIABLE_NAMES:
+            continue
+        if parameter in Matrices().names:
+            # only expose the scalar sigma to user
+            sigma = Matrices.get_sigma(parameter, default_value)
+            widgets.extend(
+                [
+                    create_widget(
+                        value=sigma, name=f"{parameter}_sigma", annotation=float
                     )
-            else:  # use napari default
+                ]
+            )
+        if (
+            parameter == "hypotheses"
+        ):  # this list should be represented as a series of checkboxes
+            for choice in default_value:
                 widgets.extend(
-                    [
-                        create_widget(
-                            value=default_value,
-                            name=parameter,
-                            annotation=type(default_value),
-                        )
-                    ]
+                    [create_widget(value=True, name=choice, annotation=bool)]
                 )
+        else:  # use napari default
+            widgets.extend(
+                [
+                    create_widget(
+                        value=default_value,
+                        name=parameter,
+                        annotation=type(default_value),
+                    )
+                ]
+            )
     return widgets
 
 
@@ -256,7 +255,7 @@ def _create_pydantic_default_widgets(
     widgets.extend(
         [create_widget(name="max_search_radius", value=config.max_search_radius)]
     )
-    model_configs = [config.motion_model, config.object_model, config.hypothesis_model]
+    model_configs = [config.motion_model, config.hypothesis_model]
     model_widgets = [_create_per_model_widgets(model) for model in model_configs]
     widgets.extend([item for sublist in model_widgets for item in sublist])
 

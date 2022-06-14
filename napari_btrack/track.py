@@ -234,13 +234,17 @@ def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     widgets.append(create_widget(**html_label_widget("Segmentation")))
     labels = []
     if napari.current_viewer():
-        labels = [layer for layer in napari.current_viewer().layers if isinstance(layer, napari.layers.Labels)]
+        labels = [
+            layer
+            for layer in napari.current_viewer().layers
+            if isinstance(layer, napari.layers.Labels)
+        ]
     segmentation_widget = create_widget(
         name="segmentation",
         annotation=napari.layers.Labels,
         options=dict(
             tooltip="Should be a Labels layer. Convert an Image to Labels by right-clicking on it in the layers list, and clicking on 'Convert to Labels'",  # noqa: E501
-            choices=labels
+            choices=labels,
         ),
     )
     widgets.append(segmentation_widget)

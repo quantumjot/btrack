@@ -102,9 +102,6 @@ def test_run_button(make_napari_viewer, track_widget, simplistic_tracker_outputs
         viewer = make_napari_viewer()
         segmentation = datasets.example_segmentation()
         viewer.add_labels(segmentation)
-        # somehow the choices are not updated automatically here.
-        # track_widget.segmentation.choices = napari.current_viewer().layers
-        # track_widget.segmentation.value = napari.current_viewer().layers["segmentation"]
         track_widget.call_button.clicked()
     assert run_tracker.called
     assert len(napari.current_viewer().layers) == 2

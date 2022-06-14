@@ -132,12 +132,10 @@ def run_tracker(
 
         # set the volume
         segmentation_size = segmentation.level_shapes[0]
-        # btrack order of dimensions is opposite of napari
-        tracker.volume = (
-            (0, segmentation_size[2]),
-            (0, segmentation_size[1]),
-            (-1e5, segmentation_size[0]),
-        )
+        # btrack order of dimensions is XY(Z)
+        # napari order of dimensions is T(Z)XY
+        # so we ignore the first entry and then iterate backwards
+        tracker.volume = tuple([(0, s) for s in segmentation_size[1:][::-1]])
 
         # track them (in interactive mode)
         tracker.track_interactive(step_size=100)

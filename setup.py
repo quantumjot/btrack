@@ -32,7 +32,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     long_description_content_type="text/markdown",
     packages=find_packages(),
-    package_data={"btrack": ["libs/libtracker*", "VERSION.txt"]},
+    package_data={"btrack": ["libs/libtracker*", "VERSION.txt", "napari.yaml"]},
     install_requires=get_install_required(),
     extras_require=extras_require,
     python_requires=">=3.6",

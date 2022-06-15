@@ -398,6 +398,7 @@ def track() -> Container:
     _create_button_widgets(widgets)
 
     btrack_widget = Container(widgets=widgets)
+    btrack_widget.viewer = napari.current_viewer()
 
     @btrack_widget.reset_button.changed.connect
     def restore_defaults() -> None:
@@ -408,8 +409,7 @@ def track() -> Container:
         config = _widgets_to_tracker_config(btrack_widget)
         segmentation = btrack_widget.segmentation.value
         data, properties, graph = run_tracker(segmentation, config)
-        viewer = napari.current_viewer()
-        viewer.add_tracks(
+        btrack_widget.viewer.add_tracks(
             data=data, properties=properties, graph=graph, name=f"{segmentation}_btrack"
         )
 

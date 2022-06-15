@@ -23,8 +23,9 @@ def test_add_widget(make_napari_viewer):
 
 
 @pytest.fixture
-def track_widget() -> Container:
+def track_widget(make_napari_viewer) -> Container:
     """Provides an instance of the track widget to test"""
+    make_napari_viewer()  # make sure there is a viewer available
     return track()
 
 
@@ -105,17 +106,16 @@ def simplistic_tracker_outputs() -> Tuple[
     return data, properties, graph
 
 
-def test_run_button(make_napari_viewer, track_widget, simplistic_tracker_outputs):
+def test_run_button(track_widget, simplistic_tracker_outputs):
     """Tests that clicking the run button calls run_tracker,
     and that the napari viewer has an additional tracks layer after running.
     """
     with patch("napari_btrack.track.run_tracker") as run_tracker:
         run_tracker.return_value = simplistic_tracker_outputs
-        viewer = make_napari_viewer()
         segmentation = datasets.example_segmentation()
-        viewer.add_labels(segmentation)
-        assert len(viewer.layers) == 1
+        track_widget.viewer.add_labels(segmentation)
+        assert len(track_widget.viewer.layers) == 1
         track_widget.call_button.clicked()
     assert run_tracker.called
-    assert len(viewer.layers) == 2
-    assert type(viewer.layers[-1]) == napari.layers.Tracks
+    assert len(track_widget.viewer.layers) == 2
+    assert isinstance(track_widget.viewer.layers[-1], napari.layers.Tracks)

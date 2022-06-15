@@ -193,36 +193,26 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
     otherwise we can use the napari default.
     """
     widgets: List[Widget] = []
-    widgets.extend([create_widget(**html_label_widget(type(model).__name__))])
+    widgets.append(create_widget(**html_label_widget(type(model).__name__)))
     for parameter, default_value in model:
         if parameter in HIDDEN_VARIABLE_NAMES:
             continue
         if parameter in Matrices().names:
             # only expose the scalar sigma to user
             sigma = Matrices.get_sigma(parameter, default_value)
-            widgets.extend(
-                [
-                    create_widget(
-                        value=sigma, name=f"{parameter}_sigma", annotation=float
-                    )
-                ]
+            widgets.append(
+                create_widget(value=sigma, name=f"{parameter}_sigma", annotation=float)
             )
         if (
             parameter == "hypotheses"
         ):  # this list should be represented as a series of checkboxes
             for choice in default_value:
-                widgets.extend(
-                    [create_widget(value=True, name=choice, annotation=bool)]
-                )
+                widgets.append(create_widget(value=True, name=choice, annotation=bool))
         else:  # use napari default
-            widgets.extend(
-                [
-                    create_widget(
-                        value=default_value,
-                        name=parameter,
-                        annotation=type(default_value),
-                    )
-                ]
+            widgets.append(
+                create_widget(
+                    value=default_value, name=parameter, annotation=type(default_value)
+                )
             )
     return widgets
 
@@ -256,8 +246,8 @@ def _create_pydantic_default_widgets(
     """
     Create the widgets which have a tracker config equivalent.
     """
-    widgets.extend(
-        [create_widget(name="max_search_radius", value=config.max_search_radius)]
+    widgets.append(
+        create_widget(name="max_search_radius", value=config.max_search_radius)
     )
     model_configs = [config.motion_model, config.hypothesis_model]
     model_widgets = [_create_per_model_widgets(model) for model in model_configs]
@@ -266,13 +256,11 @@ def _create_pydantic_default_widgets(
 
 def _create_cell_or_particle_widget(widgets: List[Widget]) -> None:
     """Create a dropdown menu to choose between cell or particle mode."""
-    widgets.extend([create_widget(**html_label_widget("Mode"))])
-    widgets.extend(
-        [
-            create_widget(
-                name="mode", value="cell", options={"choices": ["cell", "particle"]}
-            )
-        ]
+    widgets.append(create_widget(**html_label_widget("Mode")))
+    widgets.append(
+        create_widget(
+            name="mode", value="cell", options={"choices": ["cell", "particle"]}
+        )
     )
 
 
@@ -376,7 +364,7 @@ def _create_button_widgets(widgets: List[Widget]) -> None:
         "Reset defaults",
         "Run",
     ]
-    widgets.extend([create_widget(**html_label_widget("Control buttons"))])
+    widgets.append(create_widget(**html_label_widget("Control buttons")))
     widgets.extend(
         [
             create_widget(name=widget_name, label=widget_label, widget_type=PushButton)

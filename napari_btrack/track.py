@@ -334,7 +334,7 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     )
 
 
-def _update_widgets_from_config(container: Container, config: TrackerConfig):
+def _update_widgets_from_config(container: Container, config: TrackerConfig) -> None:
     """Helper function to update a container's widgets
     with the values in a given tracker config.
     """
@@ -350,11 +350,12 @@ def _update_widgets_from_config(container: Container, config: TrackerConfig):
                     getattr(container, f"{parameter}_sigma").value = sigma
                 if parameter == "hypotheses":
                     for hypothesis in ALL_HYPOTHESES:
-                        getattr(container, hypothesis).value = False
-                    for hypothesis in value:
-                        getattr(container, hypothesis).value = True
+                        getattr(container, hypothesis).value = hypothesis in value
                 else:
                     getattr(container, parameter).value = value
+    # we can determine whether we are in particle or cell mode
+    # by checking whether the 4th entry of the first row of the
+    # A matrix is 1 or 0 (1 for cell mode)
     mode_is_cell = config.motion_model.A[0, 3] == 1
     print("mode is cell: ", mode_is_cell)
     container.mode.value = "cell" if mode_is_cell else "particle"

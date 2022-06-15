@@ -51,10 +51,11 @@ def test_save_button(user_config_path, track_widget):
     """Tests that clicking the save configuration button
     triggers a call to btrack.config.save_config with expected arguments.
     """
-    with patch("napari_btrack.track.save_config") as save_config:
-        with patch("napari_btrack.track.get_save_path") as get_save_path:
-            get_save_path.return_value = user_config_path
-            track_widget.save_config_button.clicked()
+    with patch("napari_btrack.track.save_config") as save_config, patch(
+        "napari_btrack.track.get_save_path"
+    ) as get_save_path:
+        get_save_path.return_value = user_config_path
+        track_widget.save_config_button.clicked()
     assert save_config.call_args[0][0] == user_config_path
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(save_config.call_args[0][1].json()) == json.loads(
@@ -66,10 +67,11 @@ def test_load_button(user_config_path, track_widget):
     """Tests that clicking the load configuration button
     triggers a call to btrack.config.load_config with the expected argument
     """
-    with patch("napari_btrack.track.load_config") as load_config:
-        with patch("napari_btrack.track.get_load_path") as get_load_path:
-            get_load_path.return_value = user_config_path
-            track_widget.load_config_button.clicked()
+    with patch("napari_btrack.track.load_config") as load_config, patch(
+        "napari_btrack.track.get_load_path"
+    ) as get_load_path:
+        get_load_path.return_value = user_config_path
+        track_widget.load_config_button.clicked()
     assert load_config.call_args[0][0] == user_config_path
 
 

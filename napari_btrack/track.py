@@ -203,11 +203,14 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
             widgets.append(
                 create_widget(value=sigma, name=f"{parameter}_sigma", annotation=float)
             )
-        if (
-            parameter == "hypotheses"
-        ):  # this list should be represented as a series of checkboxes
-            for choice in default_value:
-                widgets.append(create_widget(value=True, name=choice, annotation=bool))
+        if parameter == "hypotheses":
+            # the hypothesis list should be represented as a series of checkboxes
+            widgets.extend(
+                [
+                    create_widget(value=True, name=choice, annotation=bool)
+                    for choice in default_value
+                ]
+            )
         else:  # use napari default
             widgets.append(
                 create_widget(

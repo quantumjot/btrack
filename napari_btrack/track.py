@@ -207,8 +207,10 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
             # the hypothesis list should be represented as a series of checkboxes
             widgets.extend(
                 [
-                    create_widget(value=True, name=choice, annotation=bool)
-                    for choice in default_value
+                    create_widget(
+                        value=(choice in default_value), name=choice, annotation=bool
+                    )
+                    for choice in ALL_HYPOTHESES
                 ]
             )
         else:  # use napari default

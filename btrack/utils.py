@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import logging
 from typing import Optional
 
 import numpy as np
+from skimage.util import map_array
 
 # import core
 from . import btypes, constants
@@ -10,7 +13,10 @@ from .constants import Dimensionality
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
-__all__ = ["segmentation_to_objects"]
+__all__ = [
+    "segmentation_to_objects",
+    "update_segmentation",
+]
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -88,7 +94,9 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _cat_tracks_as_dict(tracks: list, properties: list) -> dict:
+def _cat_tracks_as_dict(
+    tracks: list[btypes.Tracklet], properties: list
+) -> dict:
     """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
@@ -114,12 +122,14 @@ def _cat_tracks_as_dict(tracks: list, properties: list) -> dict:
     return data
 
 
-def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
+def tracks_to_napari(
+    tracks: list[btypes.Tracklet], ndim: int = 3, replace_nan: bool = True
+):
     """Convert a list of Tracklets to napari format input.
 
     Parameters
     ----------
-    tracks : list
+    tracks : list[btypes.Tracklet]
         A list of tracklet objects from BayesianTracker.
     ndim : int
         The number of spatial dimensions of the data. Must be 2 or 3.
@@ -178,33 +188,61 @@ def tracks_to_napari(tracks: list, ndim: int = 3, replace_nan: bool = True):
     return data, properties, graph
 
 
-def _pandas_html_repr(obj):
-    """Prepare data for HTML representation in a notebook."""
-    try:
-        import pandas as pd
-    except ImportError:
-        return (
-            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-            + obj.__repr__()
+def update_segmentation(
+    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
+) -> np.ndarray:
+    """
+    Map btrack output tracks back into a masked array.
+
+    Parameters
+    ----------
+    segmentation : np.array
+        Array containing a timeseries of single cell masks. Dimensions should be
+        ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
+    tracks : list[btypes.Tracklet]
+        A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+
+    Returns
+    -------
+    relabeled : np.array
+        Array containing the same masks as segmentation but relabeled to
+        maintain single cell identity over time.
+
+    Example
+    -------
+
+    import btrack
+    tracker = btrack.BayesianTracker()
+    objects = btrack.utils.segmentation_to_objects(segmentation)
+    tracker.append(objects)
+    ...
+    tracker.optimize()
+    tracks = tracker.tracks
+
+    tracked_segmentation = btrack.utils.update_segmentation(
+                                    segmentation, tracks)
+    """
+
+    coords_arr = np.concatenate(
+        [
+            track.to_array()[~np.array(track.dummy)][:, :5].astype(int)
+            for track in tracks
+        ]
+    )
+    relabeled = np.zeros_like(segmentation)
+    for t, single_segmentation in enumerate(segmentation):
+        frame_coords = coords_arr[coords_arr[:, 1] == t]
+        new_id, tc, xc, yc, zc = tuple(frame_coords.T)
+        if single_segmentation.ndim == 2:
+            old_id = single_segmentation[yc, xc]
+        elif single_segmentation.ndim == 3:
+            old_id = single_segmentation[zc, yc, xc]
+
+        relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
+            single_segmentation > 0
         )
 
-    obj_as_dict = obj.to_dict()
-
-    # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
-
-    for k, v in obj_as_dict.items():
-        if not isinstance(v, (list, np.ndarray)):
-            obj_as_dict[k] = [v] * n_items
-        elif isinstance(v, np.ndarray):
-            ndim = 0 if n_items == 1 else 1
-            if v.ndim > ndim:
-                obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
-
-    return pd.DataFrame.from_dict(obj_as_dict).to_html()
+    return relabeled
 
 
 if __name__ == "__main__":

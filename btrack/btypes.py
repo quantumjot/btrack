@@ -21,7 +21,7 @@ from typing import Any, Dict, List, NamedTuple, Optional, Tuple
 
 import numpy as np
 
-from . import constants, utils
+from . import constants
 
 __all__ = ["PyTrackObject", "Tracklet"]
 
@@ -180,7 +180,7 @@ class PyTrackObject(ctypes.Structure):
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        return utils._pandas_html_repr(self)
+        return _pandas_html_repr(self)
 
 
 class PyTrackingInfo(ctypes.Structure):
@@ -344,7 +344,7 @@ class Tracklet:
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        return utils._pandas_html_repr(self)
+        return _pandas_html_repr(self)
 
     @property
     def properties(self) -> Dict[str, np.ndarray]:
@@ -490,3 +490,32 @@ class Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
+
+
+def _pandas_html_repr(obj):
+    """Prepare data for HTML representation in a notebook."""
+    try:
+        import pandas as pd
+    except ImportError:
+        return (
+            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
+            + obj.__repr__()
+        )
+
+    obj_as_dict = obj.to_dict()
+
+    # now try to process for display in the notebook
+    if hasattr(obj, "__len__"):
+        n_items = len(obj)
+    else:
+        n_items = 1
+
+    for k, v in obj_as_dict.items():
+        if not isinstance(v, (list, np.ndarray)):
+            obj_as_dict[k] = [v] * n_items
+        elif isinstance(v, np.ndarray):
+            ndim = 0 if n_items == 1 else 1
+            if v.ndim > ndim:
+                obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
+
+    return pd.DataFrame.from_dict(obj_as_dict).to_html()

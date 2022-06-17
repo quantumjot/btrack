@@ -11,19 +11,17 @@ import napari
 from btrack import datasets
 
 viewer = napari.Viewer()
+napari.current_viewer()
 
 _, btrack_widget = viewer.window.add_plugin_dock_widget(
     plugin_name="napari-btrack", widget_name="Track"
 )
 
-# populate with example config and data
-cell_config = datasets.cell_config()
-btrack_widget.config_file_path.value = cell_config
-
 
 segmentation = datasets.example_segmentation()
-viewer.add_image(segmentation)
+viewer.add_labels(segmentation)
 # napari takes the first image layer as default anyway here, but better to be explicit
+btrack_widget.segmentation.choices = viewer.layers
 btrack_widget.segmentation.value = viewer.layers["segmentation"]
 
 if __name__ == "__main__":

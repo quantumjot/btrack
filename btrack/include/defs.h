@@ -90,8 +90,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 
 
 // flag to use a uniform prior
-#define USE_UNIFORM_PRIOR true
-#define USE_CURRENT_PRIOR false
+#define USE_UNIFORM_PRIOR 0
 #define USE_MOTION_FEATURES 0
 #define USE_VISUAL_FEATURES 1
 

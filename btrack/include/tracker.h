@@ -213,14 +213,23 @@ private:
   // default object model, must remain uninitialised
   ObjectModel object_model;
 
-  // function pointer to chosen cost function
-  // void (BayesianTracker::*cost_function_ptr)(Eigen::Ref<Eigen::MatrixXd> belief,
-  //                                            const size_t n_tracks,
-  //                                            const size_t n_objects);
+  // cost function mode
+  // NOTE(arl): this is probably obsolete now
   unsigned int cost_function_mode;
 
   // reference to an update function
-  double (BayesianTracker::*m_update_fn)(const TrackletPtr&, const TrackObjectPtr&) const;
+  double (BayesianTracker::*m_update_fn)(
+    const TrackletPtr&,
+    const TrackObjectPtr&
+  ) const;
+
+  // reference to a cost function
+  void (BayesianTracker::*m_cost_fn)(
+    const Eigen::Ref<Eigen::MatrixXd>,
+    const size_t,
+    const size_t,
+    const bool
+  );
 
   // default tracking parameters
   double prob_not_assign = PROB_NOT_ASSIGN;

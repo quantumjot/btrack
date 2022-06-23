@@ -76,6 +76,19 @@ BayesianTracker::~BayesianTracker() {
 void BayesianTracker::set_update_mode(const unsigned int update_mode) {
   cost_function_mode = update_mode;
   if (DEBUG) std::cout << "Update mode: " << cost_function_mode << std::endl;
+
+  if (cost_function_mode == UPDATE_MODE_EXACT) {
+    m_cost_fn = &BayesianTracker::cost_EXACT;
+  } else if (cost_function_mode == UPDATE_MODE_APPROXIMATE) {
+    m_cost_fn = &BayesianTracker::cost_APPROXIMATE;
+  } else {
+    //throw std::runtime_error("CUDA update method not supported");
+
+    std::cout << "CUDA update method not currently supported, reverting to EXACT.";
+    std::cout << std::endl;
+
+    m_cost_fn = &BayesianTracker::cost_EXACT;
+  }
 }
 
 
@@ -332,43 +345,24 @@ void BayesianTracker::step(const unsigned int steps)
     // now do the Bayesian updates
     belief.setZero(n_obs+1, n_active);
 
+    // set the update iteration
+    // on the first pass, use a uniform prior
+    // on the second pass, use the current prior and so forth
+    unsigned int update_iteration = 0;
+
     // now do the Bayesian updates using the correct mode
-    //switch(cost_function_mode) {
-
-    if (cost_function_mode == UPDATE_MODE_EXACT) {
-      // point at the correct update function, run the update with a uniform
-      // prior and the motion model
+    // use an implicit function pointer call to the appropriate cost function
+    if (use_motion_features()) {
       m_update_fn = &BayesianTracker::prob_update_motion;
-      cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
-
-      if (use_visual_features()) {
-        // point at the correct function, run the update with visual information
-        m_update_fn = &BayesianTracker::prob_update_visual;
-        cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
-      }
-
-    } else if (cost_function_mode == UPDATE_MODE_APPROXIMATE) {
-      // point at the correct update function, run the update with a uniform
-      // prior and the motion model
-      m_update_fn = &BayesianTracker::prob_update_motion;
-      cost_EXACT(belief, n_active, n_obs, USE_UNIFORM_PRIOR);
-
-      if (use_visual_features()) {
-        // point at the correct function, run the update with visual information
-        m_update_fn = &BayesianTracker::prob_update_visual;
-        cost_EXACT(belief, n_active, n_obs, USE_CURRENT_PRIOR);
-      }
-    } else if (cost_function_mode == UPDATE_MODE_CUDA) {
-      throw std::runtime_error("CUDA update method not supported");
-    } else {
-      throw std::runtime_error("Update method not supported");
+      (this->*m_cost_fn)(belief, n_active, n_obs, (update_iteration == USE_UNIFORM_PRIOR));
+      update_iteration++;
     }
 
-
-
-    // use an implicit function pointer call to the appropriate cost function
-    // cost_function_ptr(belief, n_active, n_obs);
-    //(this->*cost_function_ptr)(belief, n_active, n_obs);
+    if (use_visual_features()) {
+      m_update_fn = &BayesianTracker::prob_update_visual;
+      (this->*m_cost_fn)(belief, n_active, n_obs, (update_iteration == USE_UNIFORM_PRIOR));
+      update_iteration++;
+    }
 
     // now that we have the complete belief matrix, we want to associate
     // do naive linking

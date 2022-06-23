@@ -5,7 +5,23 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "docs/**"
+      - "btrack/include/**"
+      - "btrack/src/**"
+      - ".napari-hub/**"
+      - "examples/**"
+      - "README.md"
+      - "CHANGELOG.rst"
   pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "btrack/include/**"
+      - "btrack/src/**"
+      - ".napari-hub/**"
+      - "examples/**"
+      - "README.md"
+      - "CHANGELOG.rst"
 
 jobs:
   build:

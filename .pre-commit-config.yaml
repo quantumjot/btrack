@@ -15,6 +15,7 @@ repos:
             args: [--fix=lf]
           - id: requirements-txt-fixer
           - id: trailing-whitespace
+            args: [--markdown-linebreak-ext=md]
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.9.2
       hooks:

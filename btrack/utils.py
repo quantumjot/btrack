@@ -105,23 +105,23 @@ def _cat_tracks_as_dict(
     for track in tracks:
         trk = track.to_dict(properties)
 
-        if not data_initial:
-            data_initial = {k: [] for k in trk.keys()}
+        if not data:
+            data = {k: [] for k in trk.keys()}
 
-        for key in data_initial.keys():
+        for key in data.keys():
             property = trk[key]
             if not isinstance(property, (list, np.ndarray)):
                 property = [property] * len(track)
 
             assert len(property) == len(track)
-            data_initial[key].append(property)
+            data[key].append(property)
 
-    for key in data_initial.keys():
-        data_output[key] = np.concatenate(data_initial[key])
+    for key in data.keys():
+        data[key] = np.concatenate(data[key])
         # unecessary but just in case the unused dictionary is large
-        del data_initial[key]
+        del data[key]
 
-    return data_output
+    return data
 
 
 def tracks_to_napari(

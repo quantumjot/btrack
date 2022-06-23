@@ -163,7 +163,7 @@ def export_delegator(
 
     Parameters
     ----------
-    filename : os.PathLike
+    filename : str
         The filename to export the data. The extension (e.g. .h5) is used
         to select the correct export function.
     tracker : BayesianTracker
@@ -207,7 +207,7 @@ def export_CSV(
 
     Parameters
     ----------
-    filename : os.PathLike
+    filename : str
         The filename of the file to be exported.
     tracks : list[Tracklet]
         A list of Tracklet objects to be exported.
@@ -298,7 +298,7 @@ class HDF5FileHandler:
 
     Parameters
     ----------
-    filename : os.PathLike
+    filename : str
         The filename of the hdf5 file to be used.
     read_write : str
         A read/write mode for the file, e.g. `w`, `r`, `a` etc.

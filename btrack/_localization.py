@@ -130,7 +130,7 @@ def _concat_centroids(centroids, new_centroids):
 def segmentation_to_objects(
     segmentation: Union[np.ndarray, Generator],
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
-    properties: Optional[Tuple[str, ...]] = None,
+    properties: Tuple[str, ...] = (),
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
@@ -197,7 +197,7 @@ def segmentation_to_objects(
         logger.info("Calculating weighted centroids using intensity_image")
 
     # we need to remove 'label' since this is a protected keyword for btrack objects
-    if isinstance(properties, tuple) and "label" in properties:
+    if "label" in properties:
         logger.warning("Cannot use scikit-image label as a property.")
         properties = tuple(set(properties) - set(["label"]))
 

@@ -118,8 +118,6 @@ def _cat_tracks_as_dict(
 
     for key in data.keys():
         data[key] = np.concatenate(data[key])
-        # unecessary but just in case the unused dictionary is large
-        del data[key]
 
     return data
 

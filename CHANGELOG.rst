@@ -4,6 +4,9 @@ Updates
 -----
 - Added util to relabel masks using track ID
 - Added extra test coverage
+- Changed to static setup.cfg
+- Fix inclusion of napari.yaml in wheel
+- Update CI checks
 
 0.4.4
 -----

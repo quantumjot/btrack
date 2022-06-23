@@ -1,7 +1,8 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
+import numpy.typing as npt
 from skimage.measure import label
 
 import btrack
@@ -90,13 +91,23 @@ def create_realistic_tracklet(
     return btrack.btypes.Tracklet(track_ID, objects)
 
 
+def _sample(ndim: int, binsize: int) -> Tuple[npt.NDArray[np.uint16], tuple]:
+    _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
+    _coord = tuple(np.random.randint(1, binsize - 1, size=(ndim,)).tolist())
+    _img[_coord] = 1
+    assert (
+        np.sum(_img) == 1
+    ), "Test image voxel contains incorrect number of objects."
+    return _img, _coord
+
+
 def create_test_image(
     boxsize: int = 150,
     ndim: int = 2,
     nobj: int = 10,
     binsize: int = 5,
     binary: bool = True,
-) -> Tuple[np.ndarray, Optional[Union[List[int], np.ndarray]]]:
+) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
     shape = (boxsize,) * ndim
     img = np.zeros(shape, dtype=np.uint16)
@@ -108,17 +119,6 @@ def create_test_image(
     # split this into voxels
     bins = boxsize // binsize
 
-    def _sample() -> Tuple[np.ndarray, Tuple[int]]:
-        _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
-        _coord = tuple(
-            np.random.randint(1, binsize - 1, size=(ndim,)).tolist()
-        )
-        _img[_coord] = 1
-        assert (
-            np.sum(_img) == 1
-        ), "Test image voxel contains incorrect number of objects."
-        return _img, _coord
-
     # now we update nobj grid positions with a sample
     grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
         -1, ndim
@@ -129,7 +129,7 @@ def create_test_image(
     # iterate over the bins and add a smaple
     centroids = []
     for v, bin in enumerate(rbins):
-        sample, point = _sample()
+        sample, point = _sample(ndim, binsize)
         slices = tuple(
             [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
         )

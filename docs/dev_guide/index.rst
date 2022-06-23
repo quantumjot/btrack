@@ -20,6 +20,11 @@ If you would rather install the latest development version, and/or compile direc
 
 Additionally, the ``build.sh`` script will download Eigen source, run the makefile and pip install.
 
+If developing the documentation then run the following
+
+.. code:: sh
+
+   pip install -e .[docs]
 
 Releasing
 ---------

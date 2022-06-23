@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 from skimage.measure import label
@@ -47,7 +47,7 @@ def create_test_tracklet(
 ) -> Tuple[
     btrack.btypes.Tracklet,
     List[btrack.btypes.PyTrackObject],
-    List[Dict[str, Any]],
+    Dict[str, Any],
     int,
 ]:
     """Create a test track."""
@@ -78,17 +78,16 @@ def create_realistic_tracklet(
     """Create a realistic moving track."""
 
     data = {
-        "x": np.array([start_x + dx * t for t in range(track_len)]),
-        "y": np.array([start_y + dy * t for t in range(track_len)]),
+        "x": np.array([start_x + dx * t for t in np.arange(track_len)]),
+        "y": np.array([start_y + dy * t for t in np.arange(track_len)]),
         "t": np.arange(track_len),
         "ID": np.array(
-            [(track_ID - 1) * track_len + t for t in range(track_len)]
+            [(track_ID - 1) * track_len + t for t in np.arange(track_len)]
         ),
     }
 
     objects = btrack.dataio.objects_from_dict(data)
-    track = btrack.btypes.Tracklet(track_ID, objects)
-    return track
+    return btrack.btypes.Tracklet(track_ID, objects)
 
 
 def create_test_image(
@@ -97,7 +96,7 @@ def create_test_image(
     nobj: int = 10,
     binsize: int = 5,
     binary: bool = True,
-) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+) -> Tuple[np.ndarray, Optional[Union[List[int], np.ndarray]]]:
     """Make a test image that ensures that no two pixels are in contact."""
     shape = (boxsize,) * ndim
     img = np.zeros(shape, dtype=np.uint16)

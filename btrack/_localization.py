@@ -15,32 +15,38 @@ from .dataio import localizations_to_objects
 logger = logging.getLogger(__name__)
 
 
+def _is_unique(x: np.ndarray) -> bool:
+    """
+    check if image is not uniquely labelled (necessary for regionprops)
+    """
+    return not np.max(label(x)) != np.max(x)
+
+
 def _centroids_from_single_arr(
     segmentation: Union[np.ndarray, Generator],
-    properties: Tuple[str],
+    properties: Tuple[str, ...],
     frame: int,
     intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = False,
     assign_class_ID: bool = False,
-) -> np.ndarray:
+) -> Union[dict, np.ndarray]:
     """Return the object centroids from a numpy array representing the
     image data."""
 
-    if np.sum(segmentation) == 0:
-        return {}
+    if isinstance(segmentation, np.ndarray) and np.sum(segmentation) == 0:
+        return dict()
+    elif isinstance(segmentation, Generator) and sum(segmentation) == 0:
+        return dict()
 
-    def _is_unique(x: np.ndarray) -> bool:
-        # check if image is not uniquely labelled (necessary for regionprops)
-        return not np.max(label(x)) != np.max(x)
-
-    if use_weighted_centroid and intensity_image is not None:
-        CENTROID_PROPERTY = "weighted_centroid"
-    else:
-        CENTROID_PROPERTY = "centroid"
+    CENTROID_PROPERTY = (
+        "weighted_centroid"
+        if use_weighted_centroid and intensity_image is not None
+        else "centroid"
+    )
 
     if CENTROID_PROPERTY not in properties:
-        properties = (CENTROID_PROPERTY,) + properties
+        properties = (CENTROID_PROPERTY, *properties)
 
     # if class id is specified then extract that property first
     if assign_class_ID:
@@ -74,10 +80,11 @@ def _centroids_from_single_arr(
 
     else:
         # check to see whether the segmentation is unique
-        if not _is_unique(segmentation):
-            labeled = label(segmentation)
-        else:
-            labeled = segmentation
+        labeled = (
+            label(segmentation)
+            if not _is_unique(segmentation)
+            else segmentation
+        )
 
         _centroids = regionprops_table(
             labeled,

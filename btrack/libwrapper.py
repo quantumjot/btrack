@@ -1,22 +1,3 @@
-#!/usr/bin/env python
-# -------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# -------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "a.lowe@ucl.ac.uk"
-
 import ctypes
 import logging
 import os
@@ -41,7 +22,7 @@ def numpy_pointer_decorator(func):
 def np_dbl_p():
     """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
-        dtype=np.double, ndim=2, flags='C_CONTIGUOUS'
+        dtype=np.double, ndim=2, flags="C_CONTIGUOUS"
     )
 
 
@@ -49,7 +30,7 @@ def np_dbl_p():
 def np_dbl_pc():
     """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
-        dtype=np.double, ndim=2, flags='F_CONTIGUOUS'
+        dtype=np.double, ndim=2, flags="F_CONTIGUOUS"
     )
 
 
@@ -57,14 +38,14 @@ def np_dbl_pc():
 def np_uint_p():
     """Temporary function. Will remove in final release"""
     return np.ctypeslib.ndpointer(
-        dtype=np.uint32, ndim=2, flags='C_CONTIGUOUS'
+        dtype=np.uint32, ndim=2, flags="C_CONTIGUOUS"
     )
 
 
 @numpy_pointer_decorator
 def np_int_p():
     """Temporary function. Will remove in final release"""
-    return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags='C_CONTIGUOUS')
+    return np.ctypeslib.ndpointer(dtype=np.int32, ndim=2, flags="C_CONTIGUOUS")
 
 
 @numpy_pointer_decorator
@@ -90,27 +71,27 @@ def load_library(filename):
     """
 
     if not isinstance(filename, str):
-        raise TypeError('Filename must be a string')
+        raise TypeError("Filename must be a string")
 
     lib_file, ext = os.path.splitext(filename)
 
     system = platform.system()
 
-    file_ext = {'Linux': '.so', 'Darwin': '.dylib', 'Windows': '.DLL'}
+    file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".DLL"}
     full_lib_file = lib_file + file_ext[system]
 
     try:
         lib = ctypes.cdll.LoadLibrary(full_lib_file)
-        logger.info(f'Loaded btrack: {full_lib_file}')
+        logger.info(f"Loaded btrack: {full_lib_file}")
     except IOError:
-        raise IOError(f'Cannot load shared library {full_lib_file}')
+        raise IOError(f"Cannot load shared library {full_lib_file}")
 
     return lib
 
 
 def get_library():
     """Loads and returns the btrack shared library."""
-    lib = load_library(os.path.join(BTRACK_PATH, 'libs', 'libtracker'))
+    lib = load_library(os.path.join(BTRACK_PATH, "libs", "libtracker"))
 
     # deal with constructors/destructors
     lib.new_interface.restype = ctypes.c_void_p
@@ -122,6 +103,7 @@ def get_library():
     # check the version number
     lib.check_library_version.restype = ctypes.c_bool
     lib.check_library_version.argtypes = [
+        ctypes.c_void_p,
         ctypes.c_uint,
         ctypes.c_uint,
         ctypes.c_uint,

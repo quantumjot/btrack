@@ -1,17 +1,16 @@
 Guide to ``btrack`` configuration parameters
 ============================================
 
-This is a short guide to the configuration parameters for ``btrack``
+This is a short guide to the configuration parameters for ``btrack``.
 
-Miscellaneous parameters
-------------------------
+.. note::
+  Example configurations for particle or cell tracking applications can be found in the `models/` folder.
 
-- ``max_search_radius`` - the maximum search radius in isotropic unit of the data
-- ``mode`` - the update mode for the tracker
-- ``volume`` - estimate of the dimensions of the imaging volume
 
 Motion model
 ------------
+
+The motion model is used to make forward predictions about the location of objects using historical information and estimates of the error in the measurements and the process.
 
 .. code:: json
 
@@ -58,25 +57,17 @@ Motion model
      }
    }
 
-- ``name`` - this is the name of the model
-- ``measurements`` - the number of measurements of the system (e.g. x, y, z)
-- ``states`` - the number of states of the system (typically >= measurements)
-- ``A`` - State transition matrix
-- ``B`` - Control matrix
-- ``H`` - Observation matrix
-- ``P`` - Initial covariance estimate
-- ``Q`` - Estimated error in process
-- ``R`` - Estimated error in measurements
-- ``accuracy`` - integration limits for calculating the probabilities
-- ``dt`` - time difference, always 1
-- ``max_lost`` - number of frames without observation before marking a track as lost
-- ``prob_not_assign`` - the default probability to not assign a track
-- ``sigma`` - a scalar multiplication factor used for each matrix
+.. note::
+  In particular, the values of `sigma` for the matrices `P`, `G` and `R` specify the magnitude of the error in the initial estimates, the process itself and the measurements.
+
+Detailed descriptions of the other parameters of the model can be found in the API documentation:
+
+* :py:meth:`btrack.models.MotionModel`
 
 Hypothesis model
 ----------------
 
-Below is an example of a configuration for the global optimizer.
+The hypothesis model is used by the global optimizer to build the final set of tracks if using the :py:meth:`btrack.BayesianTracker.optimize()` method.
 
 .. code:: json
 
@@ -87,7 +78,7 @@ Below is an example of a configuration for the global optimizer.
      "lambda_dist": 5.0,
      "lambda_link": 5.0,
      "lambda_branch": 5.0,
-     "eta": 1e-150,
+     "eta": 1e-10,
      "theta_dist": 5.0,
      "theta_time": 5.0,
      "dist_thresh": 10,
@@ -98,23 +89,37 @@ Below is an example of a configuration for the global optimizer.
      "relax": false
    }
 
-The parameters are, as follows:
+.. note::
+  The `hypotheses` field contains a list of hypotheses to generate while running the global optimizer. The hypotheses can be chosen from the following options:
 
-- ``name`` - this is the name of the model
-- ``hypotheses`` - this is a list of hypotheses to generate for the optimizer
-- ``lambda_time`` - a scaling factor for the influence of time when determining initialization or termination hypotheses
-- ``lambda_dist`` - a scaling factor for the influence of distance at the border when determining initialization or termination hypotheses
-- ``lambda_link`` - a scaling factor for the influence of track-to-track distance on linking probability
-- ``lambda_branch`` - a scaling factor for the influence of cell state and position on division (mitosis/branching) probability
-- ``eta`` - default low probability
-- ``theta_dist`` - a threshold (in pixels) for the distance from the edge of the FOV to add an initialization or termination hypothesis
-- ``theta_time`` - a threshold (in frames) for the time from the beginning or end of movie to add an initialization or termination hypothesis
-- ``dist_thresh`` - bin size for considering hypotheses
-- ``time_thresh`` - bin size for considering hypotheses
-- ``apop_thresh`` - number of apoptotic detections, counted consecutively from the back of the track, to be considered a real apoptosis
-- ``segmentation_miss_rate`` - miss rate for the segmentation, e.g. 1/100 segmentations incorrect = 0.01
-- ``apoptosis_rate`` - rate of apoptosis detections
-- ``relax`` - disables the ``theta_dist`` and ``theta_time`` thresholds to create termination and intialization hypotheses
+  * `P_FP` - Hypothesis that a tracklet is a false positive detection.
+  * `P_init` - Hypothesis that a tracklet starts at the beginning of the movie or edge of the FOV.
+  * `P_term` - Hypothesis that a tracklet ends at the end of the movie or edge of the FOV.
+  * `P_link` - Hypothesis that two tracklets should be linked together.
+  * `P_branch` - Hypothesis that a tracklet can split onto two daughter tracklets.
+  * `P_dead` - Hypothesis that a tracklet terminates without leaving the FOV.
+  * `P_merge` - Hypothesis that two tracklets merge into one tracklet.
 
-Object model
-------------
+  The list must contain at least `P_FP`.
+
+Detailed descriptions of the other parameters of the model can be found in the API documentation:
+
+* :py:meth:`btrack.models.HypothesisModel`
+
+Miscellaneous parameters
+------------------------
+
+General tracking configuration options are detailed in :py:meth:`btrack.config.TrackerConfig`.
+
+- ``max_search_radius`` - The maximum search radius for the tracking algorithm in isotropic unit of the data. This parameter can be used to prevent very large displacements when linking objects.
+- ``update_mode`` - The update mode for the tracker. The default option considers all possible combinations of linking objects, so can be slow for very large datasets. See :ref:`update_methods` for more information.
+- ``volume`` - An estimate of the dimensions of the imaging volume, used to define the edges of the field of view for generating hypotheses and labeling tracks as lost.
+
+Tips and warnings
+-----------------
+
+.. warning::
+  The output of the tracking is very sensitive to the choice of parameter values. We suggest that you first optimize the motion model parameters, without using the optimization step (i.e. do not use :py:meth:`btrack.BayesianTracker.optimize()` initially).  Once you are satisfied with the intermediate results, proceed to optimizing the hypothesis model parameters.
+
+.. warning::
+  The global optimization step can take a very long time to complete if you have a poor choice of model parameters. By default, the optimizer will time-out after 60 seconds of attempting to solve to optimization.

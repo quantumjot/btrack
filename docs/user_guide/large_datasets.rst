@@ -1,6 +1,8 @@
-=================================
-Deadling with very large datasets
-=================================
+.. _update_methods:
+
+================================
+Dealing with very large datasets
+================================
 
 btrack supports three different methods:
 
@@ -23,7 +25,7 @@ Try turning off optimization, followed by modifying the parameters of the config
 
    with btrack.BayesianTracker() as tracker:
        # configure the tracker and change the update method
-       tracker.configure_from_file('/path/to/your/models/cell_config.json')
+       tracker.configure('/path/to/your/models/cell_config.json')
        tracker.update_method = BayesianUpdates.APPROXIMATE
        tracker.max_search_radius = 100
        ...

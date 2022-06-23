@@ -4,7 +4,7 @@ repos:
       hooks:
           - id: isort
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.1.0
+      rev: v4.2.0
       hooks:
           - id: check-docstring-first
           - id: check-executables-have-shebangs
@@ -15,6 +15,7 @@ repos:
             args: [--fix=lf]
           - id: requirements-txt-fixer
           - id: trailing-whitespace
+            args: [--markdown-linebreak-ext=md]
     - repo: https://gitlab.com/pycqa/flake8
       rev: 3.9.2
       hooks:
@@ -22,7 +23,7 @@ repos:
             # this seems to need to be here in addition to setup.cfg
             exclude: __init__.py|examples
     - repo: https://github.com/psf/black
-      rev: 22.1.0
+      rev: 22.3.0
       hooks:
           - id: black
     - repo: https://github.com/pre-commit/mirrors-mypy

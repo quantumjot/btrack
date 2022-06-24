@@ -333,7 +333,11 @@ class Tracklet:
         # work out the shapes of the properties
         property_shapes = {
             k: next(
-                (o.properties[k].shape for o in self._data if not o.dummy),
+                (
+                    np.asarray(o.properties[k]).shape
+                    for o in self._data
+                    if not o.dummy
+                ),
                 None,
             )
             for k in keys

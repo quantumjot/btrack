@@ -97,7 +97,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 def _cat_tracks_as_dict(
     tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
-    """Concatenate all tracks a dictionary."""
+    """Concatenate all tracks as dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
     data: dict = {}
@@ -114,7 +114,8 @@ def _cat_tracks_as_dict(
 
             if trk_property.ndim > 2:
                 raise ValueError(
-                    "Track properties of greater than two dimensions are not currently supported."
+                    f"Track properties of {trk_property.ndim} dimensions are "
+                    "not currently supported."
                 )
 
             assert trk_property.shape[0] == len(track)
@@ -167,6 +168,13 @@ def tracks_to_napari(
         one (the track has one parent, and the parent has >=1 child) in the
         case of track splitting, or more than one (the track has multiple
         parents, but only one child) in the case of track merging.
+
+    Notes
+    -----
+    Track properties that are multi-dimensional (>1 dim) will be split according
+    to dimension and returned as separate keys. For example, property `softmax`,
+    with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
+    representation in napari.
     """
     # TODO: arl guess the dimensionality from the data
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):

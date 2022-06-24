@@ -330,7 +330,9 @@ class Tracklet:
         for obj in self._data:
             keys.update(obj.properties.keys())
 
-        # work out the shapes of the properties
+        # work out the shapes of the properties by finding the first object that
+        # is not a dummy and returning the shape of the property, we can use
+        # this to fill the properties array with NaN for dummy objects
         property_shapes = {
             k: next(
                 (

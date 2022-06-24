@@ -1,7 +1,7 @@
 [tool.black]
 target-version = ['py38', 'py39', 'py310']
 skip-string-normalization = false
-line-length = 79
+line-length = 88
 exclude = '''
 (
   /(
@@ -21,9 +21,6 @@ exclude = '''
 
 [tool.isort]
 profile = "black"
-multi_line_output = 3 # Vertical Hanging Indent
-line_length = 79
-include_trailing_comma = "True"
 length_sort = "False"
 length_sort_sections = "stdlib"
 known_first_party = "btrack"

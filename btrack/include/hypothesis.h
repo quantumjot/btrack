@@ -29,7 +29,7 @@
 #include "hyperbin.h"
 #include "defs.h"
 #include "pdf.h"
-#include "features.h"
+#include "updates.h"
 
 
 

@@ -431,31 +431,13 @@ class BayesianTracker:
 
         return info_ptr.contents
 
-    def track(self) -> None:
-        """Run the actual tracking algorithm."""
+    def track_interactive(self, *args, **kwargs) -> None:
+        logger.warning(
+            "`track_interactive` will be deprecated. Use `track` instead."
+        )
+        return self.track(*args, **kwargs)
 
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
-        logger.info("Starting tracking... ")
-        ret = self._lib.track(self._engine)
-
-        # get the statistics
-        stats = self._stats(ret)
-
-        if not utils.log_error(stats.error):
-            logger.info(
-                (
-                    f"SUCCESS. Found {self.n_tracks} tracks in"
-                    f"{1+self._frame_range[1]} frames"
-                )
-            )
-
-        # can log the statistics as well
-        utils.log_stats(stats.to_dict())
-
-    def track_interactive(self, step_size: int = 100) -> None:
+    def track(self, step_size: int = 100) -> None:
         """Run the tracking in an interactive mode.
 
         Parameters
@@ -468,21 +450,18 @@ class BayesianTracker:
 
         logger.info("Starting tracking... ")
 
-        # default is to use the motion model only
-        features_to_use = [
-            constants.BayesianUpdateFeatures.MOTION,
-        ]
+        updates_to_perform = self.configuration.tracking_updates
 
         # if we have features specified, use the visual updates also
         if len(self.configuration.features) > 0:
-            features_to_use.append(constants.BayesianUpdateFeatures.VISUAL)
+            updates_to_perform.append(constants.BayesianUpdateFeatures.VISUAL)
 
-        logger.info(f"Update using: {[f.name for f in features_to_use]}")
+        logger.info(f"Update using: {[f.name for f in updates_to_perform]}")
 
         # bitwise OR is equivalent to int sum here
         self._lib.set_update_features(
             self._engine,
-            sum([int(f.value) for f in features_to_use]),
+            sum([int(f.value) for f in updates_to_perform]),
         )
 
         stats = self.step()

@@ -213,7 +213,7 @@ def full_tracker_example(
     tracker.configure(CONFIG_FILE)
     tracker.append(objects)
     tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
-    tracker.track_interactive(step_size=100)
+    tracker.track(step_size=100)
     tracker.optimize()
     return tracker
 

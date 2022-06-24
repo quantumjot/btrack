@@ -45,6 +45,7 @@ def create_test_properties() -> Dict[str, float]:
         "speed": rng.uniform(0.0, 1.0),
         "circularity": rng.uniform(0.0, 1.0),
         "reporter": rng.uniform(0.0, 1.0),
+        "nD": rng.uniform(0.0, 1.0, size=(5,)),
     }
     return properties
 

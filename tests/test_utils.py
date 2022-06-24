@@ -162,7 +162,8 @@ def test_tracks_to_napari(ndim: int):
     structure."""
 
     # make three fake tracks with properties
-    tracks = [create_test_tracklet(10, idx + 1)[0] for idx in range(3)]
+    track_len = 10
+    tracks = [create_test_tracklet(track_len, idx + 1)[0] for idx in range(3)]
 
     # set up a fake graph
     tracks[0].children = [2, 3]
@@ -171,11 +172,34 @@ def test_tracks_to_napari(ndim: int):
 
     data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
 
-    # check the data
-    if ndim == 2:
-        assert data.shape[-1] == 4
-    else:
-        assert data.shape[-1] == 5
+    # check the data is of the correct shape (ID, T + ndim)
+    assert data.shape[-1] == ndim + 2
+
+    # check that the data have the correct values
+    track_ids = np.asarray([1] * track_len + [2] * track_len + [3] * track_len)
+    np.testing.assert_equal(data[:, 0], track_ids)
+    header = ["t"] + ["z", "y", "x"][-ndim:]
+    for idx, key in enumerate(header):
+        gt_data = np.concatenate([getattr(t, key) for t in tracks])
+        np.testing.assert_equal(data[:, idx + 1], gt_data)
 
     # check the graph
     assert graph == {2: [1], 3: [1]}
+
+    # check the properties keys are correct, note that nD keys are replaced with
+    # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
+    # and so forth
+    for key in tracks[0].properties.keys():
+        assert any([k.startswith(key) for k in properties.keys()])
+
+
+@pytest.mark.parametrize("ndim", [1, 4])
+def test_tracks_to_napari_incorrect_ndim(ndim: int):
+    """Test that providing incorrect dimensions to `tracks_to_napari` raises a
+    `ValueError`."""
+    # make three fake tracks with properties
+    track_len = 10
+    tracks = [create_test_tracklet(track_len, idx + 1)[0] for idx in range(3)]
+
+    with pytest.raises(ValueError):
+        data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)

@@ -8,25 +8,25 @@ from ._utils import (
 )
 
 
-def test_object():
+def test_create_object():
     """Test that an object is correctly instantiated, and that the stored
     data matches the data used for creation."""
     obj, data = create_test_object()
     for k, v in data.items():
-        assert getattr(obj, k) == v
+        np.testing.assert_equal(getattr(obj, k), v)
 
 
 @pytest.mark.parametrize("properties", [{}, create_test_properties()])
-def test_object_properties(properties: dict):
+def test_create_object_with_properties(properties: dict):
     """Test an object with some properties."""
     obj, data = create_test_object()
     obj.properties = properties
     for k, v in properties.items():
-        assert obj.properties[k] == v
+        np.testing.assert_equal(obj.properties[k], v)
 
 
 @pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
-def test_tracklet(track_len: int):
+def test_create_tracklet(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     data matches the data used for creation."""
     tracklet, data, properties, track_ID = create_test_tracklet(track_len)
@@ -41,7 +41,7 @@ def test_tracklet(track_len: int):
 
 
 @pytest.mark.parametrize("track_len", [0, 1, 10, 100, 1000])
-def test_tracklet_properties(track_len: int):
+def test_create_tracklet_with_properties(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     properties match the data used for creation."""
     tracklet, data, properties, track_ID = create_test_tracklet(track_len)

@@ -3,7 +3,7 @@ import pytest
 
 from btrack import btypes, utils
 
-from ._utils import RANDOM_SEED, create_test_image
+from ._utils import create_test_image, create_test_tracklet
 
 
 def _example_segmentation_generator():
@@ -115,11 +115,10 @@ def test_regionprops():
 
 
 @pytest.mark.parametrize("ndim", [2, 3])
-def test_intensity_image(ndim):
+def test_intensity_image(default_rng, ndim):
     """Test using an intensity image."""
     img, centroids = create_test_image(ndim=ndim, binary=True)
-    rng = np.random.default_rng(seed=RANDOM_SEED)
-    intensity_image = img * rng.uniform(size=img.shape)
+    intensity_image = img * default_rng.uniform(size=img.shape)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...],
         intensity_image=intensity_image[np.newaxis, ...],
@@ -155,3 +154,28 @@ def test_update_segmentation_3d(test_segmentation_and_tracks):
 
     relabeled = utils.update_segmentation(in_segmentation, tracks)
     assert np.allclose(relabeled, out_segmentation)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+def test_tracks_to_napari(ndim: int):
+    """Test converting from `btrack` Tracklets to a `napari` compatible data
+    structure."""
+
+    # make three fake tracks with properties
+    tracks = [create_test_tracklet(10, idx + 1)[0] for idx in range(3)]
+
+    # set up a fake graph
+    tracks[0].children = [2, 3]
+    tracks[1].parent = 1
+    tracks[2].parent = 1
+
+    data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
+
+    # check the data
+    if ndim == 2:
+        assert data.shape[-1] == 4
+    else:
+        assert data.shape[-1] == 5
+
+    # check the graph
+    assert graph == {2: [1], 3: [1]}

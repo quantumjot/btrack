@@ -94,6 +94,11 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
+def _lbep_table(tracks: List[btypes.Tracklet]) -> np.array:
+    """Create an LBEP table from a track."""
+    return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
+
+
 def _cat_tracks_as_dict(
     tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:

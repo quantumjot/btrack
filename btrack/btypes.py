@@ -322,6 +322,10 @@ class Tracklet:
     def _repr_html_(self):
         return _pandas_html_repr(self)
 
+    def __eq__(self, other) -> bool:
+        """Test that two tracks contain the same information."""
+        return self.to_dict() == other.to_dict()
+
     @property
     def properties(self) -> Dict[str, np.ndarray]:
         """Return the properties of the objects."""
@@ -484,6 +488,17 @@ class Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
+
+    def LBEP(self) -> Tuple[int]:
+        """Return an LBEP table summarising the track."""
+        return (
+            self.ID,
+            self.start,
+            self.stop,
+            self.parent,
+            self.root,
+            self.generation,
+        )
 
 
 def _pandas_html_repr(obj):

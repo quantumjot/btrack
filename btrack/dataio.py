@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import itertools
 import logging
 import os
 import re
@@ -11,7 +12,7 @@ import h5py
 import numpy as np
 
 # import core
-from . import btypes, constants
+from . import btypes, constants, utils
 
 if TYPE_CHECKING:
     from . import BayesianTracker
@@ -513,7 +514,9 @@ class HDF5FileHandler:
 
         return objects_from_dict(objects_dict)
 
-    def write_objects(self, data):
+    def write_objects(
+        self, data: Union[List[btypes.PyTrackObject, BayesianTracker]]
+    ) -> None:
         """Write objects to HDF file.
 
         Parameters
@@ -571,7 +574,9 @@ class HDF5FileHandler:
         self.write_properties(props)
 
     @h5check_property_exists("objects")
-    def write_properties(self, data: dict, allow_overwrite: bool = False):
+    def write_properties(
+        self, data: Dict[str, Any], *, allow_overwrite: bool = False
+    ):
         """Write object properties to HDF file.
 
         Parameters
@@ -593,7 +598,7 @@ class HDF5FileHandler:
         if "properties" not in grp.keys():
             props_grp = grp.create_group("properties")
         else:
-            props_grp = self._hdf[f"objects/{self.object_type}"]["properties"]
+            props_grp = self._hdf[f"objects/{self.object_type}/properties"]
 
         n_objects = len(self.objects)
 
@@ -697,8 +702,12 @@ class HDF5FileHandler:
 
         return tracks
 
-    @h5check_property_exists("objects")
-    def write_tracks(self, tracker, f_expr=None):
+    def write_tracks(
+        self,
+        data: Union[List[btypes.Tracklet], BayesianTracker],
+        *,
+        f_expr: Optional[str] = None,
+    ):
         """Write tracks to HDF file.
 
         Parameters
@@ -709,22 +718,49 @@ class HDF5FileHandler:
             An expression which represents how the objects have been filtered
             prior to tracking, e.g. `area>100.0`
         """
-        if not tracker.tracks:
+
+        if isinstance(data, list):
+            if not all(isinstance(track, btypes.Tracklet) for track in data):
+                raise ValueError(f"Data of type {type(data)} not supported.")
+
+            all_objects = itertools.chain.from_iterable(
+                [trk._data for trk in data]
+            )
+
+            objects = [obj for obj in all_objects if not obj.dummy]
+            dummies = [obj for obj in all_objects if obj.dummy]
+
+            assert all(
+                isinstance(obj, btypes.PyTrackObject) for obj in objects
+            )
+
+            refs = [trk.refs for trk in data]
+            lbep_table = utils._lbep_table(data)
+            fate_table = np.stack([t.fate.value for t in data], axis=0)
+
+            if "objects" not in self._hdf:
+                self.write_objects(objects)
+
+        elif hasattr(data, "tracks"):
+            refs = data.refs
+            dummies = data.dummies
+            lbep_table = data.LBEP
+            fate_table = np.stack([t.fate.value for t in data.tracks], axis=0)
+        else:
+            raise ValueError(f"Data of type {type(data)} not supported.")
+
+        if not refs:
             logger.error(f"No tracks found when exporting to: {self.filename}")
             return
 
-        tracks = tracker.refs
-        dummies = tracker.dummies
-        lbep_table = np.stack(tracker.lbep, axis=0).astype(np.int32)
-
         # sanity check
-        assert lbep_table.shape[0] == len(tracks)
+        assert lbep_table.shape[0] == len(refs)
 
         logger.info(f"Writing tracks/{self.object_type}")
-        hdf_tracks = np.concatenate(tracks, axis=0)
+        hdf_tracks = np.concatenate(refs, axis=0)
 
-        hdf_frame_map = np.zeros((len(tracks), 2), dtype=np.int32)
-        for i, track in enumerate(tracks):
+        hdf_frame_map = np.zeros((len(refs), 2), dtype=np.int32)
+        for i, track in enumerate(refs):
             if i > 0:
                 offset = hdf_frame_map[i - 1, 1]
             else:
@@ -762,7 +798,6 @@ class HDF5FileHandler:
 
         # write out cell fates
         logger.info(f"Writing fates/{self.object_type}")
-        fate_table = np.stack([t.fate.value for t in tracker.tracks], axis=0)
         grp.create_dataset("fates", data=fate_table, dtype="int32")
 
     @property  # type: ignore

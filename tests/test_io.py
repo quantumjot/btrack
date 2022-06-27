@@ -27,9 +27,8 @@ def test_hdf5_write(hdf5_file_path, test_objects):
             np.testing.assert_allclose(getattr(orig, p), getattr(read, p))
 
 
-def test_hdf5_write_with_properties(tmp_path):
+def test_hdf5_write_with_properties(hdf5_file_path):
     """Test writing an HDF5 file with some objects with additional properties."""
-    fn = os.path.join(tmp_path, "test.h5")
 
     objects = []
     for i in range(10):
@@ -37,11 +36,11 @@ def test_hdf5_write_with_properties(tmp_path):
         obj.properties = create_test_properties()
         objects.append(obj)
 
-    with btrack.dataio.HDF5FileHandler(fn, "w") as h:
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
         h.write_objects(objects)
 
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(fn, "r") as h:
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
         objects_from_file = h.objects
 
     extra_props = list(create_test_properties().keys())
@@ -74,3 +73,19 @@ def test_tracker_export(tmp_path, export_format):
 
     if export_format:
         assert os.path.exists(fn)
+
+
+def test_write_tracks_only(hdf5_file_path):
+    """Test writing tracks only using the file handler."""
+
+    tracker, _ = simple_tracker_example()
+
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
+        h.write_tracks(tracker.tracks)
+
+    # now try to read those objects and compare with those used to write
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+        tracks_from_file = h.tracks
+
+    for orig, read in zip(tracker.tracks, tracks_from_file):
+        assert orig == read

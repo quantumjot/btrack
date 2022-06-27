@@ -1,11 +1,16 @@
 import os
 from typing import List, Union
 
+import numpy as np
 import pytest
 
 import btrack.dataio
 
-from ._utils import create_test_object, create_test_segmentation_and_tracks
+from ._utils import (
+    RANDOM_SEED,
+    create_test_object,
+    create_test_segmentation_and_tracks,
+)
 
 
 @pytest.fixture
@@ -65,3 +70,11 @@ def test_segmentation_and_tracks():
     Create a test segmentation, ground truth and example tracks.
     """
     return create_test_segmentation_and_tracks(ndim=2)
+
+
+@pytest.fixture
+def default_rng():
+    """
+    Create a default PRNG to use for tests.
+    """
+    return np.random.default_rng(seed=RANDOM_SEED)

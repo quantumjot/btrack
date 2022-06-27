@@ -354,9 +354,27 @@ class Tracklet:
         for obj in self._data:
             keys.update(obj.properties.keys())
 
+        # work out the shapes of the properties by finding the first object that
+        # is not a dummy and returning the shape of the property, we can use
+        # this to fill the properties array with NaN for dummy objects
+        property_shapes = {
+            k: next(
+                (
+                    np.asarray(o.properties[k]).shape
+                    for o in self._data
+                    if not o.dummy
+                ),
+                None,
+            )
+            for k in keys
+        }
+
+        # set the properties, replacing missing values with a NaN
         properties = {
             k: [
-                o.properties[k] if k in o.properties else np.nan
+                o.properties[k]
+                if k in o.properties
+                else np.full(property_shapes[k], np.nan)
                 for o in self._data
             ]
             for k in keys
@@ -369,7 +387,7 @@ class Tracklet:
                     "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
-            if type(v) != np.ndarray:
+            if not isinstance(v, np.ndarray):
                 properties[k] = np.asarray(v)
 
         return properties

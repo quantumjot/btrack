@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 from skimage.util import map_array
@@ -95,9 +95,9 @@ def crop_volume(objects, volume=constants.VOLUME):
 
 
 def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: list
+    tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
-    """Concatenate all tracks a dictionary."""
+    """Concatenate all tracks as dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
     data: dict = {}
@@ -105,16 +105,32 @@ def _cat_tracks_as_dict(
     for track in tracks:
         trk = track.to_dict(properties)
 
-        if not data:
-            data = {k: [] for k in trk.keys()}
+        for key in trk.keys():
+            trk_property = np.asarray(trk[key])
 
-        for key in data.keys():
-            property = trk[key]
-            if not isinstance(property, (list, np.ndarray)):
-                property = [property] * len(track)
+            # if we have a scalar value, repeat it so the dimensions match
+            if trk_property.ndim == 0:
+                trk_property = np.repeat(trk_property, len(track))
 
-            assert len(property) == len(track)
-            data[key].append(property)
+            if trk_property.ndim > 2:
+                raise ValueError(
+                    f"Track properties of {trk_property.ndim} dimensions are "
+                    "not currently supported."
+                )
+
+            assert trk_property.shape[0] == len(track)
+
+            if trk_property.ndim == 2:
+                for idx in range(trk_property.shape[-1]):
+                    tmp_key = f"{key}-{idx}"
+                    if tmp_key not in data:
+                        data[tmp_key] = []
+                    data[tmp_key].append(trk_property[..., idx])
+
+            else:
+                if key not in data:
+                    data[key] = []
+                data[key].append(trk_property)
 
     for key in data.keys():
         data[key] = np.concatenate(data[key])
@@ -152,6 +168,13 @@ def tracks_to_napari(
         one (the track has one parent, and the parent has >=1 child) in the
         case of track splitting, or more than one (the track has multiple
         parents, but only one child) in the case of track merging.
+
+    Notes
+    -----
+    Track properties that are multi-dimensional (>1 dim) will be split according
+    to dimension and returned as separate keys. For example, property `softmax`,
+    with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
+    representation in napari.
     """
     # TODO: arl guess the dimensionality from the data
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):

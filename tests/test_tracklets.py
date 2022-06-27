@@ -33,7 +33,8 @@ def test_object_features(properties: dict):
     assert obj.n_features == 0
     keys = list(properties.keys())
     obj.set_features(keys)
-    assert obj.n_features == len(keys)
+    n_keys = sum([np.asarray(p).size for p in properties.values()])
+    assert obj.n_features == n_keys
 
 
 def test_object_incorrect_features():

@@ -712,8 +712,8 @@ class HDF5FileHandler:
 
         Parameters
         ----------
-        tracks : BayesianTracker
-            An instance of BayesianTracker.
+        data : list of Tracklets or an instance of BayesianTracker
+            A list of tracklets or an instance of BayesianTracker.
         f_expr : str
             An expression which represents how the objects have been filtered
             prior to tracking, e.g. `area>100.0`

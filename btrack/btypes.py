@@ -322,10 +322,6 @@ class Tracklet:
     def _repr_html_(self):
         return _pandas_html_repr(self)
 
-    def __eq__(self, other) -> bool:
-        """Test that two tracks contain the same information."""
-        return self.to_dict() == other.to_dict()
-
     @property
     def properties(self) -> Dict[str, np.ndarray]:
         """Return the properties of the objects."""

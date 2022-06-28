@@ -379,7 +379,7 @@ class HDF5FileHandler:
         self._states = list(constants.States)
 
     @property
-    def object_types(self):
+    def object_types(self) -> List[str]:
         return list(self._hdf["objects"].keys())
 
     def __enter__(self):
@@ -399,19 +399,19 @@ class HDF5FileHandler:
         return self._object_type
 
     @object_type.setter
-    def object_type(self, obj_type: str):
+    def object_type(self, obj_type: str) -> None:
         if not obj_type.startswith("obj_type_"):
             raise ValueError("Object type must start with ``obj_type_``")
         self._object_type = obj_type
 
     @property  # type: ignore
     @h5check_property_exists("segmentation")
-    def segmentation(self):
+    def segmentation(self) -> np.ndarray:
         segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
         logger.info(f"Loading segmentation {segmentation.shape}")
         return segmentation
 
-    def write_segmentation(self, segmentation: np.ndarray):
+    def write_segmentation(self, segmentation: np.ndarray) -> None:
         """Write out the segmentation to an HDF file.
 
         Parameters
@@ -430,12 +430,14 @@ class HDF5FileHandler:
         )
 
     @property
-    def objects(self):
+    def objects(self) -> List[btypes.PyTrackObject]:
         """Return the objects in the file."""
         return self.filtered_objects()
 
     @h5check_property_exists("objects")
-    def filtered_objects(self, f_expr=None):
+    def filtered_objects(
+        self, f_expr: Optional[str] = None
+    ) -> List[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata. f_expr should be of the
         format `flag==1`."""
 
@@ -576,7 +578,7 @@ class HDF5FileHandler:
     @h5check_property_exists("objects")
     def write_properties(
         self, data: Dict[str, Any], *, allow_overwrite: bool = False
-    ):
+    ) -> None:
         """Write object properties to HDF file.
 
         Parameters
@@ -636,7 +638,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def tracks(self):
+    def tracks(self) -> List[btypes.Tracklet]:
         """Return the tracks in the file."""
 
         logger.info(f"Loading tracks/{self.object_type}")
@@ -666,7 +668,7 @@ class HDF5FileHandler:
 
         obj = self.filtered_objects(f_expr=f_expr)
 
-        def _get_txyz(_ref):
+        def _get_txyz(_ref: int) -> int:
             if _ref >= 0:
                 return obj[_ref]
             return dummy_obj[abs(_ref) - 1]  # references are -ve for dummies
@@ -707,7 +709,7 @@ class HDF5FileHandler:
         data: Union[List[btypes.Tracklet], BayesianTracker],
         *,
         f_expr: Optional[str] = None,
-    ):
+    ) -> None:
         """Write tracks to HDF file.
 
         Parameters
@@ -729,6 +731,10 @@ class HDF5FileHandler:
 
             objects = [obj for obj in all_objects if not obj.dummy]
             dummies = [obj for obj in all_objects if obj.dummy]
+
+            # make sure we sort the objects into order
+            objects.sort(key=lambda obj: obj.ID)
+            dummies.sort(key=lambda obj: obj.ID, reverse=False)
 
             assert all(
                 isinstance(obj, btypes.PyTrackObject) for obj in objects
@@ -802,7 +808,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def lbep(self):
+    def lbep(self) -> np.ndarray:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
         return self._hdf["tracks"][self.obj_type]["LBEPR"][:]

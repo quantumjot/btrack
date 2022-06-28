@@ -9,6 +9,7 @@ import btrack
 from ._utils import (
     create_test_object,
     create_test_properties,
+    full_tracker_example,
     simple_tracker_example,
 )
 
@@ -75,17 +76,33 @@ def test_tracker_export(tmp_path, export_format):
         assert os.path.exists(fn)
 
 
-def test_write_tracks_only(hdf5_file_path):
+@pytest.mark.parametrize("shuffle_objects", [False, True])
+def test_write_tracks_only(
+    test_real_objects, hdf5_file_path, default_rng, shuffle_objects
+):
     """Test writing tracks only using the file handler."""
 
-    tracker, _ = simple_tracker_example()
+    if shuffle_objects:
+        default_rng.shuffle(test_real_objects)
+
+    # tracker, _ = simple_tracker_example()
+    tracker = full_tracker_example(test_real_objects)
+    tracks = tracker.tracks
 
     with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
-        h.write_tracks(tracker.tracks)
+        h.write_tracks(tracks)
 
     # now try to read those objects and compare with those used to write
     with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
         tracks_from_file = h.tracks
 
-    for orig, read in zip(tracker.tracks, tracks_from_file):
-        assert orig == read
+    for orig, read in zip(tracks, tracks_from_file):
+        assert isinstance(orig, btrack.btypes.Tracklet)
+        assert isinstance(read, btrack.btypes.Tracklet)
+
+        gt_track = orig.to_dict()
+        io_track = read.to_dict()
+
+        for key, gt_value in gt_track.items():
+            io_value = io_track[key]
+            np.testing.assert_allclose(gt_value, io_value)

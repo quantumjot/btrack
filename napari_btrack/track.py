@@ -1,10 +1,17 @@
-from dataclasses import dataclass, field
 from typing import Any, Dict, List, Tuple, Union
+from dataclasses import field, dataclass
 
-import btrack
-import napari
 import numpy as np
 import numpy.typing as npt
+from magicgui.application import use_app
+from magicgui.types import FileDialogMode
+from magicgui.widgets import Container, PushButton, Widget, create_widget
+from pydantic import BaseModel
+from PyQt5.QtWidgets import QScrollArea
+
+import napari
+
+import btrack
 from btrack import datasets
 from btrack.config import (
     HypothesisModel,
@@ -14,11 +21,6 @@ from btrack.config import (
     save_config,
 )
 from btrack.utils import segmentation_to_objects
-from magicgui.application import use_app
-from magicgui.types import FileDialogMode
-from magicgui.widgets import Container, PushButton, Widget, create_widget
-from pydantic import BaseModel
-from PyQt5.QtWidgets import QScrollArea
 
 default_cell_config = load_config(datasets.cell_config())
 

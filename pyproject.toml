@@ -1,0 +1,29 @@
+[tool.black]
+target-version = ['py38', 'py39', 'py310']
+skip-string-normalization = false
+line-length = 88
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | build
+    | dist
+    | examples
+  )/
+)
+'''
+
+[tool.isort]
+profile = "black"
+length_sort = "False"
+length_sort_sections = "stdlib"
+known_first_party = "btrack"
+known_napari = "napari"
+sections = ["STDLIB", "THIRDPARTY", "NAPARI", "FIRSTPARTY", "LOCALFOLDER"]
+skip_gitignore = "True"

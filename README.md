@@ -49,6 +49,7 @@ Best done with [conda](https://github.com/conda-forge/miniforge)
 ```sh
 conda env create -f environment.yml
 conda activate btrack
+conda install cvxopt -y
 pip install btrack
 ```
 

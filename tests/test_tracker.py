@@ -4,7 +4,11 @@ import numpy as np
 
 import btrack
 
-from ._utils import full_tracker_example, simple_tracker_example
+from ._utils import (
+    TEST_DATA_PATH,
+    full_tracker_example,
+    simple_tracker_example,
+)
 
 
 def _gt_object_hook(d):
@@ -13,18 +17,18 @@ def _gt_object_hook(d):
 
 
 def _load_csv():
-    objects = btrack.dataio.import_CSV("./tests/_test_data/test_data.csv")
+    objects = btrack.dataio.import_CSV(TEST_DATA_PATH / "test_data.csv")
     return objects
 
 
 def _load_ground_truth():
-    with open("./tests/_test_data/test_ground_truth.json", "r") as file:
+    with open(TEST_DATA_PATH / "test_ground_truth.json", "r") as file:
         ground_truth = json.load(file, object_hook=_gt_object_hook)
     return ground_truth
 
 
 def _load_ground_truth_graph() -> dict:
-    with open("./tests/_test_data/test_graph.json", "r") as file:
+    with open(TEST_DATA_PATH / "test_graph.json", "r") as file:
         ground_truth_graph = json.load(file, object_hook=_gt_object_hook)
 
     return ground_truth_graph

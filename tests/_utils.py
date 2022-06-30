@@ -10,8 +10,10 @@ import btrack
 CONFIG_FILE = (
     Path(__file__).resolve().parent.parent / "models" / "cell_config.json"
 )
-
 RANDOM_SEED = 1234
+TEST_DATA_PATH = Path(__file__).resolve().parent / "_test_data"
+
+rng = np.random.default_rng(seed=RANDOM_SEED)
 
 
 def create_test_object(
@@ -19,11 +21,11 @@ def create_test_object(
 ) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
     """Create a test object."""
     data = {
-        "ID": np.random.randint(0, 1000) if id is None else int(id),
-        "x": np.random.uniform(0.0, 1000.0),
-        "y": np.random.uniform(0.0, 1000.0),
-        "z": np.random.uniform(0.0, 1000.0),
-        "t": np.random.randint(0, 1000),
+        "ID": rng.integers(0, 1000) if id is None else int(id),
+        "x": rng.uniform(0.0, 1000.0),
+        "y": rng.uniform(0.0, 1000.0),
+        "z": rng.uniform(0.0, 1000.0),
+        "t": rng.integers(0, 1000),
         "dummy": False,
         "states": 5,
         "label": 0,
@@ -35,16 +37,18 @@ def create_test_object(
 
 
 def create_test_properties() -> Dict[str, float]:
-    properties = {
-        "speed": np.random.uniform(0.0, 1.0),
-        "circularity": np.random.uniform(0.0, 1.0),
-        "reporter": np.random.uniform(0.0, 1.0),
+    """Create test properties for an object."""
+    return {
+        "speed": rng.uniform(0.0, 1.0),
+        "circularity": rng.uniform(0.0, 1.0),
+        "reporter": rng.uniform(0.0, 1.0),
+        "nD": rng.uniform(0.0, 1.0, size=(5,)),
     }
-    return properties
 
 
 def create_test_tracklet(
     track_len: int,
+    track_id: Optional[int] = None,
 ) -> Tuple[
     btrack.btypes.Tracklet,
     List[btrack.btypes.PyTrackObject],
@@ -56,8 +60,10 @@ def create_test_tracklet(
     props = [create_test_properties() for i in range(track_len)]
     for idx, obj in enumerate(data):
         obj.properties = props[idx]
-    track_ID = np.random.randint(0, 1000)
-    tracklet = btrack.btypes.Tracklet(track_ID, data)
+    track_id = rng.integers(0, 1000) if track_id is None else track_id
+    tracklet = btrack.btypes.Tracklet(track_id, data)
+    tracklet.parent = track_id
+    tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
     if not props:
@@ -65,7 +71,7 @@ def create_test_tracklet(
     else:
         properties = {k: [p[k] for p in props] for k in props[0].keys()}
 
-    return tracklet, data, properties, track_ID
+    return tracklet, data, properties, track_id
 
 
 def create_realistic_tracklet(
@@ -93,7 +99,7 @@ def create_realistic_tracklet(
 
 def _sample(ndim: int, binsize: int) -> Tuple[npt.NDArray[np.uint16], tuple]:
     _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
-    _coord = tuple(np.random.randint(1, binsize - 1, size=(ndim,)).tolist())
+    _coord = tuple(rng.integers(1, binsize - 1, size=(ndim,)).tolist())
     _img[_coord] = 1
     assert (
         np.sum(_img) == 1
@@ -109,6 +115,7 @@ def create_test_image(
     binary: bool = True,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
+
     shape = (boxsize,) * ndim
     img = np.zeros(shape, dtype=np.uint16)
 
@@ -123,7 +130,7 @@ def create_test_image(
     grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
         -1, ndim
     )
-    rng = np.random.default_rng(seed=RANDOM_SEED)
+
     rbins = rng.choice(grid, size=(nobj,), replace=False)
 
     # iterate over the bins and add a smaple

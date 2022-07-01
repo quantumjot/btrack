@@ -46,9 +46,7 @@ def localizations_to_objects(
     logger.info(f"Objects are of type: {type(localizations)}")
 
     if isinstance(localizations, list):
-        if all(
-            [isinstance(loc, btypes.PyTrackObject) for loc in localizations]
-        ):
+        if check_object_type(localizations):
             # if these are already PyTrackObjects just silently return
             return localizations
 
@@ -194,8 +192,12 @@ def export_delegator(
         logger.error(f"Export file format {ext} not recognized.")
 
 
-def check_track_type(tracks):
-    return all([isinstance(t, btypes.Tracklet) for t in tracks])
+def check_track_type(tracks: list) -> bool:
+    return all(isinstance(t, btypes.Tracklet) for t in tracks)
+
+
+def check_object_type(objects: list) -> bool:
+    return all(isinstance(o, btypes.PyTrackObject) for o in objects)
 
 
 def export_CSV(
@@ -304,7 +306,8 @@ class HDF5FileHandler:
     read_write : str
         A read/write mode for the file, e.g. `w`, `r`, `a` etc.
     obj_type : str
-        The name of the object type. Defaults to `obj_type_1`.
+        The name of the object type. Defaults to `obj_type_1`. The object type
+        name must start with `obj_type_`
 
     Attributes
     ----------
@@ -355,18 +358,23 @@ class HDF5FileHandler:
 
     Examples
     --------
+    Read objects from a file:
     >>> with HDF5FileHandler('file.h5', 'r') as handler:
     >>>    objects = handler.objects
 
-    Added generic filtering to object retrieval, e.g.
+    Use filtering by property for object retrieval:
     >>> obj = handler.filtered_objects('flag==1')
     >>> obj = handler.filtered_objects('area>100')
+
+    Write tracks directly to a file:
+    >>> handler.write_tracks(tracks)
     """
 
     def __init__(
         self,
         filename: os.PathLike,
         read_write: str = "r",
+        *,
         obj_type: str = "obj_type_1",
     ):
 
@@ -537,7 +545,7 @@ class HDF5FileHandler:
             raise TypeError("Object type not recognized.")
 
         # make sure that the data to be written are all of type PyTrackObject
-        if not all([isinstance(o, btypes.PyTrackObject) for o in objects]):
+        if not check_object_type(objects):
             raise TypeError("Object type not recognized.")
 
         if "objects" not in self._hdf:
@@ -722,7 +730,7 @@ class HDF5FileHandler:
         """
 
         if isinstance(data, list):
-            if not all(isinstance(track, btypes.Tracklet) for track in data):
+            if not check_track_type(data):
                 raise ValueError(f"Data of type {type(data)} not supported.")
 
             all_objects = itertools.chain.from_iterable(
@@ -732,13 +740,14 @@ class HDF5FileHandler:
             objects = [obj for obj in all_objects if not obj.dummy]
             dummies = [obj for obj in all_objects if obj.dummy]
 
-            # make sure we sort the objects into order
-            objects.sort(key=lambda obj: obj.ID)
-            dummies.sort(key=lambda obj: obj.ID, reverse=False)
+            # renumber the object ID so that they can be stored in a contiguous
+            # array and indexed by row - this may not be necessary for most
+            # datasets, but is here just in case
+            for idx, obj in enumerate(objects):
+                obj.ID = idx
 
-            assert all(
-                isinstance(obj, btypes.PyTrackObject) for obj in objects
-            )
+            for idx, dummy in enumerate(dummies):
+                dummy.ID = -(idx + 1)
 
             refs = [trk.refs for trk in data]
             lbep_table = utils._lbep_table(data)

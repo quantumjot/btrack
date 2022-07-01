@@ -47,7 +47,7 @@ class BayesianTracker:
         :py:meth:`btrack.btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
-    lbep : List[List]
+    LBEP : List[List]
         Return an LBEP table of the track lineages.
     configuration : config.TrackerConfig
         Return the current configuration.

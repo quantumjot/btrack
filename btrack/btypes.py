@@ -277,9 +277,9 @@ class Tracklet:
     parent : int, list
         The identifiers of the parent track(s).
     refs : list[int]
-        Returns a list of PyTrackObject identifiers used to build the track.
-        Useful for indexing back into the original data, e.g. table of
-        localizations or h5 file.
+        Returns a list of :py:class:`btrack.btypes.PyTrackObject` identifiers
+        used to build the track. Useful for indexing back into the original
+        data, e.g. table of localizations or h5 file.
     label : list[str]
         Return the label of each object in the track.
     state : list[int]
@@ -288,8 +288,8 @@ class Tracklet:
         If defined, return the softmax score for the label of each object in the
         track.
     properties : Dict[str, np.ndarray]
-        Return a dictionary of track properties derived from PyTrackObject
-        properties.
+        Return a dictionary of track properties derived from
+        :py:class:`btrack.btypes.PyTrackObject` properties.
     root : int,
         The identifier of the root ID if a branching tree (ie cell division).
     is_root : boole
@@ -303,7 +303,9 @@ class Tracklet:
     kalman : np.ndarray
         Return the complete output of the kalman filter for this track. Note,
         that this may not have been returned while from the tracker. See
-        `BayesianTracker.return_kalman` for more details.
+        :py:attr:`btrack.BayesianTracker.return_kalman` for more details.
+    LBEP : list
+        An LBEP representation of the track.
 
 
     Notes
@@ -318,10 +320,11 @@ class Tracklet:
     def __init__(
         self,
         ID: int,
-        data: list,
-        parent=None,
-        children=[],
-        fate=constants.Fates.UNDEFINED,
+        data: List[PyTrackObject],
+        *,
+        parent: Optional[int] = None,
+        children: List[int] = [],
+        fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
 
         assert all([isinstance(o, PyTrackObject) for o in data])
@@ -508,6 +511,17 @@ class Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
+
+    def LBEP(self) -> Tuple[int]:
+        """Return an LBEP table summarising the track."""
+        return (
+            self.ID,
+            self.start,
+            self.stop,
+            self.parent,
+            self.root,
+            self.generation,
+        )
 
 
 def _pandas_html_repr(obj):

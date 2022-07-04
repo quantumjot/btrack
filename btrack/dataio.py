@@ -775,8 +775,7 @@ class HDF5FileHandler:
     @h5check_property_exists("tracks")
     def convert_tracks_to_napari(self, **kwargs):
         """Return the 'data, properties, graph' to load to napari."""
-        data, properties, graph = utils.tracks_to_napari(self.tracks, **kwargs)
-        self.napari_tracks = (data, properties, graph)
+        self.napari_tracks = utils.tracks_to_napari(self.tracks, **kwargs)
         return self.napari_tracks
 
 

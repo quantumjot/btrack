@@ -1,41 +1,19 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# ------------------------------------------------------------------------------
-
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
+from __future__ import annotations
 
 import inspect
 import logging
-from typing import Generator, Optional, Tuple, Union
+from typing import Generator, List, Optional, Tuple, Union
 
 import numpy as np
 from skimage.measure import label, regionprops_table
 
 from tqdm.auto import tqdm
+from . import btypes
+from .constants import Dimensionality
 from .dataio import localizations_to_objects
 
-try:
-    import dask
-
-    DASK_INSTALLED = True
-except ImportError:
-    DASK_INSTALLED = False
-
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
 def _centroids_from_single_arr(
@@ -75,12 +53,12 @@ def _centroids_from_single_arr(
         _class_ID_centroids = regionprops_table(
             labeled,
             intensity_image=segmentation,
-            properties=('max_intensity',),
+            properties=("max_intensity",),
         )
 
         # rename class_ID column and remove keyword from properties
-        _class_ID_centroids['class id'] = _class_ID_centroids.pop(
-            'max_intensity'
+        _class_ID_centroids["class_id"] = _class_ID_centroids.pop(
+            "max_intensity"
         )
 
         # run regionprops to record other intensity image properties
@@ -92,6 +70,8 @@ def _centroids_from_single_arr(
 
         # merge centroids with class ID centroids
         _centroids.update(_class_ID_centroids)
+
+        assert "class_id" in _centroids, _centroids.keys()
 
     else:
         # check to see whether the segmentation is unique
@@ -107,7 +87,7 @@ def _centroids_from_single_arr(
         )
 
     # add time to the array
-    _centroids['t'] = np.full(
+    _centroids["t"] = np.full(
         _centroids[f"{CENTROID_PROPERTY}-0"].shape, frame
     )
 
@@ -148,32 +128,27 @@ def segmentation_to_objects(
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
-) -> list:
-    """Convert segmentation to a set of btrack.PyTrackObject.
+) -> List[btypes.PyTrackObject]:
+    """Convert segmentation to a set of trackable objects.
 
     Parameters
     ----------
     segmentation : np.ndarray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-
     intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
-        additional properties. See skimage.measure.regionprops for more info.
-
+        additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
-        See skimage.measure.regionprops for more info.
-
+        See `skimage.measure.regionprops` for more info.
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
-
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
-        weighted centroid. See skimage.measure.regionprops for more info.
-
+        weighted centroid. See `skimage.measure.regionprops` for more info.
     assign_class_ID : bool, default False
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,
@@ -182,10 +157,19 @@ def segmentation_to_objects(
     Returns
     -------
     objects : list
-        A list of btrack.PyTrackObjects
+        A list of :py:meth:`btrack.btypes.PyTrackObject` trackable objects.
+
+    Examples
+    --------
+    >>> objects = btrack.utils.segmentation_to_objects(
+    ...   segmentation,
+    ...   properties=('area', ),
+    ...   scale=(1., 1.),
+    ...   assign_class_ID=True,
+    ... )
     """
 
-    centroids = {}
+    centroids: dict = {}
     USE_INTENSITY = False
     USE_WEIGHTED = False
 
@@ -201,45 +185,27 @@ def segmentation_to_objects(
         USE_WEIGHTED = use_weighted_centroid and USE_INTENSITY
 
     if USE_INTENSITY:
-        logger.info('Found intensity_image data')
+        logger.info("Found intensity_image data")
 
     if USE_WEIGHTED:
-        logger.info('Calculating weighted centroids using intensity_image')
+        logger.info("Calculating weighted centroids using intensity_image")
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
-    if 'label' in properties:
+    if isinstance(properties, tuple) and "label" in properties:
         logger.warning("Cannot use scikit-image label as a property.")
-        del properties['label']
+        properties = set(properties)
+        properties.remove("label")
+        properties = tuple(properties)
 
+    # Iterate over individual frames with progress bar:
     description = "Localising cell objects in segmentation frames"
 
-    if isinstance(segmentation, np.ndarray):
-
-        if segmentation.ndim not in (3, 4):
-            raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-        for frame in tqdm(range(segmentation.shape[0]), desc=description):
-            seg = segmentation[frame, ...]
-            intens = intensity_image[frame, ...] if USE_INTENSITY else None
-            _centroids = _centroids_from_single_arr(
-                seg,
-                properties,
-                frame,
-                intensity_image=intens,
-                scale=scale,
-                use_weighted_centroid=USE_WEIGHTED,
-                assign_class_ID=assign_class_ID,
-            )
-
-            # concatenate the centroids
-            centroids = _concat_centroids(centroids, _centroids)
-
-    elif inspect.isgeneratorfunction(segmentation) or isinstance(
+    if inspect.isgeneratorfunction(segmentation) or isinstance(
         segmentation, Generator
     ):
 
-        for frame, seg in enumerate(tqdm(segmentation, desc=description)):
+        for frame, seg in enumerate(tqdm(segmentation), desc = description):
             intens = next(intensity_image) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
                 seg,
@@ -254,38 +220,35 @@ def segmentation_to_objects(
             # concatenate the centroids
             centroids = _concat_centroids(centroids, _centroids)
 
-    elif DASK_INSTALLED:
-
-        if isinstance(segmentation, dask.array.core.Array):
-
-            if segmentation.ndim not in (3, 4):
-                raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-            for frame in tqdm(range(segmentation.shape[0]), desc=description):
-                seg = segmentation[frame, ...].compute()
-                intens = (
-                    intensity_image[frame, ...].compute()
-                    if USE_INTENSITY
-                    else None
-                )
-                _centroids = _centroids_from_single_arr(
-                    seg,
-                    properties,
-                    frame,
-                    intensity_image=intens,
-                    scale=scale,
-                    use_weighted_centroid=USE_WEIGHTED,
-                    assign_class_ID=assign_class_ID,
-                )
-
-                # concatenate the centroids
-                centroids = _concat_centroids(centroids, _centroids)
-
     else:
 
-        raise TypeError(
-            f"Segmentation of type {type(segmentation)} not accepted."
-        )
+        if segmentation.ndim not in (
+            Dimensionality.THREE,
+            Dimensionality.FOUR,
+        ):
+            raise ValueError("Segmentation array must have 3 or 4 dims.")
+
+        for frame in tqdm(range(segmentation.shape[0]), desc = description):
+            # try to cast to numpy array, should work for dask arrays and implicitly
+            # call the `.compute()` method
+            seg = np.asarray(segmentation[frame, ...])
+            intens = (
+                np.asarray(intensity_image[frame, ...])
+                if USE_INTENSITY
+                else None
+            )
+            _centroids = _centroids_from_single_arr(
+                seg,
+                properties,
+                frame,
+                intensity_image=intens,
+                scale=scale,
+                use_weighted_centroid=USE_WEIGHTED,
+                assign_class_ID=assign_class_ID,
+            )
+
+            # concatenate the centroids
+            centroids = _concat_centroids(centroids, _centroids)
 
     if not centroids:
         logger.warning("...Found no objects.")

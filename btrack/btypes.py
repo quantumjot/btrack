@@ -13,30 +13,67 @@
 # Created:  14/08/2014
 # -------------------------------------------------------------------------------
 
-
-__author__ = "Alan R. Lowe"
-__email__ = "a.lowe@ucl.ac.uk"
+from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
-from typing import Dict, Union
+from typing import Any, Dict, NamedTuple, Optional, Tuple
 
 import numpy as np
 
-from . import constants, utils
+from . import constants
+
+__all__ = ["PyTrackObject", "Tracklet"]
+
+
+class ImagingVolume(NamedTuple):
+    x: Tuple[float, float]
+    y: Tuple[float, float]
+    z: Optional[Tuple[float, float]] = None
+
+    @property
+    def ndim(self) -> int:
+        """Infer the dimensionality from the volume."""
+        return 2 if self.z is None else 3
 
 
 class PyTrackObject(ctypes.Structure):
     """The base `btrack` track object.
 
-    Attributes
-    ----------
-
-    Notes
-    -----
     Primitive class to store information about an object. Essentially a single
     object in a field of view, with some member variables to keep track of data
     associated with an object.
+
+    Parameters
+    ----------
+    ID : int
+        The unique ID of the object.
+    x : float
+        The x coordinate.
+    y : float
+        The y coordinate.
+    z : float
+        The z coordinate.
+    t : int
+        The timestamp.
+    dummy: bool
+        Flag for whether the objects is real or a dummy (inserted by the
+        tracker when no observation can be linked).
+    states : int
+        The number of states of the object. This corresponds to the number of
+        possible labels.
+    label : int
+        The label of the object.
+    prob : float
+        The probability of the label.
+
+    Attributes
+    ----------
+    properties : Dict[str, Union[int, float]]
+        Dictionary of properties associated with this object.
+    state : constants.States
+        A state label for the object. See `constants.States`
+
     """
 
     _fields_ = [
@@ -50,7 +87,6 @@ class PyTrackObject(ctypes.Structure):
         ("label", ctypes.c_int),
         ("prob", ctypes.c_double),
     ]
-    # ('prob', ctypes.POINTER(ctypes.c_double))]
 
     def __init__(self):
         super().__init__()
@@ -62,13 +98,13 @@ class PyTrackObject(ctypes.Structure):
         self._properties = {}
 
     @property
-    def properties(self) -> Dict[str, Union[int, float]]:
+    def properties(self) -> Dict[str, Any]:
         if self.dummy:
             return {}
         return self._properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, Union[int, float]]):
+    def properties(self, properties: Dict[str, Any]):
         """Set the object properties."""
         self._properties.update(properties)
 
@@ -83,30 +119,36 @@ class PyTrackObject(ctypes.Structure):
         self._raw_probability = probability
 
     @property
-    def state(self):
+    def state(self) -> constants.States:
         return constants.States(self.label)
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
         stats.update(self.properties)
         return stats
 
     @staticmethod
-    def from_dict(properties: dict):
+    def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = [k for k, _ in PyTrackObject._fields_]
-        attr = [k for k in fields if k in properties.keys()]
+        fields = {k: kt for k, kt in PyTrackObject._fields_}
+        attr = [k for k in fields.keys() if k in properties.keys()]
         for key in attr:
-            try:
-                setattr(obj, key, properties[key])
-            except TypeError:
-                setattr(obj, key, int(properties[key]))
+
+            new_data = properties[key]
+
+            # fix for implicit type conversion
+            if key in ("ID", "t", "states", "label"):
+                setattr(obj, key, int(new_data))
+            elif key in ("dummy",):
+                setattr(obj, key, bool(new_data))
+            else:
+                setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
         obj.properties = {
-            k: v for k, v in properties.items() if k not in fields
+            k: v for k, v in properties.items() if k not in fields.keys()
         }
         return obj
 
@@ -114,29 +156,41 @@ class PyTrackObject(ctypes.Structure):
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        return utils._pandas_html_repr(self)
+        return _pandas_html_repr(self)
 
 
 class PyTrackingInfo(ctypes.Structure):
-    """PyTrackingInfo
+    """Primitive class to store information about the tracking output.
 
-    Primitive class to store information about the tracking output.
+    Parameters
+    ----------
+    error : int
+        Error code from the tracker. See `constants.Errors` for definitions.
+    n_tracks : int
+        Total number of tracks initialised during tracking.
+    n_active : int
+        Number of active tracks.
+    n_conflicts : int
+        Number of conflicts.
+    n_lost : int
+        Number of lost tracks.
+    t_update_belief : float
+        Time to update belief matrix in ms.
+    t_update_link : float
+        Time to update links in ms.
+    t_total_time : float
+        Total time to track objects.
+    p_link : float
+        Typical probability of association.
+    p_lost : float
+        Typical probability of losing track.
+    complete : bool
+        Flag denoting that the tracking is complete.
 
-    Params:
-        error: error code from the tracker
-        n_tracks: total number of tracks initialised during tracking
-        n_active: number of active tracks
-        n_conflicts: number of conflicts
-        n_lost: number of lost tracks
-        t_update_belief: time to update belief matrix in ms
-        t_update_link: time to update links in ms
-        t_total_time: total time to track objects
-        p_link: typical probability of association
-        p_lost: typical probability of losing track
-
-    Notes:
-        TODO(arl): should update to give more useful statistics, perhaps
-        histogram of probabilities and timings.
+    Notes
+    -----
+    TODO(arl): should update to give more useful statistics, perhaps
+    histogram of probabilities and timings.
 
     """
 
@@ -154,7 +208,7 @@ class PyTrackingInfo(ctypes.Structure):
         ("complete", ctypes.c_bool),
     ]
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the statistics"""
         # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?
@@ -162,8 +216,8 @@ class PyTrackingInfo(ctypes.Structure):
         return stats
 
     @property
-    def tracker_active(self):
-        """return the current status"""
+    def tracker_active(self) -> bool:
+        """Return the current status."""
         no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
         return no_error and not self.complete
 
@@ -266,7 +320,7 @@ class Tracklet:
         return self.to_dict().__repr__()
 
     def _repr_html_(self):
-        return utils._pandas_html_repr(self)
+        return _pandas_html_repr(self)
 
     @property
     def properties(self) -> Dict[str, np.ndarray]:
@@ -288,7 +342,7 @@ class Tracklet:
         for k, v in properties.items():
             if len(v) != len(self):
                 raise ValueError(
-                    'The number of properties and track objects must be equal.'
+                    "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
             if type(v) != np.ndarray:
@@ -412,3 +466,32 @@ class Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
+
+
+def _pandas_html_repr(obj):
+    """Prepare data for HTML representation in a notebook."""
+    try:
+        import pandas as pd
+    except ImportError:
+        return (
+            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
+            + obj.__repr__()
+        )
+
+    obj_as_dict = obj.to_dict()
+
+    # now try to process for display in the notebook
+    if hasattr(obj, "__len__"):
+        n_items = len(obj)
+    else:
+        n_items = 1
+
+    for k, v in obj_as_dict.items():
+        if not isinstance(v, (list, np.ndarray)):
+            obj_as_dict[k] = [v] * n_items
+        elif isinstance(v, np.ndarray):
+            ndim = 0 if n_items == 1 else 1
+            if v.ndim > ndim:
+                obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items
+
+    return pd.DataFrame.from_dict(obj_as_dict).to_html()

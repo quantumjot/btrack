@@ -1,76 +1,28 @@
-#!/usr/bin/env python
-# ------------------------------------------------------------------------------
-# Name:     BayesianTracker
-# Purpose:  A multi object tracking library, specifically used to reconstruct
-#           tracks in crowded fields. Here we use a probabilistic network of
-#           information to perform the trajectory linking. This method uses
-#           positional and visual information for track linking.
-#
-# Authors:  Alan R. Lowe (arl) a.lowe@ucl.ac.uk
-#
-# License:  See LICENSE.md
-#
-# Created:  14/08/2014
-# ------------------------------------------------------------------------------
+from __future__ import annotations
 
-
-__author__ = "Alan R. Lowe"
-__email__ = "code@arlowe.co.uk"
-
-
-import dataclasses
-import json
 import logging
-import os
+from typing import Optional
 
 import numpy as np
+from skimage.util import map_array
 
 # import core
 from . import btypes, constants
 from ._localization import segmentation_to_objects
+from .constants import Dimensionality
 from .models import HypothesisModel, MotionModel, ObjectModel
 
+# Choose a subset of classes/functions to document in public facing API
+__all__ = [
+    "segmentation_to_objects",
+    "update_segmentation",
+]
+
 # get the logger instance
-logger = logging.getLogger("worker_process")
+logger = logging.getLogger(__name__)
 
 
-# add an alias here
-segmentation_to_objects = segmentation_to_objects
-
-
-def load_config(filename: os.PathLike) -> dict:
-    """Load a tracking configuration file."""
-    if not os.path.exists(filename):
-        # check whether it exists in the user model directory
-        _, fn = os.path.split(filename)
-        local_filename = os.path.join(constants.USER_MODEL_DIR, fn)
-
-        if not os.path.exists(local_filename):
-            logger.error(f"Configuration file {filename} not found")
-            raise IOError(f"Configuration file {filename} not found")
-        else:
-            filename = local_filename
-
-    with open(filename, "r") as config_file:
-        config = json.load(config_file)
-
-    if "TrackerConfig" not in config:
-        logger.error("Configuration file is malformed.")
-        raise Exception("Tracking config is malformed")
-
-    config = config["TrackerConfig"]
-
-    logger.info(f"Loading configuration file: {filename}")
-    t_config = {
-        "MotionModel": read_motion_model(config),
-        "ObjectModel": read_object_model(config),
-        "HypothesisModel": read_hypothesis_model(config),
-    }
-
-    return t_config
-
-
-def log_error(err_code):
+def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
     if (
@@ -82,7 +34,7 @@ def log_error(err_code):
     return False
 
 
-def log_stats(stats):
+def log_stats(stats: dict) -> None:
     """Take the statistics from the track and log the output."""
 
     if log_error(stats["error"]):
@@ -109,201 +61,25 @@ def log_stats(stats):
     )
 
 
-def read_motion_model(config: dict) -> MotionModel:
-    """Read a motion model from a configuration dictionary.
-
-    Read in a motion model description file and return a dictionary containing
-    the appropriate parameters. See `models.MotionModel` for more details of the
-    parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the motion model.
-
-    Returns
-    -------
-    model : MotionModel
-        A `models.MotionModel` instance to configure BayesianTracker.
-
-    Notes
-    -----
-    Motion models can be described using JSON format, with a basic structure
-    as follows:
-
-        {
-          "MotionModel":{
-            "name": "ConstantVelocity",
-            "dt": 1.0,
-            "measurements": 3,
-            "states": 6,
-            "accuracy": 2.0,
-            "A": {
-              "matrix": [1,0,0,1,0,0,...
-              ...
-              ] }
-            }
-        }
-
-    Matrices are flattened JSON arrays.
-
-    Most are self explanatory, except accuracy (perhaps a misnoma) - this
-    represents the integration limits when determining the probabilities from
-    the multivariate normal distribution.
-
-    Note that the matrices are stored as 1D matrices here. In the future,
-    this could form part of a Python only motion model.
-
-    TODO(arl): More parsing of the data/reshaping arrays. Raise an
-    appropriate error if there is something wrong with the model
-    definition.
-    """
-
-    if "MotionModel" not in list(config.keys()):
-        raise ValueError("Not a valid motion model in configuration.")
-
-    motion_config = config["MotionModel"]
-    if not motion_config:
+def read_motion_model(cfg: dict) -> Optional[MotionModel]:
+    cfg = cfg.get("MotionModel", {})
+    if not cfg:
         return None
-
-    matrices = frozenset(["A", "H", "P", "G", "R"])
-    fields = [f.name for f in dataclasses.fields(MotionModel)]
-
-    model_kwargs = {}
-
-    for field in fields:
-        if field not in motion_config.keys():
-            logger.error(f"Key {field} not found in `MotionModel` config.")
-
-        # if this is a matrix, prepare it
-        if field in matrices:
-            if "sigma" in motion_config[field]:
-                sigma = motion_config[field]["sigma"]
-            else:
-                sigma = 1.0
-            matrix = np.matrix(
-                motion_config[field]["matrix"], dtype=np.float64
-            )
-            model_kwargs[field] = matrix * sigma
-        else:
-            model_kwargs[field] = motion_config[field]
-
-    # set some standard params
-    model = MotionModel(**model_kwargs)
-
-    # call the reshape function to set the matrices to the correct shapes
-    model.reshape()
-    return model
+    return MotionModel(**cfg)
 
 
-def read_object_model(config: dict) -> ObjectModel:
-    """Read an object model from a configuration dictionary.
-
-    Read in a object model description file and return a dictionary containing
-    the appropriate parameters. See `models.ObjectModel` for more details of the
-    parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the object model.
-
-    Returns
-    -------
-    model : ObjectModel
-        A `models.ObjectModel` instance to configure BayesianTracker.
-
-    Notes
-    -----
-    Object models can be described using JSON format, with a basic structure
-    as follows:
-
-        {
-          "ObjectModel":{
-            "name": "UniformState",
-            "states": 1,
-            "transition": {
-              "matrix": [1] }
-              ...
-            }
-        }
-
-    Matrices are flattened JSON arrays.
-
-    Note that the matrices are stored as 1D matrices here. In the future,
-    this could form part of a Python only object model.
-
-    TODO(arl): More parsing of the data/reshaping arrays. Raise an
-    appropriate error if there is something wrong with the model definition
-    """
-    matrices = frozenset(["transition", "emission", "start"])
-
-    if "ObjectModel" not in list(config.keys()):
-        raise ValueError("Not a valid object model file")
-
-    object_config = config["ObjectModel"]
-    if not object_config:
+def read_object_model(cfg: dict) -> Optional[ObjectModel]:
+    cfg = cfg.get("ObjectModel", {})
+    if not cfg:
         return None
-
-    model = ObjectModel()
-
-    # set some standard params
-    model.name = object_config["name"].encode("utf-8")
-    model.states = object_config["states"]
-
-    for matrix in matrices:
-        m_data = np.matrix(object_config[matrix]["matrix"], dtype="float")
-        setattr(model, matrix, m_data)
-
-    # call the reshape function to set the matrices to the correct shapes
-    model.reshape()
-    return model
+    return ObjectModel(**cfg)
 
 
-def read_hypothesis_model(config: dict) -> HypothesisModel:
-    """Read a hypothesis model from a configuration dictionary.
-
-    Read in a hypothesis model description file and return a dictionary
-    containing the appropriate parameters. See `models.ObjectModel` for more
-    details of the parameters.
-
-    Parameters
-    ----------
-    config : dict
-        A dictionary describing the object model.
-
-    Returns
-    -------
-    model : HypothesisModel
-        A `models.HypothesistModel` instance to configure BayesianTracker.
-
-    Read in a set of hypothesis parameters from a JSON description file.  The
-    JSON file should contain the parameters of the PyHypothesisParams structure
-    and the function will return an instantiated PyHypothesisParams to be
-    passed to the optimisation engine.
-
-    Args:
-        filename: the filename of the parameter file
-
-    Notes:
-        None
-    """
-    if "ObjectModel" not in list(config.keys()):
-        raise ValueError("Not a valid object model file")
-
-    hypothesis_config = config["HypothesisModel"]
-    if not hypothesis_config:
+def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
+    cfg = cfg.get("HypothesisModel", {})
+    if not cfg:
         return None
-
-    fields = [f.name for f in dataclasses.fields(HypothesisModel)]
-
-    for field in fields:
-        if field not in hypothesis_config.keys():
-            logger.error(f"Key {field} not found in `HypothesisModel` config.")
-
-    model = HypothesisModel(**hypothesis_config)
-
-    return model
+    return HypothesisModel(**cfg)
 
 
 def crop_volume(objects, volume=constants.VOLUME):
@@ -318,11 +94,13 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _cat_tracks_as_dict(tracks: list, properties: list):
+def _cat_tracks_as_dict(
+    tracks: list[btypes.Tracklet], properties: list
+) -> dict:
     """Concatenate all tracks a dictionary."""
     assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
-    data = {}
+    data: dict = {}
 
     for track in tracks:
         trk = track.to_dict(properties)
@@ -345,16 +123,16 @@ def _cat_tracks_as_dict(tracks: list, properties: list):
 
 
 def tracks_to_napari(
-    tracks: list,
+    tracks: list[btypes.Tracklet],
     ndim: int = 3,
-    coords_axes: list = None,
-    replace_nan: bool = True
+    coords_axes: Optional[list] = None,
+    replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.
 
     Parameters
     ----------
-    tracks : list
+    tracks : list[btypes.Tracklet]
         A list of tracklet objects from BayesianTracker.
     ndim : int
         The number of spatial dimensions of the data. Must be 2 or 3.
@@ -382,7 +160,9 @@ def tracks_to_napari(
         parents, but only one child) in the case of track merging.
     """
     # TODO: arl guess the dimensionality from the data
-    assert ndim in (2, 3)
+    if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
+        raise ValueError("ndim must be 2 or 3 dimensional.")
+
     coords_axes = ["z", "y", "x"] if coords_axes is None else coords_axes
     assert isinstance(coords_axes, list)
 
@@ -417,33 +197,61 @@ def tracks_to_napari(
     return data, properties, graph
 
 
-def _pandas_html_repr(obj):
-    """Prepare data for HTML representation in a notebook."""
-    try:
-        import pandas as pd
-    except ImportError:
-        return (
-            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-            + obj.__repr__()
+def update_segmentation(
+    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
+) -> np.ndarray:
+    """
+    Map btrack output tracks back into a masked array.
+
+    Parameters
+    ----------
+    segmentation : np.array
+        Array containing a timeseries of single cell masks. Dimensions should be
+        ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
+    tracks : list[btypes.Tracklet]
+        A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+
+    Returns
+    -------
+    relabeled : np.array
+        Array containing the same masks as segmentation but relabeled to
+        maintain single cell identity over time.
+
+    Example
+    -------
+
+    import btrack
+    tracker = btrack.BayesianTracker()
+    objects = btrack.utils.segmentation_to_objects(segmentation)
+    tracker.append(objects)
+    ...
+    tracker.optimize()
+    tracks = tracker.tracks
+
+    tracked_segmentation = btrack.utils.update_segmentation(
+                                    segmentation, tracks)
+    """
+
+    coords_arr = np.concatenate(
+        [
+            track.to_array()[~np.array(track.dummy)][:, :5].astype(int)
+            for track in tracks
+        ]
+    )
+    relabeled = np.zeros_like(segmentation)
+    for t, single_segmentation in enumerate(segmentation):
+        frame_coords = coords_arr[coords_arr[:, 1] == t]
+        new_id, tc, xc, yc, zc = tuple(frame_coords.T)
+        if single_segmentation.ndim == 2:
+            old_id = single_segmentation[yc, xc]
+        elif single_segmentation.ndim == 3:
+            old_id = single_segmentation[zc, yc, xc]
+
+        relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
+            single_segmentation > 0
         )
 
-    obj_as_dict = obj.to_dict()
-
-    # now try to process for display in the notebook
-    if hasattr(obj, '__len__'):
-        n_items = len(obj)
-    else:
-        n_items = 1
-
-    for k, v in obj_as_dict.items():
-        if not isinstance(v, (list, np.ndarray)):
-            obj_as_dict[k] = [v] * n_items
-        elif isinstance(v, np.ndarray):
-            ndim = 0 if n_items == 1 else 1
-            if v.ndim > ndim:
-                obj_as_dict[k] = [f'{v.shape[ndim:]} array'] * n_items
-
-    return pd.DataFrame.from_dict(obj_as_dict).to_html()
+    return relabeled
 
 
 if __name__ == "__main__":

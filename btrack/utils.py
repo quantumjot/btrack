@@ -125,7 +125,7 @@ def _cat_tracks_as_dict(
 def tracks_to_napari(
     tracks: list[btypes.Tracklet],
     ndim: int = 3,
-    coords_axes: list = None,
+    coords_axes: Optional[list] = None,
     replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.

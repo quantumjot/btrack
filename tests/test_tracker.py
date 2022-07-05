@@ -2,8 +2,6 @@ import json
 
 import numpy as np
 
-import btrack
-
 from ._utils import (
     TEST_DATA_PATH,
     full_tracker_example,
@@ -14,11 +12,6 @@ from ._utils import (
 def _gt_object_hook(d):
     """JSON stores keys as strings, convert these to integers."""
     return {int(k): v for k, v in d.items()}
-
-
-def _load_csv():
-    objects = btrack.dataio.import_CSV(TEST_DATA_PATH / "test_data.csv")
-    return objects
 
 
 def _load_ground_truth():
@@ -43,13 +36,12 @@ def _get_tracklet(tracks: dict, idx: int) -> list:
         raise ValueError("Object ID not found.")
 
 
-def test_tracker():
+def test_tracker(test_real_objects):
     """Test the tracks output of the tracker, using the default config and known
     data."""
-    objects = _load_csv()
     ground_truth = _load_ground_truth()
 
-    tracker = full_tracker_example(objects)
+    tracker = full_tracker_example(test_real_objects)
     tracks = tracker.tracks
 
     # iterate over the tracks and check that the object references match
@@ -58,15 +50,14 @@ def test_tracker():
         np.testing.assert_equal(track.refs, gt_refs)
 
 
-def test_tracker_graph():
+def test_tracker_graph(test_real_objects):
     """Test the graph output of the tracker, using the default config and known
     data."""
 
-    objects = _load_csv()
     ground_truth_graph = _load_ground_truth_graph()
 
     # run the tracking
-    tracker = full_tracker_example(objects)
+    tracker = full_tracker_example(test_real_objects)
     _, _, graph = tracker.to_napari(ndim=2)
 
     assert ground_truth_graph == graph

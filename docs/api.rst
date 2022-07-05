@@ -10,4 +10,4 @@ API Reference
 .. automodapi:: btrack.dataio
 
 .. automodapi:: btrack.utils
-   :allowed-package-names: btrack._localization
+   :allowed-package-names: btrack._localization, btrack.utils

@@ -47,7 +47,7 @@ class BayesianTracker:
         :py:meth:`btrack.btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
-    lbep : List[List]
+    LBEP : List[List]
         Return an LBEP table of the track lineages.
     configuration : config.TrackerConfig
         Return the current configuration.
@@ -275,7 +275,7 @@ class BayesianTracker:
         ]
 
     @property
-    def lbep(self):
+    def LBEP(self):
         """Return an LBEP list describing the track lineage information.
 
         Notes
@@ -300,18 +300,7 @@ class BayesianTracker:
            * - G
              - Generational depth (from root).
         """
-
-        def _lbep_table(t):
-            return (
-                t.ID,
-                t.start,
-                t.stop,
-                t.parent,
-                t.root,
-                t.generation,
-            )
-
-        return [_lbep_table(t) for t in self.tracks]
+        return utils._lbep_table(self.tracks)
 
     def _sort(self, tracks: List[btypes.Tracklet]) -> List[btypes.Tracklet]:
         """Return a sorted list of tracks"""

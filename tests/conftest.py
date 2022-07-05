@@ -8,6 +8,7 @@ import btrack.dataio
 
 from ._utils import (
     RANDOM_SEED,
+    TEST_DATA_PATH,
     create_test_object,
     create_test_segmentation_and_tracks,
 )
@@ -20,6 +21,14 @@ def test_objects():
     """
     n_rows = 10
     return [create_test_object(id=i)[0] for i in range(n_rows)]
+
+
+@pytest.fixture
+def test_real_objects():
+    """
+    Create a list of objects from real data.
+    """
+    return btrack.dataio.import_CSV(TEST_DATA_PATH / "test_data.csv")
 
 
 def write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:

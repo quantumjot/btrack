@@ -426,7 +426,14 @@ class BayesianTracker:
         )
         return self.track(*args, **kwargs)
 
-    def track(self, step_size: int = 100) -> None:
+    def track(
+        self,
+        *,
+        step_size: int = 100,
+        tracking_updates: Optional[
+            List[Union[str, constants.BayesianUpdateFeatures]]
+        ] = None,
+    ) -> None:
         """Run the tracking in an interactive mode.
 
         Parameters
@@ -435,22 +442,24 @@ class BayesianTracker:
             The number of tracking steps to be taken before returning summary
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
+        tracking_updates : list, optional
+            A list of tracking updates to perform. See
+            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
         """
 
         logger.info("Starting tracking... ")
 
-        updates_to_perform = self.configuration.tracking_updates
+        if tracking_updates is not None:
+            self.configuration.tracking_updates = tracking_updates
 
-        # if we have features specified, use the visual updates also
-        if len(self.configuration.features) > 0:
-            updates_to_perform.append(constants.BayesianUpdateFeatures.VISUAL)
-
-        logger.info(f"Update using: {[f.name for f in updates_to_perform]}")
+        logger.info(
+            f"Update using: {[f.name for f in self.configuration.tracking_updates]}"
+        )
 
         # bitwise OR is equivalent to int sum here
         self._lib.set_update_features(
             self._engine,
-            sum([int(f.value) for f in updates_to_perform]),
+            sum([int(f.value) for f in self.configuration.tracking_updates]),
         )
 
         stats = self.step()

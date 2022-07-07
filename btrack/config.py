@@ -94,6 +94,12 @@ class TrackerConfig(BaseModel):
             return ImagingVolume(*v)
         return v
 
+    @validator("tracking_updates", pre=True, always=True)
+    def _parse_tracking_updates(cls, v):
+        if all(isinstance(k, str) for k in v):
+            return [constants.BayesianUpdateFeatures[k.upper()] for k in v]
+        return v
+
     class Config:
         arbitrary_types_allowed = True
         validate_assignment = True

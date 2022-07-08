@@ -110,6 +110,11 @@ When running the tracking step, all that is required is to pass the list of feat
     "solidity",
   ]
 
+  TRACKING_UPDATES = [
+    "motion",
+    "visual",
+  ]
+
   # initialise a tracker session using a context manager
   with btrack.BayesianTracker() as tracker:
 
@@ -122,9 +127,18 @@ When running the tracking step, all that is required is to pass the list of feat
     # append the objects to be tracked
     tracker.append(objects)
 
+    # tell the tracker to use certain information while
+    # performing tracking
+    tracker.track(tracking_updates=TRACKING_UPDATES)
+
     ...
 
-If you do not specify any features, or pass ``tracker.features = []``, then only motion features (and class labels, if specified) will be used to perform the tracking updates.
+You must specify which information to use when performing the tracking:
+
+* ``motion`` - this uses the motion predictions to link objects in time
+* ``visual`` - this uses the features supplied to link objects in time
+
+At least one of these options must be used. The default is only ``motion``. However, you can chose to use ``visual`` only, or a combination of both.
 
 .. warning::
   You must pass the list of features before using the :py:meth:`btrack.BayesianTracker.append` function to add the objects.

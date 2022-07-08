@@ -83,7 +83,9 @@ class TrackerConfig(BaseModel):
     optimizer_options: dict = constants.GLPK_OPTIONS
     features: List[str] = []
     tracking_updates: conlist(
-        constants.BayesianUpdateFeatures, min_items=1
+        constants.BayesianUpdateFeatures,
+        min_items=1,
+        max_items=len(constants.BayesianUpdateFeatures),
     ) = [
         constants.BayesianUpdateFeatures.MOTION,
     ]
@@ -96,9 +98,14 @@ class TrackerConfig(BaseModel):
 
     @validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):
-        if all(isinstance(k, str) for k in v):
-            return [constants.BayesianUpdateFeatures[k.upper()] for k in v]
-        return v
+        _tracking_updates = v
+        if all(isinstance(k, str) for k in _tracking_updates):
+            _tracking_updates = [
+                constants.BayesianUpdateFeatures[k.upper()]
+                for k in _tracking_updates
+            ]
+        _tracking_updates = list(set(_tracking_updates))
+        return _tracking_updates
 
     class Config:
         arbitrary_types_allowed = True

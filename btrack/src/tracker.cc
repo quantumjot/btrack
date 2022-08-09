@@ -18,6 +18,7 @@
 #include "tracker.h"
 
 using namespace ProbabilityDensityFunctions;
+using namespace BayesianUpdateFunctions;
 
 
 
@@ -35,6 +36,9 @@ void write_belief_matrix_to_CSV(
   belief_file << a_belief.format(CSVFormat);
   belief_file.close();
 }
+
+
+
 
 
 
@@ -510,7 +514,7 @@ void BayesianTracker::cost_EXACT(
 
   // set up some variables for Bayesian updates
   double uniform_prior = 1. / (n_objects+1);
-  double prior_assign, PrDP, posterior, update;
+  double prior_assign, PrDP, posterior, update, safe_update;
 
   // start by intializing the belief matrix with a uniform prior
   if (use_uniform_prior) {
@@ -536,11 +540,14 @@ void BayesianTracker::cost_EXACT(
 
       // now do the bayesian updates
       prior_assign = v_posterior(obj);
-      PrDP = prob_assign * prior_assign + prob_not_assign * (1.-prob_assign);
-      posterior = (prob_assign * (prior_assign / PrDP));
-      update = (1. + (prior_assign-posterior)/(1.-prior_assign));
 
-      v_update.fill(update);
+      std::tie(safe_update, posterior) = BayesianUpdateFunctions::safe_bayesian_update(
+        prior_assign,
+        prob_assign,
+        prob_not_assign
+      );
+
+      v_update.fill(safe_update);
       v_update(obj) = 1.; // this means the posterior at obj will not be updated?
 
       // do the update
@@ -574,7 +581,7 @@ void BayesianTracker::cost_APPROXIMATE(
   std::clock_t t_update_start = std::clock();
 
   // set up some variables for Bayesian updates
-  double prior_assign, PrDP, posterior, update;
+  double prior_assign, PrDP, posterior, safe_update;
 
   // Posterior is a misnoma here because it is initially the prior, but
   // becomes the posterior
@@ -636,11 +643,14 @@ void BayesianTracker::cost_APPROXIMATE(
 
       // now do the bayesian updates
       prior_assign = v_posterior(local_objects[obj].second);
-      PrDP = prob_assign * prior_assign + prob_not_assign * (1.-prob_assign);
-      posterior = (prob_assign * (prior_assign / PrDP));
-      update = (1. + (prior_assign-posterior)/(1.-prior_assign));
 
-      v_update.fill(update);
+      std::tie(safe_update, posterior) = BayesianUpdateFunctions::safe_bayesian_update(
+        prior_assign,
+        prob_assign,
+        prob_not_assign
+      );
+
+      v_update.fill(safe_update);
 
       // NOTE(arl): Is this necessary?
       v_update(local_objects[obj].second) = 1.; // this means the posterior at obj will not be updated?
@@ -690,6 +700,11 @@ void BayesianTracker::link(
     Eigen::MatrixXf::Index best_object;
     double prob = belief.col(trk).maxCoeff(&best_object);
 
+    // prevents cases of NaN
+    if (std::isnan(prob)) {
+      prob = 0.0;
+    }
+
     // since we're using zero-indexing, n_objects is equivalent to the index of
     // the last object + 1, i.e. the column for the lost hypothesis...
     if (int(best_object) != int(n_objects)) {
@@ -722,6 +737,7 @@ void BayesianTracker::link(
       if (not_used.count(trk) < 1) {
         // TODO(arl): make this error more useful
         std::cout << "ERROR: Exhausted potential linkages." << std::endl;
+        continue;
       }
 
       // make sure that we only make links that are possible
@@ -763,6 +779,7 @@ void BayesianTracker::link(
       if (not_used.count(trk) < 1) {
         // TODO(arl): make this error more useful
         std::cout << "ERROR: Exhausted potential linkages." << std::endl;
+        continue;
       }
 
       // make sure that we only make links that are possible

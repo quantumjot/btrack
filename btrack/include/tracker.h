@@ -37,6 +37,7 @@
 #include "hyperbin.h"
 #include "pdf.h"
 #include "updates.h"
+#include "bayes.h"
 
 
 // #define PROB_NOT_ASSIGN 0.01
@@ -295,6 +296,5 @@ const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
 
 void write_belief_matrix_to_CSV(std::string a_filename,
                                 Eigen::Ref<Eigen::MatrixXd> a_belief);
-
 
 #endif

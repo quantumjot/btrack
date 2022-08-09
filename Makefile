@@ -31,19 +31,20 @@ VERSION_BUILD = $(shell cat $(VERSION_FILE) | cut -f3 -d.)
 
 # If your compiler is a bit older you may need to change -std=c++11 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
-GDBFLAGS = -g3 -O0 -ggdb
-CXXFLAGS = -c -std=c++11 -m64 -O3 -fPIC -I"./btrack/include" \
+LLDBFLAGS =
+CXXFLAGS = -c -std=c++11 -m64 -fPIC -I"./btrack/include" \
 					 -DDEBUG=false -DVERSION_MAJOR=$(VERSION_MAJOR) \
 					 -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_BUILD=$(VERSION_BUILD) \
 					 -DBUILD_SHARED_LIB
+OPTFLAGS = -O3
 LDFLAGS = -shared $(XLDFLAGS)
+
 
 EXE = tracker
 SRC_DIR = ./btrack/src
 OBJ_DIR = ./btrack/obj
 SRC = $(wildcard $(SRC_DIR)/*.cc)
 OBJ = $(SRC:$(SRC_DIR)/%.cc=$(OBJ_DIR)/%.o)
-
 
 # make it
 all: $(EXE)
@@ -52,7 +53,12 @@ $(EXE): $(OBJ)
 	$(CXX) $(LDFLAGS) -o ./btrack/libs/libtracker.$(EXT) $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(LLDBFLAGS) -c $< -o $@
+
+# make with debug symbols
+debug: LLDBFLAGS = -glldb
+debug: OPTFLAGS =
+debug: all
 
 clean:
 	$(RM) $(OBJ)

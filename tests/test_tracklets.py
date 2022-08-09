@@ -28,13 +28,29 @@ def test_create_object_with_properties(properties: dict):
 @pytest.mark.parametrize("properties", [{}, create_test_properties()])
 def test_object_features(properties: dict):
     """Test creating object and setting tracking features."""
-    obj, data = create_test_object()
+    obj, _ = create_test_object()
     obj.properties = properties
     assert obj.n_features == 0
     keys = list(properties.keys())
     obj.set_features(keys)
     n_keys = sum([np.asarray(p).size for p in properties.values()])
     assert obj.n_features == n_keys
+
+
+def test_object_feature_values():
+    """Test creating object with features and returning correct values."""
+    obj, _ = create_test_object()
+    properties = create_test_properties()
+    obj.properties = properties
+    keys = list(properties.keys())
+    obj.set_features(keys)
+
+    # check that the numpy data matches
+    raw_features = np.ctypeslib.as_array(obj.features, shape=(obj.n_features,))
+    flat_properties = np.concatenate(
+        [np.asarray(obj.properties[k]).ravel() for k in keys], axis=0
+    )
+    np.testing.assert_almost_equal(flat_properties, raw_features)
 
 
 def test_object_incorrect_features():

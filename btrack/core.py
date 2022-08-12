@@ -415,31 +415,17 @@ class BayesianTracker:
 
         return info_ptr.contents
 
-    def track(self) -> None:
-        """Run the actual tracking algorithm."""
+    def track_interactive(self, *args, **kwargs) -> None:
+        logger.warning(
+            "`track_interactive` will be deprecated. Use `track` instead."
+        )
+        return self.track(*args, **kwargs)
 
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
-        logger.info("Starting tracking... ")
-        ret = self._lib.track(self._engine)
-
-        # get the statistics
-        stats = self._stats(ret)
-
-        if not utils.log_error(stats.error):
-            logger.info(
-                (
-                    f"SUCCESS. Found {self.n_tracks} tracks in"
-                    f"{1+self._frame_range[1]} frames"
-                )
-            )
-
-        # can log the statistics as well
-        utils.log_stats(stats.to_dict())
-
-    def track_interactive(self, step_size: int = 100) -> None:
+    def track(
+        self,
+        *,
+        step_size: int = 100,
+    ) -> None:
         """Run the tracking in an interactive mode.
 
         Parameters
@@ -450,29 +436,24 @@ class BayesianTracker:
             of the step size provided.
         """
 
-        # TODO(arl): this needs cleaning up to have some decent output
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
         logger.info("Starting tracking... ")
 
         stats = self.step()
-        frm = 0
+        frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
                 (
-                    f"Tracking objects in frames {frm} to "
-                    f"{min(frm+step_size-1, self._frame_range[1]+1)} "
+                    f"Tracking objects in frames {frame} to "
+                    f"{min(frame+step_size-1, self._frame_range[1]+1)} "
                     f"(of {self._frame_range[1]+1})..."
                 )
             )
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
-            frm += step_size
+            frame += step_size
 
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")

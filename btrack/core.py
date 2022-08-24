@@ -463,21 +463,21 @@ class BayesianTracker:
         )
 
         stats = self.step()
-        step = 0
+        frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
                 (
-                    f"Tracking objects in frames {step} to "
-                    f"{min(step+step_size-1, self._frame_range[1]+1)} "
+                    f"Tracking objects in frames {frame} to "
+                    f"{min(frame+step_size-1, self._frame_range[1]+1)} "
                     f"(of {self._frame_range[1]+1})..."
                 )
             )
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
-            step += step_size
+            frame += step_size
 
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")

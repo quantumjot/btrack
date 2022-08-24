@@ -1,5 +1,13 @@
 Updates
 =======
+0.4.6
+-----
+- Add deprecation warning to `track_interactive`
+- Revert to python 3.7+ for compatibility
+- Remove python keywords from codebase
+- Add ability to save tracks directly to h5 files
+- Allow reading/writing of nD features to h5 files
+
 0.4.5
 -----
 - Added util to relabel masks using track ID

@@ -439,27 +439,27 @@ class Tracklet:
         return not self.children
 
     @property
-    def kalman(self):
+    def kalman(self) -> np.ndarray:
         return self._kalman
 
     @kalman.setter
-    def kalman(self, data):
+    def kalman(self, data: np.ndarray) -> None:
         assert isinstance(data, np.ndarray)
         self._kalman = data
 
-    def mu(self, index):
+    def mu(self, index: int) -> np.ndarray:
         """Return the Kalman filter mu. Note that we are only returning the mu
         for the positions (e.g. 3x1)."""
-        return np.matrix(self.kalman[index, 1:4]).reshape(3, 1)
+        return self.kalman[index, 1:4].reshape(3, 1)
 
-    def covar(self, index):
+    def covar(self, index: int) -> np.ndarray:
         """Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3)."""
-        return np.matrix(self.kalman[index, 4:13]).reshape(3, 3)
+        return self.kalman[index, 4:13].reshape(3, 3)
 
-    def predicted(self, index):
+    def predicted(self, index: int) -> np.ndarray:
         """Return the motion model prediction for the given timestep."""
-        return np.matrix(self.kalman[index, 13:]).reshape(3, 1)
+        return self.kalman[index, 13:].reshape(3, 1)
 
     def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
         """Return a dictionary of the tracklet which can be used for JSON
@@ -479,11 +479,11 @@ class Tracklet:
             tmp_track[:, idx] = np.asarray(data[key])
         return tmp_track
 
-    def in_frame(self, frame):
+    def in_frame(self, frame: int) -> bool:
         """Return true or false as to whether the track is in the frame."""
         return self.t[0] <= frame and self.t[-1] >= frame
 
-    def trim(self, frame, tail=75):
+    def trim(self, frame: int, tail: int = 75):
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)

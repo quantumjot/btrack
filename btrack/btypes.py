@@ -64,8 +64,10 @@ class PyTrackObject(ctypes.Structure):
         possible labels.
     label : int
         The label of the object.
-    prob : float
-        The probability of the label.
+    features : array
+        A vector of feature values.
+    n_features : int
+        The length of the feature vector.
 
     Attributes
     ----------
@@ -73,6 +75,10 @@ class PyTrackObject(ctypes.Structure):
         Dictionary of properties associated with this object.
     state : constants.States
         A state label for the object. See `constants.States`
+
+    Notes
+    -----
+    stackoverflow.com/questions/23329663/access-np-array-in-ctypes-struct
 
     """
 
@@ -85,16 +91,16 @@ class PyTrackObject(ctypes.Structure):
         ("dummy", ctypes.c_bool),
         ("states", ctypes.c_uint),
         ("label", ctypes.c_int),
-        ("prob", ctypes.c_double),
+        ("n_features", ctypes.c_int),
+        ("features", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __init__(self):
         super().__init__()
-        self.prob = 0
         self.dummy = False
         self.label = constants.States.NULL.value
-
-        self._raw_probability = None
+        self.states = len(constants.States)
+        self.n_features = 0
         self._properties = {}
 
     @property
@@ -109,22 +115,40 @@ class PyTrackObject(ctypes.Structure):
         self._properties.update(properties)
 
     @property
-    def probability(self):
-        return self._raw_probability
-
-    @probability.setter
-    def probability(self, probability):
-        if not isinstance(probability, np.ndarray):
-            raise TypeError(".probability should be a numpy array")
-        self._raw_probability = probability
-
-    @property
     def state(self) -> constants.States:
         return constants.States(self.label)
 
+    def set_features(self, keys: List[str]) -> None:
+        """Set features to be used by the tracking update."""
+
+        if not keys:
+            self.n_features = 0
+            return
+
+        if not all(k in self.properties.keys() for k in keys):
+            missing_features = list(
+                set(keys).difference(set(self.properties.keys()))
+            )
+            raise KeyError(f"Feature(s) missing: {missing_features}.")
+
+        # store a reference to the numpy array so that Python maintains
+        # ownership of the memory allocated to the numpy array
+        self._features = np.concatenate(
+            [np.asarray(self.properties[k]).ravel() for k in keys], axis=-1
+        ).astype(np.float64)
+
+        # NOTE(arl): do we want to normalise the features here???
+        # self._features = features / np.linalg.norm(features)
+        self.features = np.ctypeslib.as_ctypes(self._features)
+        self.n_features = len(self._features)
+
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
-        stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
+        stats = {
+            k: getattr(self, k)
+            for k, _ in PyTrackObject._fields_
+            if k not in ("features", "n_features")
+        }
         stats.update(self.properties)
         return stats
 

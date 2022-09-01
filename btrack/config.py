@@ -2,10 +2,10 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, conlist, validator
 
 from . import constants
 from .btypes import ImagingVolume
@@ -57,6 +57,13 @@ class TrackerConfig(BaseModel):
     optimizer_options: dict
         Additional options to pass to the optimizer. See `cvxopt.glpk` for more
         details of options that can be passed.
+    features : list
+        A list of feature names to be used during tracking updates. These must
+        correspond to named features found in the properties of each
+        `:py:class:btrack.btypes.PyTrackObject` in the dataset.
+    tracking_updates : list
+        A list of features to be used for tracking, such as MOTION or VISUAL.
+        Must have at least one entry.
 
     Notes
     -----
@@ -74,12 +81,31 @@ class TrackerConfig(BaseModel):
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
+    features: List[str] = []
+    tracking_updates: conlist(
+        constants.BayesianUpdateFeatures,
+        min_items=1,
+        max_items=len(constants.BayesianUpdateFeatures),
+    ) = [
+        constants.BayesianUpdateFeatures.MOTION,
+    ]
 
     @validator("volume", pre=True, always=True)
-    def parse_volume(cls, v):
+    def _parse_volume(cls, v):
         if isinstance(v, tuple):
             return ImagingVolume(*v)
         return v
+
+    @validator("tracking_updates", pre=True, always=True)
+    def _parse_tracking_updates(cls, v):
+        _tracking_updates = v
+        if all(isinstance(k, str) for k in _tracking_updates):
+            _tracking_updates = [
+                constants.BayesianUpdateFeatures[k.upper()]
+                for k in _tracking_updates
+            ]
+        _tracking_updates = list(set(_tracking_updates))
+        return _tracking_updates
 
     class Config:
         arbitrary_types_allowed = True

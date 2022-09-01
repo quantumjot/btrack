@@ -26,47 +26,6 @@
 
 
 
-// // errors
-// #define SUCCESS 900
-// #define ERROR_empty_queue 901
-// #define ERROR_no_tracks 902
-// #define ERROR_no_useable_frames 903
-// #define ERROR_track_empty 904
-// #define ERROR_incorrect_motion_model 905
-// #define ERROR_max_lost_out_of_range 906
-// #define ERROR_accuracy_out_of_range 907
-// #define ERROR_prob_not_assign_out_of_range 908
-// #define ERROR_not_defined 909
-// #define ERROR_none 910
-//
-// // constants
-// const double kInfinity = std::numeric_limits<double>::infinity();
-//
-// // constants for integrating Gaussian PDF
-// const double kRootTwo = std::sqrt(2.0);
-// const double kRootTwoPi = std::sqrt(2.0*M_PI);
-//
-//
-// // hypothesis and state types
-// // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-// #define TYPE_Pfalse 0
-// #define TYPE_Pinit 1
-// #define TYPE_Pterm 2
-// #define TYPE_Plink 3
-// #define TYPE_Pdivn 4
-// #define TYPE_Papop 5
-// #define TYPE_Pmrge 6
-// #define TYPE_Pdead 666
-// #define TYPE_undef 999
-//
-// #define STATE_interphase 0
-// #define STATE_prometaphase 1
-// #define STATE_metaphase 2
-// #define STATE_anaphase 3
-// #define STATE_apoptosis 4
-// #define STATE_null 5
-
-
 // Python structure for external interface
 extern "C" struct PyTrackObject {
   long ID;
@@ -77,8 +36,10 @@ extern "C" struct PyTrackObject {
   bool dummy;
   unsigned int states;
   unsigned int label;
-  double* probability;
+  unsigned int n_features;
+  double* features;
 };
+
 
 // Output back to Python with some tracking statistics
 extern "C" struct PyTrackInfo {
@@ -110,13 +71,14 @@ class TrackObject
 {
   public:
     // Start a new tracklet without any prior information.
-    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0) {};
+    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0), n_features(0) {};
 
     // Instantiate a track object from an existing PyTrackObject
     TrackObject(const PyTrackObject& trk) :
                 ID(trk.ID),
                 x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
-                label(trk.label), states(trk.states), probability(trk.probability)
+                label(trk.label), states(trk.states), n_features(trk.n_features),
+                features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features))
                 {};
 
     // Default destructor
@@ -132,7 +94,10 @@ class TrackObject
     bool dummy;
     unsigned int label;
     unsigned int states;
-    double* probability;
+    unsigned int n_features;
+
+    // store object features
+    Eigen::VectorXd features;
 
     // return the current position of the track object
     Eigen::Vector3d position() const {
@@ -310,8 +275,6 @@ template <typename T> class HypothesisMap
     // empty flag, reset to false if we add a hypothesis
     bool m_empty = true;
 };
-
-
 
 
 #endif

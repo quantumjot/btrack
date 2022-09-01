@@ -69,9 +69,9 @@ class BayesianTracker:
     Data can be passed in in the following formats:
 
         * numpy arrays
-        * :py:meth:`btrack.btypes.PyTrackObject`
+        * :py:class:`btrack.btypes.PyTrackObject`
         * CSV (see :py:meth:`btrack.dataio.import_CSV`)
-        * HDF (see :py:meth:`btrack.dataio.HDF5FileHandler`)
+        * HDF (see :py:class:`btrack.dataio.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
@@ -79,7 +79,7 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
     `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
-    :py:meth:`optimiser.TrackOptimiser` documentation for more information about the
+    :py:class:`optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
     Full details of the implementation can be found in [5]_ and [6]_.
@@ -397,9 +397,14 @@ class BayesianTracker:
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
-            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError("track_object must be a `PyTrackObject`")
+
+            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
+
+            # call the `obj.set_features` method for each object, which will
+            # set the pointer to the array for the tracker
+            obj.set_features(self.configuration.features)
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)
@@ -425,6 +430,9 @@ class BayesianTracker:
         self,
         *,
         step_size: int = 100,
+        tracking_updates: Optional[
+            List[Union[str, constants.BayesianUpdateFeatures]]
+        ] = None,
     ) -> None:
         """Run the tracking in an interactive mode.
 
@@ -434,9 +442,25 @@ class BayesianTracker:
             The number of tracking steps to be taken before returning summary
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
+        tracking_updates : list, optional
+            A list of tracking updates to perform. See
+            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
         """
 
         logger.info("Starting tracking... ")
+
+        if tracking_updates is not None:
+            self.configuration.tracking_updates = tracking_updates
+
+        logger.info(
+            f"Update using: {[f.name for f in self.configuration.tracking_updates]}"
+        )
+
+        # bitwise OR is equivalent to int sum here
+        self._lib.set_update_features(
+            self._engine,
+            sum([int(f.value) for f in self.configuration.tracking_updates]),
+        )
 
         stats = self.step()
         frame = 0

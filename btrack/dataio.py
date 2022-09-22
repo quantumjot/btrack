@@ -180,11 +180,7 @@ def export_delegator(
     export_dir, export_fn = os.path.split(filename)
     _, ext = os.path.splitext(filename)
 
-    if ext == ".json":
-        raise DeprecationWarning("JSON export is deprecated")
-    elif ext == ".mat":
-        raise DeprecationWarning("MATLAB export is deprecated")
-    elif ext == ".csv":
+    if ext == ".csv":
         export_CSV(filename, tracker.tracks, obj_type=obj_type)
     elif ext in (".hdf", ".hdf5", ".h5"):
         _export_HDF(filename, tracker, obj_type=obj_type, filter_by=filter_by)
@@ -204,7 +200,7 @@ def export_CSV(
     filename: os.PathLike,
     tracks: list,
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
-    obj_type=None,
+    obj_type: Optional[str] = None,
 ):
     """Export the track data as a simple CSV file.
 
@@ -238,7 +234,7 @@ def export_CSV(
             csvwriter.writerow(export_track[i, :].tolist())
 
 
-def export_LBEP(filename: str, tracks: list):
+def export_LBEP(filename: os.PathLike, tracks: list):
     """Export the LBEP table as a text file."""
     if not tracks:
         logger.error(f"No tracks found when exporting to: {filename}")
@@ -248,8 +244,7 @@ def export_LBEP(filename: str, tracks: list):
         logger.error("Tracks of incorrect type")
 
     tracks.sort(key=lambda t: t.ID)
-    if not filename.endswith(".txt"):
-        filename += ".txt"
+
     with open(filename, "w") as lbep_file:
         logger.info(f"Writing LBEP file: {filename}...")
         for track in tracks:
@@ -652,7 +647,8 @@ class HDF5FileHandler:
         logger.info(f"Loading tracks/{self.object_type}")
         track_map = self._hdf["tracks"][self.object_type]["map"][:]
         track_refs = self._hdf["tracks"][self.object_type]["tracks"][:]
-        lbep = self._hdf["tracks"][self.object_type]["LBEPR"][:]
+        # lbep = self._hdf["tracks"][self.object_type]["LBEPR"][:]
+        lbep = self.lbep
         fates = self._hdf["tracks"][self.object_type]["fates"][:]
 
         # if there are dummies, make new dummy objects
@@ -820,7 +816,7 @@ class HDF5FileHandler:
     def lbep(self) -> np.ndarray:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
-        return self._hdf["tracks"][self.obj_type]["LBEPR"][:]
+        return self._hdf["tracks"][self.object_type]["LBEPR"][:]
 
 
 if __name__ == "__main__":

@@ -647,7 +647,6 @@ class HDF5FileHandler:
         logger.info(f"Loading tracks/{self.object_type}")
         track_map = self._hdf["tracks"][self.object_type]["map"][:]
         track_refs = self._hdf["tracks"][self.object_type]["tracks"][:]
-        # lbep = self._hdf["tracks"][self.object_type]["LBEPR"][:]
         lbep = self.lbep
         fates = self._hdf["tracks"][self.object_type]["fates"][:]
 

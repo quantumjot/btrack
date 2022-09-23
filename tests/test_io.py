@@ -106,3 +106,33 @@ def test_write_tracks_only(
         for key, gt_value in gt_track.items():
             io_value = io_track[key]
             np.testing.assert_allclose(gt_value, io_value)
+
+
+def test_write_lbep(tmp_path, test_real_objects):
+    """Test writing the LBEP file."""
+    tracker = full_tracker_example(test_real_objects)
+    tracks = tracker.tracks
+
+    fn = Path(tmp_path) / "LBEP_test.txt"
+    btrack.dataio.export_LBEP(fn, tracker.tracks)
+
+    # check that the file contains the correct number of lines
+    with open(fn, "r") as lbep_file:
+        entries = lbep_file.readlines()
+    assert len(entries) == len(tracks)
+    # and that the LBEP entries match
+    for entry in entries:
+        lbep = [int(e) for e in entry.strip("/n").split()]
+        track = next(filter(lambda t: t.ID == lbep[0], tracks))
+        assert lbep == [track.ID, track.start, track.stop, track.parent]
+
+
+def test_write_hdf_segmentation(hdf5_file_path):
+    """Test writing a segmentation to the hdf file."""
+    segmentation = np.random.randint(0, 255, size=(100, 64, 64))
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
+        h.write_segmentation(segmentation)
+
+    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+        segmentation_from_file = h.segmentation
+    np.testing.assert_equal(segmentation, segmentation_from_file)

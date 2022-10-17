@@ -200,6 +200,11 @@ unsigned int BayesianTracker::initialise() {
   if (initialised)
     return SUCCESS;
 
+  if (DEBUG) {
+    std::cout << "Using motion features: " << use_motion_features() << std::endl;
+    std::cout << "Using visual features: " << use_visual_features() << std::endl;
+  }
+
   // check to make sure that we've got some objects to track
   if (objects.empty()) {
     if (verbose) {
@@ -334,7 +339,7 @@ void BayesianTracker::step(const unsigned int steps)
     if (new_objects.empty()) {
       //std::cout << "Frame " << current_frame << " is empty..." << std::endl;
       for (size_t i=0; i<n_active; i++) {
-        active[i]->append_dummy();
+        active[i]->append_dummy(use_motion_features());
       }
       step++;
       current_frame++;
@@ -713,7 +718,7 @@ void BayesianTracker::link(
 
     } else {
       // this track is probably lost, append a dummy to the trajectory
-      active[trk]->append_dummy();
+      active[trk]->append_dummy(use_motion_features());
       not_used.erase(trk);
       n_lost++;
 
@@ -803,7 +808,7 @@ void BayesianTracker::link(
 
   for (size_t i=0, update_size=to_update.size(); i<update_size; i++) {
     // update these tracks
-    active[ to_update[i] ]->append_dummy();
+    active[ to_update[i] ]->append_dummy(use_motion_features());
   }
 
   // set the timings

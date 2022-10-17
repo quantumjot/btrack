@@ -20,10 +20,11 @@
 #include "defs.h"
 
 
-
-inline bool _use_features(const unsigned int features, const unsigned int bitmask)
-{
-  unsigned int bitmask_motion = std::pow(2, bitmask);
+// use a bitmask to determine which combination of features to use
+inline bool _use_features(
+  const unsigned int features,
+  const unsigned int bitmask
+) {
   return ((features & bitmask) == bitmask);
 };
 
@@ -31,7 +32,6 @@ inline bool _use_features(const unsigned int features, const unsigned int bitmas
 // deals with setting which features to use during tracking or hypothesis
 // generation. This class is inherited by both BayesianTracker and
 // HypothesisEngine to provide a common interface
-
 class UpdateFeatures
 {
   public:

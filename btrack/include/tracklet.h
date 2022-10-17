@@ -56,7 +56,12 @@ public:
     append(new_object, true);
   }
   // append a dummy object to the trajectory in case of a missed observation
-  void append_dummy();
+  // only update the predicted position in cases where we're using a motion
+  // model, default with no args is to update the position
+  void append_dummy(const bool update_position);
+  void append_dummy() {
+    return append_dummy(true);
+  };
 
   // return the length of the trajectory
   unsigned int length() const { return track.size(); };

@@ -42,6 +42,12 @@ class InterfaceWrapper
     // set the update features to use by the tracker (e.g. motion, visual)
     void set_update_features(const unsigned int a_update_features);
 
+    // check the update mode
+    bool check_update_mode(const unsigned int a_update_mode) const;
+
+    // check the update features
+    bool check_update_features(const unsigned int a_update_features) const;
+
     // tracking and basic data handling
     void set_motion_model(const unsigned int measurements,
                           const unsigned int states,

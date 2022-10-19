@@ -485,7 +485,9 @@ class Tracklet:
         """Return the motion model prediction for the given timestep."""
         return self.kalman[index, 13:].reshape(3, 1)
 
-    def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
+    def to_dict(
+        self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
+    ) -> Dict[str, Any]:
         """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
@@ -494,20 +496,29 @@ class Tracklet:
         data.update(self.properties)
         return data
 
-    def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
-        """Return a numpy array of the tracklet which can be used for MATLAB
-        export."""
+    def to_array(
+        self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
+    ) -> np.ndarray:
+        """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
-        tmp_track = np.zeros((len(self), len(data.keys())), dtype=np.float32)
-        for idx, key in enumerate(data.keys()):
-            tmp_track[:, idx] = np.asarray(data[key])
-        return tmp_track
+        tmp_track = []
+        for key, values in data.items():
+            np_values = np.asarray(values)
+            if np_values.size == 1:
+                np_values = np.tile(np_values, len(self))
+            np_values = np.reshape(np_values, (len(self), -1))
+            tmp_track.append(np_values)
+
+        tmp_track = np.concatenate(tmp_track, axis=-1)
+        assert tmp_track.shape[0] == len(self)
+        assert tmp_track.ndim == 2
+        return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:
         """Return true or false as to whether the track is in the frame."""
         return self.t[0] <= frame and self.t[-1] >= frame
 
-    def trim(self, frame: int, tail: int = 75):
+    def trim(self, frame: int, tail: int = 75) -> Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)

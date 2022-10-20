@@ -752,7 +752,7 @@ void BayesianTracker::link(
       }
 
       // append the new object onto the track
-      active[trk]->append( new_objects[obj] );
+      active[trk]->append( new_objects[obj], use_motion_features() );
 
       // update the statistics
       statistics.p_link = lnk.second;
@@ -794,7 +794,7 @@ void BayesianTracker::link(
       }
 
       // update only this one
-      active[trk]->append( new_objects[obj] );
+      active[trk]->append( new_objects[obj], use_motion_features() );
 
       // since we've found a correspondence for this one, remove from set
       not_used.erase(trk);

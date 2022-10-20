@@ -60,7 +60,7 @@ public:
   // model, default with no args is to update the position
   void append_dummy(const bool update_position);
   void append_dummy() {
-    return append_dummy(true);
+    append_dummy(true);
   };
 
   // return the length of the trajectory

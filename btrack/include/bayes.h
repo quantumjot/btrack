@@ -28,6 +28,11 @@ namespace BayesianUpdateFunctions
     double prob_assign,
     double prob_not_assign
   );
+
+  double safe_bayesian_update_simple(
+    double prior,
+    double likelihood
+  );
 }
 
 

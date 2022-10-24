@@ -78,6 +78,12 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define PENALTY_METAPHASE_ANAPHASE_LINKING 10.0
 #define PENALTY_PROMETAPHASE_ANAPHASE_LINKING 10.0
 
+#define PRIOR_METAPHASE_ANAPHASE_ANAPHASE 1.0
+#define PRIOR_METAPHASE_ANAPHASE 0.9
+#define PRIOR_METAPHASE 0.8
+#define PRIOR_ANAPHASE_ANAPHASE 0.7
+#define PRIOR_ANAPHASE 0.5
+
 // definitions to use for countins states in the hypothesis engine
 #define COUNT_STATE_FROM_BACK true
 #define COUNT_STATE_FROM_FRONT false

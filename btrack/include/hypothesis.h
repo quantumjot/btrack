@@ -30,6 +30,7 @@
 #include "defs.h"
 #include "pdf.h"
 #include "updates.h"
+#include "bayes.h"
 
 
 

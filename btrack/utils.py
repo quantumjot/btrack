@@ -9,7 +9,7 @@ from skimage.util import map_array
 # import core
 from . import btypes, constants
 from ._localization import segmentation_to_objects
-from .constants import Dimensionality
+from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
@@ -217,10 +217,12 @@ def tracks_to_napari(
 
 
 def update_segmentation(
-    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
+    segmentation: np.ndarray,
+    tracks: list[btypes.Tracklet],
+    *,
+    color_by: str = "ID",
 ) -> np.ndarray:
-    """
-    Map btrack output tracks back into a masked array.
+    """Map tracks back into a masked array.
 
     Parameters
     ----------
@@ -229,6 +231,8 @@ def update_segmentation(
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
         A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+    color_by : str, default = "ID"
+        A value to recolor the segmentation by.
 
     Returns
     -------
@@ -236,34 +240,42 @@ def update_segmentation(
         Array containing the same masks as segmentation but relabeled to
         maintain single cell identity over time.
 
+    Notes
+    -----
+    Useful for recoloring a segmentation by a property such as track ID or
+    root tree node. Currently the property must be an integer value, greater
+    than zero.
+
     Example
     -------
-
-    import btrack
-    tracker = btrack.BayesianTracker()
-    objects = btrack.utils.segmentation_to_objects(segmentation)
-    tracker.append(objects)
-    ...
-    tracker.optimize()
-    tracks = tracker.tracks
-
-    tracked_segmentation = btrack.utils.update_segmentation(
-                                    segmentation, tracks)
+    >>> tracked_segmentation = btrack.utils.update_segmentation(
+    ...     segmentation, tracks, color_by="ID",
+    ... )
     """
+
+    keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
     coords_arr = np.concatenate(
         [
-            track.to_array()[~np.array(track.dummy)][:, :5].astype(int)
+            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
             for track in tracks
         ]
     )
+
+    if color_by not in keys:
+        raise ValueError(f"Property ``{color_by}`` not found in track.")
+
     relabeled = np.zeros_like(segmentation)
     for t, single_segmentation in enumerate(segmentation):
         frame_coords = coords_arr[coords_arr[:, 1] == t]
-        new_id, tc, xc, yc, zc = tuple(frame_coords.T)
+
+        xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
+        new_id = frame_coords[:, keys[color_by]]
+
         if single_segmentation.ndim == 2:
             old_id = single_segmentation[yc, xc]
         elif single_segmentation.ndim == 3:
+            zc = frame_coords[:, keys["z"]]
             old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (

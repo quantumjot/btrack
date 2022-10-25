@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import numpy as np
 import pytest
 
@@ -136,6 +138,19 @@ def test_update_segmentation_2d(test_segmentation_and_tracks):
     in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
     relabeled = utils.update_segmentation(in_segmentation, tracks)
     assert np.allclose(relabeled, out_segmentation)
+
+
+@pytest.mark.parametrize("color_by", ["ID", "root", "generation", "fake"])
+def test_update_segmentation_2d_colorby(
+    test_segmentation_and_tracks, color_by
+):
+    """Test relabeling a 2D-segmentation with track ID."""
+    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
+
+    with pytest.raises(ValueError) if color_by == "fake" else nullcontext():
+        _ = utils.update_segmentation(
+            in_segmentation, tracks, color_by=color_by
+        )
 
 
 def test_update_segmentation_3d(test_segmentation_and_tracks):

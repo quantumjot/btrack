@@ -252,14 +252,15 @@ def update_segmentation(
     ...     segmentation, tracks, color_by="ID",
     ... )
     """
+
+    keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
+
     coords_arr = np.concatenate(
         [
-            track.to_array()[~np.array(track.dummy)].astype(int)
+            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
             for track in tracks
         ]
     )
-
-    keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
     if color_by not in keys:
         raise ValueError(f"Property ``{color_by}`` not found in track.")

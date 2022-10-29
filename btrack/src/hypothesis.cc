@@ -16,7 +16,8 @@
 
 #include "hypothesis.h"
 
-
+using namespace BayesianUpdateFunctions;
+using namespace ProbabilityDensityFunctions;
 
 // safe log function
 double safe_log(double value)
@@ -496,12 +497,6 @@ void HypothesisEngine::hypothesis_link( TrackletPtr a_trk,
     float d = link_distance(a_trk, a_trk_lnk);
     float dt = link_time(a_trk, a_trk_lnk);
 
-    // if (trk->track.back()->label == STATE_metaphase &&
-    //     this_trk->track.front()->label == STATE_anaphase &&
-    //     DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-    //       // do nothing
-    // } else {
-
     // if we allow this link, make the hypothesis
     Hypothesis h_link(TYPE_Plink, a_trk);
     h_link.trk_link_ID = a_trk_lnk;
@@ -510,7 +505,6 @@ void HypothesisEngine::hypothesis_link( TrackletPtr a_trk,
                         + 0.5*safe_log(P_TP(a_trk_lnk));
     m_hypotheses.push_back( h_link );
 
-    // }
   }
 }
 
@@ -675,39 +669,62 @@ double HypothesisEngine::P_link(TrackletPtr a_trk,
   // make sure that we're looking forward in time, this should never be needed
   assert(dt>0.0);
 
-  // // try to not link metaphase to anaphase
-  // if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-  //   if (a_trk->track.back()->label == STATE_metaphase &&
-  //       a_trk_lnk->track.front()->label == STATE_anaphase) {
-  //
-  //     std::cout << a_trk->ID << " -> " << a_trk_lnk->ID << " forbidden M->A" << std::endl;
-  //     return m_params.eta;
-  //   }
+  // reformulate this as a Bayesian update
+  double prior;
+  double likelihood;
+  double posterior;
+
+  // default prior
+  prior = 0.5;
+
+  // try to not link metaphase to anaphase by setting prior to zero
+  if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
+    if ((a_trk->track.back()->label == STATE_metaphase) &&
+        (a_trk_lnk->track.front()->label == STATE_anaphase)) {
+      prior = 0.0;
+    }
+  }
+
+  // disallow incorrect linking by setting prior to zero
+  if (DISALLOW_PROMETAPHASE_ANAPHASE_LINKING) {
+    if ((a_trk->track.back()->label == STATE_prometaphase) &&
+        (a_trk_lnk->track.front()->label == STATE_anaphase)) {
+      // set the probability of assignment to zero
+      prior = 0.0;
+    }
+  }
+
+  // now update with the time information
+  likelihood = std::exp(-dt/m_params.lambda_link);
+  posterior = BayesianUpdateFunctions::safe_bayesian_update_simple(prior, likelihood);
+
+  // if we're using visual updates, update by the similarity
+  if (use_visual_features()){
+    likelihood = ProbabilityDensityFunctions::cosine_similarity(
+      a_trk, a_trk_lnk->track.front()
+    );
+
+    posterior = BayesianUpdateFunctions::safe_bayesian_update_simple(
+      prior, likelihood
+    );
+
+    prior = posterior;
+  }
+
+  // if we're using motion features, also link by the distance between the
+  // objects. NOTE(arl): I wonder if it's necessary to worry about this, since
+  // the hypotheses are based on the hyperbins which limit the spatial context?
+
+  // if (use_motion_features()) {
+  prior = posterior;
+  // now update with the distance information
+  likelihood = std::exp(-d/m_params.lambda_link);
+  posterior = BayesianUpdateFunctions::safe_bayesian_update_simple(
+    prior, likelihood
+  );
   // }
 
-  float link_penalty = 1.0;
-
-  // try to not link metaphase to anaphase
-  if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-    if (a_trk->track.back()->label == STATE_metaphase &&
-        a_trk_lnk->track.front()->label == STATE_anaphase) {
-      link_penalty = PENALTY_METAPHASE_ANAPHASE_LINKING;
-    }
-  }
-
-  // disallow incorrect linking
-  if (DISALLOW_PROMETAPHASE_ANAPHASE_LINKING) {
-    if (a_trk->track.back()->label == STATE_prometaphase &&
-        a_trk_lnk->track.front()->label == STATE_anaphase) {
-      // set the probability of assignment to zero
-      link_penalty = PENALTY_METAPHASE_ANAPHASE_LINKING;
-    }
-  }
-
-  // DONE(arl): need to penalise longer times between tracks, dt acts as
-  // a linear scaling penalty - scale the distance linearly by time
-  // return std::exp(-(d*dt)/m_params.lambda_link);
-  return std::exp(-(d*link_penalty)/m_params.lambda_link);
+  return posterior;
 }
 
 
@@ -734,6 +751,49 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
                                   TrackletPtr a_trk_c1) const
 {
 
+  // initialise variables
+  double prior;
+  double dot_product;
+  double likelihood;
+  double posterior;
+
+  // test which combination
+  bool parent_is_metaphase = a_trk->track.back()->label == STATE_metaphase;
+  bool both_daughters_anaphase = (
+    (a_trk_c0->track.front()->label == STATE_anaphase) &&
+    (a_trk_c1->track.front()->label == STATE_anaphase)
+  );
+  bool single_daughter_anaphase = (
+    (a_trk_c0->track.front()->label == STATE_anaphase) !=
+    (a_trk_c1->track.front()->label == STATE_anaphase)
+  );
+
+
+  // parent is metaphase
+  if (parent_is_metaphase) {
+    if (both_daughters_anaphase) {
+      prior = PRIOR_METAPHASE_ANAPHASE_ANAPHASE;
+    } else if (single_daughter_anaphase) {
+      prior = PRIOR_METAPHASE_ANAPHASE;
+    } else {
+      prior = PRIOR_METAPHASE;
+    }
+
+  // parent is not metaphase
+  } else {
+    if (both_daughters_anaphase) {
+      prior = PRIOR_ANAPHASE_ANAPHASE;
+    } else if (single_daughter_anaphase) {
+      prior = PRIOR_ANAPHASE;
+    } else {
+      // in this case, none of the criteria are satisfied
+      double weight = WEIGHT_OTHER + 10.*P_dead(a_trk_c0) + 10.*P_dead(a_trk_c1);
+
+      // return here if none of the criteria are satisfied
+      return std::exp(-weight/(2.*m_params.lambda_branch));
+    }
+  }
+
   // calculate the distance between the previous observation and both of the
   // putative children these are the normalising factors for the dot product
   // a dot product < 0 would indicate that the cells are aligned with the
@@ -743,50 +803,7 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   d_c1 = a_trk_c1->track.front()->position() - a_trk->track.back()->position();
 
   // normalise the vectors to calculate the dot product
-  double dot_product = d_c0.normalized().transpose() * d_c1.normalized();
-
-  // initialise variables
-  double daughter_angle;
-  double weight;
-
-  // parent is metaphase
-  if (a_trk->track.back()->label == STATE_metaphase) {
-    if (a_trk_c0->track.front()->label == STATE_anaphase &&
-        a_trk_c1->track.front()->label == STATE_anaphase) {
-
-        // BEST
-        weight = WEIGHT_METAPHASE_ANAPHASE_ANAPHASE;
-    } else if ( a_trk_c0->track.front()->label == STATE_anaphase ||
-                a_trk_c1->track.front()->label == STATE_anaphase ) {
-
-        // PRETTY GOOD
-        weight = WEIGHT_METAPHASE_ANAPHASE;
-    } else {
-
-      // OK
-      weight = WEIGHT_METAPHASE;
-    }
-
-  // parent is not metaphase
-  } else {
-    if (a_trk_c0->track.front()->label == STATE_anaphase &&
-        a_trk_c1->track.front()->label == STATE_anaphase) {
-
-          // PRETTY GOOD
-          weight = WEIGHT_ANAPHASE_ANAPHASE;
-    } else if ( a_trk_c0->track.front()->label == STATE_anaphase ||
-                a_trk_c1->track.front()->label == STATE_anaphase ) {
-
-          // OK
-          weight = WEIGHT_ANAPHASE;
-    } else {
-      // in this case, none of the criteria are satisfied
-      weight = WEIGHT_OTHER + 10.*P_dead(a_trk_c0) + 10.*P_dead(a_trk_c1);
-
-      // return here if none of the criteria are satisfied
-      return std::exp(-weight/(2.*m_params.lambda_branch));
-    }
-  }
+  dot_product = d_c0.normalized().transpose() * d_c1.normalized();
 
   // weighted angle between the daughter cells and the parent
   // use an erf as the weighting function
@@ -794,7 +811,13 @@ double HypothesisEngine::P_branch(TrackletPtr a_trk,
   // sides of the parent, to 1, where the daughters are close in space on the
   // same side (worst case). Error function will scale these from ~0. to ~1.
   // meaning that the ideal case minimises the weight
-  daughter_angle = 1.0 - (( 1.-std::erf(dot_product*3.) ) / 2.0);
+  //likelihood = (( 1.-std::erf(dot_product*3.) ) / 2.0);
+  likelihood = std::exp(-((1+dot_product)/2.0) / (2.*m_params.lambda_branch));
 
-  return std::exp(-(weight*daughter_angle)/(2.*m_params.lambda_branch));
+  // now do the Bayesian update
+  posterior = BayesianUpdateFunctions::safe_bayesian_update_simple(
+    prior, likelihood
+  );
+
+  return posterior;
 }

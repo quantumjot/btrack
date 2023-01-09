@@ -16,8 +16,8 @@ repos:
           - id: requirements-txt-fixer
           - id: trailing-whitespace
             args: [--markdown-linebreak-ext=md]
-    - repo: https://gitlab.com/pycqa/flake8
-      rev: 3.9.2
+    - repo: https://github.com/PyCQA/flake8
+      rev: 6.0.0
       hooks:
           - id: flake8
             # this seems to need to be here in addition to setup.cfg

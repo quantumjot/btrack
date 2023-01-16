@@ -728,8 +728,8 @@ class HDF5FileHandler:
             if not check_track_type(data):
                 raise ValueError(f"Data of type {type(data)} not supported.")
 
-            all_objects = itertools.chain.from_iterable(
-                [trk._data for trk in data]
+            all_objects = list(
+                itertools.chain.from_iterable([trk._data for trk in data])
             )
 
             objects = [obj for obj in all_objects if not obj.dummy]

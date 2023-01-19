@@ -197,10 +197,28 @@ class HDF5FileHandler:
     def filtered_objects(
         self,
         f_expr: Optional[str] = None,
+        *,
         lazy_load_properties: bool = True,
+        exclude_properties: List[str] = [],
     ) -> List[btypes.PyTrackObject]:
-        """A filtered list of objects based on metadata. f_expr should be of the
-        format `flag==1`."""
+        """A filtered list of objects based on metadata.
+
+        Parameters
+        ----------
+        f_expr : str
+            A string representing a filtering option. For example, `area>100`
+            would filter objects by a property key `area` where the numerical
+            value of area was greater than 100.
+        lazy_load_properties : bool
+            For future expansion. To allow lazy loading of large datasets.
+        exclude_properties : list
+            A list of properties keys to exclude when loading from disk.
+
+        Returns
+        -------
+        objects : list
+            A list of :py:class:`btrack.btypes.PyTrackObject` objects.
+        """
 
         if self.object_type not in self.object_types:
             raise ValueError(f"Object type {self.object_type} not recognized")
@@ -218,10 +236,13 @@ class HDF5FileHandler:
         # get properties if we have them (note, this assumes that the same
         # properties exist for each object)
         properties = {}
-        if "properties" in grp:
-            properties = {
-                k: grp["properties"][k][:] for k in grp["properties"]
-            }
+        if "properties" in grp.keys():
+            p_keys = list(
+                set(grp["properties"].keys()).difference(
+                    set(exclude_properties)
+                )
+            )
+            properties = {k: grp["properties"][k][:] for k in p_keys}
             assert all([len(p) == len(txyz) for p in properties.values()])
 
         # note that this doesn't do much error checking at the moment
@@ -236,15 +257,8 @@ class HDF5FileHandler:
 
             f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
-            # old files have these stored differently
-            if "properties" in grp.keys():
-                property_group = grp["properties"]
-            else:
-                property_group = grp
-
-            if m["name"] in property_group.keys():
-                # logger.info(f"Property {m['name']} found in {property_group}.")
-                data = property_group[m["name"]][:]
+            if m["name"] in properties.keys():
+                data = properties[m["name"]]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")

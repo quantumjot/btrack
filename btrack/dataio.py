@@ -1,5 +1,5 @@
 raise DeprecationWarning(
-    "dataio has been deprecated. Please us `btrack.io` subpackage instead."
+    "`btrack.dataio` has been deprecated. Please us `btrack.io` subpackage instead."
 )
 
 

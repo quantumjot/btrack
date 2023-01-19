@@ -97,7 +97,7 @@ def create_realistic_tracklet(
         ),
     }
 
-    objects = btrack.dataio.objects_from_dict(data)
+    objects = btrack.io.objects_from_dict(data)
     track = btrack.btypes.Tracklet(track_ID, objects)
     return track
 
@@ -240,7 +240,7 @@ def simple_tracker_example() -> Tuple[btrack.BayesianTracker, Dict[str, Any]]:
     z = np.zeros(x.shape)
 
     objects_dict = {"x": x, "y": y, "z": z, "t": t}
-    objects = btrack.dataio.objects_from_dict(objects_dict)
+    objects = btrack.io.objects_from_dict(objects_dict)
 
     tracker = full_tracker_example(objects)
     return tracker, objects_dict

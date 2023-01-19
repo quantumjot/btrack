@@ -8,8 +8,8 @@ from skimage.util import map_array
 
 # import core
 from . import btypes, constants
-from ._localization import segmentation_to_objects
 from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
+from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API

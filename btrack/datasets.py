@@ -6,7 +6,7 @@ import pooch
 from skimage.io import imread
 
 from .btypes import PyTrackObject
-from .dataio import import_CSV
+from .io import import_CSV
 
 BASE_URL = (
     "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"

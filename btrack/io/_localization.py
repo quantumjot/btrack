@@ -7,9 +7,9 @@ from typing import Generator, List, Optional, Tuple, Union
 import numpy as np
 from skimage.measure import label, regionprops_table
 
-from . import btypes
-from .constants import Dimensionality
-from .dataio import localizations_to_objects
+from .. import btypes
+from ..constants import Dimensionality
+from .utils import localizations_to_objects
 
 # get the logger instance
 logger = logging.getLogger(__name__)

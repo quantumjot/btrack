@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 
 from . import btypes, config, constants, libwrapper, models, utils
-from .dataio import export_delegator, localizations_to_objects
+from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
 __version__ = constants.get_version()

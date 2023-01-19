@@ -7,7 +7,7 @@ API Reference
 
 .. automodapi:: btrack.models
 
-.. automodapi:: btrack.dataio
+.. automodapi:: btrack.io
 
 .. automodapi:: btrack.utils
    :allowed-package-names: btrack._localization, btrack.utils

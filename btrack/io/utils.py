@@ -74,7 +74,9 @@ def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
 
 
 def objects_from_array(
-    objects_arr: np.ndarray, default_keys=constants.DEFAULT_OBJECT_KEYS
+    objects_arr: np.ndarray,
+    *,
+    default_keys: List[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
     assert objects_arr.ndim == 2

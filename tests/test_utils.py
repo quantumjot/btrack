@@ -4,6 +4,8 @@ import numpy as np
 import pytest
 
 from btrack import btypes, utils
+from btrack.constants import DEFAULT_OBJECT_KEYS
+from btrack.io import objects_from_array
 
 from ._utils import create_test_image, create_test_tracklet
 
@@ -218,3 +220,27 @@ def test_tracks_to_napari_incorrect_ndim(ndim: int):
 
     with pytest.raises(ValueError):
         data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
+
+
+def test_objects_from_array(test_objects):
+    """Test creation of a list of objects from a numpy array."""
+
+    obj_arr = np.stack(
+        [
+            [getattr(obj, k) for k in DEFAULT_OBJECT_KEYS]
+            for obj in test_objects
+        ],
+        axis=0,
+    )
+
+    obj_from_arr = objects_from_array(obj_arr)
+
+    assert obj_arr.shape[0] == len(test_objects)
+    assert obj_arr.shape[-1] == len(DEFAULT_OBJECT_KEYS)
+
+    assert len(obj_from_arr) == len(test_objects)
+
+    for test_obj, obj in zip(test_objects, obj_from_arr):
+        assert isinstance(obj, btypes.PyTrackObject)
+        for key in DEFAULT_OBJECT_KEYS:
+            assert getattr(test_obj, key) == getattr(obj, key)

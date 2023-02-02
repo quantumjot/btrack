@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, Sequence, Union
 from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation
 
-from btrack.dataio import HDF5FileHandler
+from btrack.io import HDF5FileHandler
 from btrack.utils import tracks_to_napari
 
 # Type definitions

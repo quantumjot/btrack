@@ -8,7 +8,7 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 
 from . import btypes, config, constants, libwrapper, models, utils
-from .dataio import export_delegator, localizations_to_objects
+from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
 __version__ = constants.get_version()
@@ -70,8 +70,8 @@ class BayesianTracker:
 
         * numpy arrays
         * :py:class:`btrack.btypes.PyTrackObject`
-        * CSV (see :py:meth:`btrack.dataio.import_CSV`)
-        * HDF (see :py:class:`btrack.dataio.HDF5FileHandler`)
+        * CSV (see :py:meth:`btrack.io.import_CSV`)
+        * HDF (see :py:class:`btrack.io.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original

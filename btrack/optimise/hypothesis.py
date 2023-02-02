@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 
-from btrack import constants
+from .. import constants
 
 H_TYPES = [
     "P_FP",

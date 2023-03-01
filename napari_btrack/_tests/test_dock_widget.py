@@ -95,9 +95,9 @@ def test_reset_button(track_widget):
 
 
 @pytest.fixture
-def simplistic_tracker_outputs() -> Tuple[
-    npt.NDArray, Dict[str, npt.NDArray], Dict[int, list]
-]:
+def simplistic_tracker_outputs() -> (
+    Tuple[npt.NDArray, Dict[str, npt.NDArray], Dict[int, list]]
+):
     """Provides simplistic return values of a btrack run.
 
     They have the correct types and dimensions, but contain zeros.

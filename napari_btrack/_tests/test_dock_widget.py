@@ -1,19 +1,20 @@
 import json
-from typing import Dict, Tuple
 from unittest.mock import patch
 
+import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
 from magicgui.widgets import Container
 
-import napari
-
 from btrack import datasets
 from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
-
-from ..track import _update_widgets_from_config, _widgets_to_tracker_config, track
+from napari_btrack.track import (
+    _update_widgets_from_config,
+    _widgets_to_tracker_config,
+    track,
+)
 
 
 def test_add_widget(make_napari_viewer):
@@ -96,7 +97,7 @@ def test_reset_button(track_widget):
 
 @pytest.fixture
 def simplistic_tracker_outputs() -> (
-    Tuple[npt.NDArray, Dict[str, npt.NDArray], Dict[int, list]]
+    tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
 ):
     """Provides simplistic return values of a btrack run.
 
@@ -105,7 +106,7 @@ def simplistic_tracker_outputs() -> (
     """
     N, D = 10, 3
     data = np.zeros((N, D + 1))
-    properties = dict(some_property=np.zeros((N)))
+    properties = {"some_property": np.zeros(N)}
     graph = {0: [0]}
     return data, properties, graph
 

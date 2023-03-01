@@ -215,7 +215,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
             widgets.append(
                 create_widget(value=sigma, name=f"{parameter}_sigma", annotation=float)
             )
-        if parameter == "hypotheses":
+        elif parameter == "hypotheses":
             # the hypothesis list should be represented as a series of checkboxes
             widgets.extend(
                 [

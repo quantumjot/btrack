@@ -44,7 +44,7 @@ class Matrices:
     doesn't store sigma and the "unscaled" matrix separately.
     """
 
-    names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R"])
+    names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R", "Q"])
     default_sigmas: List[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
@@ -83,6 +83,16 @@ class Matrices:
             ),
             G=np.array([[0.5, 0.5, 0.5, 1, 1, 1]]),
             R=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+            Q=np.array(
+                [
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                ]
+            )
         )
     )
 
@@ -205,7 +215,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
             widgets.append(
                 create_widget(value=sigma, name=f"{parameter}_sigma", annotation=float)
             )
-        if parameter == "hypotheses":
+        elif parameter == "hypotheses":
             # the hypothesis list should be represented as a series of checkboxes
             widgets.extend(
                 [

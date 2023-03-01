@@ -44,7 +44,7 @@ class Matrices:
     doesn't store sigma and the "unscaled" matrix separately.
     """
 
-    names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R"])
+    names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R", "Q"])
     default_sigmas: List[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
@@ -83,6 +83,16 @@ class Matrices:
             ),
             G=np.array([[0.5, 0.5, 0.5, 1, 1, 1]]),
             R=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+            Q=np.array(
+                [
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                    [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
+                ]
+            )
         )
     )
 

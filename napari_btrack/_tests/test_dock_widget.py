@@ -1,19 +1,25 @@
+from __future__ import annotations
+
 import json
-from typing import Dict, Tuple
 from unittest.mock import patch
 
+import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
 from magicgui.widgets import Container
 
-import napari
-
 from btrack import datasets
 from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
+from napari_btrack.track import (
+    _update_widgets_from_config,
+    _widgets_to_tracker_config,
+    track,
+)
 
-from ..track import _update_widgets_from_config, _widgets_to_tracker_config, track
+OLD_WIDGET_LAYERS = 1
+NEW_WIDGET_LAYERS = 2
 
 
 def test_add_widget(make_napari_viewer):
@@ -21,7 +27,7 @@ def test_add_widget(make_napari_viewer):
     viewer = make_napari_viewer()
     num_dw = len(list(viewer.window._dock_widgets))
     viewer.window.add_function_widget(function=track)
-    assert len(list(viewer.window._dock_widgets)) == num_dw + 1
+    assert len(list(viewer.window._dock_widgets)) == num_dw + 1  # noqa: S101
 
 
 @pytest.fixture
@@ -40,7 +46,9 @@ def test_config_to_widgets_round_trip(track_widget, config):
     _update_widgets_from_config(track_widget, expected_config)
     actual_config = _widgets_to_tracker_config(track_widget)
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(actual_config.json()) == json.loads(expected_config.json())
+    assert json.loads(actual_config.json()) == json.loads(  # noqa: S101
+        expected_config.json()
+    )
 
 
 @pytest.fixture
@@ -58,9 +66,9 @@ def test_save_button(user_config_path, track_widget):
     ) as get_save_path:
         get_save_path.return_value = user_config_path
         track_widget.save_config_button.clicked()
-    assert save_config.call_args[0][0] == user_config_path
+    assert save_config.call_args[0][0] == user_config_path  # noqa: S101
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(save_config.call_args[0][1].json()) == json.loads(
+    assert json.loads(save_config.call_args[0][1].json()) == json.loads(  # noqa: S101
         load_config(cell_config()).json()
     )
 
@@ -74,7 +82,7 @@ def test_load_button(user_config_path, track_widget):
     ) as get_load_path:
         get_load_path.return_value = user_config_path
         track_widget.load_config_button.clicked()
-    assert load_config.call_args[0][0] == user_config_path
+    assert load_config.call_args[0][0] == user_config_path  # noqa: S101
 
 
 def test_reset_button(track_widget):
@@ -89,23 +97,23 @@ def test_reset_button(track_widget):
     config_after_reset = _widgets_to_tracker_config(track_widget)
 
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(config_after_reset.json()) == json.loads(
+    assert json.loads(config_after_reset.json()) == json.loads(  # noqa: S101
         load_config(cell_config()).json()
     )
 
 
 @pytest.fixture
-def simplistic_tracker_outputs() -> Tuple[
-    npt.NDArray, Dict[str, npt.NDArray], Dict[int, list]
-]:
+def simplistic_tracker_outputs() -> (
+    tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
+):
     """Provides simplistic return values of a btrack run.
 
     They have the correct types and dimensions, but contain zeros.
     Useful for mocking the tracker.
     """
-    N, D = 10, 3
-    data = np.zeros((N, D + 1))
-    properties = dict(some_property=np.zeros((N)))
+    n, d = 10, 3
+    data = np.zeros((n, d + 1))
+    properties = {"some_property": np.zeros(n)}
     graph = {0: [0]}
     return data, properties, graph
 
@@ -118,8 +126,10 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         run_tracker.return_value = simplistic_tracker_outputs
         segmentation = datasets.example_segmentation()
         track_widget.viewer.add_labels(segmentation)
-        assert len(track_widget.viewer.layers) == 1
+        assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS  # noqa: S101
         track_widget.call_button.clicked()
-    assert run_tracker.called
-    assert len(track_widget.viewer.layers) == 2
-    assert isinstance(track_widget.viewer.layers[-1], napari.layers.Tracks)
+    assert run_tracker.called  # noqa: S101
+    assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS  # noqa: S101
+    assert isinstance(  # noqa: S101
+        track_widget.viewer.layers[-1], napari.layers.Tracks
+    )

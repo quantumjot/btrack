@@ -1,29 +1,45 @@
-[tool.black]
-target-version = ['py38', 'py39', 'py310']
-skip-string-normalization = false
-line-length = 88
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | build
-    | dist
-    | examples
-  )/
-)
-'''
+[tool.mypy]
+plugins = [
+    "numpy.typing.mypy_plugin",
+    "pydantic.mypy",
+]
 
-[tool.isort]
-profile = "black"
-length_sort = "False"
-length_sort_sections = "stdlib"
-known_first_party = "btrack"
-known_napari = "napari"
-sections = ["STDLIB", "THIRDPARTY", "NAPARI", "FIRSTPARTY", "LOCALFOLDER"]
-skip_gitignore = "True"
+[tool.ruff]
+fix = true
+force-exclude = true
+ignore = [
+    "B905", # python>=3.10
+]
+select = [
+    "A",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+isort.known-first-party = ["btrack"]
+mccabe.max-complexity = 18
+
+[tool.tomlsort]
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true

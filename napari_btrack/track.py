@@ -1,6 +1,10 @@
-from typing import Any, Dict, List, Tuple, Union
-from dataclasses import field, dataclass
+from __future__ import annotations
 
+import logging
+from dataclasses import dataclass, field
+from typing import Any
+
+import napari
 import numpy as np
 import numpy.typing as npt
 from magicgui.application import use_app
@@ -8,8 +12,6 @@ from magicgui.types import FileDialogMode
 from magicgui.widgets import Container, PushButton, Widget, create_widget
 from pydantic import BaseModel
 from PyQt5.QtWidgets import QScrollArea
-
-import napari
 
 import btrack
 from btrack import datasets
@@ -44,13 +46,13 @@ class Matrices:
     doesn't store sigma and the "unscaled" matrix separately.
     """
 
-    names: List[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R", "Q"])
-    default_sigmas: List[float] = field(
+    names: list[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R", "Q"])
+    default_sigmas: list[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
-    unscaled_matrices: Dict[str, npt.NDArray[np.float64]] = field(
-        default_factory=lambda: dict(
-            A_cell=np.array(
+    unscaled_matrices: dict[str, npt.NDArray[np.float64]] = field(
+        default_factory=lambda: {
+            "A_cell": np.array(
                 [
                     [1, 0, 0, 1, 0, 0],
                     [0, 1, 0, 0, 1, 0],
@@ -60,7 +62,7 @@ class Matrices:
                     [0, 0, 0, 0, 0, 1],
                 ]
             ),
-            A_particle=np.array(
+            "A_particle": np.array(
                 [
                     [1, 0, 0, 0, 0, 0],
                     [0, 1, 0, 0, 0, 0],
@@ -70,8 +72,8 @@ class Matrices:
                     [0, 0, 0, 0, 0, 1],
                 ]
             ),
-            H=np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0]]),
-            P=np.array(
+            "H": np.array([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0]]),
+            "P": np.array(
                 [
                     [0.1, 0, 0, 0, 0, 0],
                     [0, 0.1, 0, 0, 0, 0],
@@ -81,9 +83,9 @@ class Matrices:
                     [0, 0, 0, 0, 0, 1],
                 ]
             ),
-            G=np.array([[0.5, 0.5, 0.5, 1, 1, 1]]),
-            R=np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
-            Q=np.array(
+            "G": np.array([[0.5, 0.5, 0.5, 1, 1, 1]]),
+            "R": np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]]),
+            "Q": np.array(
                 [
                     [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
                     [56.25, 56.25, 56.25, 112.5, 112.5, 112.5],
@@ -92,14 +94,14 @@ class Matrices:
                     [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
                     [112.5, 112.5, 112.5, 225.0, 225.0, 225.0],
                 ]
-            )
-        )
+            ),
+        }
     )
 
     @classmethod
     def get_scaled_matrix(
         cls, name: str, *, sigma: float, use_cell_config: bool = True
-    ) -> List[float]:
+    ) -> list[float]:
         """Returns the scaled version (i.e. the unscaled matrix multiplied by sigma)
         of the matrix.
 
@@ -109,10 +111,7 @@ class Matrices:
         cell -- whether to use cell config matrices or not (default true)
         """
         if name == "A":
-            if use_cell_config:
-                name = "A_cell"
-            else:
-                name = "A_particle"
+            name = "A_cell" if use_cell_config else "A_particle"
         return (np.asarray(cls().unscaled_matrices[name]) * sigma).tolist()
 
     @classmethod
@@ -133,9 +132,9 @@ class Matrices:
 
 
 def run_tracker(
-    segmentation: Union[napari.layers.Image, napari.layers.Labels],
+    segmentation: napari.layers.Image | napari.layers.Labels,
     tracker_config: TrackerConfig,
-) -> Tuple[npt.NDArray, dict, dict]:
+) -> tuple[npt.NDArray, dict, dict]:
     """
     Runs BayesianTracker with given segmentation and configuration.
     """
@@ -151,7 +150,7 @@ def run_tracker(
         # btrack order of dimensions is XY(Z)
         # napari order of dimensions is T(Z)XY
         # so we ignore the first entry and then iterate backwards
-        tracker.volume = tuple([(0, s) for s in segmentation_size[1:][::-1]])
+        tracker.volume = tuple((0, s) for s in segmentation_size[1:][::-1])
 
         # track them (in interactive mode)
         tracker.track_interactive(step_size=100)
@@ -167,44 +166,42 @@ def run_tracker(
 def get_save_path():
     """Helper function to open a save configuration file dialog."""
     show_file_dialog = use_app().get_obj("show_file_dialog")
-    save_path = show_file_dialog(
+    return show_file_dialog(
         mode=FileDialogMode.OPTIONAL_FILE,
         caption="Specify file to save btrack configuration",
         start_path=None,
         filter="*.json",
     )
-    return save_path
 
 
 def get_load_path():
     """Helper function to open a load configuration file dialog."""
     show_file_dialog = use_app().get_obj("show_file_dialog")
-    load_path = show_file_dialog(
+    return show_file_dialog(
         mode=FileDialogMode.EXISTING_FILE,
         caption="Choose JSON file containing btrack configuration",
         start_path=None,
         filter="*.json",
     )
-    return load_path
 
 
 def html_label_widget(label: str, tag: str = "b") -> dict:
     """
     Create a HMTL label widget.
     """
-    return dict(
-        widget_type="Label",
-        label=f"<{tag}>{label}</{tag}>",
-    )
+    return {
+        "widget_type": "Label",
+        "label": f"<{tag}>{label}</{tag}>",
+    }
 
 
-def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
+def _create_per_model_widgets(model: BaseModel) -> list[Widget]:
     """
     For a given model create the required list of widgets.
     The items "hypotheses" and the various matrices need customisation,
     otherwise we can use the napari default.
     """
-    widgets: List[Widget] = []
+    widgets: list[Widget] = []
     widgets.append(create_widget(**html_label_widget(type(model).__name__)))
     for parameter, default_value in model:
         if parameter in HIDDEN_VARIABLE_NAMES:
@@ -234,7 +231,7 @@ def _create_per_model_widgets(model: BaseModel) -> List[Widget]:
     return widgets
 
 
-def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
+def _create_napari_specific_widgets(widgets: list[Widget]) -> None:
     """
     Add the widgets which interact with napari itself
     """
@@ -242,18 +239,18 @@ def _create_napari_specific_widgets(widgets: List[Widget]) -> None:
     segmentation_widget = create_widget(
         name="segmentation",
         annotation=napari.layers.Labels,
-        options=dict(
-            tooltip=(
+        options={
+            "tooltip": (
                 "Should be a Labels layer. Convert an Image to Labels by right-clicking"
                 "on it in the layers list, and clicking on 'Convert to Labels'"
             ),
-        ),
+        },
     )
     widgets.append(segmentation_widget)
 
 
 def _create_pydantic_default_widgets(
-    widgets: List[Widget], config: TrackerConfig
+    widgets: list[Widget], config: TrackerConfig
 ) -> None:
     """
     Create the widgets which have a tracker config equivalent.
@@ -266,7 +263,7 @@ def _create_pydantic_default_widgets(
     widgets.extend([item for sublist in model_widgets for item in sublist])
 
 
-def _create_cell_or_particle_widget(widgets: List[Widget]) -> None:
+def _create_cell_or_particle_widget(widgets: list[Widget]) -> None:
     """Create a dropdown menu to choose between cell or particle mode."""
     widgets.append(create_widget(**html_label_widget("Mode")))
     widgets.append(
@@ -278,17 +275,16 @@ def _create_cell_or_particle_widget(widgets: List[Widget]) -> None:
 
 def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     """Helper function to convert from the widgets to a tracker configuration."""
-    motion_model_dict: Dict[str, Any] = {}
+    motion_model_dict: dict[str, Any] = {}
     hypothesis_model_dict = {}
 
-    motion_model_keys = getattr(default_cell_config, "motion_model").dict().keys()
-    hypothesis_model_keys = (
-        getattr(default_cell_config, "hypothesis_model").dict().keys()
-    )
+    motion_model_keys = default_cell_config.motion_model.dict().keys()
+    hypothesis_model_keys = default_cell_config.hypothesis_model.dict().keys()
     hypotheses = []
     for widget in container:
         # setup motion model
-        if widget.name in Matrices().names:  # matrices need special treatment
+        # matrices need special treatment
+        if widget.name in Matrices().names:
             sigma = getattr(container, f"{widget.name}_sigma").value
             matrix = Matrices.get_scaled_matrix(
                 widget.name,
@@ -296,18 +292,17 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
                 use_cell_config=(container.mode.value == "cell"),
             )
             motion_model_dict[widget.name] = matrix
-        else:
-            if widget.name in motion_model_keys:
-                motion_model_dict[widget.name] = widget.value
+        elif widget.name in motion_model_keys:
+            motion_model_dict[widget.name] = widget.value
         # setup hypothesis model
         if widget.name in hypothesis_model_keys:
             hypothesis_model_dict[widget.name] = widget.value
-        if widget.name in ALL_HYPOTHESES:  # hypotheses need special treatment
-            if getattr(container, widget.name).value:
-                hypotheses.append(widget.name)
+        # hypotheses need special treatment
+        if widget.name in ALL_HYPOTHESES and getattr(container, widget.name).value:
+            hypotheses.append(widget.name)
 
     # add some non-exposed default values to the motion model
-    mode = getattr(container, "mode").value
+    mode = container.mode.value
     for default_name, default_value in zip(
         ["measurements", "states", "dt", "prob_not_assign", "name"],
         [3, 6, 1.0, 0.001, f"{mode}_motion"],
@@ -316,7 +311,8 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
 
     # add some non-exposed default value to the hypothesis model
     for default_name, default_value in zip(
-        ["apoptosis_rate", "eta", "name"], [0.001, 1.0e-10, f"{mode}_hypothesis"]
+        ["apoptosis_rate", "eta", "name"],
+        [0.001, 1.0e-10, f"{mode}_hypothesis"],
     ):
         hypothesis_model_dict[default_name] = default_value
 
@@ -326,7 +322,7 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     hypothesis_model = HypothesisModel(**hypothesis_model_dict)
 
     # add parameters outside the internal models
-    max_search_radius = getattr(container, "max_search_radius").value
+    max_search_radius = container.max_search_radius.value
     return TrackerConfig(
         max_search_radius=max_search_radius,
         motion_model=motion_model,
@@ -338,10 +334,9 @@ def _update_widgets_from_config(container: Container, config: TrackerConfig) -> 
     """Helper function to update a container's widgets
     with the values in a given tracker config.
     """
-    getattr(container, "max_search_radius").value = config.max_search_radius
+    container.max_search_radius.value = config.max_search_radius
     for model in ["motion_model", "hypothesis_model", "object_model"]:
-        model_config = getattr(config, model)
-        if model_config:
+        if model_config := getattr(config, model):
             for parameter, value in model_config:
                 if parameter in HIDDEN_VARIABLE_NAMES:
                     continue
@@ -357,11 +352,11 @@ def _update_widgets_from_config(container: Container, config: TrackerConfig) -> 
     # by checking whether the 4th entry of the first row of the
     # A matrix is 1 or 0 (1 for cell mode)
     mode_is_cell = config.motion_model.A[0, 3] == 1
-    print("mode is cell: ", mode_is_cell)
+    logging.info(f"mode is cell: {mode_is_cell}")
     container.mode.value = "cell" if mode_is_cell else "particle"
 
 
-def _create_button_widgets(widgets: List[Widget]) -> None:
+def _create_button_widgets(widgets: list[Widget]) -> None:
     """Create the set of button widgets needed:
     run, save/load configuration and reset."""
     widget_names = [
@@ -380,7 +375,10 @@ def _create_button_widgets(widgets: List[Widget]) -> None:
     widgets.extend(
         [
             create_widget(name=widget_name, label=widget_label, widget_type=PushButton)
-            for widget_name, widget_label in zip(widget_names, widget_labels)
+            for widget_name, widget_label in zip(
+                widget_names,
+                widget_labels,
+            )
         ]
     )
 

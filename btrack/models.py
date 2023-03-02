@@ -209,7 +209,7 @@ class HypothesisModel(BaseModel):
     name : str
         A name identifier for the model.
     hypotheses : list[str]
-        A list of hypotheses to be generated. See `optimise.hypothesis.H_TYPES`.
+        A list of hypotheses to be generated. See `btrack.optimise.hypothesis.H_TYPES`.
     lambda_time : float
         A scaling factor for the influence of time when determining
         initialization or termination hypotheses. See notes.

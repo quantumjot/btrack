@@ -77,7 +77,7 @@ class PyTrackObject(ctypes.Structure):
     properties : Dict[str, Union[int, float]]
         Dictionary of properties associated with this object.
     state : constants.States
-        A state label for the object. See `constants.States`
+        A state label for the object. See `btrack.constants.States`
 
     Notes
     -----
@@ -185,7 +185,7 @@ class PyTrackingInfo(ctypes.Structure):
     Parameters
     ----------
     error : int
-        Error code from the tracker. See `constants.Errors` for definitions.
+        Error code from the tracker. See `btrack.constants.Errors` for definitions.
     n_tracks : int
         Total number of tracks initialised during tracking.
     n_active : int

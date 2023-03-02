@@ -75,8 +75,8 @@ class BayesianTracker:
 
         * numpy arrays
         * :py:class:`btrack.btypes.PyTrackObject`
-        * CSV (see :py:meth:`btrack.io.import_CSV`)
-        * HDF (see :py:class:`btrack.io.HDF5FileHandler`)
+        * CSV (see :py:meth:`btrack.io.importers.import_CSV`)
+        * HDF (see :py:class:`btrack.io.hdf.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original

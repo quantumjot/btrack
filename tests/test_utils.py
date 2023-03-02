@@ -5,7 +5,7 @@ import pytest
 
 from btrack import btypes, utils
 from btrack.constants import DEFAULT_OBJECT_KEYS
-from btrack.io import objects_from_array
+from btrack.io.utils import objects_from_array
 from tests._utils import create_test_image, create_test_tracklet
 
 TWO_DIM = 2

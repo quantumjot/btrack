@@ -28,11 +28,11 @@ class TrackerConfig(BaseModel):
     verbose : bool
         A flag to set the verbosity level while logging the output.
     motion_model : Optional[MotionModel]
-        The `btrack` motion model. See `models.MotionModel` for more details.
+        The `btrack` motion model. See `btrack.models.MotionModel` for more details.
     object_model : Optional[ObjectModel]
-        The `btrack` object model. See `models.ObjectModel` for more details.
+        The `btrack` object model. See `btrack.models.ObjectModel` for more details.
     hypothesis_model : Optional[HypothesisModel]
-        The `btrack` hypothesis model. See `models.HypothesisModel` for more
+        The `btrack` hypothesis model. See `btrack.models.HypothesisModel` for more
         details.
     max_search_radius : float
         The maximum search radius of the algorithm in isotropic units of the

@@ -204,11 +204,11 @@ def tracks_to_napari(
 
 
 def update_segmentation(
-    segmentation: np.ndarray,
+    segmentation: npt.NDArray,
     tracks: list[btypes.Tracklet],
     *,
     color_by: str = "ID",
-) -> np.ndarray:
+) -> npt.NDArray:
     """Map tracks back into a masked array.
 
     Parameters

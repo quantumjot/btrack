@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import ctypes
 import itertools
 import logging
@@ -5,6 +7,7 @@ import os
 import warnings
 
 import numpy as np
+from numpy import typing as npt
 
 from btrack import btypes, config, constants, libwrapper, models, utils
 from btrack.io.exporters import export_delegator
@@ -381,7 +384,7 @@ class BayesianTracker:
         """Return the list of objects added through the append method."""
         return self._objects
 
-    def append(self, objects: list[btypes.PyTrackObject] | np.ndarray) -> None:
+    def append(self, objects: list[btypes.PyTrackObject] | npt.NDArray) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
@@ -389,7 +392,7 @@ class BayesianTracker:
 
         Parameters
         ----------
-        objects : list, np.ndarray
+        objects : list, npt.NDArray
             A list of objects to track.
         """
 
@@ -660,7 +663,7 @@ class BayesianTracker:
         *,
         replace_nan: bool = True,
         ndim: int | None = None,
-    ) -> tuple[np.ndarray, dict, dict]:
+    ) -> tuple[npt.NDArray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 

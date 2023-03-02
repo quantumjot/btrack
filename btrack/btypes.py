@@ -20,6 +20,7 @@ from collections import OrderedDict
 from typing import Any, NamedTuple
 
 import numpy as np
+from numpy import typing as npt
 
 from btrack import constants
 
@@ -281,7 +282,7 @@ class Tracklet:
     softmax : list[float]
         If defined, return the softmax score for the label of each object in the
         track.
-    properties : Dict[str, np.ndarray]
+    properties : Dict[str, npt.NDArray]
         Return a dictionary of track properties derived from
         :py:class:`btrack.btypes.PyTrackObject` properties.
     root : int,
@@ -294,7 +295,7 @@ class Tracklet:
         First time stamp of track.
     stop : int, float
         Last time stamp of track.
-    kalman : np.ndarray
+    kalman : npt.NDArray
         Return the complete output of the kalman filter for this track. Note,
         that this may not have been returned while from the tracker. See
         :py:attr:`btrack.BayesianTracker.return_kalman` for more details.
@@ -345,7 +346,7 @@ class Tracklet:
         return _pandas_html_repr(self)
 
     @property
-    def properties(self) -> dict[str, np.ndarray]:
+    def properties(self) -> dict[str, npt.NDArray]:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
         keys = set()
@@ -381,13 +382,13 @@ class Tracklet:
                     "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
-            if not isinstance(v, np.ndarray):
+            if not isinstance(v, npt.NDArray):
                 properties[k] = np.asarray(v)
 
         return properties
 
     @properties.setter
-    def properties(self, properties: dict[str, np.ndarray]):
+    def properties(self, properties: dict[str, npt.NDArray]):
         """Store properties associated with this Tracklet."""
         # TODO(arl): this will need to set the object properties
         pass
@@ -452,25 +453,25 @@ class Tracklet:
         return not self.children
 
     @property
-    def kalman(self) -> np.ndarray:
+    def kalman(self) -> npt.NDArray:
         return self._kalman
 
     @kalman.setter
-    def kalman(self, data: np.ndarray) -> None:
-        assert isinstance(data, np.ndarray)
+    def kalman(self, data: npt.NDArray) -> None:
+        assert isinstance(data, npt.NDArray)
         self._kalman = data
 
-    def mu(self, index: int) -> np.ndarray:
+    def mu(self, index: int) -> npt.NDArray:
         """Return the Kalman filter mu. Note that we are only returning the mu
         for the positions (e.g. 3x1)."""
         return self.kalman[index, 1:4].reshape(3, 1)
 
-    def covar(self, index: int) -> np.ndarray:
+    def covar(self, index: int) -> npt.NDArray:
         """Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3)."""
         return self.kalman[index, 4:13].reshape(3, 3)
 
-    def predicted(self, index: int) -> np.ndarray:
+    def predicted(self, index: int) -> npt.NDArray:
         """Return the motion model prediction for the given timestep."""
         return self.kalman[index, 13:].reshape(3, 1)
 
@@ -487,7 +488,7 @@ class Tracklet:
 
     def to_array(
         self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
-    ) -> np.ndarray:
+    ) -> npt.NDArray:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
@@ -537,9 +538,9 @@ def _pandas_html_repr(obj):
     n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
-        if not isinstance(v, (list, np.ndarray)):
+        if not isinstance(v, (list, npt.NDArray)):
             obj_as_dict[k] = [v] * n_items
-        elif isinstance(v, np.ndarray):
+        elif isinstance(v, npt.NDArray):
             ndim = 0 if n_items == 1 else 1
             if v.ndim > ndim:
                 obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items

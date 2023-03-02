@@ -1,6 +1,8 @@
 """
 This module is a reader plugin btrack files for napari.
 """
+from __future__ import annotations
+
 import os
 from collections.abc import Callable, Sequence
 

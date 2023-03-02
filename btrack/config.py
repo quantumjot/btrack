@@ -1,9 +1,11 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
 from pathlib import Path
 
-import numpy as np
+from numpy import typing as npt
 from pydantic import BaseModel, conlist, validator
 
 from btrack import constants
@@ -107,7 +109,7 @@ class TrackerConfig(BaseModel):
         arbitrary_types_allowed = True
         validate_assignment = True
         json_encoders = {
-            np.ndarray: lambda x: x.ravel().tolist(),
+            npt.NDArray: lambda x: x.ravel().tolist(),
         }
 
 

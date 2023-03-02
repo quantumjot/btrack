@@ -5,6 +5,7 @@ import logging
 from collections.abc import Generator
 
 import numpy as np
+from numpy import typing as npt
 from skimage.measure import label, regionprops_table
 
 from btrack import btypes
@@ -16,22 +17,22 @@ logger = logging.getLogger(__name__)
 
 
 def _centroids_from_single_arr(
-    segmentation: np.ndarray | Generator,
+    segmentation: npt.NDArray | Generator,
     properties: tuple[str],
     frame: int,
-    intensity_image: np.ndarray | None = None,
+    intensity_image: npt.NDArray | None = None,
     scale: tuple[float] | None = None,
     *,
     use_weighted_centroid: bool = False,
     assign_class_ID: bool = False,
-) -> np.ndarray:
+) -> npt.NDArray:
     """Return the object centroids from a numpy array representing the
     image data."""
 
     if np.sum(segmentation) == 0:
         return {}
 
-    def _is_unique(x: np.ndarray) -> bool:
+    def _is_unique(x: npt.NDArray) -> bool:
         # check if image is not uniquely labelled (necessary for regionprops)
         return np.max(label(x)) == np.max(x)
 
@@ -114,8 +115,8 @@ def _concat_centroids(centroids, new_centroids):
 
 
 def segmentation_to_objects(
-    segmentation: np.ndarray | Generator,
-    intensity_image: np.ndarray | Generator | None = None,
+    segmentation: npt.NDArray | Generator,
+    intensity_image: npt.NDArray | Generator | None = None,
     properties: tuple[str] | None = (),
     scale: tuple[float] | None = None,
     *,
@@ -126,10 +127,10 @@ def segmentation_to_objects(
 
     Parameters
     ----------
-    segmentation : np.ndarray, dask.array.core.Array or Generator
+    segmentation : npt.NDArray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
+    intensity_image : npt.NDArray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+from numpy import typing as npt
 from pydantic import BaseModel, root_validator, validator
 
 from btrack import constants
@@ -9,7 +10,7 @@ from btrack.optimise.hypothesis import H_TYPES, PyHypothesisParams
 __all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
-def _check_symmetric(x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
+def _check_symmetric(x: npt.NDArray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
@@ -78,12 +79,12 @@ class MotionModel(BaseModel):
 
     measurements: int
     states: int
-    A: np.ndarray
-    H: np.ndarray
-    P: np.ndarray
-    R: np.ndarray
-    G: np.ndarray | None = None
-    Q: np.ndarray | None = None
+    A: npt.NDArray
+    H: npt.NDArray
+    P: npt.NDArray
+    R: npt.NDArray
+    G: npt.NDArray | None = None
+    Q: npt.NDArray | None = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -173,9 +174,9 @@ class ObjectModel(BaseModel):
     """
 
     states: int
-    emission: np.ndarray
-    transition: np.ndarray
-    start: np.ndarray
+    emission: npt.NDArray
+    transition: npt.NDArray
+    start: npt.NDArray
     name: str = "Default"
 
     @validator("emission", "transition", "start", pre=True)

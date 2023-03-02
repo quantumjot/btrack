@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+from numpy import typing as npt
 from skimage.measure import label
 
 import btrack
@@ -100,7 +103,7 @@ def create_test_image(
     binsize: int = 5,
     *,
     binary: bool = True,
-) -> tuple[np.ndarray, np.ndarray | None]:
+) -> tuple[npt.NDArray, npt.NDArray | None]:
     """Make a test image that ensures that no two pixels are in contact."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
@@ -115,7 +118,7 @@ def create_test_image(
     # split this into voxels
     bins = boxsize // binsize
 
-    def _sample() -> tuple[np.ndarray, tuple[int]]:
+    def _sample() -> tuple[npt.NDArray, tuple[int]]:
         _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
         _coord = tuple(rng.integers(1, binsize - 1, size=(ndim,)).tolist())
         _img[_coord] = 1
@@ -163,7 +166,7 @@ def create_test_segmentation_and_tracks(
     ndim: int = 2,
     *,
     binary: bool = False,
-) -> tuple[np.ndarray, np.ndarray, list[btrack.btypes.Tracklet]]:
+) -> tuple[npt.NDArray, npt.NDArray, list[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""
 
     if ndim not in (btrack.constants.Dimensionality.TWO,):

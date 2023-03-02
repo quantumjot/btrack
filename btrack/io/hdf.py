@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Any
 
 import h5py
 import numpy as np
+from numpy import typing as npt
 
 # import core
 from btrack import btypes, constants, utils
@@ -65,15 +66,15 @@ class HDF5FileHandler:
 
     Attributes
     ----------
-    segmentation : np.ndarray
+    segmentation : npt.NDArray
         A numpy array representing the segmentation data. TZYX
     objects : list [PyTrackObject]
         A list of PyTrackObjects localised from the segmentation data.
-    filtered_objects  : np.ndarray
+    filtered_objects  : npt.NDArray
         Similar to objects, but filtered by property.
     tracks : list [Tracklet]
         A list of Tracklet objects.
-    lbep : np.ndarray
+    lbep : npt.NDArray
         The LBEP table representing the track graph.
 
     Notes
@@ -167,17 +168,17 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("segmentation")
-    def segmentation(self) -> np.ndarray:
+    def segmentation(self) -> npt.NDArray:
         segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
         logger.info(f"Loading segmentation {segmentation.shape}")
         return segmentation
 
-    def write_segmentation(self, segmentation: np.ndarray) -> None:
+    def write_segmentation(self, segmentation: npt.NDArray) -> None:
         """Write out the segmentation to an HDF file.
 
         Parameters
         ----------
-        segmentation : np.ndarray
+        segmentation : npt.NDArray
             A numpy array representing the segmentation data. T(Z)YX, uint16
         """
         # write the segmentation out
@@ -568,7 +569,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def lbep(self) -> np.ndarray:
+    def lbep(self) -> npt.NDArray:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
         return self._hdf["tracks"][self.object_type]["LBEPR"][:]

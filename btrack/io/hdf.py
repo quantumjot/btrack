@@ -384,8 +384,8 @@ class HDF5FileHandler:
             if not values:
                 logger.warning(f"Property '{key}' is empty.")
                 continue
-            values = np.array(values)
-            assert values.shape[0] == n_objects
+            values_arr = np.array(values)
+            assert values_arr.shape[0] == n_objects
 
             # Check if the property is already in the props_grp:
             if key in props_grp:
@@ -400,7 +400,9 @@ class HDF5FileHandler:
                         "'overwrite' param to replace existing property "
                     )
             # Now that you handled overwriting, write the values:
-            logger.info(f"Writing properties/{self.object_type}/{key} {values.shape}")
+            logger.info(
+                f"Writing properties/{self.object_type}/{key} {values_arr.shape}"
+            )
             props_grp.create_dataset(key, data=data[key], dtype="float32")
 
     @property  # type: ignore

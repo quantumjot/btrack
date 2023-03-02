@@ -1,9 +1,8 @@
-from __future__ import annotations
-
 import json
 import logging
 import os
 from pathlib import Path
+from typing import List, Optional
 
 from numpy import typing as npt
 from pydantic import BaseModel, conlist, validator
@@ -74,15 +73,15 @@ class TrackerConfig(BaseModel):
     name: str = "Default"
     version: str = constants.get_version()
     verbose: bool = False
-    motion_model: MotionModel | None = None
-    object_model: ObjectModel | None = None
-    hypothesis_model: HypothesisModel | None = None
+    motion_model: Optional[MotionModel] = None
+    object_model: Optional[ObjectModel] = None
+    hypothesis_model: Optional[HypothesisModel] = None
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
-    volume: ImagingVolume | None = None
+    volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: list[str] = []
+    features: List[str] = []
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,

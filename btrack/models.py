@@ -1,4 +1,4 @@
-from __future__ import annotations
+from typing import List, Optional
 
 import numpy as np
 from numpy import typing as npt
@@ -83,8 +83,8 @@ class MotionModel(BaseModel):
     H: npt.NDArray
     P: npt.NDArray
     R: npt.NDArray
-    G: npt.NDArray | None = None
-    Q: npt.NDArray | None = None
+    G: Optional[npt.NDArray] = None
+    Q: Optional[npt.NDArray] = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -258,7 +258,7 @@ class HypothesisModel(BaseModel):
     .. math:: e^{(-d / \lambda)}
     """
 
-    hypotheses: list[str]
+    hypotheses: List[str]
     lambda_time: float
     lambda_dist: float
     lambda_link: float

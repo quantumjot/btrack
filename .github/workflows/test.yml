@@ -34,10 +34,10 @@ jobs:
         platform: [ubuntu-latest]
         # Include one windows and macos run
         include:
-        - platform: macos-latest
-          python-version: "3.9"
-        - platform: windows-latest
-          python-version: "3.9"
+          - platform: macos-latest
+            python-version: "3.9"
+          - platform: windows-latest
+            python-version: "3.9"
 
     steps:
       - uses: actions/checkout@v3

@@ -18,13 +18,13 @@ import btrack
 
 # -- Project information -----------------------------------------------------
 
-project = "Bayesian Tracker (btrack) 🔬💻"
-copyright = "2022, Alan R Lowe"
-author = "Alan R Lowe"
+__project__ = "Bayesian Tracker (btrack) 🔬💻"
+__copyright__ = "2022, Alan R Lowe"
+__author__ = "Alan R Lowe"
 
 
 # The full version, including alpha/beta/rc tags
-release = "v" + btrack.__version__
+release = f"v{btrack.__version__}"
 
 
 # -- General configuration ---------------------------------------------------

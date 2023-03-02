@@ -2,7 +2,7 @@
 This module is a reader plugin btrack files for napari.
 """
 import os
-from typing import Callable, List, Optional, Sequence, Union
+from collections.abc import Callable, Sequence
 
 from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation
@@ -11,12 +11,12 @@ from btrack.io import HDF5FileHandler
 from btrack.utils import tracks_to_napari
 
 # Type definitions
-PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
-ReaderFunction = Callable[[PathOrPaths], List[LayerDataTuple]]
+PathOrPaths = os.PathLike | Sequence[os.PathLike]
+ReaderFunction = Callable[[PathOrPaths], list[LayerDataTuple]]
 
 
 @napari_hook_implementation
-def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
+def get_reader(path: PathOrPaths) -> ReaderFunction | None:
     """A basic implementation of the napari_get_reader hook specification.
 
     Parameters
@@ -33,7 +33,7 @@ def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
     return reader_function
 
 
-def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
+def reader_function(path: PathOrPaths) -> list[LayerDataTuple]:
     """Take a path or list of paths and return a list of LayerData tuples.
 
     Readers are expected to return data as a list of tuples, where each tuple
@@ -56,14 +56,13 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
         to layer_type=="image" if not provided
     """
     # handle both a string and a list of strings
-    paths = [path] if not isinstance(path, list) else path
+    paths = path if isinstance(path, list) else [path]
 
     # store the layers to be generated
-    layers: List[tuple] = []
+    layers: list[tuple] = []
 
     for _path in paths:
         with HDF5FileHandler(_path, "r") as hdf:
-
             # get the segmentation if there is one
             segmentation = hdf.segmentation
             if segmentation is not None:
@@ -71,7 +70,6 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
 
             # iterate over object types and create a layer for each
             for obj_type in hdf.object_types:
-
                 # set the object type, and retrieve the tracks
                 hdf.object_type = obj_type
 

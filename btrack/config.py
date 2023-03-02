@@ -2,15 +2,14 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
 
 import numpy as np
 from pydantic import BaseModel, conlist, validator
 
-from . import constants
-from .btypes import ImagingVolume
-from .models import HypothesisModel, MotionModel, ObjectModel
-from .utils import read_hypothesis_model, read_motion_model, read_object_model
+from btrack import constants
+from btrack.btypes import ImagingVolume
+from btrack.models import HypothesisModel, MotionModel, ObjectModel
+from btrack.utils import read_hypothesis_model, read_motion_model, read_object_model
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -73,15 +72,15 @@ class TrackerConfig(BaseModel):
     name: str = "Default"
     version: str = constants.get_version()
     verbose: bool = False
-    motion_model: Optional[MotionModel] = None
-    object_model: Optional[ObjectModel] = None
-    hypothesis_model: Optional[HypothesisModel] = None
+    motion_model: MotionModel | None = None
+    object_model: ObjectModel | None = None
+    hypothesis_model: HypothesisModel | None = None
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
-    volume: Optional[ImagingVolume] = None
+    volume: ImagingVolume | None = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: List[str] = []
+    features: list[str] = []
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,
@@ -101,8 +100,7 @@ class TrackerConfig(BaseModel):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
             _tracking_updates = [
-                constants.BayesianUpdateFeatures[k.upper()]
-                for k in _tracking_updates
+                constants.BayesianUpdateFeatures[k.upper()] for k in _tracking_updates
             ]
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
@@ -131,7 +129,7 @@ def load_config(filename: os.PathLike) -> TrackerConfig:
     logger.info(f"Loading configuration file: {filename}")
     filename = Path(filename)
 
-    with open(filename, "r") as json_file:
+    with open(filename) as json_file:
         json_data = json.load(json_file)
 
     if "TrackerConfig" in json_data:

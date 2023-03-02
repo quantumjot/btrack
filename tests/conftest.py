@@ -1,12 +1,10 @@
 import os
-from typing import List, Union
 
 import numpy as np
 import pytest
 
 import btrack
-
-from ._utils import (
+from tests._utils import (
     RANDOM_SEED,
     TEST_DATA_PATH,
     create_test_object,
@@ -54,7 +52,7 @@ def hdf5_file_path(tmp_path, test_objects) -> os.PathLike:
 @pytest.fixture(params=["single", "list"])
 def hdf5_file_path_or_paths(
     tmp_path, test_objects, request
-) -> Union[os.PathLike, List[os.PathLike]]:
+) -> os.PathLike | list[os.PathLike]:
     """
     Create and save a btrack HDF5 file, and return the path.
 
@@ -68,9 +66,7 @@ def hdf5_file_path_or_paths(
             write_h5_file(tmp_path / "test2.h5", test_objects),
         ]
     else:
-        raise ValueError(
-            "Invalid requests.param, must be one of 'single' or 'list'"
-        )
+        raise ValueError("Invalid requests.param, must be one of 'single' or 'list'")
 
 
 @pytest.fixture

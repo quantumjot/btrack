@@ -1,6 +1,6 @@
 import logging
 
-from .core import BayesianTracker, __version__
+from btrack.core import BayesianTracker
 
 __all__ = ["BayesianTracker"]
 

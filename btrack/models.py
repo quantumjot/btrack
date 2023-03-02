@@ -1,17 +1,13 @@
-from typing import List, Optional
-
 import numpy as np
 from pydantic import BaseModel, root_validator, validator
 
-from . import constants
-from .optimise.hypothesis import H_TYPES, PyHypothesisParams
+from btrack import constants
+from btrack.optimise.hypothesis import H_TYPES, PyHypothesisParams
 
 __all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
-def _check_symmetric(
-    x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8
-) -> bool:
+def _check_symmetric(x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
@@ -84,8 +80,8 @@ class MotionModel(BaseModel):
     H: np.ndarray
     P: np.ndarray
     R: np.ndarray
-    G: Optional[np.ndarray] = None
-    Q: Optional[np.ndarray] = None
+    G: np.ndarray | None = None
+    Q: np.ndarray | None = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -259,7 +255,7 @@ class HypothesisModel(BaseModel):
     .. math:: e^{(-d / \lambda)}
     """
 
-    hypotheses: List[str]
+    hypotheses: list[str]
     lambda_time: float
     lambda_dist: float
     lambda_link: float
@@ -277,15 +273,13 @@ class HypothesisModel(BaseModel):
 
     @validator("hypotheses", pre=True)
     def parse_hypotheses(cls, hypotheses):
-        if not all(h in H_TYPES for h in hypotheses):
+        if any(h not in H_TYPES for h in hypotheses):
             raise ValueError("Unknown hypothesis type in `hypotheses`.")
         return hypotheses
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
-        h_bin = "".join(
-            [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
-        )
+        h_bin = "".join([str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]])
         return int(h_bin[::-1], 2)
 
     def as_ctype(self) -> PyHypothesisParams:

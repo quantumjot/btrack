@@ -24,9 +24,14 @@ NEW_WIDGET_LAYERS = 2
 
 def test_add_widget(make_napari_viewer):
     """Checks that the track widget can be added inside a dock widget."""
+
     viewer = make_napari_viewer()
     num_dw = len(list(viewer.window._dock_widgets))
-    viewer.window.add_function_widget(function=track)
+    viewer.window.add_plugin_dock_widget(
+        plugin_name="napari-btrack",
+        widget_name="Track",
+    )
+
     assert len(list(viewer.window._dock_widgets)) == num_dw + 1  # noqa: S101
 
 

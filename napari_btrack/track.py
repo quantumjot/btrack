@@ -47,6 +47,16 @@ class Matrices:
     """
 
     names: list[str] = field(default_factory=lambda: ["A", "H", "P", "G", "R", "Q"])
+    widget_labels: list[str] = field(
+        default_factory=lambda: [
+            "A_sigma",
+            "H_sigma",
+            "P_sigma",
+            "G_sigma",
+            "R_sigma",
+            "Q_sigma",
+        ]
+    )
     default_sigmas: list[float] = field(
         default_factory=lambda: [1.0, 1.0, 150.0, 15.0, 5.0]
     )
@@ -284,14 +294,15 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     for widget in container:
         # setup motion model
         # matrices need special treatment
-        if widget.name in Matrices().names:
-            sigma = getattr(container, f"{widget.name}_sigma").value
+        if widget.name in Matrices().widget_labels:
+            sigma = getattr(container, widget.name).value
+            matrix_name = widget.name.rstrip("_sigma")
             matrix = Matrices.get_scaled_matrix(
-                widget.name,
+                matrix_name,
                 sigma=sigma,
                 use_cell_config=(container.mode.value == "cell"),
             )
-            motion_model_dict[widget.name] = matrix
+            motion_model_dict[matrix_name] = matrix
         elif widget.name in motion_model_keys:
             motion_model_dict[widget.name] = widget.value
         # setup hypothesis model
@@ -343,7 +354,7 @@ def _update_widgets_from_config(container: Container, config: TrackerConfig) -> 
                 if parameter in Matrices().names:
                     sigma = Matrices.get_sigma(parameter, value)
                     getattr(container, f"{parameter}_sigma").value = sigma
-                if parameter == "hypotheses":
+                elif parameter == "hypotheses":
                     for hypothesis in ALL_HYPOTHESES:
                         getattr(container, hypothesis).value = hypothesis in value
                 else:

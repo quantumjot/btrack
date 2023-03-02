@@ -305,7 +305,6 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     for default_name, default_value in zip(
         ["measurements", "states", "dt", "prob_not_assign", "name"],
         [3, 6, 1.0, 0.001, f"{mode}_motion"],
-        strict=True,
     ):
         motion_model_dict[default_name] = default_value
 
@@ -313,7 +312,6 @@ def _widgets_to_tracker_config(container: Container) -> TrackerConfig:
     for default_name, default_value in zip(
         ["apoptosis_rate", "eta", "name"],
         [0.001, 1.0e-10, f"{mode}_hypothesis"],
-        strict=True,
     ):
         hypothesis_model_dict[default_name] = default_value
 
@@ -377,7 +375,8 @@ def _create_button_widgets(widgets: list[Widget]) -> None:
         [
             create_widget(name=widget_name, label=widget_label, widget_type=PushButton)
             for widget_name, widget_label in zip(
-                widget_names, widget_labels, strict=True
+                widget_names,
+                widget_labels,
             )
         ]
     )

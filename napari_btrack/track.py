@@ -407,7 +407,7 @@ def track() -> Container:
     _create_pydantic_default_widgets(widgets, default_cell_config)
     _create_button_widgets(widgets)
 
-    btrack_widget = Container(widgets=widgets)
+    btrack_widget = Container(widgets=widgets, scrollable=True)
     btrack_widget.viewer = napari.current_viewer()
 
     @btrack_widget.reset_button.changed.connect

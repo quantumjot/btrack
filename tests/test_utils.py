@@ -12,7 +12,7 @@ TWO_DIM = 2
 
 
 def _example_segmentation_generator():
-    for _i in range(10):
+    for _ in range(10):
         img, centroids = create_test_image()
         yield img
 

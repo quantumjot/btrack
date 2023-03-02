@@ -91,9 +91,7 @@ class TrackerConfig(BaseModel):
 
     @validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):
-        if isinstance(v, tuple):
-            return ImagingVolume(*v)
-        return v
+        return ImagingVolume(*v) if isinstance(v, tuple) else v
 
     @validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):

@@ -8,11 +8,7 @@ plugins = [
 fix = true
 force-exclude = true
 ignore = [
-    "N806",
-    "PLR2004",
-    "S101",
-    "T201",
-    "B905",
+    "B905", # python>=3.10
 ]
 select = [
     "A",

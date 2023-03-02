@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -351,7 +352,7 @@ def _update_widgets_from_config(container: Container, config: TrackerConfig) -> 
     # by checking whether the 4th entry of the first row of the
     # A matrix is 1 or 0 (1 for cell mode)
     mode_is_cell = config.motion_model.A[0, 3] == 1
-    print("mode is cell: ", mode_is_cell)
+    logging.info(f"mode is cell: {mode_is_cell}")
     container.mode.value = "cell" if mode_is_cell else "particle"
 
 

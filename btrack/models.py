@@ -83,8 +83,8 @@ class MotionModel(BaseModel):
     H: npt.NDArray
     P: npt.NDArray
     R: npt.NDArray
-    G: Optional[npt.NDArray] = None
-    Q: Optional[npt.NDArray] = None
+    G: Optional[npt.NDArray] = None  # noqa: UP007
+    Q: Optional[npt.NDArray] = None  # noqa: UP007
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -258,7 +258,7 @@ class HypothesisModel(BaseModel):
     .. math:: e^{(-d / \lambda)}
     """
 
-    hypotheses: List[str]
+    hypotheses: List[str]  # noqa: UP006
     lambda_time: float
     lambda_dist: float
     lambda_link: float

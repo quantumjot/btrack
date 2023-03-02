@@ -18,13 +18,6 @@ ignore = [
     "N806",
     "S101",
 ]
-per-file-ignores = {"btrack/config.py" = [
-    "UP006",
-    "UP007",
-], "btrack/models.py" = [
-    "UP006",
-    "UP007",
-]}
 select = [
     "A",
     "B",

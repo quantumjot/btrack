@@ -73,15 +73,15 @@ class TrackerConfig(BaseModel):
     name: str = "Default"
     version: str = constants.get_version()
     verbose: bool = False
-    motion_model: Optional[MotionModel] = None
-    object_model: Optional[ObjectModel] = None
-    hypothesis_model: Optional[HypothesisModel] = None
+    motion_model: Optional[MotionModel] = None  # noqa: UP007
+    object_model: Optional[ObjectModel] = None  # noqa: UP007
+    hypothesis_model: Optional[HypothesisModel] = None  # noqa: UP007
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
-    volume: Optional[ImagingVolume] = None
+    volume: Optional[ImagingVolume] = None  # noqa: UP007
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: List[str] = []
+    features: List[str] = []  # noqa: UP006
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,

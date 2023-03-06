@@ -7,6 +7,3 @@ warnings.warn(
 )
 
 from btrack.io import HDF5FileHandler  # noqa: F401,E402
-
-if __name__ == "__main__":
-    pass

@@ -79,7 +79,7 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
                     continue
 
                 tracklets = hdf.tracks
-                tracks, properties, graph = tracks_to_napari(tracklets, ndim=2)
+                tracks, properties, graph = tracks_to_napari(tracklets)
 
                 # optional kwargs for the corresponding viewer.add_* method
                 # https://napari.org/docs/api/napari.components.html#module-napari.components.add_layers_mixin

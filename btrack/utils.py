@@ -144,7 +144,10 @@ def _cat_tracks_as_dict(
 
 
 def tracks_to_napari(
-    tracks: list[btypes.Tracklet], ndim: int = 3, replace_nan: bool = True
+    tracks: list[btypes.Tracklet],
+    *,
+    ndim: Optional[int] = None,
+    replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.
 
@@ -152,8 +155,10 @@ def tracks_to_napari(
     ----------
     tracks : list[btypes.Tracklet]
         A list of tracklet objects from BayesianTracker.
-    ndim : int
-        The number of spatial dimensions of the data. Must be 2 or 3.
+    ndim : int or None
+        The number of spatial dimensions of the data. If not specified, the
+        function attempts to guess the final dimensionality using the z
+        coordinates. If specified, it must have a value of 2 or 3.
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
@@ -181,7 +186,12 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # TODO: arl guess the dimensionality from the data
+    # guess the dimensionality from the data by checking whether the z values
+    # are all zero. If all z are zero then the data are planar, i.e. 2D
+    if ndim is None:
+        z = np.concatenate([track.z for track in tracks])
+        ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
+
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
         raise ValueError("ndim must be 2 or 3 dimensional.")
 

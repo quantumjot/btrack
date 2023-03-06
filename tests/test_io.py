@@ -32,7 +32,7 @@ def test_hdf5_write_with_properties(hdf5_file_path):
 
     objects = []
     for i in range(10):
-        obj, _ = create_test_object(id=i)
+        obj, _ = create_test_object(test_id=i)
         obj.properties = create_test_properties()
         objects.append(obj)
 

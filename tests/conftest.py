@@ -28,7 +28,7 @@ def test_real_objects():
     """
     Create a list of objects from real data.
     """
-    return btrack.io.importers.import_CSV(TEST_DATA_PATH / "test_data.csv")
+    return btrack.io.import_CSV(TEST_DATA_PATH / "test_data.csv")
 
 
 def write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:

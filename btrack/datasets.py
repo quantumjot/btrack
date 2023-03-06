@@ -5,7 +5,7 @@ from numpy import typing as npt
 from skimage.io import imread
 
 from btrack.btypes import PyTrackObject
-from btrack.io.importers import import_CSV
+from btrack.io import import_CSV
 
 BASE_URL = "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
 

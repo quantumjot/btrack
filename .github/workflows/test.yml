@@ -47,10 +47,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Setup Conda dependencies
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-update-conda: true
           python-version: ${{ matrix.python-version }}
+          auto-update-conda: true
+          miniconda-version: latest
 
       # note: if you need dependencies from conda, considering using
       # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
@@ -59,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install "tox<4" tox-gh-actions tox-conda
+          python -m pip install tox tox-gh-actions tox-conda
 
       - name: Test with tox
         run: tox

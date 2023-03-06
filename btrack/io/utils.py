@@ -39,7 +39,7 @@ def localizations_to_objects(
         return localizations
 
     # do we have a numpy array or pandas dataframe?
-    if isinstance(localizations, npt.NDArray):
+    if isinstance(localizations, np.ndarray):
         return objects_from_array(localizations)
     try:
         objects_dict = {c: np.asarray(localizations[c]) for c in localizations}

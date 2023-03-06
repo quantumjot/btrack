@@ -382,7 +382,7 @@ class Tracklet:
                     "The number of properties and track objects must be equal."
                 )
             # ensure the property values are a numpy array
-            if not isinstance(v, npt.NDArray):
+            if not isinstance(v, np.ndarray):
                 properties[k] = np.asarray(v)
 
         return properties
@@ -458,7 +458,7 @@ class Tracklet:
 
     @kalman.setter
     def kalman(self, data: npt.NDArray) -> None:
-        assert isinstance(data, npt.NDArray)
+        assert isinstance(data, np.ndarray)
         self._kalman = data
 
     def mu(self, index: int) -> npt.NDArray:
@@ -538,9 +538,9 @@ def _pandas_html_repr(obj):
     n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
-        if not isinstance(v, (list, npt.NDArray)):
+        if not isinstance(v, (list, np.ndarray)):
             obj_as_dict[k] = [v] * n_items
-        elif isinstance(v, npt.NDArray):
+        elif isinstance(v, np.ndarray):
             ndim = 0 if n_items == 1 else 1
             if v.ndim > ndim:
                 obj_as_dict[k] = [f"{v.shape[ndim:]} array"] * n_items

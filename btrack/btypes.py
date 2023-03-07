@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
-from typing import Any, NamedTuple, Optional
+from typing import Any, NamedTuple, Optional, Tuple
 
 import numpy as np
 from numpy import typing as npt
@@ -30,9 +30,9 @@ TWO_DIM = 2
 
 
 class ImagingVolume(NamedTuple):
-    x: tuple[float, float]
-    y: tuple[float, float]
-    z: Optional[tuple[float, float]] = None  # noqa: UP007
+    x: Tuple[float, float]
+    y: Tuple[float, float]
+    z: Optional[Tuple[float, float]] = None  # noqa: UP007
 
     @property
     def ndim(self) -> int:

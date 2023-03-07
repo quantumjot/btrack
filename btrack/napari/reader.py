@@ -4,8 +4,7 @@ This module is a reader plugin btrack files for napari.
 from __future__ import annotations
 
 import os
-from collections.abc import Callable, Sequence
-from typing import Union
+from typing import Union, List, Callable, Sequence
 
 from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation
@@ -15,7 +14,7 @@ from btrack.utils import tracks_to_napari
 
 # Type definitions
 PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
-ReaderFunction = Callable[[PathOrPaths], list[LayerDataTuple]]
+ReaderFunction = Callable[[PathOrPaths], List[LayerDataTuple]]
 
 
 @napari_hook_implementation

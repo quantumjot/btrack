@@ -4,7 +4,7 @@ This module is a reader plugin btrack files for napari.
 from __future__ import annotations
 
 import os
-from typing import Union, List, Callable, Sequence
+from typing import Callable, List, Sequence, Union  # noqa: UP035
 
 from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation

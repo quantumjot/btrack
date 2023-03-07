@@ -30,9 +30,9 @@ TWO_DIM = 2
 
 
 class ImagingVolume(NamedTuple):
-    x: Tuple[float, float]
-    y: Tuple[float, float]
-    z: Optional[Tuple[float, float]] = None  # noqa: UP007
+    x: Tuple[float, float]  # noqa: UP006
+    y: Tuple[float, float]  # noqa: UP006
+    z: Optional[Tuple[float, float]] = None  # noqa: UP006 UP007
 
     @property
     def ndim(self) -> int:

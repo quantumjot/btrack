@@ -14,7 +14,7 @@ from btrack.utils import tracks_to_napari
 
 # Type definitions
 PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
-ReaderFunction = Callable[[PathOrPaths], List[LayerDataTuple]]
+ReaderFunction = Callable[[PathOrPaths], List[LayerDataTuple]]  # noqa: UP006
 
 
 @napari_hook_implementation

@@ -5,13 +5,13 @@ BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_version():
-    with open(os.path.join(BTRACK_PATH, "VERSION.txt"), "r") as ver:
+    with open(os.path.join(BTRACK_PATH, "VERSION.txt")) as ver:
         version = ver.readline()
     return version.rstrip()
 
 
 def get_version_tuple():
-    return tuple([int(v) for v in get_version().split(".")])
+    return tuple(int(v) for v in get_version().split("."))
 
 
 MAX_SEARCH_RADIUS = 100
@@ -90,6 +90,12 @@ class BayesianUpdates(enum.Enum):
     EXACT = 0
     APPROXIMATE = 1
     CUDA = 2
+
+
+@enum.unique
+class BayesianUpdateFeatures(enum.Enum):
+    MOTION = 0b0000001
+    VISUAL = 0b0000010
 
 
 class Dimensionality(enum.IntEnum):

@@ -1,4 +1,7 @@
-[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
+# Bayesian Tracker (btrack) :microscope::computer:
+
+[![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)
+[![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
@@ -10,8 +13,6 @@
 [cellx]: http://lowe.cs.ucl.ac.uk/cellx.html
 
 ![logo](./docs/_static/btrack_logo.png)
-
-# Bayesian Tracker (btrack) :microscope::computer:
 
 BayesianTracker (`btrack`) is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
 Here, we use a probabilistic network of information to perform the trajectory linking.
@@ -35,14 +36,13 @@ You can also --> :star: :wink:
 
 BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
 
-
-#### Installing the latest stable version
+### Installing the latest stable version
 
 ```sh
 pip install btrack
 ```
 
-## Installing on M1 Mac/Apple Silicon/osx-arm64
+### Installing on M1 Mac/Apple Silicon/osx-arm64
 
 Best done with [conda](https://github.com/conda-forge/miniforge)
 
@@ -58,11 +58,10 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 
 ### Cell tracking in time-lapse imaging data
 
- We provide integration with Napari, including a plugin for graph visualization, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
+We provide integration with Napari, including a plugin for graph visualization, [arboretum](https://btrack.readthedocs.io/en/latest/user_guide/napari.html).
 
-
-[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
-*Video of tracking, showing automatic lineage determination*
+[![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)
+_Video of tracking, showing automatic lineage determination_
 
 ---
 
@@ -71,21 +70,20 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
 If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide][docs-dev].
 
-
 ---
+
 ### Citation
 
 More details of how this type of tracking approach can be applied to tracking cells in time-lapse microscopy data can be found in the following publications:
 
-**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**  
-Ulicna K, Vallardi G, Charras G and Lowe AR.  
-*Front in Comp Sci* (2021)  
+**Automated deep lineage tree analysis using a Bayesian single cell tracking approach**
+Ulicna K, Vallardi G, Charras G and Lowe AR.
+_Front in Comp Sci_ (2021)
 [![doi:10.3389/fcomp.2021.734559](https://img.shields.io/badge/doi-10.3389%2Ffcomp.2021.734559-blue)](https://doi.org/10.3389/fcomp.2021.734559)
 
-
-**Local cellular neighbourhood controls proliferation in cell competition**  
-Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.  
-*Mol. Biol. Cell* (2017)  
+**Local cellular neighbourhood controls proliferation in cell competition**
+Bove A, Gradeci D, Fujita Y, Banerjee S, Charras G and Lowe AR.
+_Mol. Biol. Cell_ (2017)
 [![doi:10.1091/mbc.E17-06-0368](https://img.shields.io/badge/doi-10.1091%2Fmbc.E17--06--0368-blue)](https://doi.org/10.1091/mbc.E17-06-0368)
 
 ```

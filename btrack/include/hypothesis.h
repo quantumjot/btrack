@@ -28,51 +28,10 @@
 #include "tracklet.h"
 #include "hyperbin.h"
 #include "defs.h"
+#include "pdf.h"
+#include "updates.h"
+#include "bayes.h"
 
-// #define TYPE_Pfalse 0
-// #define TYPE_Pinit 1
-// #define TYPE_Pterm 2
-// #define TYPE_Plink 3
-// #define TYPE_Pdivn 4
-// #define TYPE_Papop 5
-// #define TYPE_Pdead 6
-// #define TYPE_Pmrge 7
-// #define TYPE_undef 999
-//
-//
-// #define STATE_interphase 0
-// #define STATE_prometaphase 1
-// #define STATE_metaphase 2
-// #define STATE_anaphase 3
-// #define STATE_apoptosis 4
-// #define STATE_null 5
-
-// #define MAX_TRACK_LEN 150
-// #define DEFAULT_LOW_PROBABILITY 1e-308
-//
-// #define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
-// #define WEIGHT_METAPHASE_ANAPHASE 0.1
-// #define WEIGHT_METAPHASE 2.0
-// #define WEIGHT_ANAPHASE_ANAPHASE 1.0
-// #define WEIGHT_ANAPHASE 2.0
-// #define WEIGHT_OTHER 5.0
-
-
-// // Hash index for use with the hash cube
-// struct HashIndex {
-//   int x = 0;
-//   int y = 0;
-//   int z = 0;
-//   int n = 0;
-//
-//   // comparison operator for hash map, strict weak ordering
-//   bool operator<(const HashIndex &o) const {
-//     if (x != o.x) return x < o.x;
-//     if (y != o.y) return y < o.y;
-//     if (z != o.z) return z < o.z;
-//     return n < o.n;
-//   }
-// };
 
 
 // Store a hypothesis to return to Python
@@ -257,7 +216,7 @@ double safe_log(double value);
 //   6. P_dead: an apoptosis event
 //   7. P_extrude: a cell extrusion event. A cell is removed from the tissue.
 
-class HypothesisEngine
+class HypothesisEngine: public UpdateFeatures
 {
   public:
     // constructors and destructors

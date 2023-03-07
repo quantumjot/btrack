@@ -78,6 +78,13 @@ EXTERN_DECL {
     h->set_update_mode(a_update_mode);
   }
 
+  SHARED_LIB void set_update_features( InterfaceWrapper* h,
+                        const unsigned int a_update_features ) {
+
+    // set the features to use during the tracker update
+    h->set_update_features(a_update_features);
+  }
+
   /* =========================================================================
   MOTION MODEL SETTINGS
   ========================================================================= */

@@ -67,7 +67,7 @@ void Tracklet::append(const TrackObjectPtr& new_object, bool update) {
 
 
 // append a dummy object to the tracklet
-void Tracklet::append_dummy() {
+void Tracklet::append_dummy(bool update_position) {
 
   if (lost > max_lost) {
     // NOTE(arl): this should never happen
@@ -79,19 +79,34 @@ void Tracklet::append_dummy() {
     std::cout << " in frame: " << this->track.back()->t + 1 << std::endl;
   }
 
-  // get the predicted new position
-  Prediction p = this->predict();
+
 
   // make a new dummy track object and populate with the prediction
   TrackObject dummy;
   dummy.ID = 0;
-  dummy.x = p.mu(0);
-  dummy.y = p.mu(1);
-  dummy.z = p.mu(2);
+
+  // only update the position if we're using the motion model
+  if (update_position) {
+    // get the predicted new position
+    Prediction p = this->predict();
+    dummy.x = p.mu(0);
+    dummy.y = p.mu(1);
+    dummy.z = p.mu(2);
+  } else {
+    dummy.x = this->track.back()->x;
+    dummy.y = this->track.back()->y;
+    dummy.z = this->track.back()->z;
+  }
+
   dummy.t = this->track.back()->t + 1; // NOTE(arl): valid assumption?
   dummy.label = this->track.back()->label; // NOTE(arl): valid assumption?
   //dummy.label = STATE_dummy;
   dummy.dummy = true;
+  dummy.n_features = this->track.back()->n_features;
+
+  if (dummy.n_features != 0) {
+    dummy.features = this->track.back()->features;
+  }
 
   // make a shared pointer to this new obejct
   TrackObjectPtr dummy_ptr = std::make_shared<TrackObject>(dummy);
@@ -123,6 +138,6 @@ Prediction Tracklet::predict() const {
   Prediction p = motion_model.predict();
   //p_out.mu = position() + p.mu.tail(3); // add the displacement vector
   p_out.mu = position() + motion_model.get_motion_vector();
-  p_out.covar = p.covar.block(0,0,3,3);
+  p_out.covar = p.covar.block(0, 0, 3, 3);
   return p_out;
 }

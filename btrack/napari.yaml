@@ -4,14 +4,14 @@ schema_version: 0.1.0
 
 contributions:
   commands:
-  - id: btrack.read_btrack
-    title: Read BayesianTracker files
-    python_name: btrack.napari.reader:get_reader
+    - id: btrack.read_btrack
+      title: Read BayesianTracker files
+      python_name: btrack.napari.reader:get_reader
 
   readers:
-  - command: btrack.read_btrack
-    filename_patterns:
-    - '*.h5'
-    - '*.hdf'
-    - '*.hdf5'
-    accepts_directories: false
+    - command: btrack.read_btrack
+      filename_patterns:
+        - "*.h5"
+        - "*.hdf"
+        - "*.hdf5"
+      accepts_directories: false

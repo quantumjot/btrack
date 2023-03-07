@@ -1,30 +1,61 @@
 [build-system]
-requires = [
-  "setuptools >= 42",
-  "wheel",
-  "setuptools_scm[toml]>=3.4"
-]
 build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools >= 42",
+    "setuptools_scm[toml]>=3.4",
+    "wheel",
+]
 
-[tool.black]
-target-version = ['py38', 'py39', 'py310']
-line-length = 79
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | build
-    | dist
-  )/
-)
-'''
+[tool.ruff]
+fix = true
+force-exclude = true
+ignore = [
+    "B905", # python>=3.10
+    "EM101",
+    "EM102",
+    "N802",
+    "N803",
+    "N806",
+    "S101",
+]
+select = [
+    "A",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+isort.known-first-party = ["btrack"]
+mccabe.max-complexity = 18
+pep8-naming.classmethod-decorators = [
+    "classmethod",
+    "pydantic.root_validator",
+    "pydantic.validator",
+]
 
-[tool.isort]
-profile = "black"
-line_length = 79
+[tool.setuptools_scm]
+
+[tool.tomlsort]
+all = true
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true

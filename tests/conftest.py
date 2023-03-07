@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import os
-from typing import List, Union
 
 import numpy as np
 import pytest
 
-import btrack.dataio
-
-from ._utils import (
+import btrack
+from tests._utils import (
     RANDOM_SEED,
+    TEST_DATA_PATH,
     create_test_object,
     create_test_segmentation_and_tracks,
 )
@@ -19,14 +20,22 @@ def test_objects():
     Create a list of 10 test objects.
     """
     n_rows = 10
-    return [create_test_object(id=i)[0] for i in range(n_rows)]
+    return [create_test_object(test_id=i)[0] for i in range(n_rows)]
+
+
+@pytest.fixture
+def test_real_objects():
+    """
+    Create a list of objects from real data.
+    """
+    return btrack.io.import_CSV(TEST_DATA_PATH / "test_data.csv")
 
 
 def write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:
     """
     Write a h5 file with test objects and return path.
     """
-    with btrack.dataio.HDF5FileHandler(file_path, "w") as h:
+    with btrack.io.HDF5FileHandler(file_path, "w") as h:
         h.write_objects(test_objects)
 
     return file_path
@@ -45,7 +54,7 @@ def hdf5_file_path(tmp_path, test_objects) -> os.PathLike:
 @pytest.fixture(params=["single", "list"])
 def hdf5_file_path_or_paths(
     tmp_path, test_objects, request
-) -> Union[os.PathLike, List[os.PathLike]]:
+) -> os.PathLike | list[os.PathLike]:
     """
     Create and save a btrack HDF5 file, and return the path.
 
@@ -59,9 +68,7 @@ def hdf5_file_path_or_paths(
             write_h5_file(tmp_path / "test2.h5", test_objects),
         ]
     else:
-        raise ValueError(
-            "Invalid requests.param, must be one of 'single' or 'list'"
-        )
+        raise ValueError("Invalid requests.param, must be one of 'single' or 'list'")
 
 
 @pytest.fixture

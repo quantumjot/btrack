@@ -10,9 +10,8 @@
 
 ![logo](https://btrack.readthedocs.io/en/latest/_images/btrack_logo.png)
 
-
 BayesianTracker (`btrack`) is a multi object tracking algorithm,
-specifically used to reconstruct trajectories in crowded fields.  New
+specifically used to reconstruct trajectories in crowded fields. New
 observations are assigned to tracks by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible
 linkages.
@@ -27,8 +26,7 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 * https://napari.org/tutorials/tracking/cell_tracking.html
 -->
 
-
 ## associated plugins
 
-* [napari-arboretum](https://www.napari-hub.org/plugins/napari-arboretum) - Napari plugin to enable track graph and lineage tree visualization.
-* [napari-btrack](https://github.com/lowe-lab-ucl/napari-btrack) - (Experimental) Napari plugin to provide a frontend GUI for `btrack`.
+- [napari-arboretum](https://www.napari-hub.org/plugins/napari-arboretum) - Napari plugin to enable track graph and lineage tree visualization.
+- [napari-btrack](https://github.com/lowe-lab-ucl/napari-btrack) - (Experimental) Napari plugin to provide a frontend GUI for `btrack`.

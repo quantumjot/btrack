@@ -1,5 +1,21 @@
+*******
 Updates
-=======
+*******
+
+0.5.0
+-----
+- Factored out model specific updates from Bayesian update code
+- Added features to objects
+- Added visual update method
+
+0.4.6
+-----
+- Add deprecation warning to `track_interactive`
+- Revert to python 3.7+ for compatibility
+- Remove python keywords from codebase
+- Add ability to save tracks directly to h5 files
+- Allow reading/writing of nD features to h5 files
+
 0.4.5
 -----
 - Added util to relabel masks using track ID
@@ -73,7 +89,6 @@ Updates
 - Bug fix for CSV importer
 - Added tracker.to_napari() for integration with napari track layer
 - Added change to logging verbosity when instantiating tracker
-
 
 0.3.12
 ------

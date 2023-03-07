@@ -35,6 +35,9 @@
 #include "manager.h"
 #include "defs.h"
 #include "hyperbin.h"
+#include "pdf.h"
+#include "updates.h"
+#include "bayes.h"
 
 
 // #define PROB_NOT_ASSIGN 0.01
@@ -80,7 +83,7 @@ typedef std::pair<unsigned int, double> LinkHypothesis;
 // (Narayana and Haverkamp, 2007). The best linkages are those with the highest
 // posterior probability.
 
-class BayesianTracker
+class BayesianTracker: public UpdateFeatures
 {
 public:
   // Constructor
@@ -95,7 +98,7 @@ public:
   // set some parameters
   // TODO(arl): is this essential anymore?
   // unsigned int setup(const double prob_not_assign, const unsigned int max_lost,
-  // 									const double accuracy);
+  //                                    const double accuracy);
 
   // set the cost function to use
   void set_update_mode(const unsigned int update_mode);
@@ -167,20 +170,27 @@ public:
   // calculate the cost matrix using different methods
   void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
                   const size_t n_tracks,
-                  const size_t n_objects);
+                  const size_t n_objects,
+                  const bool use_uniform_prior);
 
   void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
                         const size_t n_tracks,
-                        const size_t n_objects);
+                        const size_t n_objects,
+                        const bool use_uniform_prior);
 
   void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief,
                  const size_t n_tracks,
-                 const size_t n_objects);
+                 const size_t n_objects,
+                 const bool use_uniform_prior);
 
   // calculate linkages based on belief matrix
   void link(Eigen::Ref<Eigen::MatrixXd> belief,
             const size_t n_tracks,
             const size_t n_objects);
+
+
+  double prob_update_motion(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
+  double prob_update_visual(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
 
   // somewhere to store the tracks
   TrackManager tracks;
@@ -204,11 +214,23 @@ private:
   // default object model, must remain uninitialised
   ObjectModel object_model;
 
-  // function pointer to chosen cost function
-  // void (BayesianTracker::*cost_function_ptr)(Eigen::Ref<Eigen::MatrixXd> belief,
-  //                                            const size_t n_tracks,
-  //                                            const size_t n_objects);
+  // cost function mode
+  // NOTE(arl): this is probably obsolete now
   unsigned int cost_function_mode;
+
+  // reference to an update function
+  double (BayesianTracker::*m_update_fn)(
+    const TrackletPtr&,
+    const TrackObjectPtr&
+  ) const;
+
+  // reference to a cost function
+  void (BayesianTracker::*m_cost_fn)(
+    const Eigen::Ref<Eigen::MatrixXd>,
+    const size_t,
+    const size_t,
+    const bool
+  );
 
   // default tracking parameters
   double prob_not_assign = PROB_NOT_ASSIGN;
@@ -274,6 +296,5 @@ const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
 
 void write_belief_matrix_to_CSV(std::string a_filename,
                                 Eigen::Ref<Eigen::MatrixXd> a_belief);
-
 
 #endif

@@ -28,4 +28,4 @@ Read more about `the tracks API at Napari's documentation <https://napari.org/ap
 
 Visualising trees
 =================
-`arboretum<https://github.com/quantumjot/arboretum>`_ is a separate plugin that we have developed to visualise lineage trees in napari.
+`arboretum <https://github.com/quantumjot/arboretum>`__ is a separate plugin that we have developed to visualise lineage trees in napari.

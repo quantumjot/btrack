@@ -1,20 +1,25 @@
+from __future__ import annotations
+
 import ctypes
 import itertools
 import logging
 import os
 import warnings
-from typing import List, Optional, Tuple, Union
 
 import numpy as np
+from numpy import typing as npt
 
-from . import btypes, config, constants, libwrapper, models, utils
-from .dataio import export_delegator, localizations_to_objects
-from .optimise import hypothesis, optimiser
+from btrack import btypes, config, constants, libwrapper, models, utils
+from btrack.io.exporters import export_delegator
+from btrack.io.utils import localizations_to_objects
+from btrack.optimise import hypothesis, optimiser
 
 __version__ = constants.get_version()
 
 # get the logger instance
 logger = logging.getLogger(__name__)
+
+TWO_DIM = 2
 
 
 class BayesianTracker:
@@ -47,7 +52,7 @@ class BayesianTracker:
         :py:meth:`btrack.btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
-    lbep : List[List]
+    LBEP : List[List]
         Return an LBEP table of the track lineages.
     configuration : config.TrackerConfig
         Return the current configuration.
@@ -69,9 +74,9 @@ class BayesianTracker:
     Data can be passed in in the following formats:
 
         * numpy arrays
-        * :py:meth:`btrack.btypes.PyTrackObject`
-        * CSV (see :py:meth:`btrack.dataio.import_CSV`)
-        * HDF (see :py:meth:`btrack.dataio.HDF5FileHandler`)
+        * :py:class:`btrack.btypes.PyTrackObject`
+        * CSV (see :py:meth:`btrack.io.importers.import_CSV`)
+        * HDF (see :py:class:`btrack.io.hdf.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
@@ -79,7 +84,7 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
     `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
-    :py:meth:`optimiser.TrackOptimiser` documentation for more information about the
+    :py:class:`optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
     Full details of the implementation can be found in [5]_ and [6]_.
@@ -119,6 +124,7 @@ class BayesianTracker:
 
     def __init__(
         self,
+        *,
         verbose: bool = True,
     ):
         """Initialise the BayesianTracker C++ engine and parameters."""
@@ -142,12 +148,10 @@ class BayesianTracker:
             logger.info(f"btrack (v{__version__}) library imported")
 
         # silently set the update method to EXACT
-        self._lib.set_update_mode(
-            self._engine, self.configuration.update_method.value
-        )
+        self._lib.set_update_mode(self._engine, self.configuration.update_method.value)
 
         # default parameters and space for stored objects
-        self._objects: List[btypes.PyTrackObject] = []
+        self._objects: list[btypes.PyTrackObject] = []
         self._frame_range = [0, 0]
 
     def __enter__(self):
@@ -167,7 +171,7 @@ class BayesianTracker:
         self.configure(filename)
 
     def configure(
-        self, configuration: Union[dict, os.PathLike, config.TrackerConfig]
+        self, configuration: dict | os.PathLike | config.TrackerConfig
     ) -> None:
         """Configure the tracker with a motion model, an object model and
         hypothesis generation_parameters.
@@ -210,16 +214,19 @@ class BayesianTracker:
             object.__setattr__(self, attr, value)
 
         # if we need to update the C++ library instance, do it here
-        if attr in (
-            "motion_model",
-            "object_model",
-            "max_search_radius",
-            "volume",
-            "update_method",
+        if (
+            attr
+            in (
+                "motion_model",
+                "object_model",
+                "max_search_radius",
+                "volume",
+                "update_method",
+            )
+            and value is not None
         ):
-            if value is not None:
-                update_lib_func = getattr(self, f"_{attr}")
-                update_lib_func(value)
+            update_lib_func = getattr(self, f"_{attr}")
+            update_lib_func(value)
 
     def __len__(self) -> int:
         return self.n_tracks
@@ -228,7 +235,7 @@ class BayesianTracker:
         """Set the maximum search radius for fast cost updates."""
         self._lib.max_search_radius(self._engine, max_search_radius)
 
-    def _update_method(self, method: Union[str, constants.BayesianUpdates]):
+    def _update_method(self, method: str | constants.BayesianUpdates):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         self._lib.set_update_mode(self._engine, method.value)
 
@@ -240,12 +247,10 @@ class BayesianTracker:
     @property
     def n_dummies(self) -> int:
         """Return the number of dummy objects (negative ID)."""
-        return len(
-            [d for d in itertools.chain.from_iterable(self.refs) if d < 0]
-        )
+        return len([d for d in itertools.chain.from_iterable(self.refs) if d < 0])
 
     @property
-    def tracks(self) -> List[btypes.Tracklet]:
+    def tracks(self) -> list[btypes.Tracklet]:
         """Return a sorted list of tracks, default is to sort by increasing
         length."""
         return [self[i] for i in range(self.n_tracks)]
@@ -270,12 +275,11 @@ class BayesianTracker:
     def dummies(self):
         """Return a list of dummy objects."""
         return [
-            self._lib.get_dummy(self._engine, -(i + 1))
-            for i in range(self.n_dummies)
+            self._lib.get_dummy(self._engine, -(i + 1)) for i in range(self.n_dummies)
         ]
 
     @property
-    def lbep(self):
+    def LBEP(self):
         """Return an LBEP list describing the track lineage information.
 
         Notes
@@ -300,24 +304,13 @@ class BayesianTracker:
            * - G
              - Generational depth (from root).
         """
+        return utils._lbep_table(self.tracks)
 
-        def _lbep_table(t):
-            return (
-                t.ID,
-                t.start,
-                t.stop,
-                t.parent,
-                t.root,
-                t.generation,
-            )
-
-        return [_lbep_table(t) for t in self.tracks]
-
-    def _sort(self, tracks: List[btypes.Tracklet]) -> List[btypes.Tracklet]:
+    def _sort(self, tracks: list[btypes.Tracklet]) -> list[btypes.Tracklet]:
         """Return a sorted list of tracks"""
         return sorted(tracks, key=lambda t: len(t), reverse=True)
 
-    def _volume(self, volume: Union[tuple, btypes.ImagingVolume]) -> None:
+    def _volume(self, volume: tuple | btypes.ImagingVolume) -> None:
         """Set the imaging volume.
 
         Parameters
@@ -328,7 +321,7 @@ class BayesianTracker:
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if volume.ndim == 2:
+        if volume.ndim == TWO_DIM:
             z = (-1e5, 1e5)
             volume = btypes.ImagingVolume(volume.x, volume.y, z)
 
@@ -382,18 +375,16 @@ class BayesianTracker:
         )
 
     @property
-    def frame_range(self) -> Tuple[int, int]:
+    def frame_range(self) -> tuple[int, int]:
         """Return the frame range."""
         return tuple(self.configuration.frame_range)
 
     @property
-    def objects(self) -> List[btypes.PyTrackObject]:
+    def objects(self) -> list[btypes.PyTrackObject]:
         """Return the list of objects added through the append method."""
         return self._objects
 
-    def append(
-        self, objects: Union[List[btypes.PyTrackObject], np.ndarray]
-    ) -> None:
+    def append(self, objects: list[btypes.PyTrackObject] | npt.NDArray) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
@@ -401,16 +392,21 @@ class BayesianTracker:
 
         Parameters
         ----------
-        objects : list, np.ndarray
+        objects : list, npt.NDArray
             A list of objects to track.
         """
 
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
-            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError("track_object must be a `PyTrackObject`")
+
+            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
+
+            # call the `obj.set_features` method for each object, which will
+            # set the pointer to the array for the tracker
+            obj.set_features(self.configuration.features)
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)
@@ -426,31 +422,16 @@ class BayesianTracker:
 
         return info_ptr.contents
 
-    def track(self) -> None:
-        """Run the actual tracking algorithm."""
+    def track_interactive(self, *args, **kwargs) -> None:
+        logger.warning("`track_interactive` will be deprecated. Use `track` instead.")
+        return self.track(*args, **kwargs)
 
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
-        logger.info("Starting tracking... ")
-        ret = self._lib.track(self._engine)
-
-        # get the statistics
-        stats = self._stats(ret)
-
-        if not utils.log_error(stats.error):
-            logger.info(
-                (
-                    f"SUCCESS. Found {self.n_tracks} tracks in"
-                    f"{1+self._frame_range[1]} frames"
-                )
-            )
-
-        # can log the statistics as well
-        utils.log_stats(stats.to_dict())
-
-    def track_interactive(self, step_size: int = 100) -> None:
+    def track(
+        self,
+        *,
+        step_size: int = 100,
+        tracking_updates: list[str | constants.BayesianUpdateFeatures] | None = None,
+    ) -> None:
         """Run the tracking in an interactive mode.
 
         Parameters
@@ -459,56 +440,62 @@ class BayesianTracker:
             The number of tracking steps to be taken before returning summary
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
+        tracking_updates : list, optional
+            A list of tracking updates to perform. See
+            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
         """
-
-        # TODO(arl): this needs cleaning up to have some decent output
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
 
         logger.info("Starting tracking... ")
 
+        if tracking_updates is not None:
+            self.configuration.tracking_updates = tracking_updates
+
+        logger.info(
+            f"Update using: {[f.name for f in self.configuration.tracking_updates]}"
+        )
+
+        # bitwise OR is equivalent to int sum here
+        self._lib.set_update_features(
+            self._engine,
+            sum(int(f.value) for f in self.configuration.tracking_updates),
+        )
+
         stats = self.step()
-        frm = 0
+        frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
-                (
-                    f"Tracking objects in frames {frm} to "
-                    f"{min(frm+step_size-1, self._frame_range[1]+1)} "
-                    f"(of {self._frame_range[1]+1})..."
-                )
+                f"Tracking objects in frames {frame} to "
+                f"{min(frame+step_size-1, self._frame_range[1]+1)} "
+                f"(of {self._frame_range[1]+1})..."
             )
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
-            frm += step_size
+            frame += step_size
 
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")
             logger.info(
-                (
-                    f" - Found {self.n_tracks} tracks in "
-                    f"{1+self._frame_range[1]} frames "
-                    f"(in {stats.t_total_time}s)"
-                )
+                f" - Found {self.n_tracks} tracks in "
+                f"{1+self._frame_range[1]} frames "
+                f"(in {stats.t_total_time}s)"
             )
             logger.info(
-                (
-                    f" - Inserted {self.n_dummies} dummy objects to fill "
-                    "tracking gaps"
-                )
+                f" - Inserted {self.n_dummies} dummy objects to fill tracking gaps"
             )
 
-    def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
+    def step(self, n_steps: int = 1) -> btypes.PyTrackingInfo | None:
         """Run an iteration (or more) of the tracking. Mostly for interactive
         mode tracking."""
-        if not self._initialised:
-            return None
-        return self._stats(self._lib.step(self._engine, n_steps))
+        return (
+            self._stats(self._lib.step(self._engine, n_steps))
+            if self._initialised
+            else None
+        )
 
-    def hypotheses(self) -> List[hypothesis.Hypothesis]:
+    def hypotheses(self) -> list[hypothesis.Hypothesis]:
         """Calculate and return hypotheses using the hypothesis engine."""
 
         if not self.hypothesis_model:
@@ -521,20 +508,13 @@ class BayesianTracker:
             self._frame_range[1],
         )
 
-        # now get all of the hypotheses
-        h = [
-            self._lib.get_hypothesis(self._engine, h)
-            for h in range(n_hypotheses)
-        ]
-        return h
+        return [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""
         return self.optimise(**kwargs)
 
-    def optimise(
-        self, options: Optional[dict] = None
-    ) -> List[hypothesis.Hypothesis]:
+    def optimise(self, options: dict | None = None) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.
 
         Parameters
@@ -555,16 +535,12 @@ class BayesianTracker:
         """
         logger.info(f"Loading hypothesis model: {self.hypothesis_model.name}")
 
-        logger.info(
-            f"Calculating hypotheses (relax: {self.hypothesis_model.relax})..."
-        )
+        logger.info(f"Calculating hypotheses (relax: {self.hypothesis_model.relax})...")
         hypotheses = self.hypotheses()
 
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
-        options = (
-            self.configuration.optimizer_options if not options else options
-        )
+        options = options or self.configuration.optimizer_options
 
         # if we don't have any hypotheses return
         if not hypotheses:
@@ -581,16 +557,14 @@ class BayesianTracker:
             logger.warning("Optimization failed.")
             return []
 
-        h_original = [h.type for h in hypotheses]
-        h_optimise = [h.type for h in optimised]
-        h_types = sorted(list(set(h_original)), key=lambda h: h.value)
+        h_original = [h.hypothesis_type for h in hypotheses]
+        h_optimise = [h.hypothesis_type for h in optimised]
+        h_types = sorted(set(h_original), key=lambda h: h.value)
 
         for h_type in h_types:
             logger.info(
-                (
-                    f" - {h_type}: {h_optimise.count(h_type)}"
-                    f" (of {h_original.count(h_type)})"
-                )
+                f" - {h_type}: {h_optimise.count(h_type)}"
+                f" (of {h_original.count(h_type)})"
             )
         logger.info(f" - TOTAL: {len(hypotheses)} hypotheses")
 
@@ -622,10 +596,7 @@ class BayesianTracker:
         trk_id = self._lib.get_ID(self._engine, idx)
 
         # convert the array of children to a python list
-        if nc > 0:
-            c = children.tolist()
-        else:
-            c = []
+        c = children.tolist() if nc > 0 else []
 
         # now build the track from the references
         refs = refs.tolist()
@@ -669,8 +640,8 @@ class BayesianTracker:
     def export(
         self,
         filename: os.PathLike,
-        obj_type: Optional[str] = None,
-        filter_by: Optional[str] = None,
+        obj_type: str | None = None,
+        filter_by: str | None = None,
     ) -> None:
         """Export tracks using the appropriate exporter.
 
@@ -685,24 +656,17 @@ class BayesianTracker:
             A string that represents how the data has been filtered prior to
             tracking, e.g. using the object property `area>100`
         """
-        export_delegator(
-            filename, self, obj_type=obj_type, filter_by=filter_by
-        )
+        export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 
     def to_napari(
         self,
+        *,
         replace_nan: bool = True,
-        ndim: Optional[int] = None,
-    ) -> Tuple[np.ndarray, dict, dict]:
+        ndim: int | None = None,
+    ) -> tuple[npt.NDArray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
-        return utils.tracks_to_napari(
-            self.tracks, ndim, replace_nan=replace_nan
-        )
-
-
-if __name__ == "__main__":
-    pass
+        return utils.tracks_to_napari(self.tracks, ndim, replace_nan=replace_nan)

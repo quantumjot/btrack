@@ -26,8 +26,6 @@ from btrack import constants
 
 __all__ = ["PyTrackObject", "Tracklet"]
 
-TWO_DIM = 2
-
 
 class ImagingVolume(NamedTuple):
     x: Tuple[float, float]  # noqa: UP006

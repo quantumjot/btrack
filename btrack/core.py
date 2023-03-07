@@ -19,8 +19,6 @@ __version__ = constants.get_version()
 # get the logger instance
 logger = logging.getLogger(__name__)
 
-TWO_DIM = 2
-
 
 class BayesianTracker:
     """BayesianTracker.
@@ -321,7 +319,7 @@ class BayesianTracker:
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if volume.ndim == TWO_DIM:
+        if volume.ndim == constants.Dimensionality.TWO:
             z = (-1e5, 1e5)
             volume = btypes.ImagingVolume(volume.x, volume.y, z)
 

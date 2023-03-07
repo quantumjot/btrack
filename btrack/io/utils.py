@@ -12,7 +12,6 @@ from btrack import btypes, constants
 # get the logger instance
 logger = logging.getLogger(__name__)
 
-TWO_DIM = 2
 N_FEATURES = 3
 
 
@@ -75,7 +74,7 @@ def objects_from_array(
     default_keys: list[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> list[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
-    assert objects_arr.ndim == TWO_DIM
+    assert objects_arr.ndim == constants.Dimensionality.TWO
 
     n_features = objects_arr.shape[1]
     assert n_features >= N_FEATURES

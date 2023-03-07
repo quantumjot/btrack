@@ -21,9 +21,6 @@ __all__ = [
 # get the logger instance
 logger = logging.getLogger(__name__)
 
-TWO_DIM = 2
-THREE_DIM = 3
-
 
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
@@ -105,7 +102,7 @@ def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) ->
             if trk_property.ndim == 0:
                 trk_property = np.repeat(trk_property, len(track))
 
-            if trk_property.ndim > TWO_DIM:
+            if trk_property.ndim > Dimensionality.TWO:
                 raise ValueError(
                     f"Track properties of {trk_property.ndim} dimensions are "
                     "not currently supported."
@@ -113,7 +110,7 @@ def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) ->
 
             assert trk_property.shape[0] == len(track)
 
-            if trk_property.ndim == TWO_DIM:
+            if trk_property.ndim == Dimensionality.TWO:
                 for idx in range(trk_property.shape[-1]):
                     tmp_key = f"{key}-{idx}"
                     if tmp_key not in data:
@@ -259,9 +256,9 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
-        if single_segmentation.ndim == TWO_DIM:
+        if single_segmentation.ndim == Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
-        elif single_segmentation.ndim == THREE_DIM:
+        elif single_segmentation.ndim == Dimensionality.THREE:
             old_id = single_segmentation[frame_coords[:, keys["z"]], yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (

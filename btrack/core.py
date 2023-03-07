@@ -697,6 +697,14 @@ class BayesianTracker:
             self.tracks, ndim, replace_nan=replace_nan
         )
 
+    def graph_edges(self) -> list[btypes.PyGraphEdge]:
+        num_edges = self._lib.num_edges(self._engine)
+        graph_edges = [
+            self._lib.get_graph_edge(self._engine, idx)
+            for idx in range(num_edges)
+        ]
+        return graph_edges
+
 
 if __name__ == "__main__":
     pass

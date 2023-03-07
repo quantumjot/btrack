@@ -71,6 +71,7 @@ void Tracklet::append_dummy(bool update_position) {
 
   if (lost > max_lost) {
     // NOTE(arl): this should never happen
+    std::cout << "Lost: " << lost << " max: " << max_lost << std::endl;
     return;
   }
 

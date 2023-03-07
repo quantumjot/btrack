@@ -118,6 +118,12 @@ class InterfaceWrapper
     void set_volume(const double* a_volume);
     void get_volume(double* a_volume) const;
 
+    // get the graph edges of the bayesian belief matrix
+    unsigned int num_edges() const {
+      return tracker.graph_edges.size();
+    }
+    PyGraphEdge get_graph_edge(const unsigned int a_ID) const;
+
     // hypothesis generation, returns number of hypotheses found
     unsigned int create_hypotheses( PyHypothesisParams params,
                                     const unsigned int a_start_frame,

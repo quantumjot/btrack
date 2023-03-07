@@ -52,6 +52,7 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define WRITE_BELIEF_MATRIX false
 #define RESOLVE_CONFLICTS true
 #define CLIP_MAXIMUM_LINKAGE_DISTANCE true
+#define STORE_GRAPH_EDGES true
 
 
 // reserve space for objects and tracks

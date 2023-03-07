@@ -203,6 +203,9 @@ public:
     return &statistics;
   }
 
+  // space to store the entire graph
+  std::vector<PyGraphEdge> graph_edges;
+
 private:
 
   // verbose output to stdio

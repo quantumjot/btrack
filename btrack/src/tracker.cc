@@ -373,9 +373,7 @@ void BayesianTracker::step(const unsigned int steps)
       update_iteration++;
     }
 
-    // now that we have the complete belief matrix, we want to associate
-    // do naive linking
-    link(belief, n_active, n_obs);
+
 
     // write out belief matrix here
     if (WRITE_BELIEF_MATRIX) {
@@ -384,6 +382,28 @@ void BayesianTracker::step(const unsigned int steps)
       belief_filename << current_frame << ".csv";
       write_belief_matrix_to_CSV(belief_filename.str(), belief);
     }
+
+    // if we're storing the graph edges for future optimization, do so here
+    if (STORE_GRAPH_EDGES) {
+      for (size_t trk=0; trk<n_active; trk++) {
+        Eigen::VectorXd prob_assign_per_obj;
+        prob_assign_per_obj = belief.col(trk);
+
+        // note that this doesn't store an edge to `lost`, but we can infer it
+        // as 1 - sum(scores) for each association
+        for (size_t obj=0; obj<n_obs; obj++) {
+          PyGraphEdge edge;
+          edge.source = active[trk]->track.back()->ID;
+          edge.target = new_objects[obj]->ID;
+          edge.score = prob_assign_per_obj[obj];
+          graph_edges.push_back(edge);
+        }
+      }
+    }
+
+    // now that we have the complete belief matrix, we want to associate
+    // do naive linking
+    link(belief, n_active, n_obs);
 
     // update the iteration counter
     step++;

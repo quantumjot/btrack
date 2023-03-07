@@ -5,7 +5,7 @@ import platform
 
 import numpy as np
 
-from .btypes import PyTrackingInfo, PyTrackObject
+from .btypes import PyGraphEdge, PyTrackingInfo, PyTrackObject
 from .constants import BTRACK_PATH
 from .optimise import hypothesis
 
@@ -221,6 +221,14 @@ def get_library():
     # get the number of tracks
     lib.size.restype = ctypes.c_uint
     lib.size.argtypes = [ctypes.c_void_p]
+
+    # get the number of graph edges
+    lib.num_edges.restype = ctypes.c_uint
+    lib.num_edges.argtypes = [ctypes.c_void_p]
+
+    # get the graph edges
+    lib.get_graph_edge.restype = PyGraphEdge
+    lib.get_graph_edge.argtypes = [ctypes.c_void_p, ctypes.c_int]
 
     # calculate the hypotheses
     lib.create_hypotheses.restype = ctypes.c_uint

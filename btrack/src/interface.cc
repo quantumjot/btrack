@@ -243,6 +243,19 @@ EXTERN_DECL {
   }
 
   /* =========================================================================
+  GRAPH EDGES
+  ========================================================================= */
+
+  SHARED_LIB unsigned int num_edges( InterfaceWrapper* h ) {
+    return h->num_edges();
+  }
+
+  SHARED_LIB PyGraphEdge get_graph_edge( InterfaceWrapper* h,
+                                  const unsigned int edge_idx ){
+    return h->get_graph_edge(edge_idx);
+  }
+
+  /* =========================================================================
   OPTIMIZER
   ========================================================================= */
 

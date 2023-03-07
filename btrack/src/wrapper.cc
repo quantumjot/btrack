@@ -284,6 +284,12 @@ PyTrackObject InterfaceWrapper::get_dummy(const int a_ID)
 }
 
 
+PyGraphEdge InterfaceWrapper::get_graph_edge(const unsigned int a_ID) const
+{
+  return tracker.graph_edges[a_ID];
+}
+
+
 // hypothesis generation
 unsigned int InterfaceWrapper::create_hypotheses( const PyHypothesisParams a_params,
                                                   const unsigned int a_start_n,

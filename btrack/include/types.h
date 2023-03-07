@@ -62,6 +62,13 @@ extern "C" struct PyTrackInfo {
 };
 
 
+// structure to return the Bayesian belief matrix as a series of graph edges
+extern "C" struct PyGraphEdge {
+  long source;
+  long target;
+  double score;
+};
+
 
 
 

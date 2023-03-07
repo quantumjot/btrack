@@ -501,7 +501,7 @@ class Tracklet:
 
         tmp_track = np.concatenate(tmp_track, axis=-1)
         assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == TWO_DIM
+        assert tmp_track.ndim == constants.Dimensionality.TWO
         return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:

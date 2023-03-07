@@ -1,27 +1,28 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any
 
 import numpy as np
+from numpy import typing as npt
 
 # import core
-from .. import btypes, constants
+from btrack import btypes, constants
 
 # get the logger instance
 logger = logging.getLogger(__name__)
 
+N_FEATURES = 3
+
 
 def localizations_to_objects(
-    localizations: Union[
-        np.ndarray, List[btypes.PyTrackObject], Dict[str, Any]
-    ]
-) -> List[btypes.PyTrackObject]:
+    localizations: npt.NDArray | list[btypes.PyTrackObject] | dict[str, Any]
+) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
     ----------
-    localizations : list[PyTrackObject], np.ndarray, pandas.DataFrame
+    localizations : list[PyTrackObject], npt.NDArray, pandas.DataFrame
         A list or array of localizations.
 
     Returns
@@ -32,24 +33,18 @@ def localizations_to_objects(
 
     logger.info(f"Objects are of type: {type(localizations)}")
 
-    if isinstance(localizations, list):
-        if check_object_type(localizations):
-            # if these are already PyTrackObjects just silently return
-            return localizations
+    if isinstance(localizations, list) and check_object_type(localizations):
+        # if these are already PyTrackObjects just silently return
+        return localizations
 
     # do we have a numpy array or pandas dataframe?
     if isinstance(localizations, np.ndarray):
         return objects_from_array(localizations)
-    else:
-        try:
-            objects_dict = {
-                c: np.asarray(localizations[c]) for c in localizations
-            }
-        except ValueError:
-            logger.error(f"Unknown localization type: {type(localizations)}")
-            raise TypeError(
-                f"Unknown localization type: {type(localizations)}"
-            )
+    try:
+        objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
+    except ValueError as e:
+        logger.error(f"Unknown localization type: {type(localizations)}")
+        raise TypeError(f"Unknown localization type: {type(localizations)}") from e
 
     # how many objects are there
     n_objects = objects_dict["t"].shape[0]
@@ -58,13 +53,13 @@ def localizations_to_objects(
     return objects_from_dict(objects_dict)
 
 
-def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
+def objects_from_dict(objects_dict: dict) -> list[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
     n_objects = int(objects_dict["t"].shape[0])
 
-    assert all([v.shape[0] == n_objects for k, v in objects_dict.items()])
+    assert all(v.shape[0] == n_objects for v in objects_dict.values())
 
     for i in range(n_objects):
         data = {k: v[i] for k, v in objects_dict.items()}
@@ -74,15 +69,15 @@ def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
 
 
 def objects_from_array(
-    objects_arr: np.ndarray,
+    objects_arr: npt.NDArray,
     *,
-    default_keys: List[str] = constants.DEFAULT_OBJECT_KEYS,
-) -> List[btypes.PyTrackObject]:
+    default_keys: list[str] = constants.DEFAULT_OBJECT_KEYS,
+) -> list[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
-    assert objects_arr.ndim == 2
+    assert objects_arr.ndim == constants.Dimensionality.TWO
 
     n_features = objects_arr.shape[1]
-    assert n_features >= 3
+    assert n_features >= N_FEATURES
 
     n_objects = objects_arr.shape[0]
 

@@ -25,7 +25,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering",
 ]
-depenencies = [
+dependencies = [
     "cvxopt>=1.2.0",
     "h5py>=2.10.0",
     "numpy>=1.17.3",

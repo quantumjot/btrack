@@ -18,6 +18,7 @@ RANDOM_SEED = 1234
 
 def create_test_object(
     test_id: int | None = None,
+    ndim: int = 3,
 ) -> tuple[btrack.btypes.PyTrackObject, dict[str, Any]]:
     """Create a test object."""
 
@@ -27,7 +28,9 @@ def create_test_object(
         "ID": rng.integers(0, 1000) if test_id is None else int(test_id),
         "x": rng.uniform(0.0, 1000.0),
         "y": rng.uniform(0.0, 1000.0),
-        "z": rng.uniform(0.0, 1000.0),
+        "z": rng.uniform(0.0, 1000.0)
+        if ndim == btrack.constants.Dimensionality.THREE
+        else 0.0,
         "t": rng.integers(0, 1000),
         "dummy": False,
         "label": 0,
@@ -51,6 +54,7 @@ def create_test_properties() -> dict[str, float]:
 def create_test_tracklet(
     track_len: int,
     track_id: int | None = None,
+    ndim: int = 3,
 ) -> tuple[
     btrack.btypes.Tracklet,
     list[btrack.btypes.PyTrackObject],
@@ -60,7 +64,7 @@ def create_test_tracklet(
     """Create a test track."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
-    data = [create_test_object()[0] for _ in range(track_len)]
+    data = [create_test_object(ndim=ndim)[0] for _ in range(track_len)]
     props = [create_test_properties() for _ in range(track_len)]
     for idx, obj in enumerate(data):
         obj.properties = props[idx]

@@ -23,14 +23,16 @@ def create_test_object(
     """Create a test object."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
-
+    z = (
+        rng.uniform(0.0, 1000.0)
+        if ndim == btrack.constants.Dimensionality.THREE
+        else 0.0
+    )
     data = {
         "ID": rng.integers(0, 1000) if test_id is None else int(test_id),
         "x": rng.uniform(0.0, 1000.0),
         "y": rng.uniform(0.0, 1000.0),
-        "z": rng.uniform(0.0, 1000.0)
-        if ndim == btrack.constants.Dimensionality.THREE
-        else 0.0,
+        "z": z,
         "t": rng.integers(0, 1000),
         "dummy": False,
         "label": 0,

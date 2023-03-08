@@ -668,7 +668,3 @@ class BayesianTracker:
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
         return utils.tracks_to_napari(self.tracks, ndim=ndim, replace_nan=replace_nan)
-
-
-if __name__ == "__main__":
-    pass

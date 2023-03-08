@@ -216,7 +216,7 @@ def test_tracks_to_napari_ndim_inference(ndim: int):
     """Test inferring the correct dimensions from track data when using
     `tracks_to_napari`."""
 
-    # make three fake tracks with properties
+    # make a fake track with n dimensions
     track_len = 10
     tracks = [create_test_tracklet(track_len, 1, ndim=ndim)[0]]
     data, _, _ = utils.tracks_to_napari(tracks, ndim=None)

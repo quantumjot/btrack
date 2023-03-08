@@ -61,6 +61,12 @@ def test_import_config():
     assert isinstance(cfg, btrack.config.TrackerConfig)
 
 
+def test_config_to_json():
+    """Test that a config can be converted to json format without raising an error"""
+    cfg = btrack.config.load_config(CONFIG_FILE)
+    cfg.json()
+
+
 def test_config_tracker_setters():
     """Test configuring the tracker using setters."""
     options = _random_config()

@@ -17,12 +17,13 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
+from typing import List
 
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
 
-from btrack.constants import GLPK_OPTIONS, Fates
-from btrack.optimise import hypothesis
+from ..constants import GLPK_OPTIONS, Fates
+from . import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -99,7 +100,7 @@ class TrackOptimiser:
     """
 
     def __init__(self, options: dict = GLPK_OPTIONS):
-        self._hypotheses: list[hypothesis.Hypothesis] = []
+        self._hypotheses: List[hypothesis.Hypothesis] = []
         self.options = options  # TODO(arl): do some option parsing?
 
     @property
@@ -110,7 +111,7 @@ class TrackOptimiser:
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
-    def optimise(self):  # noqa: PLR0915
+    def optimise(self):
         """Run the opimization algorithm.
 
         Returns
@@ -129,7 +130,7 @@ class TrackOptimiser:
 
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
-        N = max({int(h.ID) for h in self.hypotheses})
+        N = max(set([int(h.ID) for h in self.hypotheses]))
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...
@@ -139,32 +140,38 @@ class TrackOptimiser:
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
         for counter, h in enumerate(self.hypotheses):
+
             # set the hypothesis score
             rho[counter] = h.log_likelihood
 
-            if h.hypothesis_type == Fates.FALSE_POSITIVE:
+            if h.type == Fates.FALSE_POSITIVE:
                 # is this a false positive?
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.hypothesis_type in INIT_FATES:
+            elif h.type in INIT_FATES:
                 # an initialisation, therefore we only present this in the
                 # second half of the A matrix
                 trk = trk_idx(h.ID)
                 A[N + trk, counter] = 1
                 continue
 
-            elif (
-                h.hypothesis_type in TERM_FATES or h.hypothesis_type == Fates.APOPTOSIS
-            ):
-                # a termination/apoptosis event, entry in first half only
+            elif h.type in TERM_FATES:
+                # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 continue
 
-            elif h.hypothesis_type == Fates.LINK:
+            elif h.type == Fates.APOPTOSIS:
+                # an apoptosis event, entry in first half only
+                trk = trk_idx(h.ID)
+                A[trk, counter] = 1
+                # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
+                continue
+
+            elif h.type == Fates.LINK:
                 # a linkage event
                 trk_i = trk_idx(h.ID)
                 trk_j = trk_idx(h.link_ID)
@@ -172,7 +179,7 @@ class TrackOptimiser:
                 A[N + trk_j, counter] = 1
                 continue
 
-            elif h.hypothesis_type == Fates.DIVIDE:
+            elif h.type == Fates.DIVIDE:
                 # a branch event
                 trk = trk_idx(h.ID)
                 child_one = trk_idx(h.child_one_ID)
@@ -182,7 +189,7 @@ class TrackOptimiser:
                 A[N + child_two, counter] = 1
                 continue
 
-            elif h.hypothesis_type == Fates.MERGE:
+            elif h.type == Fates.MERGE:
                 # a merge event
                 trk = trk_idx(h.ID)
                 parent_one = trk_idx(h.parent_one_ID)
@@ -193,7 +200,7 @@ class TrackOptimiser:
                 continue
 
             else:
-                raise ValueError(f"Unknown hypothesis: {h.hypothesis_type}")
+                raise ValueError(f"Unknown hypothesis: {h.type}")
 
         logger.info("Optimizing...")
 

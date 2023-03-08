@@ -4,13 +4,14 @@ import numpy as np
 import pytest
 
 from btrack import btypes, utils
-from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
+from btrack.constants import DEFAULT_OBJECT_KEYS
 from btrack.io import objects_from_array
-from tests._utils import create_test_image, create_test_tracklet
+
+from ._utils import create_test_image, create_test_tracklet
 
 
 def _example_segmentation_generator():
-    for _ in range(10):
+    for i in range(10):
         img, centroids = create_test_image()
         yield img
 
@@ -28,11 +29,13 @@ def _validate_centroids(centroids, objects, scale=None):
     ndim = centroids.shape[-1]
 
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if ndim == Dimensionality.TWO:
+    if ndim == 2:
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis
-    centroids = centroids[np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])]
+    centroids = centroids[
+        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
+    ]
 
     # sort the objects
     obj_as_array = obj_as_array[
@@ -46,14 +49,14 @@ def test_segmentation_to_objects_type():
     """Test that btrack objects are returned."""
     img, centroids = create_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
-    assert all(isinstance(o, btypes.PyTrackObject) for o in objects)
+    assert all([isinstance(o, btypes.PyTrackObject) for o in objects])
 
 
 def test_segmentation_to_objects_type_generator():
     """Test generator as input."""
     generator = _example_segmentation_generator()
     objects = utils.segmentation_to_objects(generator)
-    assert all(isinstance(o, btypes.PyTrackObject) for o in objects)
+    assert all([isinstance(o, btypes.PyTrackObject) for o in objects])
 
 
 @pytest.mark.parametrize("ndim", [2, 3])
@@ -90,7 +93,9 @@ def test_segmentation_to_objects_scale(scale):
 def test_assign_class_ID(ndim, nobj):
     """Test mask class_id assignment."""
     img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=False)
-    objects = utils.segmentation_to_objects(img[np.newaxis, ...], assign_class_ID=True)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], assign_class_ID=True
+    )
     # check that the values match
     for obj in objects:
         centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
@@ -104,7 +109,9 @@ def test_regionprops():
         "area",
         "axis_major_length",
     )
-    objects = utils.segmentation_to_objects(img[np.newaxis, ...], properties=properties)
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], properties=properties
+    )
 
     # check that the properties keys match
     for obj in objects:
@@ -136,12 +143,16 @@ def test_update_segmentation_2d(test_segmentation_and_tracks):
 
 
 @pytest.mark.parametrize("color_by", ["ID", "root", "generation", "fake"])
-def test_update_segmentation_2d_colorby(test_segmentation_and_tracks, color_by):
+def test_update_segmentation_2d_colorby(
+    test_segmentation_and_tracks, color_by
+):
     """Test relabeling a 2D-segmentation with track ID."""
     in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
 
     with pytest.raises(ValueError) if color_by == "fake" else nullcontext():
-        _ = utils.update_segmentation(in_segmentation, tracks, color_by=color_by)
+        _ = utils.update_segmentation(
+            in_segmentation, tracks, color_by=color_by
+        )
 
 
 def test_update_segmentation_3d(test_segmentation_and_tracks):
@@ -195,8 +206,8 @@ def test_tracks_to_napari(ndim: int):
     # check the properties keys are correct, note that nD keys are replaced with
     # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
     # and so forth
-    for key in tracks[0].properties:
-        assert any(k.startswith(key) for k in properties)
+    for key in tracks[0].properties.keys():
+        assert any([k.startswith(key) for k in properties.keys()])
 
 
 @pytest.mark.parametrize("ndim", [1, 4])
@@ -229,7 +240,10 @@ def test_objects_from_array(test_objects):
     """Test creation of a list of objects from a numpy array."""
 
     obj_arr = np.stack(
-        [[getattr(obj, k) for k in DEFAULT_OBJECT_KEYS] for obj in test_objects],
+        [
+            [getattr(obj, k) for k in DEFAULT_OBJECT_KEYS]
+            for obj in test_objects
+        ],
         axis=0,
     )
 

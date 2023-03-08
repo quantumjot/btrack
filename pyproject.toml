@@ -115,6 +115,9 @@ pep8-naming.classmethod-decorators = [
     "pydantic.validator",
 ]
 
+[tool.setuptools.packages.find]
+where = ["btrack"]
+
 [tool.setuptools_scm]
 write_to = "btrack/VERSION.txt"
 

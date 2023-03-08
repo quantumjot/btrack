@@ -5,8 +5,7 @@ import numpy as np
 import pytest
 
 import btrack
-
-from ._utils import (
+from tests._utils import (
     create_test_object,
     create_test_properties,
     full_tracker_example,
@@ -33,7 +32,7 @@ def test_hdf5_write_with_properties(hdf5_file_path):
 
     objects = []
     for i in range(10):
-        obj, _ = create_test_object(id=i)
+        obj, _ = create_test_object(test_id=i)
         obj.properties = create_test_properties()
         objects.append(obj)
 
@@ -117,13 +116,13 @@ def test_write_lbep(tmp_path, test_real_objects):
     btrack.io.export_LBEP(fn, tracker.tracks)
 
     # check that the file contains the correct number of lines
-    with open(fn, "r") as lbep_file:
+    with open(fn) as lbep_file:
         entries = lbep_file.readlines()
     assert len(entries) == len(tracks)
     # and that the LBEP entries match
     for entry in entries:
         lbep = [int(e) for e in entry.strip("/n").split()]
-        track = next(filter(lambda t: t.ID == lbep[0], tracks))
+        track = next(filter(lambda t: lbep[0] == t.ID, tracks))
         assert lbep == [track.ID, track.start, track.stop, track.parent]
 
 

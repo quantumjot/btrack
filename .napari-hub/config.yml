@@ -1,12 +1,11 @@
-
 # Add labels the plugin from the EDAM Bioimaging ontology
 labels:
   ontology: EDAM-BIOIMAGING:alpha06
   terms:
-  - Cell tracking
-  - Cell lineage extraction
-  - Object tracking
-  - 2D image
-  - 3D image
-  - Image time series
-  - Multi-channel image
+    - Cell tracking
+    - Cell lineage extraction
+    - Object tracking
+    - 2D image
+    - 3D image
+    - Image time series
+    - Multi-channel image

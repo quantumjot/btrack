@@ -98,7 +98,7 @@ public:
   // set some parameters
   // TODO(arl): is this essential anymore?
   // unsigned int setup(const double prob_not_assign, const unsigned int max_lost,
-  // 									const double accuracy);
+  //                                    const double accuracy);
 
   // set the cost function to use
   void set_update_mode(const unsigned int update_mode);

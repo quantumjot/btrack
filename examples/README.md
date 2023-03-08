@@ -1,5 +1,4 @@
-BayesianTracker examples
-------------------------
+## BayesianTracker examples
 
 Example notebooks can be found in this directory.
 

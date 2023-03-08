@@ -17,19 +17,20 @@ from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, NamedTuple, Optional, Tuple
 
 import numpy as np
+from numpy import typing as npt
 
-from . import constants
+from btrack import constants
 
 __all__ = ["PyTrackObject", "Tracklet"]
 
 
 class ImagingVolume(NamedTuple):
-    x: Tuple[float, float]
-    y: Tuple[float, float]
-    z: Optional[Tuple[float, float]] = None
+    x: Tuple[float, float]  # noqa: UP006
+    y: Tuple[float, float]  # noqa: UP006
+    z: Optional[Tuple[float, float]] = None  # noqa: UP006 UP007
 
     @property
     def ndim(self) -> int:
@@ -74,7 +75,7 @@ class PyTrackObject(ctypes.Structure):
     properties : Dict[str, Union[int, float]]
         Dictionary of properties associated with this object.
     state : constants.States
-        A state label for the object. See `constants.States`
+        A state label for the object. See `btrack.constants.States`
 
     Notes
     -----
@@ -104,13 +105,11 @@ class PyTrackObject(ctypes.Structure):
         self._properties = {}
 
     @property
-    def properties(self) -> Dict[str, Any]:
-        if self.dummy:
-            return {}
-        return self._properties
+    def properties(self) -> dict[str, Any]:
+        return {} if self.dummy else self._properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, Any]):
+    def properties(self, properties: dict[str, Any]):
         """Set the object properties."""
         self._properties.update(properties)
 
@@ -118,17 +117,15 @@ class PyTrackObject(ctypes.Structure):
     def state(self) -> constants.States:
         return constants.States(self.label)
 
-    def set_features(self, keys: List[str]) -> None:
+    def set_features(self, keys: list[str]) -> None:
         """Set features to be used by the tracking update."""
 
         if not keys:
             self.n_features = 0
             return
 
-        if not all(k in self.properties.keys() for k in keys):
-            missing_features = list(
-                set(keys).difference(set(self.properties.keys()))
-            )
+        if any(k not in self.properties for k in keys):
+            missing_features = list(set(keys).difference(set(self.properties.keys())))
             raise KeyError(f"Feature(s) missing: {missing_features}.")
 
         # store a reference to the numpy array so that Python maintains
@@ -142,24 +139,23 @@ class PyTrackObject(ctypes.Structure):
         self.features = np.ctypeslib.as_ctypes(self._features)
         self.n_features = len(self._features)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         node = {
             k: getattr(self, k)
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        node.update(self.properties)
+        node |= self.properties
         return node
 
     @staticmethod
-    def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
+    def from_dict(properties: dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = {k: kt for k, kt in PyTrackObject._fields_}
-        attr = [k for k in fields.keys() if k in properties.keys()]
+        fields = dict(PyTrackObject._fields_)
+        attr = [k for k in fields if k in properties]
         for key in attr:
-
             new_data = properties[key]
 
             # fix for implicit type conversion
@@ -171,9 +167,7 @@ class PyTrackObject(ctypes.Structure):
                 setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
-        obj.properties = {
-            k: v for k, v in properties.items() if k not in fields.keys()
-        }
+        obj.properties = {k: v for k, v in properties.items() if k not in fields.keys()}
         return obj
 
     def __repr__(self):
@@ -189,7 +183,7 @@ class PyTrackingInfo(ctypes.Structure):
     Parameters
     ----------
     error : int
-        Error code from the tracker. See `constants.Errors` for definitions.
+        Error code from the tracker. See `btrack.constants.Errors` for definitions.
     n_tracks : int
         Total number of tracks initialised during tracking.
     n_active : int
@@ -232,12 +226,11 @@ class PyTrackingInfo(ctypes.Structure):
         ("complete", ctypes.c_bool),
     ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the statistics"""
         # TODO(arl): make this more readable by converting seconds, ms
         # and interpreting error messages?
-        stats = {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
-        return stats
+        return {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
 
     @property
     def tracker_active(self) -> bool:
@@ -272,7 +265,7 @@ class PyGraphEdge(ctypes.Structure):
         ("score", ctypes.c_double),
     ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary describing the edge."""
         edge = {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
         return edge
@@ -319,7 +312,7 @@ class Tracklet:
     softmax : list[float]
         If defined, return the softmax score for the label of each object in the
         track.
-    properties : Dict[str, np.ndarray]
+    properties : Dict[str, npt.NDArray]
         Return a dictionary of track properties derived from
         :py:class:`btrack.btypes.PyTrackObject` properties.
     root : int,
@@ -332,7 +325,7 @@ class Tracklet:
         First time stamp of track.
     stop : int, float
         Last time stamp of track.
-    kalman : np.ndarray
+    kalman : npt.NDArray
         Return the complete output of the kalman filter for this track. Note,
         that this may not have been returned while from the tracker. See
         :py:attr:`btrack.BayesianTracker.return_kalman` for more details.
@@ -352,14 +345,15 @@ class Tracklet:
     def __init__(
         self,
         ID: int,
-        data: List[PyTrackObject],
+        data: list[PyTrackObject],
         *,
-        parent: Optional[int] = None,
-        children: List[int] = [],
+        parent: int | None = None,
+        children: list[int] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-
-        assert all([isinstance(o, PyTrackObject) for o in data])
+        if children is None:
+            children = []
+        assert all(isinstance(o, PyTrackObject) for o in data)
 
         self.ID = ID
         self._data = data
@@ -382,7 +376,7 @@ class Tracklet:
         return _pandas_html_repr(self)
 
     @property
-    def properties(self) -> Dict[str, np.ndarray]:
+    def properties(self) -> dict[str, npt.NDArray]:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
         keys = set()
@@ -394,11 +388,7 @@ class Tracklet:
         # this to fill the properties array with NaN for dummy objects
         property_shapes = {
             k: next(
-                (
-                    np.asarray(o.properties[k]).shape
-                    for o in self._data
-                    if not o.dummy
-                ),
+                (np.asarray(o.properties[k]).shape for o in self._data if not o.dummy),
                 None,
             )
             for k in keys
@@ -428,7 +418,7 @@ class Tracklet:
         return properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, np.ndarray]):
+    def properties(self, properties: dict[str, npt.NDArray]):
         """Store properties associated with this Tracklet."""
         # TODO(arl): this will need to set the object properties
         pass
@@ -486,55 +476,53 @@ class Tracklet:
 
     @property
     def is_root(self) -> bool:
-        return (
-            self.parent == 0 or self.parent is None or self.parent == self.ID
-        )
+        return self.parent == 0 or self.parent is None or self.parent == self.ID
 
     @property
     def is_leaf(self) -> bool:
         return not self.children
 
     @property
-    def kalman(self) -> np.ndarray:
+    def kalman(self) -> npt.NDArray:
         return self._kalman
 
     @kalman.setter
-    def kalman(self, data: np.ndarray) -> None:
+    def kalman(self, data: npt.NDArray) -> None:
         assert isinstance(data, np.ndarray)
         self._kalman = data
 
-    def mu(self, index: int) -> np.ndarray:
+    def mu(self, index: int) -> npt.NDArray:
         """Return the Kalman filter mu. Note that we are only returning the mu
         for the positions (e.g. 3x1)."""
         return self.kalman[index, 1:4].reshape(3, 1)
 
-    def covar(self, index: int) -> np.ndarray:
+    def covar(self, index: int) -> npt.NDArray:
         """Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3)."""
         return self.kalman[index, 4:13].reshape(3, 3)
 
-    def predicted(self, index: int) -> np.ndarray:
+    def predicted(self, index: int) -> npt.NDArray:
         """Return the motion model prediction for the given timestep."""
         return self.kalman[index, 13:].reshape(3, 1)
 
     def to_dict(
         self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
-        trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
+        trk_tuple = tuple((p, getattr(self, p)) for p in properties)
         data = OrderedDict(trk_tuple)
         data.update(self.properties)
         return data
 
     def to_array(
         self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
-    ) -> np.ndarray:
+    ) -> npt.NDArray:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
-        for key, values in data.items():
+        for values in data.values():
             np_values = np.asarray(values)
             if np_values.size == 1:
                 np_values = np.tile(np_values, len(self))
@@ -543,7 +531,7 @@ class Tracklet:
 
         tmp_track = np.concatenate(tmp_track, axis=-1)
         assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == 2
+        assert tmp_track.ndim == constants.Dimensionality.TWO
         return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:
@@ -555,7 +543,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> Tuple[int]:
+    def LBEP(self) -> tuple[int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,
@@ -572,18 +560,12 @@ def _pandas_html_repr(obj):
     try:
         import pandas as pd
     except ImportError:
-        return (
-            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-            + obj.__repr__()
-        )
+        return f"<b>Install pandas for nicer, tabular rendering.</b> <br>{obj.__repr__}"
 
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
+    n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
         if not isinstance(v, (list, np.ndarray)):

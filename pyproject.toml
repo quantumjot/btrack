@@ -104,8 +104,8 @@ legacy_tox_ini = """
     [gh-actions]
     python =
         3.8: py38
-        3.9: py39, py39-napari
-        3.10: py310
+        3.9: py39
+        3.10: py310, py310-napari
 
     [testenv]
     deps =

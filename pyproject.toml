@@ -50,8 +50,8 @@ optional-dependencies.napari = [
 report = {skip_covered = true, sort = "cover"}
 run = {branch = true, parallel = true, source = ["btrack"]}
 paths.source = [
-    ".tox*/*/lib/python*/site-packages",
     "btrack",
+    ".tox*/*/lib/python*/site-packages",
 ]
 
 [tool.pytest.ini_options]

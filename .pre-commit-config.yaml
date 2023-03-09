@@ -26,3 +26,7 @@ repos:
       rev: 22.3.0
       hooks:
           - id: black
+    - repo: https://github.com/pappasam/toml-sort
+      rev: v0.22.4
+      hooks:
+        - id: toml-sort-fix

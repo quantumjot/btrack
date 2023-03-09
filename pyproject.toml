@@ -1,9 +1,9 @@
 [build-system]
+build-backend = "setuptools.build_meta"
 requires = [
     "setuptools",
     "wheel",
 ]
-build-backend = "setuptools.build_meta"
 
 [project]
 authors = [
@@ -33,10 +33,6 @@ dynamic = [
 name = "btrack"
 readme = "README.md"
 requires-python = ">=3.8"
-urls.bugtracker = "https://github.com/quantumjot/BayesianTracker/issues"
-urls.documentation = "https://btrack.readthedocs.io"
-urls.homepage = "https://github.com/quantumjot/BayesianTracker"
-urls.usersupport = "https://github.com/quantumjot/BayesianTracker/discussions"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 optional-dependencies.docs = [
     "numpydoc",
@@ -48,6 +44,10 @@ optional-dependencies.docs = [
 optional-dependencies.napari = [
     "napari>=0.4.16",
 ]
+urls.bugtracker = "https://github.com/quantumjot/BayesianTracker/issues"
+urls.documentation = "https://btrack.readthedocs.io"
+urls.homepage = "https://github.com/quantumjot/BayesianTracker"
+urls.usersupport = "https://github.com/quantumjot/BayesianTracker/discussions"
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

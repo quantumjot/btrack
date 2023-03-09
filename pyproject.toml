@@ -34,13 +34,6 @@ name = "btrack"
 readme = "README.md"
 requires-python = ">=3.8"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
-optional-dependencies.docs = [
-    "numpydoc",
-    "sphinx",
-    "sphinx-automodapi",
-    "sphinx-panels",
-    "sphinx_rtd_theme",
-]
 optional-dependencies.napari = [
     "napari>=0.4.16",
 ]

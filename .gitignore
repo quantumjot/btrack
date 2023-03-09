@@ -23,4 +23,3 @@ docs/api/*
 .coverage
 coverage.xml
 .envrc
-VERSION.txt

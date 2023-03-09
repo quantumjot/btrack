@@ -33,7 +33,10 @@ dynamic = [
 name = "btrack"
 readme = "README.md"
 requires-python = ">=3.8"
-urls = {bugtracker = "https://github.com/quantumjot/BayesianTracker/issues", documentation = "https://btrack.readthedocs.io/en/stable", homepage = "https://github.com/quantumjot/BayesianTracker", usersupport = "https://github.com/quantumjot/BayesianTracker/issues"}
+urls.bugtracker = "https://github.com/quantumjot/BayesianTracker/issues"
+urls.documentation = "https://btrack.readthedocs.io/en/stable"
+urls.homepage = "https://github.com/quantumjot/BayesianTracker"
+urls.usersupport = "https://github.com/quantumjot/BayesianTracker/issues"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 optional-dependencies.docs = [
     "numpydoc",

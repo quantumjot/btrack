@@ -21,7 +21,7 @@ from magicgui.application import use_app
 from magicgui.types import FileDialogMode
 from magicgui.widgets import Container, PushButton, Widget, create_widget
 from pydantic import BaseModel
-from PyQt5.QtWidgets import QScrollArea
+from qtpy.QtWidgets import QScrollArea
 
 default_cell_config = load_config(datasets.cell_config())
 

@@ -124,9 +124,7 @@ legacy_tox_ini = """
         XAUTHORITY
     deps =
         dask
-        magicgui
         napari
-        pyqt5
         pytest
         pytest-cov
         pytest-qt

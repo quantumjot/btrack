@@ -1,14 +1,56 @@
 [build-system]
-requires = [
-  "setuptools >= 42",
-  "wheel",
-  "setuptools_scm[toml]>=3.4"
-]
 build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools",
+    "setuptools-scm",
+    "wheel",
+]
+
+[project]
+authors = [
+    {email = "a.lowe@ucl.ac.uk", name = "Alan R. Lowe"},
+]
+classifiers = [
+    "Framework :: napari",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering",
+]
+description = "A framework for Bayesian multi-object tracking"
+dynamic = [
+    "dependencies",
+    "version",
+]
+name = "btrack"
+readme = "README.md"
+requires-python = ">=3.8"
+entry-points."napari.manifest".btrack = "btrack:napari.yaml"
+optional-dependencies.docs = [
+    "numpydoc",
+    "sphinx_rtd_theme",
+    "sphinx-automodapi",
+    "sphinx-panels",
+    "sphinx",
+]
+optional-dependencies.napari = [
+    "napari>=0.4.16",
+]
+urls.bugtracker = "https://github.com/quantumjot/BayesianTracker/issues"
+urls.documentation = "https://btrack.readthedocs.io"
+urls.homepage = "https://github.com/quantumjot/BayesianTracker"
+urls.usersupport = "https://github.com/quantumjot/BayesianTracker/discussions"
 
 [tool.black]
-target-version = ['py38', 'py39', 'py310']
-line-length = 79
 exclude = '''
 (
   /(
@@ -25,7 +67,64 @@ exclude = '''
   )/
 )
 '''
+line-length = 79
+target-version = ["py38", "py39", "py310"]
+
+[tool.coverage]
+report = {skip_covered = true, sort = "cover"}
+run = {branch = true, parallel = true, source = ["btrack"]}
+paths.source = [
+    "btrack",
+    ".tox*/*/lib/python*/site-packages",
+]
 
 [tool.isort]
-profile = "black"
 line_length = 79
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "--color=yes -ra -v"
+testpaths = [
+    "tests",
+]
+
+[tool.setuptools]
+dynamic.dependencies.file = "requirements.txt"
+dynamic.version.file = "btrack/VERSION.txt"
+packages.find = {}
+
+[tool.setuptools_scm]
+
+[tool.tomlsort]
+sort_inline_arrays = false
+sort_inline_tables = true
+sort_table_keys = true
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true
+
+[tool.tox]
+legacy_tox_ini = """
+[gh-actions]
+python =
+    3.8: py38
+    3.9: py39
+    3.10: py310, py310-napari
+
+[testenv]
+deps =
+    dask
+    pytest
+    pytest-cov
+conda_deps =
+    # Use conda to install cvxopt so tests work on macOS
+    cvxopt
+conda_channels = conda-forge
+commands = pytest --cov --cov-report=xml
+extras =
+    napari: napari
+
+[tox]
+envlist = py{38,39,310}{,-napari}
+isolated_build = True
+requires = tox-conda
+"""

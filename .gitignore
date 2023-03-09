@@ -10,7 +10,7 @@ notebooks
 deprecated
 dist
 build
-btrack.egg-info
+*.egg-info
 bworker.py
 *.DS_store
 *.o

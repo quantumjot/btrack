@@ -33,7 +33,7 @@ You can also --> :star: :wink:
 
 ## Installation
 
-BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
+BayesianTracker has been tested with Python 3.8+ on OS X, Linux and Win10.
 
 
 #### Installing the latest stable version

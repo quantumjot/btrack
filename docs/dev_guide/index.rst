@@ -5,7 +5,7 @@ Developer guide
 Installing the latest development version
 -----------------------------------------
 
-BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
+BayesianTracker has been tested with Python 3.8+ on OS X, Linux and Win10.
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
 
 If you would rather install the latest development version, and/or compile directly from source, you can clone and install from this repo:

@@ -49,6 +49,26 @@ urls.documentation = "https://btrack.readthedocs.io"
 urls.homepage = "https://github.com/quantumjot/BayesianTracker"
 urls.usersupport = "https://github.com/quantumjot/BayesianTracker/discussions"
 
+[tool.black]
+exclude = '''
+(
+  /(
+      \.eggs
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | _build
+    | build
+    | dist
+    | examples
+  )/
+)
+'''
+line-length = 79
+target-version = ['py38', 'py39', 'py310']
+
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
 run = {branch = true, parallel = true, source = ["btrack"]}
@@ -56,6 +76,10 @@ paths.source = [
     "btrack",
     ".tox*/*/lib/python*/site-packages",
 ]
+
+[tool.isort]
+line_length = 79
+profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "--color=yes -ra -v"

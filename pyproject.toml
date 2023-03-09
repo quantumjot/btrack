@@ -2,6 +2,7 @@
 build-backend = "setuptools.build_meta"
 requires = [
     "setuptools",
+    "setuptools-scm",
     "wheel",
 ]
 
@@ -91,6 +92,8 @@ testpaths = [
 dynamic.dependencies.file = "requirements.txt"
 dynamic.version.file = "btrack/VERSION.txt"
 packages.find = {}
+
+[tool.setuptools_scm]
 
 [tool.tomlsort]
 sort_inline_arrays = false

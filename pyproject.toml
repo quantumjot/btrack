@@ -101,27 +101,27 @@ trailing_comma_inline_array = true
 
 [tool.tox]
 legacy_tox_ini = """
-    [gh-actions]
-    python =
-        3.8: py38
-        3.9: py39
-        3.10: py310, py310-napari
+[gh-actions]
+python =
+    3.8: py38
+    3.9: py39
+    3.10: py310, py310-napari
 
-    [testenv]
-    deps =
-        dask
-        pytest
-        pytest-cov
-    conda_deps =
-        # Use conda to install cvxopt so tests work on macOS
-        cvxopt
-    conda_channels = conda-forge
-    commands = pytest --cov --cov-report=xml
-    extras =
-        napari: napari
+[testenv]
+deps =
+    dask
+    pytest
+    pytest-cov
+conda_deps =
+    # Use conda to install cvxopt so tests work on macOS
+    cvxopt
+conda_channels = conda-forge
+commands = pytest --cov --cov-report=xml
+extras =
+    napari: napari
 
-    [tox]
-    envlist = py{38,39,310}{,-napari}
-    isolated_build = True
-    requires = tox-conda
+[tox]
+envlist = py{38,39,310}{,-napari}
+isolated_build = True
+requires = tox-conda
 """

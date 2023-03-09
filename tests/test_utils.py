@@ -211,6 +211,20 @@ def test_tracks_to_napari_incorrect_ndim(ndim: int):
         data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
 
 
+@pytest.mark.parametrize("ndim", [2, 3])
+def test_tracks_to_napari_ndim_inference(ndim: int):
+    """Test inferring the correct dimensions from track data when using
+    `tracks_to_napari`."""
+
+    # make a fake track with n dimensions
+    track_len = 10
+    tracks = [create_test_tracklet(track_len, 1, ndim=ndim)[0]]
+    data, _, _ = utils.tracks_to_napari(tracks, ndim=None)
+
+    # check the data is of the correct shape (ID, T + ndim)
+    assert data.shape[-1] == ndim + 2
+
+
 def test_objects_from_array(test_objects):
     """Test creation of a list of objects from a numpy array."""
 

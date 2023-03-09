@@ -4,13 +4,13 @@ import os
 from pathlib import Path
 from typing import List, Optional
 
-from numpy import typing as npt
+import numpy as np
 from pydantic import BaseModel, conlist, validator
 
-from btrack import constants
-from btrack.btypes import ImagingVolume
-from btrack.models import HypothesisModel, MotionModel, ObjectModel
-from btrack.utils import read_hypothesis_model, read_motion_model, read_object_model
+from . import constants
+from .btypes import ImagingVolume
+from .models import HypothesisModel, MotionModel, ObjectModel
+from .utils import read_hypothesis_model, read_motion_model, read_object_model
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -28,11 +28,11 @@ class TrackerConfig(BaseModel):
     verbose : bool
         A flag to set the verbosity level while logging the output.
     motion_model : Optional[MotionModel]
-        The `btrack` motion model. See `btrack.models.MotionModel` for more details.
+        The `btrack` motion model. See `models.MotionModel` for more details.
     object_model : Optional[ObjectModel]
-        The `btrack` object model. See `btrack.models.ObjectModel` for more details.
+        The `btrack` object model. See `models.ObjectModel` for more details.
     hypothesis_model : Optional[HypothesisModel]
-        The `btrack` hypothesis model. See `btrack.models.HypothesisModel` for more
+        The `btrack` hypothesis model. See `models.HypothesisModel` for more
         details.
     max_search_radius : float
         The maximum search radius of the algorithm in isotropic units of the
@@ -73,15 +73,15 @@ class TrackerConfig(BaseModel):
     name: str = "Default"
     version: str = constants.get_version()
     verbose: bool = False
-    motion_model: Optional[MotionModel] = None  # noqa: UP007
-    object_model: Optional[ObjectModel] = None  # noqa: UP007
-    hypothesis_model: Optional[HypothesisModel] = None  # noqa: UP007
+    motion_model: Optional[MotionModel] = None
+    object_model: Optional[ObjectModel] = None
+    hypothesis_model: Optional[HypothesisModel] = None
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
-    volume: Optional[ImagingVolume] = None  # noqa: UP007
+    volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: List[str] = []  # noqa: UP006
+    features: List[str] = []
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,
@@ -92,14 +92,17 @@ class TrackerConfig(BaseModel):
 
     @validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):
-        return ImagingVolume(*v) if isinstance(v, tuple) else v
+        if isinstance(v, tuple):
+            return ImagingVolume(*v)
+        return v
 
     @validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
             _tracking_updates = [
-                constants.BayesianUpdateFeatures[k.upper()] for k in _tracking_updates
+                constants.BayesianUpdateFeatures[k.upper()]
+                for k in _tracking_updates
             ]
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
@@ -108,7 +111,7 @@ class TrackerConfig(BaseModel):
         arbitrary_types_allowed = True
         validate_assignment = True
         json_encoders = {
-            npt.NDArray: lambda x: x.ravel().tolist(),
+            np.ndarray: lambda x: x.ravel().tolist(),
         }
 
 
@@ -128,7 +131,7 @@ def load_config(filename: os.PathLike) -> TrackerConfig:
     logger.info(f"Loading configuration file: {filename}")
     filename = Path(filename)
 
-    with open(filename) as json_file:
+    with open(filename, "r") as json_file:
         json_data = json.load(json_file)
 
     if "TrackerConfig" in json_data:

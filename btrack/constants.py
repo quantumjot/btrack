@@ -5,13 +5,13 @@ BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
 
 
 def get_version():
-    with open(os.path.join(BTRACK_PATH, "VERSION.txt")) as ver:
+    with open(os.path.join(BTRACK_PATH, "VERSION.txt"), "r") as ver:
         version = ver.readline()
     return version.rstrip()
 
 
 def get_version_tuple():
-    return tuple(int(v) for v in get_version().split("."))
+    return tuple([int(v) for v in get_version().split(".")])
 
 
 MAX_SEARCH_RADIUS = 100

@@ -1,13 +1,13 @@
-from __future__ import annotations
-
 from pathlib import Path
+from typing import Tuple, Union
 
 import numpy as np
 import pytest
 from pydantic import BaseModel
 
 import btrack
-from tests._utils import CONFIG_FILE, RANDOM_SEED
+
+from ._utils import CONFIG_FILE, RANDOM_SEED
 
 
 def _random_config() -> dict:
@@ -17,11 +17,13 @@ def _random_config() -> dict:
         "update_method": rng.choice(btrack.constants.BayesianUpdates),
         "return_kalman": bool(rng.uniform(0, 2)),
         "verbose": bool(rng.uniform(0, 2)),
-        "volume": tuple((0, rng.uniform(1, 100)) for _ in range(3)),
+        "volume": tuple([(0, rng.uniform(1, 100)) for _ in range(3)]),
     }
 
 
-def _validate_config(cfg: btrack.BayesianTracker | BaseModel, options: dict):
+def _validate_config(
+    cfg: Union[btrack.BayesianTracker, BaseModel], options: dict
+):
     for key, value in options.items():
         cfg_value = getattr(cfg, key)
         # takes care of recursive model definintions (i.e. MotionModel inside
@@ -59,10 +61,17 @@ def test_import_config():
     assert isinstance(cfg, btrack.config.TrackerConfig)
 
 
+def test_config_to_json():
+    """Test that a config can be converted to json format without raising an error"""
+    cfg = btrack.config.load_config(CONFIG_FILE)
+    cfg.json()
+
+
 def test_config_tracker_setters():
     """Test configuring the tracker using setters."""
     options = _random_config()
     with btrack.BayesianTracker() as tracker:
+
         # use the setters to apply the comfiguration
         for key, value in options.items():
             setattr(tracker, key, value)
@@ -72,7 +81,7 @@ def test_config_tracker_setters():
         _validate_config(tracker.configuration, options)
 
 
-def _cfg_dict() -> tuple[dict, dict]:
+def _cfg_dict() -> Tuple[dict, dict]:
     cfg_raw = btrack.config.load_config(CONFIG_FILE)
     cfg = _random_config()
     cfg.update(cfg_raw.dict())
@@ -80,14 +89,14 @@ def _cfg_dict() -> tuple[dict, dict]:
     return cfg, cfg
 
 
-def _cfg_file() -> tuple[Path, dict]:
+def _cfg_file() -> Tuple[Path, dict]:
     filename = CONFIG_FILE
     assert isinstance(filename, Path)
     cfg = btrack.config.load_config(filename)
     return filename, cfg.dict()
 
 
-def _cfg_pydantic() -> tuple[btrack.config.TrackerConfig, dict]:
+def _cfg_pydantic() -> Tuple[btrack.config.TrackerConfig, dict]:
     cfg = btrack.config.load_config(CONFIG_FILE)
     options = _random_config()
     for key, value in options.items():

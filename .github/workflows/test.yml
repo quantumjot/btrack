@@ -35,9 +35,9 @@ jobs:
         # Include one windows and macos run
         include:
         - platform: macos-latest
-          python-version: "3.9"
+          python-version: "3.10"
         - platform: windows-latest
-          python-version: "3.9"
+          python-version: "3.10"
 
     steps:
       - uses: actions/checkout@v3

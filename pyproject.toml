@@ -104,37 +104,24 @@ legacy_tox_ini = """
     [gh-actions]
     python =
         3.8: py38
-        3.9: py39
+        3.9: py39, py39-napari
         3.10: py310
 
-    [gh-actions:env]
-    PLATFORM =
-        macos-latest: macos
-        ubuntu-latest: linux
-        windows-latest: windows
-
-    [tox]
-    envlist = py{38,39,310}-{linux,macos,windows}
-    isolated_build=true
-
     [testenv]
-    platform =
-        linux: linux
-        macos: darwin
-        windows: win32
-    passenv =
-        CI
-        DISPLAY
-        GITHUB_ACTIONS
-        NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
-        PYVISTA_OFF_SCREEN
-        XAUTHORITY
     deps =
         dask
-        napari
         pytest
         pytest-cov
-        pytest-qt
-        qtpy
+    conda_deps =
+        # Use conda to install cvxopt so tests work on macOS
+        cvxopt
+    conda_channels = conda-forge
     commands = pytest --cov --cov-report=xml
+    extras =
+        napari: napari
+
+    [tox]
+    envlist = py{38,39,310}{,-napari}
+    isolated_build = True
+    requires = tox-conda
 """

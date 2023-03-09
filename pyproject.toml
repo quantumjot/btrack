@@ -81,9 +81,9 @@ testpaths = [
 ]
 
 [tool.setuptools]
-packages = ["btrack"]
 dynamic.dependencies.file = "requirements.txt"
 dynamic.version.file = "btrack/VERSION.txt"
+packages.find = {}
 
 [tool.tomlsort]
 sort_inline_arrays = false

@@ -28,6 +28,7 @@ classifiers = [
 description = "A framework for Bayesian multi-object tracking"
 dynamic = [
     "dependencies",
+    "version",
 ]
 name = "btrack"
 readme = "README.md"
@@ -108,6 +109,7 @@ pep8-naming.classmethod-decorators = [
 
 [tool.setuptools]
 dynamic.dependencies.file = "requirements.txt"
+dynamic.version.file = "btrack/VERSION.txt"
 packages.find.where = ["btrack"]
 
 [tool.tomlsort]

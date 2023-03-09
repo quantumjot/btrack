@@ -8,7 +8,6 @@ This example:
 - opens the napari viewer
 """
 import napari
-
 from btrack import datasets
 
 viewer = napari.Viewer()

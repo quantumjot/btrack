@@ -1,7 +1,63 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools",
+    "setuptools-scm",
+]
+
+[project]
+authors = [
+    {email = "a.lowe@ucl.ac.uk", name = "Alan R. Lowe"},
+]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Framework :: napari",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "btrack>=0.4.2",
+    "magicgui>=0.5.0",
+    "napari-plugin-engine>=0.1.4",
+    "napari>=0.4.0",
+    "numpy",
+]
+description = "A plugin to use btrack from napari"
+dynamic = [
+    "version",
+]
+name = "napari-btrack"
+readme = "README.md"
+requires-python = ">=3.8"
+entry-points."napari.manifest".napari-btrack = "napari_btrack:napari.yaml"
+license.file = "LICENSE"
+urls.homepage = "https://github.com/quantumjot/napari-btrack"
+
+[tool.coverage]
+report = {skip_covered = true, sort = "cover"}
+run = {branch = true, parallel = true, source = ["napari_btrack"]}
+paths.source = [
+    "napari_btrack",
+    ".tox*/*/lib/python*/site-packages",
+]
+
 [tool.mypy]
 plugins = [
     "numpy.typing.mypy_plugin",
     "pydantic.mypy",
+]
+
+[tool.pytest.ini_options]
+addopts = "--color=yes -v"
+testpaths = [
+    "napari_btrack",
 ]
 
 [tool.ruff]
@@ -37,10 +93,56 @@ select = [
     "W",
     "YTT",
 ]
-isort.known-first-party = ["btrack"]
+isort.known-first-party = ["napari_btrack"]
 mccabe.max-complexity = 18
 
+[tool.setuptools_scm]
+write_to = "napari_btrack/_version.py"
+
 [tool.tomlsort]
-all = true
+sort_inline_arrays = false
+sort_inline_tables = true
+sort_table_keys = true
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
+
+[tool.tox]
+legacy_tox_ini = """
+    [gh-actions]
+    python =
+        3.8: py38
+        3.9: py39
+        3.10: py310
+
+    [gh-actions:env]
+    PLATFORM =
+        macos-latest: macos
+        ubuntu-latest: linux
+        windows-latest: windows
+
+    [testenv]
+    platform =
+        linux: linux
+        macos: darwin
+        windows: win32
+    passenv =
+        CI
+        DISPLAY
+        GITHUB_ACTIONS
+        NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        PYVISTA_OFF_SCREEN
+        XAUTHORITY
+    deps =
+        magicgui
+        napari
+        pyqt5
+        pytest
+        pytest-cov
+        pytest-qt
+        pytest-xvfb ; sys_platform == 'linux'
+        qtpy
+    commands = pytest --cov --cov-report=xml
+
+    [tox]
+    envlist = py{38,39,310}-{linux,macos,windows}
+"""

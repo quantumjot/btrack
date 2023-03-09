@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.246
+    rev: v0.0.254
     hooks:
       - id: ruff
   - repo: https://github.com/Lucas-C/pre-commit-hooks
@@ -8,16 +8,16 @@ repos:
     hooks:
       - id: forbid-tabs
   - repo: https://github.com/pappasam/toml-sort
-    rev: v0.22.3
+    rev: v0.22.4
     hooks:
       - id: toml-sort-fix
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.0.0
+    rev: v1.1.1
     hooks:
       - id: mypy
         additional_dependencies: [numpy, pydantic]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.4
+    rev: v3.0.0-alpha.6
     hooks:
       - id: prettier
   - repo: https://github.com/pre-commit/pre-commit-hooks

@@ -7,11 +7,11 @@ import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
-from magicgui.widgets import Container
-
 from btrack import datasets
 from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
+from magicgui.widgets import Container
+
 from napari_btrack.track import (
     _update_widgets_from_config,
     _widgets_to_tracker_config,

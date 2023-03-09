@@ -63,7 +63,7 @@ paths.source = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "--color=yes -v"
+addopts = "--color=yes -ra -v"
 testpaths = [
     "tests",
 ]
@@ -167,5 +167,5 @@ legacy_tox_ini = """
         pytest-cov
         pytest-qt
         qtpy
-    commands = pytest -v -ra --color=yes --cov=btrack --cov-report=xml
+    commands = pytest --cov --cov-report=xml
 """

@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from btrack import btypes, utils
-from btrack.constants import DEFAULT_OBJECT_KEYS
+from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
 from btrack.io import objects_from_array
 
 from ._utils import create_test_image, create_test_tracklet
@@ -29,7 +29,7 @@ def _validate_centroids(centroids, objects, scale=None):
     ndim = centroids.shape[-1]
 
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if ndim == 2:
+    if ndim == Dimensionality.TWO:
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis

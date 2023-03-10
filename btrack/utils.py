@@ -117,7 +117,7 @@ def _cat_tracks_as_dict(
             if trk_property.ndim == 0:
                 trk_property = np.repeat(trk_property, len(track))
 
-            if trk_property.ndim > 2:
+            if trk_property.ndim > constants.Dimensionality.TWO:
                 raise ValueError(
                     f"Track properties of {trk_property.ndim} dimensions are "
                     "not currently supported."
@@ -125,7 +125,7 @@ def _cat_tracks_as_dict(
 
             assert trk_property.shape[0] == len(track)
 
-            if trk_property.ndim == 2:
+            if trk_property.ndim == constants.Dimensionality.TWO:
                 for idx in range(trk_property.shape[-1]):
                     tmp_key = f"{key}-{idx}"
                     if tmp_key not in data:
@@ -280,9 +280,9 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
-        if single_segmentation.ndim == 2:
+        if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
-        elif single_segmentation.ndim == 3:
+        elif single_segmentation.ndim == constants.Dimensionality.THREE:
             zc = frame_coords[:, keys["z"]]
             old_id = single_segmentation[zc, yc, xc]
 

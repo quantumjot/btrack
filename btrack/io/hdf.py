@@ -459,7 +459,7 @@ class HDF5FileHandler:
             track = btypes.Tracklet(lbep[i, 0], list(map(_get_txyz, refs)))
             track.parent = lbep[i, 3]  # set the parent and root of tree
             track.root = lbep[i, 4]
-            if lbep.shape[1] > 5:
+            if lbep.shape[1] > 5:  # noqa: PLR2004
                 track.generation = lbep[i, 5]
             track.fate = constants.Fates(fates[i])  # restore the track fate
             tracks.append(track)
@@ -475,7 +475,13 @@ class HDF5FileHandler:
                     to_update[parent].append(track.ID)
 
         # sanity check, can be removed at a later date
-        assert all([len(children) <= 2 for children in to_update.values()])
+        MAX_N_CHILDREN = 2
+        assert all(
+            [
+                len(children) <= MAX_N_CHILDREN
+                for children in to_update.values()
+            ]
+        )
 
         # add the children to the parent
         for track, children in to_update.items():

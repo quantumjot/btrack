@@ -79,10 +79,11 @@ def objects_from_array(
     default_keys: List[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
-    assert objects_arr.ndim == 2
+    assert objects_arr.ndim == constants.Dimensionality.TWO
 
+    MIN_N_FEATURES = 3
     n_features = objects_arr.shape[1]
-    assert n_features >= 3
+    assert n_features >= MIN_N_FEATURES
 
     n_objects = objects_arr.shape[0]
 

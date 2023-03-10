@@ -317,7 +317,7 @@ class BayesianTracker:
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if volume.ndim == 2:
+        if volume.ndim == constants.Dimensionality.TWO:
             z = (-1e5, 1e5)
             volume = btypes.ImagingVolume(volume.x, volume.y, z)
 

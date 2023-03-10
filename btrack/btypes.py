@@ -34,7 +34,11 @@ class ImagingVolume(NamedTuple):
     @property
     def ndim(self) -> int:
         """Infer the dimensionality from the volume."""
-        return 2 if self.z is None else 3
+        return (
+            constants.Dimensionality.TWO
+            if self.z is None
+            else constants.Dimensionality.THREE
+        )
 
 
 class PyTrackObject(ctypes.Structure):
@@ -511,7 +515,7 @@ class Tracklet:
 
         tmp_track = np.concatenate(tmp_track, axis=-1)
         assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == 2
+        assert tmp_track.ndim == constants.Dimensionality.TWO
         return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:

@@ -199,7 +199,7 @@ def tracks_to_napari(
     p_header = ["t", "state", "generation", "root", "parent"]
 
     # ensure lexicographic ordering of tracks
-    ordered = sorted(list(tracks), key=lambda t: t.ID)
+    ordered = sorted(tracks, key=lambda t: t.ID)
     header = t_header + p_header
     tracks_as_dict = _cat_tracks_as_dict(ordered, header)
 

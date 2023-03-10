@@ -573,7 +573,7 @@ class BayesianTracker:
 
         h_original = [h.type for h in hypotheses]
         h_optimise = [h.type for h in optimised]
-        h_types = sorted(list(set(h_original)), key=lambda h: h.value)
+        h_types = sorted(set(h_original), key=lambda h: h.value)
 
         for h_type in h_types:
             logger.info(

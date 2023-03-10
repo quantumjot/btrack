@@ -1,9 +1,9 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)  [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tests](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/BayesianTracker/actions/workflows/test.yml)
+[![Tests](https://github.com/quantumjot/btrack/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/test.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
-[![codecov](https://codecov.io/gh/quantumjot/BayesianTracker/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/BayesianTracker)
+[![codecov](https://codecov.io/gh/quantumjot/btrack/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/btrack)
 
 [docs]: https://btrack.readthedocs.io/en/latest/
 [docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/
@@ -13,7 +13,7 @@
 
 # Bayesian Tracker (btrack) :microscope::computer:
 
-BayesianTracker (`btrack`) is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
+`btrack` is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
 Here, we use a probabilistic network of information to perform the trajectory linking.
 This method uses spatial information as well as appearance information for track linking.
 
@@ -33,7 +33,7 @@ You can also --> :star: :wink:
 
 ## Installation
 
-BayesianTracker has been tested with Python 3.8+ on OS X, Linux and Win10.
+`btrack` has been tested with Python 3.8+ on OS X, Linux and Win10.
 
 
 #### Installing the latest stable version

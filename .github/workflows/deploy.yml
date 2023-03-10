@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   deploy:
     runs-on: "ubuntu-latest"
-    if: github.repository == 'quantumjot/BayesianTracker' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: github.repository == 'quantumjot/btrack' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
 
     steps:
       - name: Checkout source

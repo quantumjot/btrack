@@ -1,5 +1,5 @@
-BayesianTracker examples
-------------------------
+btrack examples
+---------------
 
 Example notebooks can be found in this directory.
 

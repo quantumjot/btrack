@@ -5,7 +5,7 @@ schema_version: 0.1.0
 contributions:
   commands:
   - id: btrack.read_btrack
-    title: Read BayesianTracker files
+    title: Read btrack files
     python_name: btrack.napari.reader:get_reader
 
   readers:

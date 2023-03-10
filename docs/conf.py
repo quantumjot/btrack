@@ -24,7 +24,7 @@ import btrack  # noqa: E402
 
 project = "Bayesian Tracker (btrack) 🔬💻"
 author = "Alan R Lowe"
-year = datetime.now(tz=pytz.timezone("GMT")).year
+year = datetime.datetime.now(tz=pytz.timezone("GMT")).year
 copyright = f"2017-{year}, {author}"  # noqa: A001
 
 

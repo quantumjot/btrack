@@ -37,6 +37,7 @@ requires-python = ">=3.8"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 optional-dependencies.docs = [
     "numpydoc",
+    "pytz",
     "sphinx_rtd_theme",
     "sphinx-automodapi",
     "sphinx-panels",

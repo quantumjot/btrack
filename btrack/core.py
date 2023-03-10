@@ -616,10 +616,7 @@ class BayesianTracker:
         trk_id = self._lib.get_ID(self._engine, idx)
 
         # convert the array of children to a python list
-        if nc > 0:
-            c = children.tolist()
-        else:
-            c = []
+        c = children.tolist() if nc > 0 else []
 
         # now build the track from the references
         refs = refs.tolist()

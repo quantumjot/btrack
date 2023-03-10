@@ -553,10 +553,7 @@ class HDF5FileHandler:
 
         hdf_frame_map = np.zeros((len(refs), 2), dtype=np.int32)
         for i, track in enumerate(refs):
-            if i > 0:
-                offset = hdf_frame_map[i - 1, 1]
-            else:
-                offset = 0
+            offset = hdf_frame_map[i - 1, 1] if i > 0 else 0
             hdf_frame_map[i, :] = np.array([0, len(track)]) + offset
 
         if "tracks" not in self._hdf:

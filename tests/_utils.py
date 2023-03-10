@@ -74,10 +74,9 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    if not props:
-        properties = {}
-    else:
-        properties = {k: [p[k] for p in props] for k in props[0]}
+    properties = (
+        {} if not props else {k: [p[k] for p in props] for k in props[0]}
+    )
 
     return tracklet, data, properties, track_id
 

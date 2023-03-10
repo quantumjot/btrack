@@ -552,10 +552,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
+    n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
         if not isinstance(v, (list, np.ndarray)):

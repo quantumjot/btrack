@@ -74,10 +74,11 @@ def _centroids_from_single_arr(
 
     else:
         # check to see whether the segmentation is unique
-        if not _is_unique(segmentation):
-            labeled = label(segmentation)
-        else:
-            labeled = segmentation
+        labeled = (
+            label(segmentation)
+            if not _is_unique(segmentation)
+            else segmentation
+        )
 
         _centroids = regionprops_table(
             labeled,

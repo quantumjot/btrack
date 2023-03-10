@@ -571,8 +571,8 @@ class BayesianTracker:
             logger.warning("Optimization failed.")
             return []
 
-        h_original = [h.type for h in hypotheses]
-        h_optimise = [h.type for h in optimised]
+        h_original = [h.hypothesis_type for h in hypotheses]
+        h_optimise = [h.hypothesis_type for h in optimised]
         h_types = sorted(set(h_original), key=lambda h: h.value)
 
         for h_type in h_types:

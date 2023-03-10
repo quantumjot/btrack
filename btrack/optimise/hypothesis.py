@@ -61,7 +61,7 @@ class Hypothesis(ctypes.Structure):
     ]
 
     @property
-    def type(self):
+    def hypothesis_type(self):
         return constants.Fates(self.hypothesis)
 
     @property

@@ -145,34 +145,34 @@ class TrackOptimiser:
             # set the hypothesis score
             rho[counter] = h.log_likelihood
 
-            if h.type == Fates.FALSE_POSITIVE:
+            if h.hypothesis_type == Fates.FALSE_POSITIVE:
                 # is this a false positive?
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.type in INIT_FATES:
+            elif h.hypothesis_type in INIT_FATES:
                 # an initialisation, therefore we only present this in the
                 # second half of the A matrix
                 trk = trk_idx(h.ID)
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.type in TERM_FATES:
+            elif h.hypothesis_type in TERM_FATES:
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 continue
 
-            elif h.type == Fates.APOPTOSIS:
+            elif h.hypothesis_type == Fates.APOPTOSIS:
                 # an apoptosis event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
                 continue
 
-            elif h.type == Fates.LINK:
+            elif h.hypothesis_type == Fates.LINK:
                 # a linkage event
                 trk_i = trk_idx(h.ID)
                 trk_j = trk_idx(h.link_ID)
@@ -180,7 +180,7 @@ class TrackOptimiser:
                 A[N + trk_j, counter] = 1
                 continue
 
-            elif h.type == Fates.DIVIDE:
+            elif h.hypothesis_type == Fates.DIVIDE:
                 # a branch event
                 trk = trk_idx(h.ID)
                 child_one = trk_idx(h.child_one_ID)
@@ -190,7 +190,7 @@ class TrackOptimiser:
                 A[N + child_two, counter] = 1
                 continue
 
-            elif h.type == Fates.MERGE:
+            elif h.hypothesis_type == Fates.MERGE:
                 # a merge event
                 trk = trk_idx(h.ID)
                 parent_one = trk_idx(h.parent_one_ID)
@@ -201,7 +201,7 @@ class TrackOptimiser:
                 continue
 
             else:
-                raise ValueError(f"Unknown hypothesis: {h.type}")
+                raise ValueError(f"Unknown hypothesis: {h.hypothesis_type}")
 
         logger.info("Optimizing...")
 

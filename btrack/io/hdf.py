@@ -389,7 +389,7 @@ class HDF5FileHandler:
             if not values:
                 logger.warning(f"Property '{key}' is empty.")
                 continue
-            values = np.array(values)
+            values = np.array(values)  # noqa: PLW2901
             assert values.shape[0] == n_objects
 
             # Check if the property is already in the props_grp:

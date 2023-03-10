@@ -41,21 +41,21 @@ def log_stats(stats: dict) -> None:
         return
 
     logger.info(
-        " - Timing (Bayesian updates: {0:.2f}ms, Linking:"
-        " {1:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
+        " - Timing (Bayesian updates: {:.2f}ms, Linking:"
+        " {:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
     )
 
     logger.info(
-        " - Probabilities (Link: {0:.5f}, Lost:"
-        " {1:.5f})".format(stats["p_link"], stats["p_lost"])
+        " - Probabilities (Link: {:.5f}, Lost:"
+        " {:.5f})".format(stats["p_link"], stats["p_lost"])
     )
 
     if stats["complete"]:
         return
 
     logger.info(
-        " - Stats (Active: {0:d}, Lost: {1:d}, Conflicts "
-        "resolved: {2:d})".format(
+        " - Stats (Active: {:d}, Lost: {:d}, Conflicts "
+        "resolved: {:d})".format(
             stats["n_active"], stats["n_lost"], stats["n_conflicts"]
         )
     )

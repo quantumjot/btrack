@@ -22,7 +22,7 @@ import btrack  # noqa: E402
 
 project = "Bayesian Tracker (btrack) 🔬💻"
 author = "Alan R Lowe"
-copyright = f"2017-{datetime.date.today().year}, {author}"
+copyright = f"2017-{datetime.date.today().year}, {author}" # noqa: A001
 
 
 # The full version, including alpha/beta/rc tags

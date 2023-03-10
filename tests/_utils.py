@@ -145,7 +145,7 @@ def create_test_image(
 
     # iterate over the bins and add a smaple
     centroids = []
-    for v, bin in enumerate(rbins):
+    for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
         slices = tuple(
             [slice(b * binsize, b * binsize + binsize, 1) for b in bin]

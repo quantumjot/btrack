@@ -91,6 +91,7 @@ testpaths = [
 [tool.ruff]
 fix = true
 fixable = [
+    "A001",
     "B007",
     "C403",
     "C414",

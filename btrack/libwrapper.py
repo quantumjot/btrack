@@ -89,7 +89,7 @@ def load_library(filename):
     return lib
 
 
-def get_library():
+def get_library():  # noqa: PLR0915
     """Loads and returns the btrack shared library."""
     lib = load_library(os.path.join(BTRACK_PATH, "libs", "libtracker"))
 

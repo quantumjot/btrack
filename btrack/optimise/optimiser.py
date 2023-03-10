@@ -112,7 +112,7 @@ class TrackOptimiser:
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
-    def optimise(self):
+    def optimise(self):  # noqa: PLR0915
         """Run the opimization algorithm.
 
         Returns

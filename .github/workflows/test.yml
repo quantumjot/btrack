@@ -23,6 +23,9 @@ on:
       - "README.md"
       - "CHANGELOG.rst"
 
+env:
+  CUSTOM_PYTHON_VERSION: "3.10"
+
 jobs:
   build:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
@@ -35,9 +38,9 @@ jobs:
         # Include one windows and macos run
         include:
         - platform: macos-latest
-          python-version: "3.10"
+          python-version: ${CUSTOM_PYTHON_VERSION}
         - platform: windows-latest
-          python-version: "3.10"
+          python-version: ${CUSTOM_PYTHON_VERSION}
 
     steps:
       - uses: actions/checkout@v3

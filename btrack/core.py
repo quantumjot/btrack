@@ -210,16 +210,16 @@ class BayesianTracker:
             object.__setattr__(self, attr, value)
 
         # if we need to update the C++ library instance, do it here
-        if attr in (
+        attrs_to_update = [
             "motion_model",
             "object_model",
             "max_search_radius",
             "volume",
             "update_method",
-        ):
-            if value is not None:
-                update_lib_func = getattr(self, f"_{attr}")
-                update_lib_func(value)
+        ]
+        if attr in attrs_to_update and value is not None:
+            update_lib_func = getattr(self, f"_{attr}")
+            update_lib_func(value)
 
     def __len__(self) -> int:
         return self.n_tracks

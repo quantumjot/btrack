@@ -32,10 +32,9 @@ def localizations_to_objects(
 
     logger.info(f"Objects are of type: {type(localizations)}")
 
-    if isinstance(localizations, list):
-        if check_object_type(localizations):
-            # if these are already PyTrackObjects just silently return
-            return localizations
+    if isinstance(localizations, list) and check_object_type(localizations):
+        # if these are already PyTrackObjects just silently return
+        return localizations
 
     # do we have a numpy array or pandas dataframe?
     if isinstance(localizations, np.ndarray):

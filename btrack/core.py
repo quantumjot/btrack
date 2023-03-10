@@ -676,7 +676,7 @@ class BayesianTracker:
 
     def to_napari(
         self,
-        replace_nan: bool = True,  # noqa: FBT001 FBT002
+        replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
     ) -> Tuple[np.ndarray, dict, dict]:
         """Return the data in a format for a napari tracks layer.

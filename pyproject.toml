@@ -90,25 +90,6 @@ testpaths = [
 
 [tool.ruff]
 fix = true
-fixable = [
-    "A001",
-    "B007",
-    "C403",
-    "C414",
-    "E731",
-    "I001",
-    "RUF005",
-    "SIM102",
-    "SIM108",
-    "SIM118",
-    "SIM201",
-    "SIM202",
-    "SIM212",
-    "SIM300",
-    "TID252",
-    "UP024",
-    "UP034",
-]
 force-exclude = true
 ignore = [
     "B905", # python>=3.10

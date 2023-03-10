@@ -12,10 +12,10 @@ If you would rather install the latest development version, and/or compile direc
 
 .. code:: sh
 
-   git clone https://github.com/quantumjot/BayesianTracker.git
-   conda env create -f ./BayesianTracker/environment.yml
+   git clone https://github.com/quantumjot/btrack.git
+   conda env create -f ./btrack/environment.yml
    conda activate btrack
-   cd BayesianTracker
+   cd btrack
    pip install -e .
 
 Additionally, the ``build.sh`` script will download Eigen source, run the makefile and pip install.

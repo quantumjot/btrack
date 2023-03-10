@@ -45,10 +45,10 @@ optional-dependencies.docs = [
 optional-dependencies.napari = [
     "napari>=0.4.16",
 ]
-urls.bugtracker = "https://github.com/quantumjot/BayesianTracker/issues"
+urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
 urls.documentation = "https://btrack.readthedocs.io"
-urls.homepage = "https://github.com/quantumjot/BayesianTracker"
-urls.usersupport = "https://github.com/quantumjot/BayesianTracker/discussions"
+urls.homepage = "https://github.com/quantumjot/btrack"
+urls.usersupport = "https://github.com/quantumjot/btrack/discussions"
 
 [tool.black]
 exclude = '''

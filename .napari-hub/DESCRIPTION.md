@@ -11,7 +11,7 @@
 ![logo](https://btrack.readthedocs.io/en/latest/_images/btrack_logo.png)
 
 
-BayesianTracker (`btrack`) is a multi object tracking algorithm,
+`btrack` is a multi object tracking algorithm,
 specifically used to reconstruct trajectories in crowded fields.  New
 observations are assigned to tracks by evaluating the posterior probability of
 each potential linkage from a Bayesian belief matrix for all possible

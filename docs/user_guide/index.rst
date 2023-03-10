@@ -4,7 +4,7 @@
 User's Guide
 ************
 
-Welcome to the user guide for btrack.
+Welcome to the user guide for ``btrack``.
 
 .. toctree::
    :maxdepth: 2

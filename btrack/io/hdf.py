@@ -199,7 +199,7 @@ class HDF5FileHandler:
         f_expr: Optional[str] = None,
         *,
         lazy_load_properties: bool = True,
-        exclude_properties: List[str] = [],
+        exclude_properties: Optional[List[str]] = None,
     ) -> List[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata.
 
@@ -211,7 +211,7 @@ class HDF5FileHandler:
             value of area was greater than 100.
         lazy_load_properties : bool
             For future expansion. To allow lazy loading of large datasets.
-        exclude_properties : list
+        exclude_properties : list or None
             A list of properties keys to exclude when loading from disk.
 
         Returns
@@ -219,6 +219,10 @@ class HDF5FileHandler:
         objects : list
             A list of :py:class:`btrack.btypes.PyTrackObject` objects.
         """
+
+        exclude_properties = (
+            exclude_properties if exclude_properties is not None else []
+        )
 
         if self.object_type not in self.object_types:
             raise ValueError(f"Object type {self.object_type} not recognized")

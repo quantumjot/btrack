@@ -257,7 +257,7 @@ class Tracklet:
         The objects linked together to form the track.
     parent : int,
         The identifiers of the parent track(s).
-    children : list
+    children : list or None
         The identifiers of the child tracks.
     fate : constants.Fates, default = constants.Fates.UNDEFINED
         An enumerated type describing the fate of the track.
@@ -323,7 +323,7 @@ class Tracklet:
         data: List[PyTrackObject],
         *,
         parent: Optional[int] = None,
-        children: List[int] = [],
+        children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
 
@@ -335,7 +335,7 @@ class Tracklet:
 
         self.root = None
         self.parent = parent
-        self.children = children
+        self.children = children if children is not None else []
         self.type = None
         self.fate = fate
         self.generation = 0

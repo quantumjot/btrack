@@ -2,9 +2,6 @@ name: checks
 
 on: [push, pull_request]
 
-env:
-  PYTHON_VERSION: "3.10"
-
 jobs:
   build:
     runs-on: ubuntu-latest

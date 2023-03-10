@@ -23,9 +23,6 @@ on:
       - "README.md"
       - "CHANGELOG.rst"
 
-env:
-  CUSTOM_PYTHON_VERSION: "3.10"
-
 jobs:
   build:
     name: ${{ matrix.platform }} py${{ matrix.python-version }}

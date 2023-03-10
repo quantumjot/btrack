@@ -71,6 +71,9 @@ exclude = '''
 line-length = 79
 target-version = ["py38", "py39", "py310"]
 
+[tool.cibuildwheel]
+before-build = "bash build.sh"
+
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
 run = {branch = true, parallel = true, source = ["btrack"]}

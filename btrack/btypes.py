@@ -502,7 +502,7 @@ class Tracklet:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
-        for key, values in data.items():
+        for values in data.values():
             np_values = np.asarray(values)
             if np_values.size == 1:
                 np_values = np.tile(np_values, len(self))

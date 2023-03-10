@@ -92,6 +92,7 @@ testpaths = [
 fix = true
 fixable = [
     "SIM118",
+    "B007",
 ]
 force-exclude = true
 ignore = [

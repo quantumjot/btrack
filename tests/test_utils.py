@@ -11,7 +11,7 @@ from ._utils import create_test_image, create_test_tracklet
 
 
 def _example_segmentation_generator():
-    for i in range(10):
+    for _ in range(10):
         img, centroids = create_test_image()
         yield img
 

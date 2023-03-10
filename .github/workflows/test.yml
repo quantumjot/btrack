@@ -35,12 +35,13 @@ jobs:
         # Run all supported Python versions on linux
         python-version: ["3.8", "3.9", "3.10"]
         platform: [ubuntu-latest]
+        windows-mac-python: ["3.10"]
         # Include one windows and macos run
         include:
         - platform: macos-latest
-          python-version: $CUSTOM_PYTHON_VERSION
+          python-version: ${{ matrix.windows-mac-python }}
         - platform: windows-latest
-          python-version: $CUSTOM_PYTHON_VERSION
+          python-version: ${{ matrix.windows-mac-python }}
 
     steps:
       - uses: actions/checkout@v3

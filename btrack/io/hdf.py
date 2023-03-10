@@ -469,7 +469,7 @@ class HDF5FileHandler:
         to_update = {}
         for track in tracks:
             if not track.is_root:
-                parents = filter(lambda t: t.ID == track.parent, tracks)
+                parents = filter(lambda t: track.parent == t.ID, tracks)
                 for parent in parents:
                     if parent not in to_update:
                         to_update[parent] = []

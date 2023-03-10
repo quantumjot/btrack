@@ -117,7 +117,7 @@ def _export_HDF(
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
-    if not ext == ".h5":
+    if ext != ".h5":
         filename = filename_noext + ".h5"
         logger.warning(f"Changing HDF filename to {filename}")
 

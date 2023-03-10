@@ -4,7 +4,7 @@ import csv
 import os
 from typing import List
 
-from .. import btypes
+from btrack import btypes
 
 
 def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:

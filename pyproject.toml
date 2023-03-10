@@ -97,6 +97,7 @@ fixable = [
     "SIM108",
     "SIM118",
     "SIM212",
+    "TID252",
     "UP034",
 ]
 force-exclude = true

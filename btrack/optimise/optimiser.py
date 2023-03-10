@@ -22,7 +22,7 @@ from typing import List
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
 
-from ..constants import GLPK_OPTIONS, Fates
+from btrack.constants import GLPK_OPTIONS, Fates
 from . import hypothesis
 
 # get the logger instance

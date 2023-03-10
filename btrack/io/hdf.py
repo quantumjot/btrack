@@ -11,7 +11,7 @@ import h5py
 import numpy as np
 
 # import core
-from .. import btypes, constants, utils
+from btrack import btypes, constants, utils
 from .utils import (
     check_object_type,
     check_track_type,
@@ -20,7 +20,7 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from .. import BayesianTracker
+    from btrack import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger(__name__)

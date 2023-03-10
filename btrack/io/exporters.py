@@ -7,12 +7,12 @@ from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
-from .. import constants
+from btrack import constants
 from .hdf import HDF5FileHandler
 from .utils import check_track_type
 
 if TYPE_CHECKING:
-    from .. import BayesianTracker
+    from btrack import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger(__name__)

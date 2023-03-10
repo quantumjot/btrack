@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Union
 import numpy as np
 
 # import core
-from .. import btypes, constants
+from btrack import btypes, constants
 
 # get the logger instance
 logger = logging.getLogger(__name__)

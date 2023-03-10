@@ -9,6 +9,7 @@ from skimage.measure import label, regionprops_table
 
 from btrack import btypes
 from btrack.constants import Dimensionality
+
 from .utils import localizations_to_objects
 
 # get the logger instance

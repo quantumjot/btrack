@@ -93,6 +93,7 @@ fix = true
 fixable = [
     "B007",
     "C414",
+    "I001",
     "SIM102",
     "SIM108",
     "SIM118",

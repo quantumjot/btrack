@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional
 import numpy as np
 
 from btrack import constants
+
 from .hdf import HDF5FileHandler
 from .utils import check_track_type
 

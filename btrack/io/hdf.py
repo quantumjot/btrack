@@ -12,6 +12,7 @@ import numpy as np
 
 # import core
 from btrack import btypes, constants, utils
+
 from .utils import (
     check_object_type,
     check_track_type,

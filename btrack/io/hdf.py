@@ -478,8 +478,7 @@ class HDF5FileHandler:
         # sanity check, can be removed at a later date
         MAX_N_CHILDREN = 2
         assert all(
-            len(children) <= MAX_N_CHILDREN
-            for children in to_update.values()
+            len(children) <= MAX_N_CHILDREN for children in to_update.values()
         )
 
         # add the children to the parent

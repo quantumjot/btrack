@@ -490,7 +490,7 @@ class HDF5FileHandler:
 
         return tracks
 
-    def write_tracks(
+    def write_tracks(  # noqa: PLR0912
         self,
         data: Union[List[btypes.Tracklet], BayesianTracker],
         *,

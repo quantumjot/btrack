@@ -92,6 +92,7 @@ testpaths = [
 fix = true
 fixable = [
     "B007",
+    "C403",
     "C414",
     "I001",
     "RUF005",

@@ -131,7 +131,7 @@ class TrackOptimiser:
 
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
-        N = max(set([int(h.ID) for h in self.hypotheses]))
+        N = max({int(h.ID) for h in self.hypotheses})
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...

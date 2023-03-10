@@ -110,6 +110,7 @@ def create_test_image(
     ndim: int = 2,
     nobj: int = 10,
     binsize: int = 5,
+    *,
     binary: bool = True,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
@@ -178,6 +179,7 @@ def create_test_segmentation_and_tracks(
     padding: int = 16,
     nframes: int = 10,
     ndim: int = 2,
+    *,
     binary: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, List[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""

@@ -21,6 +21,7 @@ def _centroids_from_single_arr(
     frame: int,
     intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
+    *,
     use_weighted_centroid: bool = False,
     assign_class_ID: bool = False,
 ) -> np.ndarray:
@@ -126,8 +127,8 @@ def segmentation_to_objects(
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
-    use_weighted_centroid: bool = True,
-    assign_class_ID: bool = False,
+    use_weighted_centroid: bool = True,  # noqa: FBT001
+    assign_class_ID: bool = False,  # noqa: FBT001
 ) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 

@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def h5check_property_exists(property):
+def h5check_property_exists(property):  # noqa: A002
     """Wrapper for hdf handler to make sure a property exists."""
 
     def func(fn):

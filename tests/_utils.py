@@ -16,7 +16,7 @@ RANDOM_SEED = 1234
 
 
 def create_test_object(
-    id: Optional[int] = None,
+    test_id: Optional[int] = None,
     ndim: int = 3,
 ) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
     """Create a test object."""
@@ -24,7 +24,7 @@ def create_test_object(
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
     data = {
-        "ID": rng.integers(0, 1000) if id is None else int(id),
+        "ID": rng.integers(0, 1000) if test_id is None else int(test_id),
         "x": rng.uniform(0.0, 1000.0),
         "y": rng.uniform(0.0, 1000.0),
         "z": rng.uniform(0.0, 1000.0)

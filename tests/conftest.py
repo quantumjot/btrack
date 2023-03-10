@@ -20,7 +20,7 @@ def test_objects():
     Create a list of 10 test objects.
     """
     n_rows = 10
-    return [create_test_object(id=i)[0] for i in range(n_rows)]
+    return [create_test_object(test_id=i)[0] for i in range(n_rows)]
 
 
 @pytest.fixture

@@ -97,6 +97,7 @@ fixable = [
     "SIM102",
     "SIM108",
     "SIM118",
+    "SIM202",
     "SIM212",
     "TID252",
     "UP034",

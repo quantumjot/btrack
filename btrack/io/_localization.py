@@ -33,8 +33,8 @@ def _centroids_from_single_arr(
         return {}
 
     def _is_unique(x: np.ndarray) -> bool:
-        # check if image is not uniquely labelled (necessary for regionprops)
-        return not np.max(label(x)) != np.max(x)
+        # check if image is uniquely labelled (necessary for regionprops)
+        return np.max(label(x)) == np.max(x)
 
     if use_weighted_centroid and intensity_image is not None:
         CENTROID_PROPERTY = "weighted_centroid"

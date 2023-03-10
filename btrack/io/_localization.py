@@ -123,7 +123,7 @@ def _concat_centroids(centroids, new_centroids):
     return centroids
 
 
-def segmentation_to_objects(
+def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[np.ndarray, Generator],
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),

@@ -81,7 +81,7 @@ def create_test_tracklet(
     return tracklet, data, properties, track_id
 
 
-def create_realistic_tracklet(
+def create_realistic_tracklet(  # noqa: PLR0913
     start_x: float,
     start_y: float,
     dx: float,

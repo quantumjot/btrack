@@ -127,8 +127,8 @@ def segmentation_to_objects(
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
-    use_weighted_centroid: bool = True,  # noqa: FBT001
-    assign_class_ID: bool = False,  # noqa: FBT001
+    use_weighted_centroid: bool = True,  # noqa: FBT001 FBT002
+    assign_class_ID: bool = False,  # noqa: FBT001 FBT002
 ) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 

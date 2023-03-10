@@ -213,10 +213,12 @@ def tracks_to_napari(
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
+    def nans_idx(x):
+        return x.nonzero()[0]
+
     if replace_nan:
         for k, v in properties.items():
             nans = np.isnan(v)
-            nans_idx = lambda x: x.nonzero()[0]
             v[nans] = np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
             properties[k] = v
 

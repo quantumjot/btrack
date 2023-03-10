@@ -159,7 +159,7 @@ class TrackOptimiser:
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.hypothesis_type in TERM_FATES:
+            elif h.hypothesis_type in TERM_FATES:  # noqa: SIM114
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1

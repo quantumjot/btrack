@@ -551,7 +551,9 @@ class BayesianTracker:
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
         options = (
-            self.configuration.optimizer_options if not options else options
+            options
+            if options is not None
+            else self.configuration.optimizer_options
         )
 
         # if we don't have any hypotheses return

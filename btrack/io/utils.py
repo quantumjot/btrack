@@ -44,11 +44,11 @@ def localizations_to_objects(
             objects_dict = {
                 c: np.asarray(localizations[c]) for c in localizations
             }
-        except ValueError:
+        except ValueError as err:
             logger.error(f"Unknown localization type: {type(localizations)}")
             raise TypeError(
                 f"Unknown localization type: {type(localizations)}"
-            )
+            ) from err
 
     # how many objects are there
     n_objects = objects_dict["t"].shape[0]

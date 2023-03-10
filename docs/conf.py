@@ -25,7 +25,8 @@ author = "Alan R Lowe"
 
 
 # The full version, including alpha/beta/rc tags
-release = "v" + btrack.__version__
+version = f"v{btrack.__version__}"
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -66,5 +67,4 @@ html_static_path = ["_static"]
 html_logo = "_static/btrack_logo.png"
 html_theme_options = {
     "logo_only": True,
-    "display_version": False,
 }

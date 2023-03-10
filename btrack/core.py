@@ -468,11 +468,9 @@ class BayesianTracker:
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
-                (
-                    f"Tracking objects in frames {frame} to "
-                    f"{min(frame+step_size-1, self._frame_range[1]+1)} "
-                    f"(of {self._frame_range[1]+1})..."
-                )
+                f"Tracking objects in frames {frame} to "
+                f"{min(frame+step_size-1, self._frame_range[1]+1)} "
+                f"(of {self._frame_range[1]+1})..."
             )
 
             stats = self.step(step_size)
@@ -482,17 +480,13 @@ class BayesianTracker:
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")
             logger.info(
-                (
-                    f" - Found {self.n_tracks} tracks in "
-                    f"{1+self._frame_range[1]} frames "
-                    f"(in {stats.t_total_time}s)"
-                )
+                f" - Found {self.n_tracks} tracks in "
+                f"{1+self._frame_range[1]} frames "
+                f"(in {stats.t_total_time}s)"
             )
             logger.info(
-                (
-                    f" - Inserted {self.n_dummies} dummy objects to fill "
-                    "tracking gaps"
-                )
+                f" - Inserted {self.n_dummies} dummy objects to fill "
+                "tracking gaps"
             )
 
     def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
@@ -581,10 +575,8 @@ class BayesianTracker:
 
         for h_type in h_types:
             logger.info(
-                (
-                    f" - {h_type}: {h_optimise.count(h_type)}"
-                    f" (of {h_original.count(h_type)})"
-                )
+                f" - {h_type}: {h_optimise.count(h_type)}"
+                f" (of {h_original.count(h_type)})"
             )
         logger.info(f" - TOTAL: {len(hypotheses)} hypotheses")
 

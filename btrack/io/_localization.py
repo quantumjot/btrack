@@ -42,7 +42,7 @@ def _centroids_from_single_arr(
         CENTROID_PROPERTY = "centroid"
 
     if CENTROID_PROPERTY not in properties:
-        properties = (CENTROID_PROPERTY,) + properties
+        properties = (CENTROID_PROPERTY, *properties)
 
     # if class id is specified then extract that property first
     if assign_class_ID:

@@ -110,7 +110,7 @@ def _cat_tracks_as_dict(
     for track in tracks:
         trk = track.to_dict(properties)
 
-        for key in trk.keys():
+        for key in trk:
             trk_property = np.asarray(trk[key])
 
             # if we have a scalar value, repeat it so the dimensions match
@@ -137,7 +137,7 @@ def _cat_tracks_as_dict(
                     data[key] = []
                 data[key].append(trk_property)
 
-    for key in data.keys():
+    for key in data:
         data[key] = np.concatenate(data[key])
 
     return data
@@ -204,9 +204,7 @@ def tracks_to_napari(
     tracks_as_dict = _cat_tracks_as_dict(ordered, header)
 
     # note that there may be other metadata in the tracks, grab that too
-    prop_keys = p_header + [
-        k for k in tracks_as_dict.keys() if k not in t_header
-    ]
+    prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
     data = np.stack(

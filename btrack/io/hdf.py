@@ -236,7 +236,7 @@ class HDF5FileHandler:
         # get properties if we have them (note, this assumes that the same
         # properties exist for each object)
         properties = {}
-        if "properties" in grp.keys():
+        if "properties" in grp:
             p_keys = list(
                 set(grp["properties"].keys()).difference(
                     set(exclude_properties)
@@ -257,7 +257,7 @@ class HDF5FileHandler:
 
             f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
-            if m["name"] in properties.keys():
+            if m["name"] in properties:
                 data = properties[m["name"]]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
@@ -318,7 +318,7 @@ class HDF5FileHandler:
         if "objects" not in self._hdf:
             self._hdf.create_group("objects")
         grp = self._hdf["objects"].create_group(self.object_type)
-        props = {k: [] for k in objects[0].properties.keys()}
+        props = {k: [] for k in objects[0].properties}
 
         n_objects = len(objects)
         n_frames = np.max([o.t for o in objects]) + 1
@@ -335,7 +335,7 @@ class HDF5FileHandler:
             fmap[t, 1] = np.max([fmap[t, 1], i])
 
             # add in any properties
-            for key in props.keys():
+            for key in props:
                 props[key].append(obj.properties[key])
 
         fmap[1:, 0] = fmap[:-1, 1]

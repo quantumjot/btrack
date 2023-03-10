@@ -206,8 +206,8 @@ def test_tracks_to_napari(ndim: int):
     # check the properties keys are correct, note that nD keys are replaced with
     # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
     # and so forth
-    for key in tracks[0].properties.keys():
-        assert any([k.startswith(key) for k in properties.keys()])
+    for key in tracks[0].properties:
+        assert any([k.startswith(key) for k in properties])
 
 
 @pytest.mark.parametrize("ndim", [1, 4])

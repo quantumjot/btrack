@@ -89,7 +89,10 @@ testpaths = [
 ]
 
 [tool.ruff]
-fix = false
+fix = true
+fixable = [
+    "SIM118",
+]
 force-exclude = true
 ignore = [
     "B905", # python>=3.10

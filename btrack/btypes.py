@@ -125,7 +125,7 @@ class PyTrackObject(ctypes.Structure):
             self.n_features = 0
             return
 
-        if not all(k in self.properties.keys() for k in keys):
+        if not all(k in self.properties for k in keys):
             missing_features = list(
                 set(keys).difference(set(self.properties.keys()))
             )
@@ -157,7 +157,7 @@ class PyTrackObject(ctypes.Structure):
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}
-        attr = [k for k in fields.keys() if k in properties.keys()]
+        attr = [k for k in fields if k in properties]
         for key in attr:
 
             new_data = properties[key]

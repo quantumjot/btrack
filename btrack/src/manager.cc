@@ -122,6 +122,12 @@ void TrackManager::add_graph_edge(
 
 
 PyGraphEdge TrackManager::get_graph_edge(const size_t idx) const {
+
+  // TODO: we may want to index beyond the end of the edges stored in the
+  // `m_graph_edges` vector, to include those edges built by the hypothesis
+  // engine. To do so, we need to index into the hypotheses for branches, links
+  // and merges.
+
   return m_graph_edges[idx];
 }
 

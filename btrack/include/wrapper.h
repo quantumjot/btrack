@@ -120,9 +120,9 @@ class InterfaceWrapper
 
     // get the graph edges of the bayesian belief matrix
     unsigned int num_edges() const {
-      return tracker.graph_edges.size();
+      return p_manager->num_edges();
     }
-    PyGraphEdge get_graph_edge(const unsigned int a_ID) const;
+    PyGraphEdge get_graph_edge(const size_t a_ID);
 
     // hypothesis generation, returns number of hypotheses found
     unsigned int create_hypotheses( PyHypothesisParams params,

@@ -107,6 +107,24 @@ void branch_tracks(const BranchHypothesis &branch)
 
 
 
+// add a graph edge
+void TrackManager::add_graph_edge(
+      const TrackObjectPtr &a_node_src,
+      const TrackObjectPtr &a_node_dst,
+      const float a_score
+) {
+  PyGraphEdge edge;
+  edge.source = a_node_src->ID;
+  edge.target = a_node_dst->ID;
+  edge.score = a_score;
+  m_graph_edges.push_back(edge);
+}
+
+
+PyGraphEdge TrackManager::get_graph_edge(const size_t idx) const {
+  return m_graph_edges[idx];
+}
+
 
 
 // split a track to remove forbidden transitions

@@ -25,6 +25,7 @@
 #include "tracklet.h"
 
 #define RESERVE_ALL_TRACKS 500000
+#define RESERVE_ALL_GRAPH_EDGES 1000000
 
 // make a joining hypothesis (note: LinkHypothesis is used by the tracker...)
 typedef std::pair<TrackletPtr, TrackletPtr> JoinHypothesis;
@@ -88,6 +89,7 @@ class TrackManager
     // default constructors and destructors
     TrackManager() {
       m_tracks.reserve(RESERVE_ALL_TRACKS);
+      m_graph_edges.reserve(RESERVE_ALL_GRAPH_EDGES);
     };
     virtual ~TrackManager() {};
 
@@ -117,9 +119,24 @@ class TrackManager
       m_tracks.reserve(a_reserve);
     }
 
-    // test whether the track manager is empty
+    // test whether thse track manager is empty
     inline bool empty() const {
       return m_tracks.empty();
+    }
+
+    // add a graph edge
+    void add_graph_edge(
+      const TrackObjectPtr &a_node_src,
+      const TrackObjectPtr &a_node_dst,
+      const float a_score
+    );
+
+    // get a graph edge from the vector
+    PyGraphEdge get_graph_edge(const size_t idx) const;
+
+    // return the number of grph edges;
+    inline size_t num_edges(void) const {
+      return m_graph_edges.size();
     }
 
     // build trees from the data
@@ -134,9 +151,11 @@ class TrackManager
     void merge(const std::vector<Hypothesis> &a_hypotheses);
 
     // split a track with certain transitions
-    void split(const TrackletPtr &a_trk,
-               const unsigned int a_label_i,
-               const unsigned int a_label_j);
+    void split(
+      const TrackletPtr &a_trk,
+      const unsigned int a_label_i,
+      const unsigned int a_label_j
+    );
 
   private:
 
@@ -152,6 +171,10 @@ class TrackManager
 
     // a vector of dummy objects
     std::vector<TrackObjectPtr> m_dummies;
+
+    // store the graph edges, i.e. intermediate output of Bayesian updates
+    // and the graph hypotheses
+    std::vector<PyGraphEdge> m_graph_edges;
 
     // make hypothesis maps
     HypothesisMap<JoinHypothesis> m_links;

@@ -392,11 +392,16 @@ void BayesianTracker::step(const unsigned int steps)
         // note that this doesn't store an edge to `lost`, but we can infer it
         // as 1 - sum(scores) for each association
         for (size_t obj=0; obj<n_obs; obj++) {
-          PyGraphEdge edge;
-          edge.source = active[trk]->track.back()->ID;
-          edge.target = new_objects[obj]->ID;
-          edge.score = prob_assign_per_obj[obj];
-          graph_edges.push_back(edge);
+          // PyGraphEdge edge;
+          // edge.source = active[trk]->track.back()->ID;
+          // edge.target = new_objects[obj]->ID;
+          // edge.score = prob_assign_per_obj[obj];
+          // graph_edges.push_back(edge);
+          tracks.add_graph_edge(
+            active[trk]->track.back(),
+            new_objects[obj],
+            prob_assign_per_obj[obj]
+          );
         }
       }
     }

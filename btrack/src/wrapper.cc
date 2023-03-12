@@ -284,9 +284,10 @@ PyTrackObject InterfaceWrapper::get_dummy(const int a_ID)
 }
 
 
-PyGraphEdge InterfaceWrapper::get_graph_edge(const unsigned int a_ID) const
+PyGraphEdge InterfaceWrapper::get_graph_edge(const size_t a_ID)
 {
-  return tracker.graph_edges[a_ID];
+  p_manager = &tracker.tracks;
+  return p_manager->get_graph_edge(a_ID);
 }
 
 

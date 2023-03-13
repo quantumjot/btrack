@@ -259,9 +259,9 @@ class Tracklet:
         A unique integer identifier for the tracklet.
     data : list[PyTrackObject]
         The objects linked together to form the track.
-    parent : int,
+    parent : int
         The identifiers of the parent track(s).
-    children : list or None
+    children : list
         The identifiers of the child tracks.
     fate : constants.Fates, default = constants.Fates.UNDEFINED
         An enumerated type describing the fate of the track.

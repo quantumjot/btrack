@@ -7,7 +7,7 @@ repos:
       rev: v1.4.2
       hooks:
         - id: forbid-tabs
-          exclude: Makefile|docs/Makefile|\.bat$|\.cc$|\.h
+          exclude: Makefile|docs/Makefile|\.bat$
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v4.2.0
       hooks:

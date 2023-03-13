@@ -49,7 +49,7 @@ optional-dependencies.pyside = [
 optional-dependencies.qt = [
     "napari-btrack[pyside]",
 ]
-urls.homepage = "https://github.com/quantumjot/napari-btrack"
+urls.homepage = "https://github.com/lowe-lab-ucl/napari-btrack"
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

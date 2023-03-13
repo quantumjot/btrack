@@ -1,10 +1,8 @@
 # napari-btrack
 
-[![License](https://img.shields.io/pypi/l/napari-btrack.svg?color=green)](https://github.com/quantumjot/napari-btrack/raw/master/LICENSE)
-[![PyPI](https://img.shields.io/pypi/v/napari-btrack.svg?color=green)](https://pypi.org/project/napari-btrack)
-[![Python Version](https://img.shields.io/pypi/pyversions/napari-btrack.svg?color=green)](https://python.org)
-[![tests](https://github.com/quantumjot/napari-btrack/workflows/tests/badge.svg)](https://github.com/quantumjot/napari-btrack/actions)
-[![codecov](https://codecov.io/gh/quantumjot/napari-btrack/branch/master/graph/badge.svg)](https://codecov.io/gh/quantumjot/napari-btrack)
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+![tests](https://github.com/lowe-lab-ucl/napari-btrack/workflows/tests/badge.svg)
+[![codecov](https://codecov.io/gh/lowe-lab-ucl/napari-btrack/branch/main/graph/badge.svg)](https://codecov.io/gh/lowe-lab-ucl/napari-btrack)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 
 A plugin to use btrack from napari
@@ -51,7 +49,7 @@ If you encounter any problems, please [file an issue] along with a detailed desc
 [apache software license 2.0]: http://www.apache.org/licenses/LICENSE-2.0
 [mozilla public license 2.0]: https://www.mozilla.org/media/MPL/2.0/index.txt
 [cookiecutter-napari-plugin]: https://github.com/napari/cookiecutter-napari-plugin
-[file an issue]: https://github.com/quantumjot/napari-btrack/issues
+[file an issue]: https://github.com/lowe-lab-ucl/napari-btrack/issues
 [napari]: https://github.com/napari/napari
 [tox]: https://tox.readthedocs.io/en/latest/
 [pip]: https://pypi.org/project/pip/

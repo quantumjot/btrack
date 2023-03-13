@@ -4,7 +4,7 @@ site_author: Alan R. Lowe
 
 theme: readthedocs
 
-repo_url: https://github.com/quantumjot/napari-btrack
+repo_url: https://github.com/lowe-lab-ucl/napari-btrack
 
 pages:
   - Home: index.md

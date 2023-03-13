@@ -89,8 +89,15 @@ public:
   // Constructor
   BayesianTracker() {};
   // BayesianTracker(const bool verbose);
-  BayesianTracker(const bool verbose,
-                  const unsigned int update_mode);
+  // BayesianTracker(
+  //   const bool verbose,
+  //   const unsigned int update_mode
+  // );
+  BayesianTracker(
+    const bool verbose,
+    const unsigned int update_mode,
+    TrackManager* a_manager
+  );
 
   // Default destructor
   ~BayesianTracker();
@@ -104,23 +111,27 @@ public:
   void set_update_mode(const unsigned int update_mode);
 
   // set up the motion model. matrices are in the form of c-style linear arrays
-  unsigned int set_motion_model(const unsigned int measurements,
-                                const unsigned int states,
-                                double* A_raw,
-                                double* H_raw,
-                                double* P_raw,
-                                double* Q_raw,
-                                double* R_raw,
-                                const double dt,
-                                const double accuracy,
-                                const unsigned int max_lost,
-                                const double prob_not_assign);
+  unsigned int set_motion_model(
+    const unsigned int measurements,
+    const unsigned int states,
+    double* A_raw,
+    double* H_raw,
+    double* P_raw,
+    double* Q_raw,
+    double* R_raw,
+    const double dt,
+    const double accuracy,
+    const unsigned int max_lost,
+    const double prob_not_assign
+  );
 
   // set up the object model
-  unsigned int set_object_model(const unsigned int states,
-                                double* transition_raw,
-                                double* emission_raw,
-                                double* start_raw);
+  unsigned int set_object_model(
+    const unsigned int states,
+    double* transition_raw,
+    double* emission_raw,
+    double* start_raw
+  );
 
   // set the maximum search radius
   void set_max_search_radius(const float search_radius) {
@@ -149,7 +160,7 @@ public:
 
   // get the number of tracks
   inline unsigned int size() const {
-    return tracks.size();
+    return manager->num_tracks();
   };
 
   // // return the Euclidean distance between object and trajectory
@@ -168,32 +179,40 @@ public:
   bool purge();
 
   // calculate the cost matrix using different methods
-  void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
-                  const size_t n_tracks,
-                  const size_t n_objects,
-                  const bool use_uniform_prior);
+  void cost_EXACT(
+    Eigen::Ref<Eigen::MatrixXd> belief,
+    const size_t n_tracks,
+    const size_t n_objects,
+    const bool use_uniform_prior
+  );
 
-  void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
-                        const size_t n_tracks,
-                        const size_t n_objects,
-                        const bool use_uniform_prior);
+  void cost_APPROXIMATE(
+    Eigen::Ref<Eigen::MatrixXd> belief,
+    const size_t n_tracks,
+    const size_t n_objects,
+    const bool use_uniform_prior
+  );
 
-  void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief,
-                 const size_t n_tracks,
-                 const size_t n_objects,
-                 const bool use_uniform_prior);
+  void cost_CUDA(
+    Eigen::Ref<Eigen::MatrixXd> belief,
+    const size_t n_tracks,
+    const size_t n_objects,
+    const bool use_uniform_prior
+  );
 
   // calculate linkages based on belief matrix
-  void link(Eigen::Ref<Eigen::MatrixXd> belief,
-            const size_t n_tracks,
-            const size_t n_objects);
+  void link(
+    Eigen::Ref<Eigen::MatrixXd> belief,
+    const size_t n_tracks,
+    const size_t n_objects
+  );
 
 
   double prob_update_motion(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
   double prob_update_visual(const TrackletPtr& trk, const TrackObjectPtr& obj) const;
 
   // somewhere to store the tracks
-  TrackManager tracks;
+  //TrackManager tracks;
 
   // maintain the size of the ImagingVolume
   ImagingVolume volume;
@@ -204,7 +223,7 @@ public:
   }
 
   // space to store the entire graph
-  std::vector<PyGraphEdge> graph_edges;
+  // std::vector<PyGraphEdge> graph_edges;
 
 private:
 
@@ -254,14 +273,14 @@ private:
   bool update_active();
 
   // pointer to the track manager
-  // TrackManager* p_manager;
+  TrackManager* manager;
 
   // maintain pointers to tracks
   std::vector<TrackletPtr> active;
   std::vector<TrackObjectPtr> new_objects;
 
   // some space to store the objects
-  std::vector<TrackObjectPtr> objects;
+  // std::vector<TrackObjectPtr> objects;
 
   // sizes of various vectors
   size_t n_objects;
@@ -294,10 +313,14 @@ private:
 
 
 // utils to write out belief matrix to CSV files
-const static Eigen::IOFormat CSVFormat(Eigen::StreamPrecision,
-                                       Eigen::DontAlignCols, ", ", "\n");
+const static Eigen::IOFormat CSVFormat(
+  Eigen::StreamPrecision,
+  Eigen::DontAlignCols, ", ", "\n"
+);
 
-void write_belief_matrix_to_CSV(std::string a_filename,
-                                Eigen::Ref<Eigen::MatrixXd> a_belief);
+void write_belief_matrix_to_CSV(
+  std::string a_filename,
+  Eigen::Ref<Eigen::MatrixXd> a_belief
+);
 
 #endif

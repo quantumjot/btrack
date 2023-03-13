@@ -31,6 +31,7 @@
 #include "pdf.h"
 #include "updates.h"
 #include "bayes.h"
+// #include "manager.h"
 
 
 
@@ -56,9 +57,8 @@ class Hypothesis
   public:
     Hypothesis() {};
     ~Hypothesis() {};
-    Hypothesis( const unsigned int h,
-                const TrackletPtr a_trk ): hypothesis(h), ID(a_trk->ID),
-                trk_ID(a_trk) {};
+    Hypothesis(const unsigned int h, const TrackletPtr a_trk): hypothesis(h), ID(a_trk->ID),
+      trk_ID(a_trk) {};
 
     unsigned int hypothesis = TYPE_undef;
     unsigned int ID;
@@ -176,19 +176,25 @@ extern "C" struct PyHypothesisParams {
 unsigned int count_apoptosis(const TrackletPtr a_trk);
 
 // count the number of a certain state at the end of the track
-unsigned int count_state_track(const TrackletPtr a_trk,
-                               const unsigned int a_state_label,
-                               const bool a_from_back);
+unsigned int count_state_track(
+  const TrackletPtr a_trk,
+  const unsigned int a_state_label,
+  const bool a_from_back
+);
 
 
 // calculate the linkage distance
-double link_distance(const TrackletPtr a_trk,
-                     const TrackletPtr a_trk_lnk);
+double link_distance(
+  const TrackletPtr a_trk,
+  const TrackletPtr a_trk_lnk
+);
 
 
 // calculate the time between the start of new track and end of old track
-double link_time(const TrackletPtr a_trk,
-                 const TrackletPtr a_trk_lnk);
+double link_time(
+  const TrackletPtr a_trk,
+  const TrackletPtr a_trk_lnk
+);
 
 // safe log function
 double safe_log(double value);
@@ -222,9 +228,12 @@ class HypothesisEngine: public UpdateFeatures
     // constructors and destructors
     HypothesisEngine();
     ~HypothesisEngine();
-    HypothesisEngine( const unsigned int a_start_frame,
-                      const unsigned int a_stop_frame,
-                      const PyHypothesisParams& a_params );
+    HypothesisEngine(
+      const unsigned int a_start_frame,
+      const unsigned int a_stop_frame,
+      const PyHypothesisParams& a_params
+      // TrackManager* a_manager
+    );
 
     // add a track to the hypothesis engine
     void add_track(TrackletPtr a_trk);
@@ -268,13 +277,15 @@ class HypothesisEngine: public UpdateFeatures
     void hypothesis_init(TrackletPtr a_trk);
     void hypothesis_term(TrackletPtr a_trk);
     void hypothesis_dead(TrackletPtr a_trk);
-    void hypothesis_link(TrackletPtr a_trk,
-                         TrackletPtr a_trk_lnk);
-    void hypothesis_branch(TrackletPtr a_trk,
-                           TrackletPtr a_trk_c0,
-                           TrackletPtr a_trk_c1);
-
-
+    void hypothesis_link(
+      TrackletPtr a_trk,
+      TrackletPtr a_trk_lnk
+    );
+    void hypothesis_branch(
+      TrackletPtr a_trk,
+      TrackletPtr a_trk_c0,
+      TrackletPtr a_trk_c1
+    );
 
     // calculation of probabilities
     double P_TP(TrackletPtr a_trk) const;
@@ -286,29 +297,42 @@ class HypothesisEngine: public UpdateFeatures
     double P_term_border(TrackletPtr a_trk) const;
     double P_term_back(TrackletPtr a_trk) const;
 
-    double P_link(TrackletPtr a_trk,
-                  TrackletPtr a_trk_link) const;
-    double P_link(TrackletPtr a_trk,
-                  TrackletPtr a_trk_link,
-                  float d,
-                  float dt) const;
+    double P_link(
+      TrackletPtr a_trk,
+      TrackletPtr a_trk_link
+    ) const;
+    double P_link(
+      TrackletPtr a_trk,
+      TrackletPtr a_trk_link,
+      float d,
+      float dt
+    ) const;
 
-    double P_branch(TrackletPtr a_trk,
-                    TrackletPtr a_trk_c0,
-                    TrackletPtr a_trk_c1) const;
+    double P_branch(
+      TrackletPtr a_trk,
+      TrackletPtr a_trk_c0,
+      TrackletPtr a_trk_c1
+    ) const;
 
-    double P_dead(TrackletPtr a_trk,
-                  const unsigned int n_dead) const;
+    double P_dead(
+      TrackletPtr a_trk,
+      const unsigned int n_dead
+    ) const;
     double P_dead(TrackletPtr a_trk) const;
 
-    double P_merge(TrackletPtr a_trk_m0,
-                   TrackletPtr a_trk_m1,
-                   TrackletPtr a_trk) const;
+    double P_merge(
+      TrackletPtr a_trk_m0,
+      TrackletPtr a_trk_m1,
+      TrackletPtr a_trk
+    ) const;
 
     double P_extrude(TrackletPtr a_trk) const;
 
     // calculate the distance of a track from the border of the imaging volume
     float dist_from_border( TrackletPtr a_trk, bool a_start ) const;
+
+    // pointer to the track manager
+    // TrackManager* manager;
 
     // storage for the trajectories
     unsigned int m_num_tracks = 0;

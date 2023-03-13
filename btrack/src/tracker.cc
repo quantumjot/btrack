@@ -44,14 +44,17 @@ void write_belief_matrix_to_CSV(
 
 
 // set up the tracker using an existing track manager
-BayesianTracker::BayesianTracker(const bool verbose,
-                                 const unsigned int update_mode) {
+BayesianTracker::BayesianTracker(
+  const bool verbose,
+  const unsigned int update_mode,
+  TrackManager* a_manager
+) {
 
   // set up verbosity
   this->verbose = verbose;
 
   // set up the tracks
-  this->tracks = TrackManager();
+  this->manager = a_manager;
 
   // NOTE(arl): This isn't really necessary
   // set up the frame map
@@ -97,18 +100,18 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
 
 
 unsigned int BayesianTracker::set_motion_model(
-              const unsigned int measurements,
-              const unsigned int states,
-              double* A_raw,
-              double* H_raw,
-              double* P_raw,
-              double* Q_raw,
-              double* R_raw,
-              const double dt,
-              const double accuracy,
-              const unsigned int max_lost,
-              const double prob_not_assign)
-{
+  const unsigned int measurements,
+  const unsigned int states,
+  double* A_raw,
+  double* H_raw,
+  double* P_raw,
+  double* Q_raw,
+  double* R_raw,
+  const double dt,
+  const double accuracy,
+  const unsigned int max_lost,
+  const double prob_not_assign
+) {
 
   // do some error checking
   if (prob_not_assign<=0. || prob_not_assign>=1.)
@@ -167,8 +170,9 @@ unsigned int BayesianTracker::append(const PyTrackObject& new_object){
   volume.update(p);
 
   // add a new object and maintain a set of frame numbers...
-  objects.push_back( p );
-  frames_set.insert( p->t );
+  // objects.push_back( p );
+  manager->push_node(p);
+  frames_set.insert(p->t);
 
   // set this flag to true
   // initialised = true;
@@ -206,22 +210,23 @@ unsigned int BayesianTracker::initialise() {
   }
 
   // check to make sure that we've got some objects to track
-  if (objects.empty()) {
+  if (manager->num_nodes() < 1) {
     if (verbose) {
       std::cout << "Object queue is empty. " << std::endl;
     }
     return ERROR_empty_queue;
   }
 
-  if (!tracks.empty()) {
+  if (manager->num_tracks() > 0) {
     if (verbose) {
       std::cout << "Tracking has already been performed. " << std::endl;
     }
     return ERROR_no_tracks;
   }
 
-  // sort the objects vector by time
-  std::sort( objects.begin(), objects.end(), compare_obj_time );
+  // // sort the objects vector by time
+  // std::sort( objects.begin(), objects.end(), compare_obj_time );
+  manager->sort_nodes();
 
   // NOTE: should check that we have some frames which can be tracked
   // start by converting the set to a vector
@@ -249,20 +254,23 @@ unsigned int BayesianTracker::initialise() {
   }
 
   // get the number of objects and a counter to the first object
-  n_objects = objects.size();
+  n_objects = manager->num_nodes();
   o_counter = 0;
 
   // set the current frame of the tracker
   current_frame = frames.front();
 
   // set up the first tracklets based on the first set of objects
-  while ( objects[o_counter]->t == current_frame && o_counter != n_objects-1 ) {
+  while ( manager->get_node(o_counter)->t == current_frame && o_counter != n_objects-1 ) {
     // add a new tracklet
-    TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
-                                                  objects[o_counter],
-                                                  max_lost,
-                                                  this->motion_model );
-    tracks.push_back( trk );
+    TrackletPtr trk = std::make_shared<Tracklet>(
+      get_new_ID(),
+      manager->get_node(o_counter), //objects[o_counter],
+      max_lost,
+      this->motion_model
+    );
+    // tracks.push_back( trk );
+    manager->push_track(trk);
     o_counter++;
   }
 
@@ -316,10 +324,10 @@ void BayesianTracker::step(const unsigned int steps)
 
     // loop over all tracks found in this frame
     if (o_counter < n_objects) {
-      while (objects[o_counter]->t == current_frame) {
+      while (manager->get_node(o_counter)->t == current_frame) {
 
         // store a reference to this object
-        new_objects.push_back( objects[o_counter] );
+        new_objects.push_back( manager->get_node(o_counter) );
         o_counter++;
 
         // make sure our iterator doesn't run off the end of the vector
@@ -378,8 +386,7 @@ void BayesianTracker::step(const unsigned int steps)
     // write out belief matrix here
     if (WRITE_BELIEF_MATRIX) {
       std::stringstream belief_filename;
-      belief_filename << "/media/quantumjot/Data/belief/belief_";
-      belief_filename << current_frame << ".csv";
+      belief_filename << DEBUG_FILEPATH << "belief_" << current_frame << ".csv";
       write_belief_matrix_to_CSV(belief_filename.str(), belief);
     }
 
@@ -392,15 +399,11 @@ void BayesianTracker::step(const unsigned int steps)
         // note that this doesn't store an edge to `lost`, but we can infer it
         // as 1 - sum(scores) for each association
         for (size_t obj=0; obj<n_obs; obj++) {
-          // PyGraphEdge edge;
-          // edge.source = active[trk]->track.back()->ID;
-          // edge.target = new_objects[obj]->ID;
-          // edge.score = prob_assign_per_obj[obj];
-          // graph_edges.push_back(edge);
-          tracks.add_graph_edge(
+          manager->push_edge(
             active[trk]->track.back(),
             new_objects[obj],
-            prob_assign_per_obj[obj]
+            prob_assign_per_obj[obj],
+            GRAPH_EDGE_link
           );
         }
       }
@@ -421,7 +424,7 @@ void BayesianTracker::step(const unsigned int steps)
   {
     statistics.complete = true;
     //clean();
-    tracks.finalise();
+    manager->finalise();
   }
 
   //return statistics;
@@ -438,19 +441,21 @@ bool BayesianTracker::update_active()
   // clear the active list
   active.clear();
 
-  for (size_t i=0, trks_size=tracks.size(); i<trks_size; i++) {
+  for (size_t i=0, trks_size=manager->num_tracks(); i<trks_size; i++) {
+
+    TrackletPtr trk = manager->get_track(i);
 
     // check to see whether we have exceeded the bounds
-    if (!volume.inside( tracks[i]->position() )) {
-      tracks[i]->set_lost();
+    if (!volume.inside( trk->position() )) {
+      trk->set_lost();
       continue;
     }
 
     // if the track is still active, add it to the update list
-    if (tracks[i]->active()) {
-      active.push_back( tracks[i] );
+    if (trk->active()) {
+      active.push_back( trk );
     } else {
-      tracks[i]->trim();   // remove dummies if this track is lost
+      trk->trim();   // remove dummies if this track is lost
     }
 
   }
@@ -591,8 +596,7 @@ void BayesianTracker::cost_EXACT(
   }
 
   // set the timings
-  double t_elapsed_ms = (std::clock() - t_update_start) /
-                        (double) (CLOCKS_PER_SEC / 1000);
+  double t_elapsed_ms = (std::clock() - t_update_start) / (double) (CLOCKS_PER_SEC / 1000);
   statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
 
 }
@@ -696,8 +700,7 @@ void BayesianTracker::cost_APPROXIMATE(
   }
 
   // set the timings
-  double t_elapsed_ms = (std::clock() - t_update_start) /
-                        (double) (CLOCKS_PER_SEC / 1000);
+  double t_elapsed_ms = (std::clock() - t_update_start) / (double) (CLOCKS_PER_SEC / 1000);
   statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
 
 }
@@ -787,11 +790,14 @@ void BayesianTracker::link(
 
     } else if (n_links < 1) {
       // this object has no matches, add a new tracklet
-      TrackletPtr trk = std::make_shared<Tracklet>( get_new_ID(),
-                                                    new_objects[obj],
-                                                    max_lost,
-                                                    this->motion_model );
-      tracks.push_back( trk );
+      TrackletPtr trk = std::make_shared<Tracklet>(
+        get_new_ID(),
+        new_objects[obj],
+        max_lost,
+        this->motion_model
+      );
+      // tracks.push_back( trk );
+      manager->push_track(trk);
 
     } else if (n_links > 1) {
       // conflict, get the best one
@@ -837,8 +843,7 @@ void BayesianTracker::link(
   }
 
   // set the timings
-  double t_elapsed_ms = (std::clock() - t_update_start) /
-                        (double) (CLOCKS_PER_SEC / 1000);
+  double t_elapsed_ms = (std::clock() - t_update_start) / (double) (CLOCKS_PER_SEC / 1000);
   statistics.t_update_link = static_cast<float>(t_elapsed_ms);
 
 

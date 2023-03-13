@@ -25,8 +25,12 @@ InterfaceWrapper::InterfaceWrapper() {
     std::cout << "." << v_build << ", compiled " << build_date << " at ";
     std::cout << build_time << ")" << std::endl;
   }
+
+  // set up the track manager
+  manager = TrackManager();
+
   // create a track manager instance, pass it to the tracker
-  tracker = BayesianTracker(true, UPDATE_MODE_EXACT);
+  tracker = BayesianTracker(true, UPDATE_MODE_EXACT, &manager);
 };
 
 InterfaceWrapper::~InterfaceWrapper() {
@@ -67,22 +71,34 @@ void InterfaceWrapper::set_update_features(const unsigned int a_update_features)
 // check the update features of the tracker
 
 // tracking and basic data handling
-void InterfaceWrapper::set_motion_model(const unsigned int measurements,
-                                        const unsigned int states,
-                                        double* A,
-                                        double* H,
-                                        double* P,
-                                        double* Q,
-                                        double* R,
-                                        double dt,
-                                        double accuracy,
-                                        unsigned int max_lost,
-                                        double prob_not_assign)
-{
+void InterfaceWrapper::set_motion_model(
+  const unsigned int measurements,
+  const unsigned int states,
+  double* A,
+  double* H,
+  double* P,
+  double* Q,
+  double* R,
+  double dt,
+  double accuracy,
+  unsigned int max_lost,
+  double prob_not_assign
+) {
 
   // set the motion model of the tracker
-  tracker.set_motion_model( measurements, states, A, H, P, Q, R, dt, accuracy,
-                            max_lost, prob_not_assign );
+  tracker.set_motion_model(
+    measurements,
+    states,
+    A,
+    H,
+    P,
+    Q,
+    R,
+    dt,
+    accuracy,
+    max_lost,
+    prob_not_assign
+  );
 };
 
 // set the maximum search radius
@@ -112,148 +128,190 @@ const PyTrackInfo* InterfaceWrapper::step(const unsigned int a_steps)
 };
 
 // return the length of a track by ID
-unsigned int InterfaceWrapper::track_length(const unsigned int a_ID) const
+unsigned int InterfaceWrapper::track_length(const unsigned int a_idx) const
 {
-  return tracker.tracks[a_ID]->length();
+  // return tracker.tracks[a_ID]->length();
+  return manager.get_track(a_idx)->length();
 };
 
 // return the internal ID of the track
-unsigned int InterfaceWrapper::get_ID(const unsigned int a_ID) const
+unsigned int InterfaceWrapper::get_ID(const unsigned int a_idx) const
 {
   // TODO(arl): all renamed tracks should have been removed but do we need
   // to do a sanity check?!
-  return tracker.tracks[a_ID]->ID;
+  return manager.get_track(a_idx)->ID;
 }
 
 // get a track by ID
-unsigned int InterfaceWrapper::get_track(double* output,
-                                         const unsigned int a_ID) const
-{
-  unsigned int n_frames = track_length(a_ID);
+unsigned int InterfaceWrapper::get_track(
+  double* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  unsigned int n_frames = trk->length();
   const unsigned int N = 3+1;
 
   // NOTE: Grab the actual track
   for (unsigned int i=0; i<n_frames; i++) {
     // frame number
-    output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
-    output[i*N+1] = tracker.tracks[a_ID]->track[i]->x;
-    output[i*N+2] = tracker.tracks[a_ID]->track[i]->y;
-    output[i*N+3] = tracker.tracks[a_ID]->track[i]->z;
-    //output[i*N+4] = tracker.tracks[a_ID]->track[i]->dummy;
+    output[i*N+0] = trk->track[i]->t;
+    output[i*N+1] = trk->track[i]->x;
+    output[i*N+2] = trk->track[i]->y;
+    output[i*N+3] = trk->track[i]->z;
+    //output[i*N+4] = tracker.tracks[a_idx]->track[i]->dummy;
   }
 
   return n_frames;
 };
 
 // return the references to the objects
-unsigned int InterfaceWrapper::get_refs(int* output,
-                                        const unsigned int a_ID) const
-{
-  unsigned int n_frames = track_length(a_ID);
+unsigned int InterfaceWrapper::get_refs(
+  int* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  unsigned int n_frames = trk->length();
+
   for (unsigned int i=0; i<n_frames; i++) {
-    output[i] = tracker.tracks[a_ID]->track[i]->ID;
+    output[i] = trk->track[i]->ID;
   }
   return n_frames;
 };
 
 
 // return the ID of the parent
-unsigned int InterfaceWrapper::get_parent(const unsigned int a_ID) const {
-  return tracker.tracks[a_ID]->parent;
+unsigned int InterfaceWrapper::get_parent(const unsigned int a_idx) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  return trk->parent;
 }
 
 
 // return the ID of the root
-unsigned int InterfaceWrapper::get_root(const unsigned int a_ID) const {
-  return tracker.tracks[a_ID]->root;
+unsigned int InterfaceWrapper::get_root(const unsigned int a_idx) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  return trk->root;
 }
 
 
 // return the ID of the children
-unsigned int InterfaceWrapper::get_children(int* children,
-                                            const unsigned int a_ID) const
-{
+unsigned int InterfaceWrapper::get_children(
+  int* children,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
   // if the track has no children, return zero
-  if (!tracker.tracks[a_ID]->has_children()) {
+  if (!trk->has_children()) {
     return 0;
   }
 
   // otherwise return the IDs of the children
-  children[0] = tracker.tracks[a_ID]->child_one;
-  children[1] = tracker.tracks[a_ID]->child_two;
+  children[0] = trk->child_one;
+  children[1] = trk->child_two;
   return 2;
 }
 
 // return the fate (as assigned by the optimizer)
-unsigned int InterfaceWrapper::get_fate(const unsigned int a_ID) const {
-  return tracker.tracks[a_ID]->fate;
+unsigned int InterfaceWrapper::get_fate(const unsigned int a_idx) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  return trk->fate;
 }
 
 // get the generational depth of the track
-unsigned int InterfaceWrapper::get_generation(const unsigned int a_ID) const {
-  return tracker.tracks[a_ID]->generation;
+unsigned int InterfaceWrapper::get_generation(const unsigned int a_idx) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
+  return trk->generation;
 }
 
-unsigned int InterfaceWrapper::get_kalman_mu(double* output,
-                                             const unsigned int a_ID) const
-{
+unsigned int InterfaceWrapper::get_kalman_mu(
+  double* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
   // NOTE: This is grabbing the Kalman filter rather than the track!
   const unsigned int N = 3+1;
-  unsigned int n_frames = track_length(a_ID);
+  unsigned int n_frames = trk->length();
   for (unsigned int i=0; i<n_frames; i++) {
-    output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
-    output[i*N+1] = tracker.tracks[a_ID]->kalman[i].mu(0);
-    output[i*N+2] = tracker.tracks[a_ID]->kalman[i].mu(1);
-    output[i*N+3] = tracker.tracks[a_ID]->kalman[i].mu(2);
+    output[i*N+0] = trk->track[i]->t;
+    output[i*N+1] = trk->kalman[i].mu(0);
+    output[i*N+2] = trk->kalman[i].mu(1);
+    output[i*N+3] = trk->kalman[i].mu(2);
   }
   return n_frames;
 };
 
-unsigned int InterfaceWrapper::get_kalman_covar(double* output,
-                                                const unsigned int a_ID) const
-{
+unsigned int InterfaceWrapper::get_kalman_covar(
+  double* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
   // NOTE: This is grabbing the Kalman filter rather than the track!
   const unsigned int N = 9+1;
-  unsigned int n_frames = track_length(a_ID);
+  unsigned int n_frames = trk->length();
   for (unsigned int i=0; i<n_frames; i++) {
-    output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
-    output[i*N+1] = tracker.tracks[a_ID]->kalman[i].covar(0,0);
-    output[i*N+2] = tracker.tracks[a_ID]->kalman[i].covar(0,1);
-    output[i*N+3] = tracker.tracks[a_ID]->kalman[i].covar(0,2);
-    output[i*N+4] = tracker.tracks[a_ID]->kalman[i].covar(1,0);
-    output[i*N+5] = tracker.tracks[a_ID]->kalman[i].covar(1,1);
-    output[i*N+6] = tracker.tracks[a_ID]->kalman[i].covar(1,2);
-    output[i*N+7] = tracker.tracks[a_ID]->kalman[i].covar(2,0);
-    output[i*N+8] = tracker.tracks[a_ID]->kalman[i].covar(2,1);
-    output[i*N+9] = tracker.tracks[a_ID]->kalman[i].covar(2,2);
+    output[i*N+0] = trk->track[i]->t;
+    output[i*N+1] = trk->kalman[i].covar(0,0);
+    output[i*N+2] = trk->kalman[i].covar(0,1);
+    output[i*N+3] = trk->kalman[i].covar(0,2);
+    output[i*N+4] = trk->kalman[i].covar(1,0);
+    output[i*N+5] = trk->kalman[i].covar(1,1);
+    output[i*N+6] = trk->kalman[i].covar(1,2);
+    output[i*N+7] = trk->kalman[i].covar(2,0);
+    output[i*N+8] = trk->kalman[i].covar(2,1);
+    output[i*N+9] = trk->kalman[i].covar(2,2);
   }
   return n_frames;
 };
 
-unsigned int InterfaceWrapper::get_kalman_pred(double* output,
-                                               const unsigned int a_ID) const
-{
+unsigned int InterfaceWrapper::get_kalman_pred(
+  double* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
   // NOTE: This is grabbing the Kalman filter rather than the track!
   const unsigned int N = 3+1;
-  unsigned int n_frames = track_length(a_ID);
+  unsigned int n_frames = trk->length();
   for (unsigned int i=0; i<n_frames; i++) {
-    output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
-    output[i*N+1] = tracker.tracks[a_ID]->prediction[i].mu(0);
-    output[i*N+2] = tracker.tracks[a_ID]->prediction[i].mu(1);
-    output[i*N+3] = tracker.tracks[a_ID]->prediction[i].mu(2);
+    output[i*N+0] = trk->track[i]->t;
+    output[i*N+1] = trk->prediction[i].mu(0);
+    output[i*N+2] = trk->prediction[i].mu(1);
+    output[i*N+3] = trk->prediction[i].mu(2);
   }
   return n_frames;
 };
 
-unsigned int InterfaceWrapper::get_label(unsigned int* output,
-                                         const unsigned int a_ID) const
-{
+unsigned int InterfaceWrapper::get_label(
+  unsigned int* output,
+  const unsigned int a_idx
+) const {
+
+  TrackletPtr trk = manager.get_track(a_idx);
+
   // NOTE: This is grabbing the labels from the track!
   const unsigned int N = 1+1;
-  unsigned int n_frames = track_length(a_ID);
+  unsigned int n_frames = trk->length();
   for (unsigned int i=0; i<n_frames; i++) {
-    output[i*N+0] = tracker.tracks[a_ID]->track[i]->t;
-    output[i*N+1] = tracker.tracks[a_ID]->track[i]->label;
+    output[i*N+0] = trk->track[i]->t;
+    output[i*N+1] = trk->track[i]->label;
   }
   return n_frames;
 };
@@ -276,26 +334,27 @@ void InterfaceWrapper::set_volume(const double* a_volume)
 }
 
 
-PyTrackObject InterfaceWrapper::get_dummy(const int a_ID)
+PyTrackObject InterfaceWrapper::get_dummy(const int a_idx)
 {
   // get a pointer to the track manager
-  p_manager = &tracker.tracks;
-  return p_manager->get_dummy(a_ID)->get_pytrack_object();
+  // p_manager = &tracker.tracks;
+  return manager.get_dummy(a_idx)->get_pytrack_object();
 }
 
 
-PyGraphEdge InterfaceWrapper::get_graph_edge(const size_t a_ID)
+PyGraphEdge InterfaceWrapper::get_graph_edge(const size_t a_idx)
 {
-  p_manager = &tracker.tracks;
-  return p_manager->get_graph_edge(a_ID);
+  // p_manager = &tracker.tracks;
+  return manager.get_edge(a_idx);
 }
 
 
 // hypothesis generation
-unsigned int InterfaceWrapper::create_hypotheses( const PyHypothesisParams a_params,
-                                                  const unsigned int a_start_n,
-                                                  const unsigned int a_end_n )
-{
+unsigned int InterfaceWrapper::create_hypotheses(
+  const PyHypothesisParams a_params,
+  const unsigned int a_start_n,
+  const unsigned int a_end_n
+) {
   // set up a new hypothesis engine with the parameters supplied
   h_engine = HypothesisEngine(a_start_n, a_end_n, a_params);
   h_engine.volume = tracker.volume;
@@ -304,8 +363,8 @@ unsigned int InterfaceWrapper::create_hypotheses( const PyHypothesisParams a_par
   h_engine.set_update_features(tracker.get_update_features());
 
   // add all of the tracks to the engine
-  for (size_t i=0; i<size(); i++) {
-    h_engine.add_track(tracker.tracks[i]);
+  for (size_t i=0; i<manager.num_tracks(); i++) {
+    h_engine.add_track(manager.get_track(i));
   }
 
   // create the hypotheses
@@ -322,16 +381,17 @@ PyHypothesis InterfaceWrapper::get_hypothesis(const unsigned int a_ID)
 
 
 // merge tracks based on hypothesis IDs
-void InterfaceWrapper::merge( unsigned int* a_hypotheses,
-                              unsigned int n_hypotheses )
-{
+void InterfaceWrapper::merge(
+  unsigned int* a_hypotheses,
+  unsigned int n_hypotheses
+) {
 
   // make a vector of hypotheses to merge
   std::vector<Hypothesis> merges;
   merges.reserve(n_hypotheses);
 
   // get a pointer to the track manager
-  p_manager = &tracker.tracks;
+  // p_manager = &tracker.tracks;
 
   // add all of the hypotheses
   for (size_t i=0; i<n_hypotheses; i++) {
@@ -340,6 +400,6 @@ void InterfaceWrapper::merge( unsigned int* a_hypotheses,
   }
 
   // now run the merging
-  p_manager->merge(merges);
+  manager.merge(merges);
 
 }

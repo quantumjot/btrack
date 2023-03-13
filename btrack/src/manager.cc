@@ -18,15 +18,17 @@
 
 #include "manager.h"
 
-bool compare_hypothesis_time(const Hypothesis &hypothesis_i,
-                             const Hypothesis &hypothesis_j)
-{
+bool compare_hypothesis_time(
+  const Hypothesis &hypothesis_i,
+  const Hypothesis &hypothesis_j
+) {
   return hypothesis_i.trk_ID->track[0]->t < hypothesis_j.trk_ID->track[0]->t;
 }
 
-bool compare_track_start_time(const TrackletPtr &trk_i,
-                              const TrackletPtr &trk_j)
-{
+bool compare_track_start_time(
+  const TrackletPtr &trk_i,
+  const TrackletPtr &trk_j
+) {
     return trk_i->track[0]->t < trk_j->track[0]->t;
 }
 
@@ -108,20 +110,22 @@ void branch_tracks(const BranchHypothesis &branch)
 
 
 // add a graph edge
-void TrackManager::add_graph_edge(
+void TrackManager::push_edge(
       const TrackObjectPtr &a_node_src,
       const TrackObjectPtr &a_node_dst,
-      const float a_score
+      const float a_score,
+      const unsigned int a_edge_type
 ) {
   PyGraphEdge edge;
   edge.source = a_node_src->ID;
   edge.target = a_node_dst->ID;
   edge.score = a_score;
+  edge.type = a_edge_type;
   m_graph_edges.push_back(edge);
 }
 
 
-PyGraphEdge TrackManager::get_graph_edge(const size_t idx) const {
+PyGraphEdge TrackManager::get_edge(const size_t idx) const {
 
   // TODO: we may want to index beyond the end of the edges stored in the
   // `m_graph_edges` vector, to include those edges built by the hypothesis
@@ -129,6 +133,10 @@ PyGraphEdge TrackManager::get_graph_edge(const size_t idx) const {
   // and merges.
 
   return m_graph_edges[idx];
+}
+
+size_t TrackManager::num_edges(void) const {
+  return m_graph_edges.size();
 }
 
 
@@ -169,9 +177,9 @@ void TrackManager::split(const TrackletPtr &a_trk,
 
 
 
-TrackletPtr TrackManager::get_track_by_ID(const unsigned int a_ID) const
+TrackletPtr TrackManager::get_track_by_ID(const size_t a_ID) const
 {
-  for (size_t i=0; i<size(); i++) {
+  for (size_t i=0; i<m_tracks.size(); i++) {
     if (m_tracks[i]->ID == a_ID) {
       // std::cout << "ID: " << a_ID << " --> index: " << i << std::endl;
       return m_tracks[i];
@@ -195,7 +203,7 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
     return;
   }
 
-  if (empty()) {
+  if (m_tracks.empty()) {
     if (DEBUG) std::cout << "Track manager is empty!" << std::endl;
     return;
   }
@@ -204,8 +212,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
   size_t n_hypotheses = a_hypotheses.size();
 
   // make some space for the different hypotheses
-  m_links = HypothesisMap<JoinHypothesis>( size() );
-  m_branches = HypothesisMap<BranchHypothesis>( size() );
+  m_links = HypothesisMap<JoinHypothesis>( m_tracks.size() );
+  m_branches = HypothesisMap<BranchHypothesis>( m_tracks.size() );
 
   // loop through the hypotheses, split into link and branch types
   for (size_t i=0; i<n_hypotheses; i++) {

@@ -67,6 +67,7 @@ extern "C" struct PyGraphEdge {
   long source;
   long target;
   double score;
+  unsigned int type = GRAPH_EDGE_link;
 };
 
 
@@ -78,15 +79,30 @@ class TrackObject
 {
   public:
     // Start a new tracklet without any prior information.
-    TrackObject() : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0), n_features(0) {};
+    TrackObject() :
+      ID(0),
+      x(0.),
+      y(0.),
+      z(0.),
+      t(0),
+      dummy(true),
+      label(0),
+      n_features(0)
+      {};
 
     // Instantiate a track object from an existing PyTrackObject
     TrackObject(const PyTrackObject& trk) :
-                ID(trk.ID),
-                x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
-                label(trk.label), states(trk.states), n_features(trk.n_features),
-                features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features))
-                {};
+      ID(trk.ID),
+      x(trk.x),
+      y(trk.y),
+      z(trk.z),
+      t(trk.t),
+      dummy(trk.dummy),
+      label(trk.label),
+      states(trk.states),
+      n_features(trk.n_features),
+      features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features))
+      {};
 
     // Default destructor
     ~TrackObject() {};
@@ -146,8 +162,10 @@ struct Prediction
   // constructors
   // TODO(arl): the default constructor defaults to six states
   Prediction() { mu.setZero(6,1); covar.setIdentity(6,6); }
-  Prediction( const Eigen::VectorXd &a_mu,
-              const Eigen::MatrixXd &a_covar) : mu(a_mu), covar(a_covar) {}
+  Prediction(const Eigen::VectorXd &a_mu, const Eigen::MatrixXd &a_covar) :
+    mu(a_mu),
+    covar(a_covar)
+    {};
 
 };
 
@@ -159,8 +177,10 @@ struct Prediction
 
 
 // Comparison object to order track objects ready for tracking.
-inline bool compare_obj_time( const TrackObjectPtr trackobj_1,
-                              const TrackObjectPtr trackobj_2 ) {
+inline bool compare_obj_time(
+  const TrackObjectPtr trackobj_1,
+  const TrackObjectPtr trackobj_2
+) {
   return (trackobj_1->t < trackobj_2->t);
 }
 
@@ -282,6 +302,9 @@ template <typename T> class HypothesisMap
     // empty flag, reset to false if we add a hypothesis
     bool m_empty = true;
 };
+
+
+
 
 
 #endif

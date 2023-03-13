@@ -112,14 +112,19 @@ HypothesisEngine::HypothesisEngine( void )
 
 
 
-HypothesisEngine::HypothesisEngine( const unsigned int a_start_frame,
-                                    const unsigned int a_stop_frame,
-                                    const PyHypothesisParams& a_params )
-{
+HypothesisEngine::HypothesisEngine(
+  const unsigned int a_start_frame,
+  const unsigned int a_stop_frame,
+  const PyHypothesisParams& a_params
+  // TrackManager* a_manager
+) {
   //m_num_frames = a_stop_frame - a_start_frame;
   m_frame_range[0] = a_start_frame;
   m_frame_range[1] = a_stop_frame;
   m_params = a_params;
+
+  // store the reference to the manager
+  // this->manager = a_manager;
 
   // tell the user which hypotheses are going to be created
   // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']

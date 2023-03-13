@@ -24,8 +24,6 @@
 #include "hypothesis.h"
 #include "tracklet.h"
 
-#define RESERVE_ALL_TRACKS 500000
-#define RESERVE_ALL_GRAPH_EDGES 1000000
 
 // make a joining hypothesis (note: LinkHypothesis is used by the tracker...)
 typedef std::pair<TrackletPtr, TrackletPtr> JoinHypothesis;
@@ -88,55 +86,99 @@ class TrackManager
   public:
     // default constructors and destructors
     TrackManager() {
+      m_graph_nodes.reserve(RESERVE_GRAPH_NODES);
       m_tracks.reserve(RESERVE_ALL_TRACKS);
-      m_graph_edges.reserve(RESERVE_ALL_GRAPH_EDGES);
+      m_graph_edges.reserve(RESERVE_GRAPH_EDGES);
     };
     virtual ~TrackManager() {};
 
+
+    void clear(void) {
+      //
+    }
+
+    inline size_t num_nodes() const {
+      return this->m_graph_nodes.size();
+    }
+
     // return the number of tracks
-    size_t size() const {
+    inline size_t num_tracks(void) const {
       return this->m_tracks.size();
     }
 
+    // return the number of graph edges
+    // this includes both the greedy and ILP edges
+    size_t num_edges(void) const;
+
     // return a track by index
-    inline TrackletPtr operator[] (const unsigned int idx) const {
-      return m_tracks[idx];
+    inline TrackletPtr operator[] (const size_t a_idx) const {
+      return m_tracks[a_idx];
     };
 
+    // get a node
+    TrackObjectPtr get_node(const size_t a_idx) const {
+      return m_graph_nodes[a_idx];
+    }
+
+    // return a track by index
+    TrackletPtr get_track(const size_t a_idx) const {
+      return m_tracks[a_idx];
+    }
+
     // return track by ID
-    TrackletPtr get_track_by_ID(const unsigned int a_ID) const;
+    TrackletPtr get_track_by_ID(const size_t a_ID) const;
 
     // return a dummy object by index
     TrackObjectPtr get_dummy(const int idx) const;
 
-    // push a tracklet onto the stack
-    inline void push_back(const TrackletPtr &a_obj) {
-      m_tracks.push_back(a_obj);
+    // return a hypothesis by index
+    Hypothesis get_hypothesis(const size_t idx) const;
+
+    // // push a tracklet onto the stack
+    // inline void push_back(const TrackletPtr &a_obj) {
+    //   m_tracks.push_back(a_obj);
+    // }
+
+    // push a new node
+    inline void push_node(const TrackObjectPtr &a_node) {
+      m_graph_nodes.push_back(a_node);
     }
 
-    // reserve space for new tracks
-    inline void reserve(const unsigned int a_reserve) {
-      m_tracks.reserve(a_reserve);
+    // push a new track
+    inline void push_track(const TrackletPtr &a_trk) {
+      m_tracks.push_back(a_trk);
     }
 
-    // test whether thse track manager is empty
-    inline bool empty() const {
-      return m_tracks.empty();
+    // push a new hypothesis
+    inline void push_hypothesis(const Hypothesis &a_hypotheses) {
+      m_hypotheses.push_back(a_hypotheses);
     }
+
+    // // reserve space for new tracks
+    // inline void reserve(const unsigned int a_reserve) {
+    //   m_tracks.reserve(a_reserve);
+    // }
+
+    // // test whether thse track manager is empty
+    // inline bool empty() const {
+    //   return m_tracks.empty();
+    // }
 
     // add a graph edge
-    void add_graph_edge(
+    void push_edge(
       const TrackObjectPtr &a_node_src,
       const TrackObjectPtr &a_node_dst,
-      const float a_score
+      const float a_score,
+      const unsigned int a_edge_type
     );
 
     // get a graph edge from the vector
-    PyGraphEdge get_graph_edge(const size_t idx) const;
+    PyGraphEdge get_edge(const size_t idx) const;
 
-    // return the number of grph edges;
-    inline size_t num_edges(void) const {
-      return m_graph_edges.size();
+    // sort nodes
+    void sort_nodes(void) {
+       // sort the objects vector by time
+      std::sort(m_graph_nodes.begin(), m_graph_nodes.end(), compare_obj_time);
     }
 
     // build trees from the data
@@ -163,10 +205,13 @@ class TrackManager
     void renumber();
     void purge();
 
+    // a vector of track objects (i.e. nodes)
+    std::vector<TrackObjectPtr> m_graph_nodes;
+
     // a vector of tracklet objects
     std::vector<TrackletPtr> m_tracks;
 
-    // set upsome space for the trees, should we want these later
+    // set up some space for the trees, should we want these later
     std::vector<LineageTreeNode> m_trees;
 
     // a vector of dummy objects
@@ -175,6 +220,9 @@ class TrackManager
     // store the graph edges, i.e. intermediate output of Bayesian updates
     // and the graph hypotheses
     std::vector<PyGraphEdge> m_graph_edges;
+
+    // store the raw hypotheses from the hypothesis engine
+    std::vector<Hypothesis> m_hypotheses;
 
     // make hypothesis maps
     HypothesisMap<JoinHypothesis> m_links;

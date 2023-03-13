@@ -24,6 +24,10 @@
     #define M_PI 3.14159265358979323846
 #endif
 
+// define a filepath for debugging output
+#define DEBUG_FILEPATH "/home/quantumjot/Documents/"
+
+
 // store some information about the compilation
 static unsigned int v_major = VERSION_MAJOR;
 static unsigned int v_minor = VERSION_MINOR;
@@ -56,8 +60,11 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 
 
 // reserve space for objects and tracks
-#define RESERVE_NEW_OBJECTS 1000
+#define RESERVE_NEW_OBJECTS 10000
 #define RESERVE_ACTIVE_TRACKS 1000
+#define RESERVE_GRAPH_NODES 500000
+#define RESERVE_GRAPH_EDGES 1000000
+#define RESERVE_ALL_TRACKS 50000
 
 
 // update methods
@@ -192,5 +199,11 @@ enum class ObjectStateLabel: unsigned int {
   null          = 5,
   dummy         = 99
 };
+
+
+#define GRAPH_EDGE_link 0
+#define GRAPH_EDGE_hyperlink 1
+
+
 
 #endif

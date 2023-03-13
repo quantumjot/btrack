@@ -8,6 +8,8 @@ repos:
       hooks:
         - id: forbid-tabs
           exclude: Makefile|docs/Makefile|\.bat$
+        - id: remove-tabs
+          exclude: Makefile|docs/Makefile|\.bat$
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v4.2.0
       hooks:

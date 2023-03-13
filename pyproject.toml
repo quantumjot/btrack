@@ -37,6 +37,7 @@ requires-python = ">=3.8"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 optional-dependencies.docs = [
     "numpydoc",
+    "pytz",
     "sphinx_rtd_theme",
     "sphinx-automodapi",
     "sphinx-panels",
@@ -86,6 +87,57 @@ profile = "black"
 addopts = "--color=yes -ra -v"
 testpaths = [
     "tests",
+]
+
+[tool.ruff]
+fix = true
+force-exclude = true
+ignore = [
+    "B905", # python>=3.10
+    "EM101",
+    "EM102",
+    "N802",
+    "N803",
+    "N806",
+    "S101",
+    "UP006",
+    "UP007",
+    "UP015",
+]
+select = [
+    "A",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+target-version = "py38"
+isort.known-first-party = ["btrack"]
+mccabe.max-complexity = 18
+pep8-naming.classmethod-decorators = [
+    "classmethod",
+    "pydantic.root_validator",
+    "pydantic.validator",
 ]
 
 [tool.setuptools]

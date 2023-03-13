@@ -19,7 +19,7 @@ __email__ = "a.lowe@ucl.ac.uk"
 
 import ctypes
 
-from .. import constants
+from btrack import constants
 
 H_TYPES = [
     "P_FP",
@@ -61,7 +61,7 @@ class Hypothesis(ctypes.Structure):
     ]
 
     @property
-    def type(self):
+    def hypothesis_type(self):
         return constants.Fates(self.hypothesis)
 
     @property

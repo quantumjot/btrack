@@ -4,14 +4,14 @@ import numpy as np
 import pytest
 
 from btrack import btypes, utils
-from btrack.constants import DEFAULT_OBJECT_KEYS
+from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
 from btrack.io import objects_from_array
 
 from ._utils import create_test_image, create_test_tracklet
 
 
 def _example_segmentation_generator():
-    for i in range(10):
+    for _ in range(10):
         img, centroids = create_test_image()
         yield img
 
@@ -29,7 +29,7 @@ def _validate_centroids(centroids, objects, scale=None):
     ndim = centroids.shape[-1]
 
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if ndim == 2:
+    if ndim == Dimensionality.TWO:
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis
@@ -206,8 +206,8 @@ def test_tracks_to_napari(ndim: int):
     # check the properties keys are correct, note that nD keys are replaced with
     # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
     # and so forth
-    for key in tracks[0].properties.keys():
-        assert any([k.startswith(key) for k in properties.keys()])
+    for key in tracks[0].properties:
+        assert any([k.startswith(key) for k in properties])
 
 
 @pytest.mark.parametrize("ndim", [1, 4])

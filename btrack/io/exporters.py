@@ -7,12 +7,13 @@ from typing import TYPE_CHECKING, Optional
 
 import numpy as np
 
-from .. import constants
+from btrack import constants
+
 from .hdf import HDF5FileHandler
 from .utils import check_track_type
 
 if TYPE_CHECKING:
-    from .. import BayesianTracker
+    from btrack import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -116,7 +117,7 @@ def _export_HDF(
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
-    if not ext == ".h5":
+    if ext != ".h5":
         filename = filename_noext + ".h5"
         logger.warning(f"Changing HDF filename to {filename}")
 

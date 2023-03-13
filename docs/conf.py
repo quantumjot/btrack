@@ -14,6 +14,8 @@ import datetime
 import os
 import sys
 
+import pytz
+
 sys.path.insert(0, os.path.abspath(".."))
 
 import btrack  # noqa: E402
@@ -22,7 +24,8 @@ import btrack  # noqa: E402
 
 project = "Bayesian Tracker (btrack) 🔬💻"
 author = "Alan R Lowe"
-copyright = f"2017-{datetime.date.today().year}, {author}"
+year = datetime.datetime.now(tz=pytz.timezone("GMT")).year
+copyright = f"2014-{year}, {author}"  # noqa: A001
 
 
 # The full version, including alpha/beta/rc tags

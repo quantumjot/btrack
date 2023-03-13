@@ -11,7 +11,8 @@ import h5py
 import numpy as np
 
 # import core
-from .. import btypes, constants, utils
+from btrack import btypes, constants, utils
+
 from .utils import (
     check_object_type,
     check_track_type,
@@ -20,13 +21,13 @@ from .utils import (
 )
 
 if TYPE_CHECKING:
-    from .. import BayesianTracker
+    from btrack import BayesianTracker
 
 # get the logger instance
 logger = logging.getLogger(__name__)
 
 
-def h5check_property_exists(property):
+def h5check_property_exists(property):  # noqa: A002
     """Wrapper for hdf handler to make sure a property exists."""
 
     def func(fn):
@@ -199,7 +200,7 @@ class HDF5FileHandler:
         f_expr: Optional[str] = None,
         *,
         lazy_load_properties: bool = True,
-        exclude_properties: List[str] = [],
+        exclude_properties: Optional[List[str]] = None,
     ) -> List[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata.
 
@@ -211,7 +212,7 @@ class HDF5FileHandler:
             value of area was greater than 100.
         lazy_load_properties : bool
             For future expansion. To allow lazy loading of large datasets.
-        exclude_properties : list
+        exclude_properties : list or None
             A list of properties keys to exclude when loading from disk.
 
         Returns
@@ -219,6 +220,10 @@ class HDF5FileHandler:
         objects : list
             A list of :py:class:`btrack.btypes.PyTrackObject` objects.
         """
+
+        exclude_properties = (
+            exclude_properties if exclude_properties is not None else []
+        )
 
         if self.object_type not in self.object_types:
             raise ValueError(f"Object type {self.object_type} not recognized")
@@ -236,7 +241,7 @@ class HDF5FileHandler:
         # get properties if we have them (note, this assumes that the same
         # properties exist for each object)
         properties = {}
-        if "properties" in grp.keys():
+        if "properties" in grp:
             p_keys = list(
                 set(grp["properties"].keys()).difference(
                     set(exclude_properties)
@@ -257,7 +262,7 @@ class HDF5FileHandler:
 
             f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
-            if m["name"] in properties.keys():
+            if m["name"] in properties:
                 data = properties[m["name"]]
                 filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
             else:
@@ -318,7 +323,7 @@ class HDF5FileHandler:
         if "objects" not in self._hdf:
             self._hdf.create_group("objects")
         grp = self._hdf["objects"].create_group(self.object_type)
-        props = {k: [] for k in objects[0].properties.keys()}
+        props = {k: [] for k in objects[0].properties}
 
         n_objects = len(objects)
         n_frames = np.max([o.t for o in objects]) + 1
@@ -335,7 +340,7 @@ class HDF5FileHandler:
             fmap[t, 1] = np.max([fmap[t, 1], i])
 
             # add in any properties
-            for key in props.keys():
+            for key in props:
                 props[key].append(obj.properties[key])
 
         fmap[1:, 0] = fmap[:-1, 1]
@@ -384,7 +389,7 @@ class HDF5FileHandler:
             if not values:
                 logger.warning(f"Property '{key}' is empty.")
                 continue
-            values = np.array(values)
+            values = np.array(values)  # noqa: PLW2901
             assert values.shape[0] == n_objects
 
             # Check if the property is already in the props_grp:
@@ -455,7 +460,7 @@ class HDF5FileHandler:
             track = btypes.Tracklet(lbep[i, 0], list(map(_get_txyz, refs)))
             track.parent = lbep[i, 3]  # set the parent and root of tree
             track.root = lbep[i, 4]
-            if lbep.shape[1] > 5:
+            if lbep.shape[1] > 5:  # noqa: PLR2004
                 track.generation = lbep[i, 5]
             track.fate = constants.Fates(fates[i])  # restore the track fate
             tracks.append(track)
@@ -464,14 +469,17 @@ class HDF5FileHandler:
         to_update = {}
         for track in tracks:
             if not track.is_root:
-                parents = filter(lambda t: t.ID == track.parent, tracks)
+                parents = filter(lambda t: track.parent == t.ID, tracks)
                 for parent in parents:
                     if parent not in to_update:
                         to_update[parent] = []
                     to_update[parent].append(track.ID)
 
         # sanity check, can be removed at a later date
-        assert all([len(children) <= 2 for children in to_update.values()])
+        MAX_N_CHILDREN = 2
+        assert all(
+            len(children) <= MAX_N_CHILDREN for children in to_update.values()
+        )
 
         # add the children to the parent
         for track, children in to_update.items():
@@ -479,7 +487,7 @@ class HDF5FileHandler:
 
         return tracks
 
-    def write_tracks(
+    def write_tracks(  # noqa: PLR0912
         self,
         data: Union[List[btypes.Tracklet], BayesianTracker],
         *,
@@ -543,10 +551,7 @@ class HDF5FileHandler:
 
         hdf_frame_map = np.zeros((len(refs), 2), dtype=np.int32)
         for i, track in enumerate(refs):
-            if i > 0:
-                offset = hdf_frame_map[i - 1, 1]
-            else:
-                offset = 0
+            offset = hdf_frame_map[i - 1, 1] if i > 0 else 0
             hdf_frame_map[i, :] = np.array([0, len(track)]) + offset
 
         if "tracks" not in self._hdf:

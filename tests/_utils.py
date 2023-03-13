@@ -16,7 +16,7 @@ RANDOM_SEED = 1234
 
 
 def create_test_object(
-    id: Optional[int] = None,
+    test_id: Optional[int] = None,
     ndim: int = 3,
 ) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
     """Create a test object."""
@@ -24,7 +24,7 @@ def create_test_object(
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
     data = {
-        "ID": rng.integers(0, 1000) if id is None else int(id),
+        "ID": rng.integers(0, 1000) if test_id is None else int(test_id),
         "x": rng.uniform(0.0, 1000.0),
         "y": rng.uniform(0.0, 1000.0),
         "z": rng.uniform(0.0, 1000.0)
@@ -74,15 +74,14 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    if not props:
-        properties = {}
-    else:
-        properties = {k: [p[k] for p in props] for k in props[0].keys()}
+    properties = (
+        {} if not props else {k: [p[k] for p in props] for k in props[0]}
+    )
 
     return tracklet, data, properties, track_id
 
 
-def create_realistic_tracklet(
+def create_realistic_tracklet(  # noqa: PLR0913
     start_x: float,
     start_y: float,
     dx: float,
@@ -111,6 +110,7 @@ def create_test_image(
     ndim: int = 2,
     nobj: int = 10,
     binsize: int = 5,
+    *,
     binary: bool = True,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
@@ -145,7 +145,7 @@ def create_test_image(
 
     # iterate over the bins and add a smaple
     centroids = []
-    for v, bin in enumerate(rbins):
+    for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
         slices = tuple(
             [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
@@ -179,6 +179,7 @@ def create_test_segmentation_and_tracks(
     padding: int = 16,
     nframes: int = 10,
     ndim: int = 2,
+    *,
     binary: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, List[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""

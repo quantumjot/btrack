@@ -34,7 +34,11 @@ class ImagingVolume(NamedTuple):
     @property
     def ndim(self) -> int:
         """Infer the dimensionality from the volume."""
-        return 2 if self.z is None else 3
+        return (
+            constants.Dimensionality.TWO
+            if self.z is None
+            else constants.Dimensionality.THREE
+        )
 
 
 class PyTrackObject(ctypes.Structure):
@@ -125,7 +129,7 @@ class PyTrackObject(ctypes.Structure):
             self.n_features = 0
             return
 
-        if not all(k in self.properties.keys() for k in keys):
+        if not all(k in self.properties for k in keys):
             missing_features = list(
                 set(keys).difference(set(self.properties.keys()))
             )
@@ -157,7 +161,7 @@ class PyTrackObject(ctypes.Structure):
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}
-        attr = [k for k in fields.keys() if k in properties.keys()]
+        attr = [k for k in fields if k in properties]
         for key in attr:
 
             new_data = properties[key]
@@ -255,7 +259,7 @@ class Tracklet:
         A unique integer identifier for the tracklet.
     data : list[PyTrackObject]
         The objects linked together to form the track.
-    parent : int,
+    parent : int
         The identifiers of the parent track(s).
     children : list
         The identifiers of the child tracks.
@@ -323,7 +327,7 @@ class Tracklet:
         data: List[PyTrackObject],
         *,
         parent: Optional[int] = None,
-        children: List[int] = [],
+        children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
 
@@ -335,7 +339,7 @@ class Tracklet:
 
         self.root = None
         self.parent = parent
-        self.children = children
+        self.children = children if children is not None else []
         self.type = None
         self.fate = fate
         self.generation = 0
@@ -502,7 +506,7 @@ class Tracklet:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
-        for key, values in data.items():
+        for values in data.values():
             np_values = np.asarray(values)
             if np_values.size == 1:
                 np_values = np.tile(np_values, len(self))
@@ -511,7 +515,7 @@ class Tracklet:
 
         tmp_track = np.concatenate(tmp_track, axis=-1)
         assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == 2
+        assert tmp_track.ndim == constants.Dimensionality.TWO
         return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:
@@ -548,10 +552,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
+    n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
         if not isinstance(v, (list, np.ndarray)):

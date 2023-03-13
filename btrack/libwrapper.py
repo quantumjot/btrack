@@ -83,13 +83,13 @@ def load_library(filename):
     try:
         lib = ctypes.cdll.LoadLibrary(full_lib_file)
         logger.info(f"Loaded btrack: {full_lib_file}")
-    except IOError:
-        raise IOError(f"Cannot load shared library {full_lib_file}")
+    except OSError as err:
+        raise OSError(f"Cannot load shared library {full_lib_file}") from err
 
     return lib
 
 
-def get_library():
+def get_library():  # noqa: PLR0915
     """Loads and returns the btrack shared library."""
     lib = load_library(os.path.join(BTRACK_PATH, "libs", "libtracker"))
 

@@ -41,21 +41,21 @@ def log_stats(stats: dict) -> None:
         return
 
     logger.info(
-        " - Timing (Bayesian updates: {0:.2f}ms, Linking:"
-        " {1:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
+        " - Timing (Bayesian updates: {:.2f}ms, Linking:"
+        " {:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
     )
 
     logger.info(
-        " - Probabilities (Link: {0:.5f}, Lost:"
-        " {1:.5f})".format(stats["p_link"], stats["p_lost"])
+        " - Probabilities (Link: {:.5f}, Lost:"
+        " {:.5f})".format(stats["p_link"], stats["p_lost"])
     )
 
     if stats["complete"]:
         return
 
     logger.info(
-        " - Stats (Active: {0:d}, Lost: {1:d}, Conflicts "
-        "resolved: {2:d})".format(
+        " - Stats (Active: {:d}, Lost: {:d}, Conflicts "
+        "resolved: {:d})".format(
             stats["n_active"], stats["n_lost"], stats["n_conflicts"]
         )
     )
@@ -110,14 +110,14 @@ def _cat_tracks_as_dict(
     for track in tracks:
         trk = track.to_dict(properties)
 
-        for key in trk.keys():
+        for key in trk:
             trk_property = np.asarray(trk[key])
 
             # if we have a scalar value, repeat it so the dimensions match
             if trk_property.ndim == 0:
                 trk_property = np.repeat(trk_property, len(track))
 
-            if trk_property.ndim > 2:
+            if trk_property.ndim > constants.Dimensionality.TWO:
                 raise ValueError(
                     f"Track properties of {trk_property.ndim} dimensions are "
                     "not currently supported."
@@ -125,7 +125,7 @@ def _cat_tracks_as_dict(
 
             assert trk_property.shape[0] == len(track)
 
-            if trk_property.ndim == 2:
+            if trk_property.ndim == constants.Dimensionality.TWO:
                 for idx in range(trk_property.shape[-1]):
                     tmp_key = f"{key}-{idx}"
                     if tmp_key not in data:
@@ -137,7 +137,7 @@ def _cat_tracks_as_dict(
                     data[key] = []
                 data[key].append(trk_property)
 
-    for key in data.keys():
+    for key in data:
         data[key] = np.concatenate(data[key])
 
     return data
@@ -199,14 +199,12 @@ def tracks_to_napari(
     p_header = ["t", "state", "generation", "root", "parent"]
 
     # ensure lexicographic ordering of tracks
-    ordered = sorted(list(tracks), key=lambda t: t.ID)
+    ordered = sorted(tracks, key=lambda t: t.ID)
     header = t_header + p_header
     tracks_as_dict = _cat_tracks_as_dict(ordered, header)
 
     # note that there may be other metadata in the tracks, grab that too
-    prop_keys = p_header + [
-        k for k in tracks_as_dict.keys() if k not in t_header
-    ]
+    prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
     data = np.stack(
@@ -215,10 +213,12 @@ def tracks_to_napari(
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
+    def nans_idx(x):
+        return x.nonzero()[0]
+
     if replace_nan:
         for k, v in properties.items():
             nans = np.isnan(v)
-            nans_idx = lambda x: x.nonzero()[0]
             v[nans] = np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
             properties[k] = v
 
@@ -282,9 +282,9 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
-        if single_segmentation.ndim == 2:
+        if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
-        elif single_segmentation.ndim == 3:
+        elif single_segmentation.ndim == constants.Dimensionality.THREE:
             zc = frame_coords[:, keys["z"]]
             old_id = single_segmentation[zc, yc, xc]
 

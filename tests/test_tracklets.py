@@ -74,7 +74,7 @@ def test_create_tracklet(track_len: int):
     assert len(tracklet) == len(data)
 
     # now check that the track data is correct
-    assert tracklet.ID == track_ID
+    assert track_ID == tracklet.ID
     fields = ["x", "y", "z", "t"]
     for field in fields:
         obj_data = [getattr(obj, field) for obj in data]

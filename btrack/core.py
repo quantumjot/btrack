@@ -119,7 +119,7 @@ class BayesianTracker:
 
     def __init__(
         self,
-        verbose: bool = True,
+        verbose: bool = True,  # noqa: FBT001 FBT002
     ):
         """Initialise the BayesianTracker C++ engine and parameters."""
 
@@ -210,16 +210,16 @@ class BayesianTracker:
             object.__setattr__(self, attr, value)
 
         # if we need to update the C++ library instance, do it here
-        if attr in (
+        attrs_to_update = [
             "motion_model",
             "object_model",
             "max_search_radius",
             "volume",
             "update_method",
-        ):
-            if value is not None:
-                update_lib_func = getattr(self, f"_{attr}")
-                update_lib_func(value)
+        ]
+        if attr in attrs_to_update and value is not None:
+            update_lib_func = getattr(self, f"_{attr}")
+            update_lib_func(value)
 
     def __len__(self) -> int:
         return self.n_tracks
@@ -317,7 +317,7 @@ class BayesianTracker:
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if volume.ndim == 2:
+        if volume.ndim == constants.Dimensionality.TWO:
             z = (-1e5, 1e5)
             volume = btypes.ImagingVolume(volume.x, volume.y, z)
 
@@ -468,11 +468,9 @@ class BayesianTracker:
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
-                (
-                    f"Tracking objects in frames {frame} to "
-                    f"{min(frame+step_size-1, self._frame_range[1]+1)} "
-                    f"(of {self._frame_range[1]+1})..."
-                )
+                f"Tracking objects in frames {frame} to "
+                f"{min(frame+step_size-1, self._frame_range[1]+1)} "
+                f"(of {self._frame_range[1]+1})..."
             )
 
             stats = self.step(step_size)
@@ -482,17 +480,13 @@ class BayesianTracker:
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")
             logger.info(
-                (
-                    f" - Found {self.n_tracks} tracks in "
-                    f"{1+self._frame_range[1]} frames "
-                    f"(in {stats.t_total_time}s)"
-                )
+                f" - Found {self.n_tracks} tracks in "
+                f"{1+self._frame_range[1]} frames "
+                f"(in {stats.t_total_time}s)"
             )
             logger.info(
-                (
-                    f" - Inserted {self.n_dummies} dummy objects to fill "
-                    "tracking gaps"
-                )
+                f" - Inserted {self.n_dummies} dummy objects to fill "
+                "tracking gaps"
             )
 
     def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
@@ -557,7 +551,9 @@ class BayesianTracker:
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
         options = (
-            self.configuration.optimizer_options if not options else options
+            options
+            if options is not None
+            else self.configuration.optimizer_options
         )
 
         # if we don't have any hypotheses return
@@ -575,16 +571,14 @@ class BayesianTracker:
             logger.warning("Optimization failed.")
             return []
 
-        h_original = [h.type for h in hypotheses]
-        h_optimise = [h.type for h in optimised]
-        h_types = sorted(list(set(h_original)), key=lambda h: h.value)
+        h_original = [h.hypothesis_type for h in hypotheses]
+        h_optimise = [h.hypothesis_type for h in optimised]
+        h_types = sorted(set(h_original), key=lambda h: h.value)
 
         for h_type in h_types:
             logger.info(
-                (
-                    f" - {h_type}: {h_optimise.count(h_type)}"
-                    f" (of {h_original.count(h_type)})"
-                )
+                f" - {h_type}: {h_optimise.count(h_type)}"
+                f" (of {h_original.count(h_type)})"
             )
         logger.info(f" - TOTAL: {len(hypotheses)} hypotheses")
 
@@ -616,10 +610,7 @@ class BayesianTracker:
         trk_id = self._lib.get_ID(self._engine, idx)
 
         # convert the array of children to a python list
-        if nc > 0:
-            c = children.tolist()
-        else:
-            c = []
+        c = children.tolist() if nc > 0 else []
 
         # now build the track from the references
         refs = refs.tolist()
@@ -685,7 +676,7 @@ class BayesianTracker:
 
     def to_napari(
         self,
-        replace_nan: bool = True,
+        replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
     ) -> Tuple[np.ndarray, dict, dict]:
         """Return the data in a format for a napari tracks layer.

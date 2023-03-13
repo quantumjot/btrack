@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Union
 import numpy as np
 
 # import core
-from .. import btypes, constants
+from btrack import btypes, constants
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -32,10 +32,9 @@ def localizations_to_objects(
 
     logger.info(f"Objects are of type: {type(localizations)}")
 
-    if isinstance(localizations, list):
-        if check_object_type(localizations):
-            # if these are already PyTrackObjects just silently return
-            return localizations
+    if isinstance(localizations, list) and check_object_type(localizations):
+        # if these are already PyTrackObjects just silently return
+        return localizations
 
     # do we have a numpy array or pandas dataframe?
     if isinstance(localizations, np.ndarray):
@@ -45,11 +44,11 @@ def localizations_to_objects(
             objects_dict = {
                 c: np.asarray(localizations[c]) for c in localizations
             }
-        except ValueError:
+        except ValueError as err:
             logger.error(f"Unknown localization type: {type(localizations)}")
             raise TypeError(
                 f"Unknown localization type: {type(localizations)}"
-            )
+            ) from err
 
     # how many objects are there
     n_objects = objects_dict["t"].shape[0]
@@ -79,10 +78,11 @@ def objects_from_array(
     default_keys: List[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> List[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
-    assert objects_arr.ndim == 2
+    assert objects_arr.ndim == constants.Dimensionality.TWO
 
+    MIN_N_FEATURES = 3
     n_features = objects_arr.shape[1]
-    assert n_features >= 3
+    assert n_features >= MIN_N_FEATURES
 
     n_objects = objects_arr.shape[0]
 

@@ -7,8 +7,9 @@ from typing import Generator, List, Optional, Tuple, Union
 import numpy as np
 from skimage.measure import label, regionprops_table
 
-from .. import btypes
-from ..constants import Dimensionality
+from btrack import btypes
+from btrack.constants import Dimensionality
+
 from .utils import localizations_to_objects
 
 # get the logger instance
@@ -21,6 +22,7 @@ def _centroids_from_single_arr(
     frame: int,
     intensity_image: Optional[np.ndarray] = None,
     scale: Optional[Tuple[float]] = None,
+    *,
     use_weighted_centroid: bool = False,
     assign_class_ID: bool = False,
 ) -> np.ndarray:
@@ -31,8 +33,8 @@ def _centroids_from_single_arr(
         return {}
 
     def _is_unique(x: np.ndarray) -> bool:
-        # check if image is not uniquely labelled (necessary for regionprops)
-        return not np.max(label(x)) != np.max(x)
+        # check if image is uniquely labelled (necessary for regionprops)
+        return np.max(label(x)) == np.max(x)
 
     if use_weighted_centroid and intensity_image is not None:
         CENTROID_PROPERTY = "weighted_centroid"
@@ -40,7 +42,7 @@ def _centroids_from_single_arr(
         CENTROID_PROPERTY = "centroid"
 
     if CENTROID_PROPERTY not in properties:
-        properties = (CENTROID_PROPERTY,) + properties
+        properties = (CENTROID_PROPERTY, *properties)
 
     # if class id is specified then extract that property first
     if assign_class_ID:
@@ -74,10 +76,11 @@ def _centroids_from_single_arr(
 
     else:
         # check to see whether the segmentation is unique
-        if not _is_unique(segmentation):
-            labeled = label(segmentation)
-        else:
-            labeled = segmentation
+        labeled = (
+            label(segmentation)
+            if not _is_unique(segmentation)
+            else segmentation
+        )
 
         _centroids = regionprops_table(
             labeled,
@@ -120,13 +123,13 @@ def _concat_centroids(centroids, new_centroids):
     return centroids
 
 
-def segmentation_to_objects(
+def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[np.ndarray, Generator],
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
     scale: Optional[Tuple[float]] = None,
-    use_weighted_centroid: bool = True,
-    assign_class_ID: bool = False,
+    use_weighted_centroid: bool = True,  # noqa: FBT001,FBT002
+    assign_class_ID: bool = False,  # noqa: FBT001,FBT002
 ) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 

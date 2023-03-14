@@ -17,6 +17,11 @@
 #ifndef _HYPOTHESIS_H_INCLUDED_
 #define _HYPOTHESIS_H_INCLUDED_
 
+// forward declaration of trackmanager and hypothesis to enable import
+class TrackManager;
+class Hypothesis;
+
+
 // #include <python2.7/Python.h>
 #include <vector>
 #include <iostream>
@@ -31,7 +36,7 @@
 #include "pdf.h"
 #include "updates.h"
 #include "bayes.h"
-// #include "manager.h"
+#include "manager.h"
 
 
 
@@ -48,6 +53,7 @@ extern "C" struct PyHypothesis {
   unsigned int parent_two_ID;
 
   PyHypothesis(unsigned int h, unsigned int id): hypothesis(h), ID(id) {};
+
 };
 
 
@@ -57,8 +63,10 @@ class Hypothesis
   public:
     Hypothesis() {};
     ~Hypothesis() {};
-    Hypothesis(const unsigned int h, const TrackletPtr a_trk): hypothesis(h), ID(a_trk->ID),
-      trk_ID(a_trk) {};
+    Hypothesis(const unsigned int h, const TrackletPtr a_trk):
+      hypothesis(h), ID(a_trk->ID),
+      trk_ID(a_trk)
+      {};
 
     unsigned int hypothesis = TYPE_undef;
     unsigned int ID;
@@ -231,8 +239,8 @@ class HypothesisEngine: public UpdateFeatures
     HypothesisEngine(
       const unsigned int a_start_frame,
       const unsigned int a_stop_frame,
-      const PyHypothesisParams& a_params
-      // TrackManager* a_manager
+      const PyHypothesisParams& a_params,
+      TrackManager* a_manager
     );
 
     // add a track to the hypothesis engine
@@ -332,11 +340,11 @@ class HypothesisEngine: public UpdateFeatures
     float dist_from_border( TrackletPtr a_trk, bool a_start ) const;
 
     // pointer to the track manager
-    // TrackManager* manager;
+    TrackManager* manager;
 
     // storage for the trajectories
     unsigned int m_num_tracks = 0;
-    std::vector<TrackletPtr> m_tracks;
+    // std::vector<TrackletPtr> m_tracks;
 
     // space to store a hash cube
     HypercubeBin m_cube;

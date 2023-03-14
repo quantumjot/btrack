@@ -263,6 +263,7 @@ class PyGraphEdge(ctypes.Structure):
         ("source", ctypes.c_long),
         ("target", ctypes.c_long),
         ("score", ctypes.c_double),
+        ("edge_type", ctypes.c_uint),
     ]
 
     def to_dict(self) -> dict[str, Any]:

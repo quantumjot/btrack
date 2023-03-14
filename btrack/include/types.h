@@ -56,9 +56,19 @@ extern "C" struct PyTrackInfo {
   bool complete;
 
   // default constructor
-  PyTrackInfo() : error(ERROR_none), n_tracks(0), n_active(0),
-                n_conflicts(0), n_lost(0), t_update_belief(0), t_update_link(0),
-                t_total_time(0), p_link(0), p_lost(0), complete(false) {};
+  PyTrackInfo() :
+    error(ERROR_none),
+    n_tracks(0),
+    n_active(0),
+    n_conflicts(0),
+    n_lost(0),
+    t_update_belief(0),
+    t_update_link(0),
+    t_total_time(0),
+    p_link(0),
+    p_lost(0),
+    complete(false)
+    {};
 };
 
 
@@ -208,15 +218,9 @@ struct ImagingVolume
     assert(a_volume[0] <= a_volume[1]);
     assert(a_volume[2] <= a_volume[3]);
     assert(a_volume[4] <= a_volume[5]);
-    // min_xyz(0) = a_volume[0];
-    // min_xyz(1) = a_volume[2];
-    // min_xyz(2) = a_volume[4];
-    // max_xyz(0) = a_volume[1];
-    // max_xyz(1) = a_volume[3];
-    // max_xyz(2) = a_volume[5];
+
     min_xyz << a_volume[0], a_volume[2], a_volume[4];
     max_xyz << a_volume[1], a_volume[3], a_volume[5];
-
   }
 
   // test whether an object lies within the volume

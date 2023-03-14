@@ -248,9 +248,11 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses)
         }
 
         // push a branch hypothesis
-        m_branches.push(h.trk_ID->ID, BranchHypothesis(h.trk_ID,
-                                                       h.trk_child_one_ID,
-                                                       h.trk_child_two_ID));
+        m_branches.push(h.trk_ID->ID, BranchHypothesis(
+          h.trk_ID,
+          h.trk_child_one_ID,
+          h.trk_child_two_ID)
+        );
         break;
 
 

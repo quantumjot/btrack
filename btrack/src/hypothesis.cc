@@ -115,8 +115,8 @@ HypothesisEngine::HypothesisEngine( void )
 HypothesisEngine::HypothesisEngine(
   const unsigned int a_start_frame,
   const unsigned int a_stop_frame,
-  const PyHypothesisParams& a_params
-  // TrackManager* a_manager
+  const PyHypothesisParams& a_params,
+  TrackManager* a_manager
 ) {
   //m_num_frames = a_stop_frame - a_start_frame;
   m_frame_range[0] = a_start_frame;
@@ -124,12 +124,12 @@ HypothesisEngine::HypothesisEngine(
   m_params = a_params;
 
   // store the reference to the manager
-  // this->manager = a_manager;
+  this->manager = a_manager;
 
   // tell the user which hypotheses are going to be created
   // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
 
-  if (!m_tracks.empty() || !m_cube.empty()) {
+  if (!m_cube.empty()) {
     std::cout << "Resetting hypothesis engine." << std::endl;
     reset();
   }
@@ -161,7 +161,7 @@ HypothesisEngine::HypothesisEngine(
 void HypothesisEngine::reset( void )
 {
   // clear the tracks and the hashcube
-  m_tracks.clear();
+  // m_tracks.clear();
   m_cube.clear();
 }
 
@@ -177,8 +177,8 @@ HypothesisEngine::~HypothesisEngine( void )
 
 void HypothesisEngine::add_track(TrackletPtr a_trk)
 {
-  // push this onto the list of trajectories
-  m_tracks.push_back( a_trk );
+  // // push this onto the list of trajectories
+  // m_tracks.push_back( a_trk );
 
   // add this one to the hash cube
   m_cube.add_tracklet( a_trk );
@@ -204,9 +204,7 @@ bool HypothesisEngine::hypothesis_allowed(const unsigned int a_hypothesis_type) 
 
 
 
-float HypothesisEngine::dist_from_border( TrackletPtr a_trk,
-                                          bool a_start ) const
-{
+float HypothesisEngine::dist_from_border(TrackletPtr a_trk, bool a_start) const {
   // Calculate the distance from the border of the field of view
   float min_dist, min_this_dim;
   Eigen::Vector3d xyz;
@@ -246,10 +244,10 @@ float HypothesisEngine::dist_from_border( TrackletPtr a_trk,
 void HypothesisEngine::create( void )
 {
 
-  if (m_tracks.size() < 1) return;
+  if (manager->num_tracks() < 1) return;
 
   // get the tracks
-  m_num_tracks = m_tracks.size();
+  m_num_tracks = manager->num_tracks();
 
   // reserve some memory for the hypotheses (at least 5 times the number of
   // trajectories)
@@ -267,7 +265,7 @@ void HypothesisEngine::create( void )
     // }
 
     // get the test track
-    trk = m_tracks[i];
+    trk = manager->get_track(i);
 
     // calculate the false positive hypothesis
     hypothesis_false_positive(trk);
@@ -515,6 +513,10 @@ void HypothesisEngine::hypothesis_link( TrackletPtr a_trk,
                         + 0.5*safe_log(P_TP(a_trk_lnk));
     m_hypotheses.push_back( h_link );
 
+    if (STORE_GRAPH_EDGES) {
+      manager->push_edge(a_trk->track.back(), a_trk_lnk->track.front(), std::exp(h_link.probability), GRAPH_EDGE_hyperlink);
+    }
+
     // }
   }
 }
@@ -533,6 +535,11 @@ void HypothesisEngine::hypothesis_branch( TrackletPtr a_trk,
                         + 0.5*safe_log(P_TP(a_trk_c0))
                         + 0.5*safe_log(P_TP(a_trk_c1));
     m_hypotheses.push_back( h_divn );
+
+    if (STORE_GRAPH_EDGES) {
+      manager->push_edge(a_trk->track.back(), a_trk_c0->track.front(), std::exp(h_divn.probability), GRAPH_EDGE_hyperlink);
+      manager->push_edge(a_trk->track.back(), a_trk_c1->track.front(), std::exp(h_divn.probability), GRAPH_EDGE_hyperlink);
+    }
   }
 }
 

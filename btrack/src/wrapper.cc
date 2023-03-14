@@ -356,7 +356,7 @@ unsigned int InterfaceWrapper::create_hypotheses(
   const unsigned int a_end_n
 ) {
   // set up a new hypothesis engine with the parameters supplied
-  h_engine = HypothesisEngine(a_start_n, a_end_n, a_params);
+  h_engine = HypothesisEngine(a_start_n, a_end_n, a_params, &manager);
   h_engine.volume = tracker.volume;
 
   // set the hypothesis engine update features to match the tracker
@@ -374,9 +374,9 @@ unsigned int InterfaceWrapper::create_hypotheses(
 };
 
 // get a hypothesis by ID
-PyHypothesis InterfaceWrapper::get_hypothesis(const unsigned int a_ID)
+PyHypothesis InterfaceWrapper::get_hypothesis(const unsigned int a_idx)
 {
-  return h_engine.get_hypothesis(a_ID);
+  return h_engine.get_hypothesis(a_idx);
 };
 
 

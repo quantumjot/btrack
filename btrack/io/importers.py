@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import csv
 import os
+from typing import List
 
 from btrack import btypes
 
 
-def import_CSV(filename: os.PathLike) -> list[btypes.PyTrackObject]:
+def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:
     """Import localizations from a CSV file.
 
     Parameters
@@ -40,11 +41,11 @@ def import_CSV(filename: os.PathLike) -> list[btypes.PyTrackObject]:
     """
 
     objects = []
-    with open(filename) as csv_file:
+    with open(filename, "r") as csv_file:
         csvreader = csv.DictReader(csv_file, delimiter=",", quotechar="|")
         for i, row in enumerate(csvreader):
             data = {k: float(v) for k, v in row.items()}
-            data["ID"] = i
+            data.update({"ID": i})
             obj = btypes.PyTrackObject.from_dict(data)
             objects.append(obj)
     return objects

@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 
 import btrack
-from tests._utils import (
+
+from ._utils import (
     create_test_object,
     create_test_properties,
     full_tracker_example,
@@ -116,7 +117,7 @@ def test_write_lbep(tmp_path, test_real_objects):
     btrack.io.export_LBEP(fn, tracker.tracks)
 
     # check that the file contains the correct number of lines
-    with open(fn) as lbep_file:
+    with open(fn, "r") as lbep_file:
         entries = lbep_file.readlines()
     assert len(entries) == len(tracks)
     # and that the LBEP entries match

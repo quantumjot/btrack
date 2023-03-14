@@ -2,38 +2,38 @@ from __future__ import annotations
 
 import inspect
 import logging
-from collections.abc import Generator
+from typing import Generator, List, Optional, Tuple, Union
 
 import numpy as np
-from numpy import typing as npt
 from skimage.measure import label, regionprops_table
 
 from btrack import btypes
 from btrack.constants import Dimensionality
-from btrack.io.utils import localizations_to_objects
+
+from .utils import localizations_to_objects
 
 # get the logger instance
 logger = logging.getLogger(__name__)
 
 
 def _centroids_from_single_arr(
-    segmentation: npt.NDArray | Generator,
-    properties: tuple[str],
+    segmentation: Union[np.ndarray, Generator],
+    properties: Tuple[str],
     frame: int,
-    intensity_image: npt.NDArray | None = None,
-    scale: tuple[float] | None = None,
+    intensity_image: Optional[np.ndarray] = None,
+    scale: Optional[Tuple[float]] = None,
     *,
     use_weighted_centroid: bool = False,
     assign_class_ID: bool = False,
-) -> npt.NDArray:
+) -> np.ndarray:
     """Return the object centroids from a numpy array representing the
     image data."""
 
     if np.sum(segmentation) == 0:
         return {}
 
-    def _is_unique(x: npt.NDArray) -> bool:
-        # check if image is not uniquely labelled (necessary for regionprops)
+    def _is_unique(x: np.ndarray) -> bool:
+        # check if image is uniquely labelled (necessary for regionprops)
         return np.max(label(x)) == np.max(x)
 
     if use_weighted_centroid and intensity_image is not None:
@@ -46,6 +46,7 @@ def _centroids_from_single_arr(
 
     # if class id is specified then extract that property first
     if assign_class_ID:
+
         # ensure regionprops can properly read label image
         labeled = label(segmentation)
 
@@ -57,7 +58,9 @@ def _centroids_from_single_arr(
         )
 
         # rename class_ID column and remove keyword from properties
-        _class_ID_centroids["class_id"] = _class_ID_centroids.pop("max_intensity")
+        _class_ID_centroids["class_id"] = _class_ID_centroids.pop(
+            "max_intensity"
+        )
 
         # run regionprops to record other intensity image properties
         _centroids = regionprops_table(
@@ -73,7 +76,11 @@ def _centroids_from_single_arr(
 
     else:
         # check to see whether the segmentation is unique
-        labeled = segmentation if _is_unique(segmentation) else label(segmentation)
+        labeled = (
+            label(segmentation)
+            if not _is_unique(segmentation)
+            else segmentation
+        )
 
         _centroids = regionprops_table(
             labeled,
@@ -82,7 +89,9 @@ def _centroids_from_single_arr(
         )
 
     # add time to the array
-    _centroids["t"] = np.full(_centroids[f"{CENTROID_PROPERTY}-0"].shape, frame)
+    _centroids["t"] = np.full(
+        _centroids[f"{CENTROID_PROPERTY}-0"].shape, frame
+    )
 
     # apply the anistropic scaling
     if scale is not None:
@@ -114,23 +123,22 @@ def _concat_centroids(centroids, new_centroids):
     return centroids
 
 
-def segmentation_to_objects(
-    segmentation: npt.NDArray | Generator,
-    intensity_image: npt.NDArray | Generator | None = None,
-    properties: tuple[str] | None = (),
-    scale: tuple[float] | None = None,
-    *,
-    use_weighted_centroid: bool = True,
-    assign_class_ID: bool = False,
-) -> list[btypes.PyTrackObject]:
+def segmentation_to_objects(  # noqa: PLR0913
+    segmentation: Union[np.ndarray, Generator],
+    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
+    properties: Optional[Tuple[str]] = (),
+    scale: Optional[Tuple[float]] = None,
+    use_weighted_centroid: bool = True,  # noqa: FBT001,FBT002
+    assign_class_ID: bool = False,  # noqa: FBT001,FBT002
+) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 
     Parameters
     ----------
-    segmentation : npt.NDArray, dask.array.core.Array or Generator
+    segmentation : np.ndarray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-    intensity_image : npt.NDArray, dask.array.core.Array or Generator, optional
+    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional
@@ -172,7 +180,9 @@ def segmentation_to_objects(
     # if we have an intensity image, add that here
     if intensity_image is not None:
         if type(intensity_image) != type(segmentation):
-            raise TypeError("Segmentation and intensity image must be the same type.")
+            raise TypeError(
+                "Segmentation and intensity image must be the same type."
+            )
         USE_INTENSITY = True
         USE_WEIGHTED = use_weighted_centroid and USE_INTENSITY
 
@@ -190,7 +200,10 @@ def segmentation_to_objects(
         properties.remove("label")
         properties = tuple(properties)
 
-    if inspect.isgeneratorfunction(segmentation) or isinstance(segmentation, Generator):
+    if inspect.isgeneratorfunction(segmentation) or isinstance(
+        segmentation, Generator
+    ):
+
         for frame, seg in enumerate(segmentation):
             intens = next(intensity_image) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
@@ -207,6 +220,7 @@ def segmentation_to_objects(
             centroids = _concat_centroids(centroids, _centroids)
 
     else:
+
         if segmentation.ndim not in (
             Dimensionality.THREE,
             Dimensionality.FOUR,
@@ -217,7 +231,11 @@ def segmentation_to_objects(
             # try to cast to numpy array, should work for dask arrays and implicitly
             # call the `.compute()` method
             seg = np.asarray(segmentation[frame, ...])
-            intens = np.asarray(intensity_image[frame, ...]) if USE_INTENSITY else None
+            intens = (
+                np.asarray(intensity_image[frame, ...])
+                if USE_INTENSITY
+                else None
+            )
             _centroids = _centroids_from_single_arr(
                 seg,
                 properties,

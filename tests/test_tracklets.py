@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from tests._utils import (
+from ._utils import (
     create_test_object,
     create_test_properties,
     create_test_tracklet,
@@ -33,7 +33,7 @@ def test_object_features(properties: dict):
     assert obj.n_features == 0
     keys = list(properties.keys())
     obj.set_features(keys)
-    n_keys = sum(np.asarray(p).size for p in properties.values())
+    n_keys = sum([np.asarray(p).size for p in properties.values()])
     assert obj.n_features == n_keys
 
 

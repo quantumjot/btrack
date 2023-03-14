@@ -6,11 +6,12 @@ btrack/render_movie.py
 models/MDCK_*
 examples/napari.png
 examples/.ipynb_checkpoints
+models/test_config.json
 notebooks
 deprecated
 dist
 build
-btrack.egg-info
+*.egg-info
 bworker.py
 *.DS_store
 *.o
@@ -23,3 +24,4 @@ docs/api/*
 .coverage
 coverage.xml
 .envrc
+.hypothesis

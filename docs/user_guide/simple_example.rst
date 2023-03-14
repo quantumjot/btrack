@@ -1,7 +1,7 @@
 A simple example
 ****************
 
-A simple pipeline is shown below. Others can be found in the `examples folder of the repository <https://github.com/quantumjot/BayesianTracker/tree/master/examples>`_.
+A simple pipeline is shown below. Others can be found in the `examples folder of the repository <https://github.com/quantumjot/btrack/tree/master/examples>`_.
 
 This example shows ....
 

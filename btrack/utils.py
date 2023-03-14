@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import logging
+from typing import List, Optional
 
 import numpy as np
-from numpy import typing as npt
 from skimage.util import map_array
 
 # import core
-from btrack import btypes, constants
-from btrack.constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
-from btrack.io._localization import segmentation_to_objects
-from btrack.models import HypothesisModel, MotionModel, ObjectModel
+from . import btypes, constants
+from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
+from .io._localization import segmentation_to_objects
+from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
 __all__ = [
@@ -25,7 +25,10 @@ logger = logging.getLogger(__name__)
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
-    if error not in [constants.Errors.SUCCESS, constants.Errors.NO_ERROR]:
+    if (
+        error != constants.Errors.SUCCESS
+        and error != constants.Errors.NO_ERROR
+    ):
         logger.error(f"ERROR: {error}")
         return True
     return False
@@ -38,37 +41,45 @@ def log_stats(stats: dict) -> None:
         return
 
     logger.info(
-        f" - Timing (Bayesian updates: {stats['t_update_belief']:.2f}"
-        f"ms, Linking: {stats['t_update_link']:.2f}ms)"
+        " - Timing (Bayesian updates: {:.2f}ms, Linking:"
+        " {:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
     )
 
     logger.info(
-        f" - Probabilities (Link: {stats['p_link']:.5f}, "
-        f"Lost: {stats['p_lost']:.5f})"
+        " - Probabilities (Link: {:.5f}, Lost:"
+        " {:.5f})".format(stats["p_link"], stats["p_lost"])
     )
 
     if stats["complete"]:
         return
 
     logger.info(
-        f" - Stats (Active: {stats['n_active']:d}, Lost: {stats['n_lost']:d}, "
-        f"Conflicts resolved: {stats['n_conflicts']:d})"
+        " - Stats (Active: {:d}, Lost: {:d}, Conflicts "
+        "resolved: {:d})".format(
+            stats["n_active"], stats["n_lost"], stats["n_conflicts"]
+        )
     )
 
 
-def read_motion_model(cfg: dict) -> MotionModel | None:
+def read_motion_model(cfg: dict) -> Optional[MotionModel]:
     cfg = cfg.get("MotionModel", {})
-    return MotionModel(**cfg) if cfg else None
+    if not cfg:
+        return None
+    return MotionModel(**cfg)
 
 
-def read_object_model(cfg: dict) -> ObjectModel | None:
+def read_object_model(cfg: dict) -> Optional[ObjectModel]:
     cfg = cfg.get("ObjectModel", {})
-    return ObjectModel(**cfg) if cfg else None
+    if not cfg:
+        return None
+    return ObjectModel(**cfg)
 
 
-def read_hypothesis_model(cfg: dict) -> HypothesisModel | None:
+def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
     cfg = cfg.get("HypothesisModel", {})
-    return HypothesisModel(**cfg) if cfg else None
+    if not cfg:
+        return None
+    return HypothesisModel(**cfg)
 
 
 def crop_volume(objects, volume=constants.VOLUME):
@@ -76,19 +87,23 @@ def crop_volume(objects, volume=constants.VOLUME):
     axes = zip(["x", "y", "z", "t"], volume)
 
     def within(o):
-        return all(getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes)
+        return all(
+            [getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes]
+        )
 
     return [o for o in objects if within(o)]
 
 
-def _lbep_table(tracks: list[btypes.Tracklet]) -> npt.NDArray:
+def _lbep_table(tracks: List[btypes.Tracklet]) -> np.array:
     """Create an LBEP table from a track."""
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
-def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) -> dict:
+def _cat_tracks_as_dict(
+    tracks: list[btypes.Tracklet], properties: List[str]
+) -> dict:
     """Concatenate all tracks as dictionary."""
-    assert all(isinstance(t, btypes.Tracklet) for t in tracks)
+    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
 
     data: dict = {}
 
@@ -102,7 +117,7 @@ def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) ->
             if trk_property.ndim == 0:
                 trk_property = np.repeat(trk_property, len(track))
 
-            if trk_property.ndim > Dimensionality.TWO:
+            if trk_property.ndim > constants.Dimensionality.TWO:
                 raise ValueError(
                     f"Track properties of {trk_property.ndim} dimensions are "
                     "not currently supported."
@@ -110,7 +125,7 @@ def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) ->
 
             assert trk_property.shape[0] == len(track)
 
-            if trk_property.ndim == Dimensionality.TWO:
+            if trk_property.ndim == constants.Dimensionality.TWO:
                 for idx in range(trk_property.shape[-1]):
                     tmp_key = f"{key}-{idx}"
                     if tmp_key not in data:
@@ -129,7 +144,10 @@ def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) ->
 
 
 def tracks_to_napari(
-    tracks: list[btypes.Tracklet], ndim: int = 3, *, replace_nan: bool = True
+    tracks: list[btypes.Tracklet],
+    *,
+    ndim: int | None = None,
+    replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.
 
@@ -137,8 +155,10 @@ def tracks_to_napari(
     ----------
     tracks : list[btypes.Tracklet]
         A list of tracklet objects from BayesianTracker.
-    ndim : int
-        The number of spatial dimensions of the data. Must be 2 or 3.
+    ndim : int or None
+        The number of spatial dimensions of the data. If not specified, the
+        function attempts to guess the final dimensionality using the z
+        coordinates. If specified, it must have a value of 2 or 3.
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
@@ -166,7 +186,12 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # TODO: arl guess the dimensionality from the data
+    # guess the dimensionality from the data by checking whether the z values
+    # are all zero. If all z are zero then the data are planar, i.e. 2D
+    if ndim is None:
+        z = np.concatenate([track.z for track in tracks])
+        ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
+
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
@@ -182,17 +207,18 @@ def tracks_to_napari(
     prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
-    data = np.stack([v for k, v in tracks_as_dict.items() if k in t_header], axis=1)
+    data = np.stack(
+        [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
+    )
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
+    def nans_idx(x):
+        return x.nonzero()[0]
+
     if replace_nan:
         for k, v in properties.items():
             nans = np.isnan(v)
-
-            def nans_idx(x):
-                return x.nonzero()[0]
-
             v[nans] = np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
             properties[k] = v
 
@@ -201,11 +227,11 @@ def tracks_to_napari(
 
 
 def update_segmentation(
-    segmentation: npt.NDArray,
+    segmentation: np.ndarray,
     tracks: list[btypes.Tracklet],
     *,
     color_by: str = "ID",
-) -> npt.NDArray:
+) -> np.ndarray:
     """Map tracks back into a masked array.
 
     Parameters
@@ -256,13 +282,18 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
-        if single_segmentation.ndim == Dimensionality.TWO:
+        if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
-        elif single_segmentation.ndim == Dimensionality.THREE:
-            old_id = single_segmentation[frame_coords[:, keys["z"]], yc, xc]
+        elif single_segmentation.ndim == constants.Dimensionality.THREE:
+            zc = frame_coords[:, keys["z"]]
+            old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
             single_segmentation > 0
         )
 
     return relabeled
+
+
+if __name__ == "__main__":
+    pass

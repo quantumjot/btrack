@@ -2,7 +2,7 @@ import json
 
 import numpy as np
 
-from tests._utils import (
+from ._utils import (
     TEST_DATA_PATH,
     full_tracker_example,
     simple_tracker_example,
@@ -15,13 +15,13 @@ def _gt_object_hook(d):
 
 
 def _load_ground_truth():
-    with open(TEST_DATA_PATH / "test_ground_truth.json") as file:
+    with open(TEST_DATA_PATH / "test_ground_truth.json", "r") as file:
         ground_truth = json.load(file, object_hook=_gt_object_hook)
     return ground_truth
 
 
 def _load_ground_truth_graph() -> dict:
-    with open(TEST_DATA_PATH / "test_graph.json") as file:
+    with open(TEST_DATA_PATH / "test_graph.json", "r") as file:
         ground_truth_graph = json.load(file, object_hook=_gt_object_hook)
 
     return ground_truth_graph
@@ -29,7 +29,8 @@ def _load_ground_truth_graph() -> dict:
 
 def _get_tracklet(tracks: dict, idx: int) -> list:
     """Get a tracklet by the first object ID"""
-    if target := [t for t in tracks.values() if t[0] == idx]:
+    target = [t for t in tracks.values() if t[0] == idx]
+    if target:
         return target[0]
     else:
         raise ValueError("Object ID not found.")

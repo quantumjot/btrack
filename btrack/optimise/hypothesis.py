@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -------------------------------------------------------------------------------
-# Name:     BayesianTracker
+# Name:     btrack
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
 #           information to perform the trajectory linking. This method uses

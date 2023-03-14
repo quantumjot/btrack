@@ -7,7 +7,7 @@ Installation
 Requirements
 ============
 
-BayesianTracker has been tested with Python 3.7+ on OS X, Linux and Win10.
+btrack has been tested with Python 3.8+ on OS X, Linux and Win10.
 
 Installing Scientific Python
 ============================

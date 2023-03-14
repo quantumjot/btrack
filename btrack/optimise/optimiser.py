@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -------------------------------------------------------------------------------
-# Name:     BayesianTracker
+# Name:     btrack
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
 #           information to perform the trajectory linking. This method uses
@@ -17,12 +17,14 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
+from typing import List
 
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
 
 from btrack.constants import GLPK_OPTIONS, Fates
-from btrack.optimise import hypothesis
+
+from . import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -99,7 +101,7 @@ class TrackOptimiser:
     """
 
     def __init__(self, options: dict = GLPK_OPTIONS):
-        self._hypotheses: list[hypothesis.Hypothesis] = []
+        self._hypotheses: List[hypothesis.Hypothesis] = []
         self.options = options  # TODO(arl): do some option parsing?
 
     @property
@@ -129,7 +131,7 @@ class TrackOptimiser:
 
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
-        N = max({int(h.ID) for h in self.hypotheses})
+        N = max(int(h.ID) for h in self.hypotheses)
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...
@@ -139,6 +141,7 @@ class TrackOptimiser:
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
         for counter, h in enumerate(self.hypotheses):
+
             # set the hypothesis score
             rho[counter] = h.log_likelihood
 
@@ -156,12 +159,17 @@ class TrackOptimiser:
                 A[N + trk, counter] = 1
                 continue
 
-            elif (
-                h.hypothesis_type in TERM_FATES or h.hypothesis_type == Fates.APOPTOSIS
-            ):
-                # a termination/apoptosis event, entry in first half only
+            elif h.hypothesis_type in TERM_FATES:  # noqa: SIM114
+                # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
+                continue
+
+            elif h.hypothesis_type == Fates.APOPTOSIS:
+                # an apoptosis event, entry in first half only
+                trk = trk_idx(h.ID)
+                A[trk, counter] = 1
+                # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
                 continue
 
             elif h.hypothesis_type == Fates.LINK:

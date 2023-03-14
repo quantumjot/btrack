@@ -21,12 +21,25 @@
 #include <limits>
 
 #ifndef M_PI
-    #define M_PI 3.14159265358979323846
+#define M_PI 3.14159265358979323846
+#endif
+
+#ifndef VERSION_MAJOR
+#define VERSION_MAJOR 0
+#endif
+#ifndef VERSION_MINOR
+#define VERSION_MINOR 0
+#endif
+#ifndef VERSION_BUILD
+#define VERSION_BUILD 0
+#endif
+
+#ifndef DEBUG
+#define DEBUG 0
 #endif
 
 // define a filepath for debugging output
 #define DEBUG_FILEPATH "/home/quantumjot/Documents/"
-
 
 // store some information about the compilation
 static unsigned int v_major = VERSION_MAJOR;
@@ -40,7 +53,7 @@ const double kInfinity = std::numeric_limits<double>::infinity();
 
 // constants for integrating Gaussian PDF
 const double kRootTwo = std::sqrt(2.0);
-const double kRootTwoPi = std::sqrt(2.0*M_PI);
+const double kRootTwoPi = std::sqrt(2.0 * M_PI);
 
 // tracking params
 #define PROB_NOT_ASSIGN 0.01
@@ -58,7 +71,6 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define CLIP_MAXIMUM_LINKAGE_DISTANCE true
 #define STORE_GRAPH_EDGES true
 
-
 // reserve space for objects and tracks
 #define RESERVE_NEW_OBJECTS 10000
 #define RESERVE_ACTIVE_TRACKS 1000
@@ -66,12 +78,10 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 #define RESERVE_GRAPH_EDGES 1000000
 #define RESERVE_ALL_TRACKS 50000
 
-
 // update methods
 #define UPDATE_MODE_EXACT 0
 #define UPDATE_MODE_APPROXIMATE 1
 #define UPDATE_MODE_CUDA 2
-
 
 // hypothesis generation
 #define MAX_TRACK_LEN 150
@@ -102,56 +112,51 @@ const double kRootTwoPi = std::sqrt(2.0*M_PI);
 // of the length of the tracklet that is apoptotic
 #define USE_ABSOLUTE_APOPTOSIS_COUNTS true
 
-
 // flag to use a uniform prior
 #define USE_UNIFORM_PRIOR 0
 #define USE_MOTION_FEATURES 1
 #define USE_VISUAL_FEATURES 2
 
-
-
 /* Enumerated types
-*/
-
+ */
 
 // hypothesis and state types
 // ['P_FP','P_init','P_term','P_link','P_branch','P_dead','P_merge']
-#define TYPE_Pfalse       0
-#define TYPE_Pinit        1
-#define TYPE_Pterm        2
-#define TYPE_Plink        3
-#define TYPE_Pdivn        4
-#define TYPE_Papop        5
-#define TYPE_Pmrge        6
-#define TYPE_Pextr        7
+#define TYPE_Pfalse 0
+#define TYPE_Pinit 1
+#define TYPE_Pterm 2
+#define TYPE_Plink 3
+#define TYPE_Pdivn 4
+#define TYPE_Papop 5
+#define TYPE_Pmrge 6
+#define TYPE_Pextr 7
 #define TYPE_Pinit_border 10
-#define TYPE_Pinit_front  11
-#define TYPE_Pinit_lazy   12
+#define TYPE_Pinit_front 11
+#define TYPE_Pinit_lazy 12
 #define TYPE_Pterm_border 20
-#define TYPE_Pterm_back   21
-#define TYPE_Pterm_lazy   22
-#define TYPE_Pdead        666
-#define TYPE_undef        999
+#define TYPE_Pterm_back 21
+#define TYPE_Pterm_lazy 22
+#define TYPE_Pdead 666
+#define TYPE_undef 999
 
-enum class HypothesisType: unsigned int {
-  false_positive  = 0,
-  init            = 1,
-  term            = 2,
-  link            = 3,
-  branch          = 4,
-  apop            = 5,
-  merge           = 6,
-  extrude         = 7,
-  init_border     = 10,
-  init_front      = 11,
-  init_lazy       = 12,
-  term_border     = 20,
-  term_back       = 21,
-  term_lazy       = 22,
-  dead            = 666,
-  undefined       = 999
+enum class HypothesisType : unsigned int {
+    false_positive = 0,
+    init = 1,
+    term = 2,
+    link = 3,
+    branch = 4,
+    apop = 5,
+    merge = 6,
+    extrude = 7,
+    init_border = 10,
+    init_front = 11,
+    init_lazy = 12,
+    term_border = 20,
+    term_back = 21,
+    term_lazy = 22,
+    dead = 666,
+    undefined = 999
 };
-
 
 // errors
 #define SUCCESS 900
@@ -166,20 +171,19 @@ enum class HypothesisType: unsigned int {
 #define ERROR_not_defined 909
 #define ERROR_none 910
 
-enum class TrackingError: unsigned int {
-  success                       = 900,
-  empty_queue                   = 901,
-  no_tracks                     = 902,
-  no_useable_frames             = 903,
-  track_empty                   = 904,
-  incorrect_motion_model        = 905,
-  max_lost_out_of_range         = 906,
-  accuracy_out_of_range         = 907,
-  prob_not_assign_out_of_range  = 908,
-  not_defined                   = 909,
-  none                          = 910
+enum class TrackingError : unsigned int {
+    success = 900,
+    empty_queue = 901,
+    no_tracks = 902,
+    no_useable_frames = 903,
+    track_empty = 904,
+    incorrect_motion_model = 905,
+    max_lost_out_of_range = 906,
+    accuracy_out_of_range = 907,
+    prob_not_assign_out_of_range = 908,
+    not_defined = 909,
+    none = 910
 };
-
 
 // possible states of objects
 #define STATE_interphase 0
@@ -190,20 +194,17 @@ enum class TrackingError: unsigned int {
 #define STATE_null 5
 #define STATE_dummy 99
 
-enum class ObjectStateLabel: unsigned int {
-  interphase    = 0,
-  prometaphase  = 1,
-  metaphase     = 2,
-  anaphase      = 3,
-  apoptosis     = 4,
-  null          = 5,
-  dummy         = 99
+enum class ObjectStateLabel : unsigned int {
+    interphase = 0,
+    prometaphase = 1,
+    metaphase = 2,
+    anaphase = 3,
+    apoptosis = 4,
+    null = 5,
+    dummy = 99
 };
-
 
 #define GRAPH_EDGE_link 0
 #define GRAPH_EDGE_hyperlink 1
-
-
 
 #endif

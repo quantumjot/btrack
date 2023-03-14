@@ -17,13 +17,13 @@
 #ifndef _MANAGER_H_INCLUDED_
 #define _MANAGER_H_INCLUDED_
 
-#include <vector>
 #include <stack>
+#include <vector>
 
-#include "types.h"
 #include "hypothesis.h"
 #include "tracklet.h"
-
+#include "types.h"
+#include "defs.h"
 
 // make a joining hypothesis (note: LinkHypothesis is used by the tracker...)
 typedef std::pair<TrackletPtr, TrackletPtr> JoinHypothesis;
@@ -33,7 +33,6 @@ typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> BranchHypothesis;
 
 // make a merging hypothesis
 typedef std::tuple<TrackletPtr, TrackletPtr, TrackletPtr> MergeHypothesis;
-
 
 // compare two hypotheses, used for sorting by start time
 bool compare_hypothesis_time(const Hypothesis &h_one, const Hypothesis &h_two);
@@ -47,111 +46,104 @@ void branch_tracks(const BranchHypothesis &branch);
 // merge tracks
 void merge_tracks(const MergeHypothesis &merge);
 
-
-
-
 // Lineage tree node, used for building trees
-class LineageTreeNode
-{
-  public:
-    LineageTreeNode() {};
-    ~LineageTreeNode() {};
+class LineageTreeNode {
+   public:
+    LineageTreeNode(){};
+    ~LineageTreeNode(){};
 
     LineageTreeNode(TrackletPtr a_track) {
-      m_track = a_track;
+        m_track = a_track;
     };
 
     bool has_children(void) const {
-      return m_track->has_children();
+        return m_track->has_children();
     };
 
     TrackletPtr m_track;
 
     // pointers to left and right nodes
-    LineageTreeNode* m_left;
-    LineageTreeNode* m_right;
+    LineageTreeNode *m_left;
+    LineageTreeNode *m_right;
 
     // store the generational depth, default depth is always zero
     unsigned int m_depth = 0;
 };
 
-
-
-
 // A track manager class, behaves as if a simple vector of TrackletPtrs, but
 // contains functions to allow track merging and renaming. We only need a subset
 // of the vector functionality, so no need to subclass.
-class TrackManager
-{
-  public:
+class TrackManager {
+   public:
     // default constructors and destructors
     TrackManager() {
-      m_graph_nodes.reserve(RESERVE_GRAPH_NODES);
-      m_tracks.reserve(RESERVE_ALL_TRACKS);
-      m_graph_edges.reserve(RESERVE_GRAPH_EDGES);
+        m_graph_nodes.reserve(RESERVE_GRAPH_NODES);
+        m_tracks.reserve(RESERVE_ALL_TRACKS);
+        m_graph_edges.reserve(RESERVE_GRAPH_EDGES);
     };
-    virtual ~TrackManager() {};
-
+    virtual ~TrackManager(){};
 
     void clear(void) {
-      //
+        //
     }
 
     inline size_t num_nodes() const {
-      return this->m_graph_nodes.size();
+        return this->m_graph_nodes.size();
     }
 
     // return the number of tracks
     inline size_t num_tracks(void) const {
-      return this->m_tracks.size();
+        return this->m_tracks.size();
     }
 
     // return the number of graph edges
     // this includes both the greedy and ILP edges
     size_t num_edges(void) const;
 
+    // return the number of hypotheses
+    inline size_t num_hypotheses(void) const {
+        return this->m_hypotheses.size();
+    }
+
     // return a track by index
-    inline TrackletPtr operator[] (const size_t a_idx) const {
-      return m_tracks[a_idx];
-    };
+    inline TrackletPtr operator[](const size_t a_idx) const {
+        return m_tracks[a_idx];
+    }
 
     // get a node
     TrackObjectPtr get_node(const size_t a_idx) const {
-      return m_graph_nodes[a_idx];
+        return m_graph_nodes[a_idx];
     }
 
     // return a track by index
     TrackletPtr get_track(const size_t a_idx) const {
-      return m_tracks[a_idx];
+        return m_tracks[a_idx];
     }
 
     // return track by ID
     TrackletPtr get_track_by_ID(const size_t a_ID) const;
 
     // return a dummy object by index
-    TrackObjectPtr get_dummy(const int idx) const;
+    TrackObjectPtr get_dummy(const int a_idx) const;
 
-    // return a hypothesis by index
-    Hypothesis get_hypothesis(const size_t idx) const;
-
-    // // push a tracklet onto the stack
-    // inline void push_back(const TrackletPtr &a_obj) {
-    //   m_tracks.push_back(a_obj);
+    // // return a hypothesis by index
+    // Hypothesis get_hypothesis(const size_t a_idx) const {
+    //   return m_hypotheses[a_idx];
     // }
 
     // push a new node
     inline void push_node(const TrackObjectPtr &a_node) {
-      m_graph_nodes.push_back(a_node);
+        m_graph_nodes.push_back(a_node);
     }
 
     // push a new track
     inline void push_track(const TrackletPtr &a_trk) {
-      m_tracks.push_back(a_trk);
+        m_tracks.push_back(a_trk);
     }
 
     // push a new hypothesis
     inline void push_hypothesis(const Hypothesis &a_hypotheses) {
-      m_hypotheses.push_back(a_hypotheses);
+        m_hypotheses.push_back(a_hypotheses);
     }
 
     // // reserve space for new tracks
@@ -166,19 +158,18 @@ class TrackManager
 
     // add a graph edge
     void push_edge(
-      const TrackObjectPtr &a_node_src,
-      const TrackObjectPtr &a_node_dst,
-      const float a_score,
-      const unsigned int a_edge_type
-    );
+        const TrackObjectPtr &a_node_src,
+        const TrackObjectPtr &a_node_dst,
+        const float a_score,
+        const unsigned int a_edge_type);
 
     // get a graph edge from the vector
     PyGraphEdge get_edge(const size_t idx) const;
 
     // sort nodes
     void sort_nodes(void) {
-       // sort the objects vector by time
-      std::sort(m_graph_nodes.begin(), m_graph_nodes.end(), compare_obj_time);
+        // sort the objects vector by time
+        std::sort(m_graph_nodes.begin(), m_graph_nodes.end(), compare_obj_time);
     }
 
     // build trees from the data
@@ -194,16 +185,14 @@ class TrackManager
 
     // split a track with certain transitions
     void split(
-      const TrackletPtr &a_trk,
-      const unsigned int a_label_i,
-      const unsigned int a_label_j
-    );
+        const TrackletPtr &a_trk,
+        const unsigned int a_label_i,
+        const unsigned int a_label_j);
 
-  private:
-
-    // track maintenance
-    void renumber();
-    void purge();
+   private:
+    // // track maintenance
+    // void renumber();
+    // void purge();
 
     // a vector of track objects (i.e. nodes)
     std::vector<TrackObjectPtr> m_graph_nodes;
@@ -228,10 +217,5 @@ class TrackManager
     HypothesisMap<JoinHypothesis> m_links;
     HypothesisMap<BranchHypothesis> m_branches;
 };
-
-
-
-
-
 
 #endif

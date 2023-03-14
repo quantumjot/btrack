@@ -25,7 +25,7 @@
 #include "inference.h"
 #include "defs.h"
 
-// #define MAX_LOST 5
+
 
 
 
@@ -40,10 +40,12 @@ public:
   Tracklet() : remove_flag(false) {};
 
   // construct Tracklet using a new ID, new object and model specific parameters
-  Tracklet( const unsigned int new_ID,
-            const TrackObjectPtr& new_object,
-            const unsigned int max_lost,
-            const MotionModel& model );
+  Tracklet(
+    const unsigned int new_ID,
+    const TrackObjectPtr& new_object,
+    const unsigned int max_lost,
+    const MotionModel& model
+  );
 
   // default destructor for Tracklet
   ~Tracklet() {};

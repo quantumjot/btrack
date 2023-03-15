@@ -64,6 +64,10 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 [![CellTracking](http://lowe.cs.ucl.ac.uk/images/youtube.png)](https://youtu.be/EjqluvrJGCg)  
 *Video of tracking, showing automatic lineage determination*
 
+
+<img src="https://user-images.githubusercontent.com/8217795/225356392-6eb4b68c-eda5-4b96-af50-76930fa45e9d.png" width="700" />
+
+
 ---
 
 ## Development

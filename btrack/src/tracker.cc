@@ -329,10 +329,18 @@ void BayesianTracker::step(const unsigned int steps) {
         }
 
         // if we're storing the graph edges for future optimization, do so here
+        // this should be done *BEFORE* linking because it relies on the
+        // unlinked tracks to store the original hypothesis
         if (STORE_GRAPH_EDGES) {
             for (size_t trk = 0; trk < n_active; trk++) {
                 Eigen::VectorXd prob_assign_per_obj;
                 prob_assign_per_obj = belief.col(trk);
+
+                // if we are lost, don't store the edge, it will be generated
+                // later by the optimizer
+                Eigen::MatrixXf::Index best_candidate;
+                double prob = prob_assign_per_obj.maxCoeff(&best_candidate);
+                if (int(best_candidate) == n_obs) continue;
 
                 // note that this doesn't store an edge to `lost`, but we can infer it
                 // as 1 - sum(scores) for each association
@@ -673,7 +681,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
                                                          max_lost, this->motion_model);
             // tracks.push_back( trk );
             manager->push_track(trk);
-            // /*
+
+#if !STRICT_TRACKLET_LINKING
         } else if (n_links > 1) {
             // conflict, get the best one
             n_conflicts++;
@@ -706,6 +715,9 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
             not_used.erase(trk);
             // */
         }
+#else
+        }
+#endif
     }
 
     // get a vector of updates

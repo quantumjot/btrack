@@ -38,6 +38,12 @@
 #define DEBUG 0
 #endif
 
+// perform strict tracklet linking, i.e. terminate a track if there are any
+// perceived conflicts
+#ifndef STRICT_TRACKLET_LINKING
+#define STRICT_TRACKLET_LINKING 0
+#endif
+
 // define a filepath for debugging output
 #define DEBUG_FILEPATH "/home/quantumjot/Documents/"
 

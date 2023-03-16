@@ -17,7 +17,7 @@
 #ifndef _INFERENCE_H_INCLUDED_
 #define _INFERENCE_H_INCLUDED_
 
-#include "Eigen/Dense"
+#include <Eigen/Dense>
 #include "types.h"
 
 #include <vector>

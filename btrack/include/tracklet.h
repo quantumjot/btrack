@@ -17,7 +17,7 @@
 #ifndef _TRACKLET_H_INCLUDED_
 #define _TRACKLET_H_INCLUDED_
 
-#include "eigen/Eigen/Dense"
+#include "Eigen/Dense"
 #include <vector>
 
 #include "types.h"

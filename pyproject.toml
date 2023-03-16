@@ -79,6 +79,9 @@ linux.before-all = [
 macos.before-all = [
     "brew install eigen",
 ]
+windows.before-all = [
+    "choco install eigen",
+]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

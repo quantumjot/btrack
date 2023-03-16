@@ -74,6 +74,8 @@ target-version = ["py38", "py39", "py310"]
 [tool.cibuildwheel]
 test-command = "pytest {project}/tests"
 test-requires = [
+    "dask",
+    "napari",
     "pytest",
 ]
 linux.before-all = [

@@ -73,6 +73,9 @@ target-version = ["py38", "py39", "py310"]
 
 [tool.cibuildwheel]
 test-command = "pytest"
+test-requires = [
+    "pytest",
+]
 linux.before-all = [
     "yum install eigen3-devel",
 ]

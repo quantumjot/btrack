@@ -12,7 +12,9 @@ jobs:
       - name: set up python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: "3.x"
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
 
       - name: set PY
         run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
@@ -25,6 +27,7 @@ jobs:
             ~/.cache/pre-commit
           key: |
             pre-commit-${{ env.PY }}-${{ hashFiles('.pre-commit-config.yaml') }}
+
       - name: install dependencies
         run: pip install pre-commit
 

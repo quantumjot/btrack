@@ -73,7 +73,12 @@ target-version = ["py38", "py39", "py310"]
 
 [tool.cibuildwheel]
 test-command = "pytest"
-linux.before-all = "yum install eigen3-devel"
+linux.before-all = [
+    "yum install eigen3-devel",
+]
+macos.before-all = [
+    "brew install eigen",
+]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

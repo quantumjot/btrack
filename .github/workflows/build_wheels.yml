@@ -1,6 +1,12 @@
 name: Build Wheels
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths-ignore:
+      - "**.md"
 
 jobs:
   build_wheels:

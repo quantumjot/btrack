@@ -17,7 +17,7 @@
 #ifndef _TRACKER_H_INCLUDED_
 #define _TRACKER_H_INCLUDED_
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 #include <iostream>
 #include <map>

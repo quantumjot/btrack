@@ -17,7 +17,7 @@
 #ifndef _TYPES_H_INCLUDED_
 #define _TYPES_H_INCLUDED_
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 #include <memory>
 #include <iostream>

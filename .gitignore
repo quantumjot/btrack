@@ -13,7 +13,6 @@ __pycache__
 *.pyc
 *.so
 btrack/agents.py
-btrack/include/eigen
 btrack/render_movie.py
 build
 bworker.py

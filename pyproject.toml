@@ -81,7 +81,7 @@ test-requires = [
     "pytest",
 ]
 linux.before-all = [
-    "apt install libeigen3-dev",
+    "apt-get install libeigen3-dev",
 ]
 macos.before-all = [
     "brew install eigen",

@@ -35,6 +35,7 @@ jobs:
     needs: build_wheels
     name: ${{ matrix.platform }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.platform }}
+    fail-fast: false
     strategy:
       matrix:
         # Run all supported Python versions on linux

@@ -9,8 +9,3 @@ if [ ! -e ./btrack/include/eigen/signature_of_eigen3_matrix_library ]
 then
   git clone https://gitlab.com/libeigen/eigen.git ./btrack/include/eigen
 fi
-
-# build the tracker
-echo "Compiling btrack from source..."
-make clean
-make

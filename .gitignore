@@ -27,3 +27,4 @@ coverage.xml
 *.so
 *.dylib
 *.DLL
+wheelhouse

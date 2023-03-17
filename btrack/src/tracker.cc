@@ -14,6 +14,9 @@
 --------------------------------------------------------------------------------
 */
 
+#ifndef DEBUG
+    #define DEBUG 0
+#endif
 
 #include "tracker.h"
 
@@ -519,7 +522,7 @@ void BayesianTracker::cost_EXACT(
 
   // set up some variables for Bayesian updates
   double uniform_prior = 1. / (n_objects+1);
-  double prior_assign, PrDP, posterior, update, safe_update;
+  double prior_assign, posterior, safe_update;
 
   // start by intializing the belief matrix with a uniform prior
   if (use_uniform_prior) {
@@ -586,7 +589,7 @@ void BayesianTracker::cost_APPROXIMATE(
   std::clock_t t_update_start = std::clock();
 
   // set up some variables for Bayesian updates
-  double prior_assign, PrDP, posterior, safe_update;
+  double prior_assign, posterior, safe_update;
 
   // Posterior is a misnoma here because it is initially the prior, but
   // becomes the posterior

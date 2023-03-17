@@ -23,6 +23,15 @@
 #ifndef M_PI
     #define M_PI 3.14159265358979323846
 #endif
+#ifndef VERSION_MAJOR
+    #define VERSION_MAJOR 0
+#endif
+#ifndef VERSION_MINOR
+    #define VERSION_MINOR 0
+#endif
+#ifndef VERSION_BUILD
+    #define VERSION_BUILD 0
+#endif
 
 // store some information about the compilation
 static unsigned int v_major = VERSION_MAJOR;

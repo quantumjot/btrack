@@ -14,7 +14,6 @@ jobs:
     name: Build wheels on ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     strategy:
-      fail-fast: false
       matrix:
         platform: [macos-latest, windows-latest, ubuntu-latest]
 
@@ -55,6 +54,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
             name: artefacts
+            path: btrack/libs
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
@@ -96,6 +96,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
             name: artefacts
+            path: btrack/libs
 
       - name: Set up Python
         uses: actions/setup-python@v4

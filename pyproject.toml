@@ -72,6 +72,9 @@ line-length = 79
 target-version = ["py38", "py39", "py310"]
 
 [tool.cibuildwheel]
+before-all = [
+    "bash build.sh",
+]
 test-command = "pytest {project}"
 test-extras = [
     "napari",

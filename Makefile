@@ -13,7 +13,7 @@ ifeq ($(UNAME), Darwin)
 	EXT = dylib
 	XLD_FLAGS = -arch x86_64 -arch arm64
 endif
-ifeq ($(UNAME), Windows)
+ifeq ($(OS), Windows_NT)
 	# do something Windowsy
 	CXX = x86_64-w64-mingw32-g++
 	EXT = DLL

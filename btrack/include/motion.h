@@ -17,7 +17,7 @@
 #ifndef _MOTION_H_INCLUDED_
 #define _MOTION_H_INCLUDED_
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include "types.h"
 
 #include <vector>

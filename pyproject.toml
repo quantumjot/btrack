@@ -85,6 +85,7 @@ test-requires = [
 ]
 linux.before-all = [
     "yum install -y fontconfig",
+    "bash build.sh",
 ]
 
 [tool.coverage]

@@ -21,6 +21,9 @@ jobs:
       - name: TEST
         run: uname
 
+      - name: TEST2
+        run: echo $OS
+
       - uses: actions/checkout@v3
 
       - name: Build wheels

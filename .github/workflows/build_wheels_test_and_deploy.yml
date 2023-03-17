@@ -32,7 +32,6 @@ jobs:
                 **.DLL
                 **.dylib
                 **.so
-            if-no-files-found: error
 
   test:
     needs: build_wheels

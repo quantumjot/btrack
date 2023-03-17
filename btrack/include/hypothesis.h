@@ -31,7 +31,7 @@
 #include "pdf.h"
 #include "updates.h"
 #include "bayes.h"
-
+#include <cassert>
 
 
 // Store a hypothesis to return to Python

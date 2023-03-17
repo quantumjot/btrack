@@ -24,6 +24,7 @@
 #include "motion.h"
 #include "inference.h"
 #include "defs.h"
+#include <cassert>
 
 // #define MAX_LOST 5
 

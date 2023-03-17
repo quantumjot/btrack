@@ -23,6 +23,7 @@
 #include <iostream>
 #include <limits>
 #include "defs.h"
+#include <cassert>
 
 
 

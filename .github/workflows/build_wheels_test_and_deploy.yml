@@ -24,11 +24,13 @@ jobs:
         run: bash build.sh
 
       - name: Upload artefacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
             name: artefacts
             path: |
-              btrack/libs/*
+              **.DLL
+              **.dylib
+              **.so
             if-no-files-found: error
 
   test:

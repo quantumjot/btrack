@@ -77,7 +77,7 @@ def load_library(filename):
 
     system = platform.system()
 
-    file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".dll"}
+    file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".DLL"}
     full_lib_file = lib_file + file_ext[system]
 
     try:

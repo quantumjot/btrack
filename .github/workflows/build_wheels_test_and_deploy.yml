@@ -56,6 +56,9 @@ jobs:
             name: artefacts
             path: btrack/libs
 
+      - run: ls -R
+        working-directory: btrack/libs
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
@@ -91,9 +94,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-
-      - run: ls -R
-        working-directory: btrack
 
       - name: Download artefacts
         uses: actions/download-artifact@v3

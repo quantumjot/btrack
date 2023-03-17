@@ -81,7 +81,7 @@ test-requires = [
     "pytest",
 ]
 linux.before-all = [
-    "yum install -y eigen3-dev",
+    "yum install -y eigen3-devel",
 ]
 macos.before-all = [
     "brew install eigen",

@@ -6,7 +6,6 @@ import platform
 import numpy as np
 
 from .btypes import PyTrackingInfo, PyTrackObject
-from .constants import BTRACK_PATH
 from .optimise import hypothesis
 
 # get the logger instance
@@ -91,7 +90,7 @@ def load_library(filename):
 
 def get_library():  # noqa: PLR0915
     """Loads and returns the btrack shared library."""
-    lib = load_library(os.path.join(BTRACK_PATH, "libs", "libtracker"))
+    lib = load_library("libtracker")
 
     # deal with constructors/destructors
     lib.new_interface.restype = ctypes.c_void_p

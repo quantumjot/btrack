@@ -29,9 +29,8 @@ jobs:
         with:
             name: artefacts
             path: |
-                **.DLL
-                **.dylib
-                **.so
+              btrack/libs/*
+            if-no-files-found: error
 
   test:
     needs: build_wheels

@@ -28,9 +28,7 @@ jobs:
         with:
             name: artefacts
             path: |
-              **.DLL
-              **.dylib
-              **.so
+              btrack/libs/*
             if-no-files-found: error
 
   test:
@@ -93,6 +91,9 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
+
+      - run: ls -R
+        working-directory: btrack
 
       - name: Download artefacts
         uses: actions/download-artifact@v3

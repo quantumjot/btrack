@@ -83,6 +83,9 @@ test-requires = [
     "dask",
     "pytest",
 ]
+linux.before-all = [
+    "yum install -y fontconfig",
+]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

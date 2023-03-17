@@ -14,7 +14,3 @@ fi
 echo "Compiling btrack from source..."
 make clean
 make
-
-# run the installation
-echo "Installing btrack python package..."
-pip install -e .

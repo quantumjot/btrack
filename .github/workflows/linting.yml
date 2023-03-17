@@ -1,4 +1,4 @@
-name: checks
+name: Linting
 
 on: [push, pull_request]
 

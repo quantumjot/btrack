@@ -1,0 +1,120 @@
+name: Build Wheels, Test & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - "**.rst"
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, windows-latest, ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build wheels
+        run: bash build.sh
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v2
+        with:
+            name: artefacts
+            path: |
+                **.DLL
+                **.dylib
+                **.so
+            if-no-files-found: error
+
+  test:
+    needs: build_wheels
+    name: ${{ matrix.platform }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.platform }}
+    strategy:
+      matrix:
+        # Run all supported Python versions on linux
+        python-version: ["3.8", "3.9", "3.10"]
+        platform: [ubuntu-latest]
+        # Include one windows and macos run
+        include:
+        - platform: macos-latest
+          python-version: "3.10"
+        - platform: windows-latest
+          python-version: "3.10"
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download artefacts
+        uses: actions/download-artifact@v3
+        with:
+            name: artefacts
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-update-conda: true
+          python-version: ${{ matrix.python-version }}
+
+      # note: if you need dependencies from conda, considering using
+      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
+      # and
+      # tox-conda: https://github.com/tox-dev/tox-conda
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "tox<4" tox-gh-actions tox-conda
+
+      - name: Test with tox
+        run: tox
+
+      - name: Coverage
+        uses: codecov/codecov-action@v2
+
+  deploy:
+    needs: test
+    runs-on: "ubuntu-latest"
+    if: github.repository == 'quantumjot/btrack' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Download artefacts
+        uses: actions/download-artifact@v3
+        with:
+            name: artefacts
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - name: Install build dependencies
+        run: python -m pip install build wheel
+
+      - name: Build distributions
+        shell: bash -l {0}
+        run: python -m build
+
+      - name: Publish package to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_PASSWORD }}

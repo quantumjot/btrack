@@ -79,10 +79,9 @@ def load_library(filename):
 
     if system == "Windows":
         os.add_dll_directory(os.path.join(BTRACK_PATH, "libs"))
-        full_lib_file = "libtracker.DLL"
-    else:
-        file_ext = {"Linux": ".so", "Darwin": ".dylib"}
-        full_lib_file = lib_file + file_ext[system]
+
+    file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".DLL"}
+    full_lib_file = lib_file + file_ext[system]
 
     try:
         lib = ctypes.cdll.LoadLibrary(full_lib_file)

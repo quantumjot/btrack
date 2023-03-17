@@ -18,6 +18,9 @@ jobs:
         platform: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
+      - name: TEST
+        run: uname
+
       - uses: actions/checkout@v3
 
       - name: Build wheels

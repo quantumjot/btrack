@@ -15,9 +15,9 @@ ifeq ($(UNAME), Darwin)
 endif
 ifeq ($(OS), Windows_NT)
 	# do something Windowsy
-	CXX = x86_64-w64-mingw32-g++
+	# CXX = x86_64-w64-mingw32-g++
 	EXT = DLL
-	XLDFLAGS = -static-libgcc -static-libstdc++
+	# XLDFLAGS = -static-libgcc -static-libstdc++
 endif
 
 NVCC = nvcc

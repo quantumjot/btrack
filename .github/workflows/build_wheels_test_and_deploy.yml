@@ -26,6 +26,8 @@ jobs:
 
       - name: Build wheels
         run: bash build.sh
+        env:
+          WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
 
       - name: Upload artefacts
         uses: actions/upload-artifact@v3

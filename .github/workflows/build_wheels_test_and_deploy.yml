@@ -33,7 +33,7 @@ jobs:
   #           if-no-files-found: error
 
     test:
-      needs: build_wheels
+      # needs: build_wheels
     # name: ${{ matrix.platform }} py${{ matrix.python-version }}
     # runs-on: ${{ matrix.platform }}
     # strategy:

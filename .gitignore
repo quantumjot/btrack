@@ -24,3 +24,6 @@ docs/api/*
 coverage.xml
 .envrc
 .hypothesis
+*.DLL
+*.dylib
+*.so

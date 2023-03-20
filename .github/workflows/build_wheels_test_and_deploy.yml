@@ -16,8 +16,8 @@ jobs:
     # strategy:
     #   matrix:
     #     platform: [macos-latest, windows-latest, ubuntu-latest]
-    name: Cross compile Windows on linux
-    runs-on: ubuntu-latest
+    name: Compile Windows
+    runs-on: windows-latest
 
     steps:
       - name: Install dependencies

@@ -1,24 +1,23 @@
 UNAME := $(shell uname)
 
 ifeq ($(UNAME), Linux)
-	ifeq ($(WINDOWS_CROSS_COMPILE),true)
-		# do something Windowsy
-		CXX = x86_64-w64-mingw32-g++
-		EXT	 = DLL
-		XLDFLAGS = -static-libgcc -static-libstdc++
-	else
-		# do something Linux #-fopenmp -static
-		CXX = g++
-		EXT = so
-		XLDFLAGS = -Wl,--no-undefined -Wl,--no-allow-shlib-undefined
-		#-L/usr/local/cuda/lib64 -lcuda -lcudart
-	endif
+	# do something Linux #-fopenmp -static
+	CXX = g++
+	EXT = so
+	XLDFLAGS = -Wl,--no-undefined -Wl,--no-allow-shlib-undefined
+	#-L/usr/local/cuda/lib64 -lcuda -lcudart
 endif
 ifeq ($(UNAME), Darwin)
 	# do something OSX
 	CXX = clang++ -arch x86_64 -arch arm64
 	EXT = dylib
 	XLD_FLAGS = -arch x86_64 -arch arm64
+endif
+ifeq ($(OS), Windows_NT)
+	# do something Windowsy
+	CXX = x86_64-w64-mingw32-g++
+	EXT	 = DLL
+	XLDFLAGS = -static-libgcc -static-libstdc++
 endif
 
 NVCC = nvcc

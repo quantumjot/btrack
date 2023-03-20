@@ -32,8 +32,8 @@ jobs:
   #             btrack/libs/*
   #           if-no-files-found: error
 
-  test:
-    needs: build_wheels
+    test:
+      needs: build_wheels
     # name: ${{ matrix.platform }} py${{ matrix.python-version }}
     # runs-on: ${{ matrix.platform }}
     # strategy:
@@ -48,43 +48,43 @@ jobs:
     #       python-version: "3.10"
     #     - platform: windows-latest
     #       python-version: "3.10"
-    runs-on: windows-latest
+      runs-on: windows-latest
 
-    steps:
-      - uses: actions/checkout@v3
+      steps:
+        - uses: actions/checkout@v3
 
-      # - name: Download artefacts
-      #   uses: actions/download-artifact@v3
-      #   with:
-      #       name: artefacts
-      #       path: btrack/libs
+        # - name: Download artefacts
+        #   uses: actions/download-artifact@v3
+        #   with:
+        #       name: artefacts
+        #       path: btrack/libs
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-          cache-dependency-path: "pyproject.toml"
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v4
+          with:
+            python-version: ${{ matrix.python-version }}
+            cache: "pip"
+            cache-dependency-path: "pyproject.toml"
 
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+        - uses: conda-incubator/setup-miniconda@v2
+          with:
+            auto-update-conda: true
+            python-version: ${{ matrix.python-version }}
 
-      # note: if you need dependencies from conda, considering using
-      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
-      # and
-      # tox-conda: https://github.com/tox-dev/tox-conda
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "tox<4" tox-gh-actions tox-conda
+        # note: if you need dependencies from conda, considering using
+        # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
+        # and
+        # tox-conda: https://github.com/tox-dev/tox-conda
+        - name: Install dependencies
+          run: |
+            python -m pip install --upgrade pip
+            python -m pip install "tox<4" tox-gh-actions tox-conda
 
-      - name: Test with tox
-        run: tox
+        - name: Test with tox
+          run: tox
 
-      - name: Coverage
-        uses: codecov/codecov-action@v2
+        - name: Coverage
+          uses: codecov/codecov-action@v2
 
     # deploy:
     #   needs: test

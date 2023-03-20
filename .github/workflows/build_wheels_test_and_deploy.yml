@@ -26,7 +26,9 @@ jobs:
     steps:
       - name: Install dependencies
         run: sudo apt-get install -y mingw-w64
-        if: matrix.os == 'ubuntu-latest' && matrix.windows_cross_compile == true
+        if: |
+          matrix.os == 'ubuntu-latest'
+          && matrix.windows_cross_compile == true
 
       - uses: actions/checkout@v3
 
@@ -98,7 +100,10 @@ jobs:
   deploy:
     needs: test
     runs-on: "ubuntu-latest"
-    if: github.repository == 'quantumjot/btrack' && github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    if: |
+      github.repository == 'quantumjot/btrack'
+      && github.event_name == 'push'
+      && startsWith(github.ref, 'refs/tags')
 
     steps:
       - name: Checkout source

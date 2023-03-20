@@ -43,7 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
-        os: [macos-linux, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
         # Include one windows and macos run
         include:
           - os: macos-latest

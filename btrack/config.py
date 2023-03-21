@@ -78,6 +78,7 @@ class TrackerConfig(BaseModel):
     hypothesis_model: Optional[HypothesisModel] = None
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
+    store_candidate_graph: bool = False
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS

@@ -17,6 +17,7 @@
 #ifndef _DEFS_H_INCLUDED_
 #define _DEFS_H_INCLUDED_
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 

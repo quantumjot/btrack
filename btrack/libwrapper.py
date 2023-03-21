@@ -117,6 +117,10 @@ def get_library():  # noqa: PLR0915
     lib.set_update_features.restype = None
     lib.set_update_features.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # set the tracker to store the candidate graph
+    lib.set_store_candidate_graph.restype = None
+    lib.set_store_candidate_graph.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+
     # set the motion model
     lib.motion.restype = None
     lib.motion.argtypes = [

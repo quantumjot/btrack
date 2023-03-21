@@ -18,15 +18,13 @@
 
 #include "manager.h"
 
-bool compare_hypothesis_time(
-    const Hypothesis &hypothesis_i,
-    const Hypothesis &hypothesis_j) {
+bool compare_hypothesis_time(const Hypothesis &hypothesis_i,
+                             const Hypothesis &hypothesis_j) {
     return hypothesis_i.trk_ID->track[0]->t < hypothesis_j.trk_ID->track[0]->t;
 }
 
-bool compare_track_start_time(
-    const TrackletPtr &trk_i,
-    const TrackletPtr &trk_j) {
+bool compare_track_start_time(const TrackletPtr &trk_i,
+                              const TrackletPtr &trk_j) {
     return trk_i->track[0]->t < trk_j->track[0]->t;
 }
 
@@ -48,8 +46,7 @@ void join_tracks(const TrackletPtr &parent_trk, const TrackletPtr &join_trk) {
     parent_trk->fate = join_trk->fate;
 
     // set the children
-    if (join_trk->child_one != 0 &&
-        join_trk->child_two != 0) {
+    if (join_trk->child_one != 0 && join_trk->child_two != 0) {
         if (DEBUG) {
             std::cout << parent_trk->ID << " -> [";
             std::cout << join_trk->child_one << ",";
@@ -98,12 +95,25 @@ void branch_tracks(const BranchHypothesis &branch) {
     parent_trk->fate = TYPE_Pdivn;
 }
 
+void TrackManager::set_store_candidate_graph(const bool a_store_graph) {
+    m_store_candidate_graph = a_store_graph;
+    m_graph_edges.clear();
+    if (a_store_graph) {
+        m_graph_edges.reserve(RESERVE_GRAPH_EDGES);
+    }
+}
+
 // add a graph edge
-void TrackManager::push_edge(
-    const TrackObjectPtr &a_node_src,
-    const TrackObjectPtr &a_node_dst,
-    const float a_score,
-    const unsigned int a_edge_type) {
+void TrackManager::push_edge(const TrackObjectPtr &a_node_src,
+                             const TrackObjectPtr &a_node_dst,
+                             const float a_score,
+                             const unsigned int a_edge_type) {
+    // if we're not storing them, then pass
+    if (!m_store_candidate_graph) {
+        return;
+    }
+
+    // create and store the edge objects
     PyGraphEdge edge;
     edge.source = a_node_src->ID;
     edge.target = a_node_dst->ID;
@@ -115,19 +125,16 @@ void TrackManager::push_edge(
 PyGraphEdge TrackManager::get_edge(const size_t idx) const {
     // TODO: we may want to index beyond the end of the edges stored in the
     // `m_graph_edges` vector, to include those edges built by the hypothesis
-    // engine. To do so, we need to index into the hypotheses for branches, links
-    // and merges.
+    // engine. To do so, we need to index into the hypotheses for branches,
+    // links and merges.
 
     return m_graph_edges[idx];
 }
 
-size_t TrackManager::num_edges(void) const {
-    return m_graph_edges.size();
-}
+size_t TrackManager::num_edges(void) const { return m_graph_edges.size(); }
 
 // split a track to remove forbidden transitions
-void TrackManager::split(const TrackletPtr &a_trk,
-                         const unsigned int a_label_i,
+void TrackManager::split(const TrackletPtr &a_trk, const unsigned int a_label_i,
                          const unsigned int a_label_j) {
     // if this is already flagged to be removed, return
     if (a_trk->to_remove()) return;
@@ -151,7 +158,8 @@ void TrackManager::split(const TrackletPtr &a_trk,
     if (split_indices.empty()) return;
 
     // TODO(arl): actually split the tracks!
-    // std::cout << "Residual splits need to be performed -> " << a_trk->ID << std::endl;
+    // std::cout << "Residual splits need to be performed -> " << a_trk->ID <<
+    // std::endl;
 }
 
 TrackletPtr TrackManager::get_track_by_ID(const size_t a_ID) const {
@@ -190,36 +198,42 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
     for (size_t i = 0; i < n_hypotheses; i++) {
         Hypothesis h = a_hypotheses[i];
 
-        // set the fate of each track as the 'accepted' hypothesis. these will be
-        // overwritten in the link and division events
+        // set the fate of each track as the 'accepted' hypothesis. these will
+        // be overwritten in the link and division events
         h.trk_ID->fate = h.hypothesis;
 
         switch (h.hypothesis) {
             // linkage
             case TYPE_Plink:
                 if (DEBUG) {
-                    std::cout << "P_link: " << h.trk_ID->ID << "->" << h.trk_link_ID->ID;
-                    std::cout << " [Score: " << h.probability << "]" << std::endl;
+                    std::cout << "P_link: " << h.trk_ID->ID << "->"
+                              << h.trk_link_ID->ID;
+                    std::cout << " [Score: " << h.probability << "]"
+                              << std::endl;
                 }
 
                 // push a link hypothesis
-                m_links.push(h.trk_ID->ID, JoinHypothesis(h.trk_ID, h.trk_link_ID));
+                m_links.push(h.trk_ID->ID,
+                             JoinHypothesis(h.trk_ID, h.trk_link_ID));
                 break;
 
             // branch
             case TYPE_Pdivn:
                 if (DEBUG) {
-                    std::cout << "P_branch: " << h.trk_ID->ID << "->" << h.trk_child_one_ID->ID;
-                    std::cout << " [Score: " << h.probability << "]" << std::endl;
-                    std::cout << "P_branch: " << h.trk_ID->ID << "->" << h.trk_child_two_ID->ID;
-                    std::cout << " [Score: " << h.probability << "]" << std::endl;
+                    std::cout << "P_branch: " << h.trk_ID->ID << "->"
+                              << h.trk_child_one_ID->ID;
+                    std::cout << " [Score: " << h.probability << "]"
+                              << std::endl;
+                    std::cout << "P_branch: " << h.trk_ID->ID << "->"
+                              << h.trk_child_two_ID->ID;
+                    std::cout << " [Score: " << h.probability << "]"
+                              << std::endl;
                 }
 
                 // push a branch hypothesis
-                m_branches.push(h.trk_ID->ID, BranchHypothesis(
-                                                  h.trk_ID,
-                                                  h.trk_child_one_ID,
-                                                  h.trk_child_two_ID));
+                m_branches.push(h.trk_ID->ID,
+                                BranchHypothesis(h.trk_ID, h.trk_child_one_ID,
+                                                 h.trk_child_two_ID));
                 break;
 
             case TYPE_Pmrge:
@@ -264,7 +278,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
 
             // merge the tracks
             if (DEBUG) std::cout << "Merge: [" << parent_i << ",";
-            join_tracks(m_links[parent_i][0].first, m_links[parent_i][0].second);
+            join_tracks(m_links[parent_i][0].first,
+                        m_links[parent_i][0].second);
 
             // mark the child as used
             used.emplace(child_j);
@@ -272,7 +287,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
             // traverse the chain
             while (!m_links[child_j].empty()) {
                 // merge the next track
-                join_tracks(m_links[parent_i][0].first, m_links[child_j][0].second);
+                join_tracks(m_links[parent_i][0].first,
+                            m_links[child_j][0].second);
 
                 // iterate
                 child_j = m_links[child_j][0].second->ID;
@@ -285,7 +301,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
     // // Sanity check, have we used all the possible joins?
     // for (size_t parent_i=0; parent_i<m_links.size(); parent_i++) {
     //   if (used.count(parent_i) == 0) {
-    //     std::cout << "Parent track: " << m_links[parent_i][0].first << "not used!" << std::endl;
+    //     std::cout << "Parent track: " << m_links[parent_i][0].first << "not
+    //     used!" << std::endl;
     //   }
     // }
 
@@ -301,9 +318,10 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
     if (DEBUG) std::cout << "Tracks before merge: " << m_tracks.size();
 
     // remove the tracks if labelled to_remove
-    m_tracks.erase(std::remove_if(m_tracks.begin(), m_tracks.end(),
-                                  [](const TrackletPtr &t) { return t->to_remove(); }),
-                   m_tracks.end());
+    m_tracks.erase(
+        std::remove_if(m_tracks.begin(), m_tracks.end(),
+                       [](const TrackletPtr &t) { return t->to_remove(); }),
+        m_tracks.end());
 
     // give the user some more output
     if (DEBUG) std::cout << ", now " << m_tracks.size() << std::endl;
@@ -313,8 +331,8 @@ void TrackManager::merge(const std::vector<Hypothesis> &a_hypotheses) {
         if (m_tracks[i]->has_children()) {
             unsigned int parent_ID = m_tracks[i]->ID;
 
-            // get pointers to the children and do a reverse look-up to check the
-            // parent ID matches, if not, rename it
+            // get pointers to the children and do a reverse look-up to check
+            // the parent ID matches, if not, rename it
             TrackletPtr child_i = get_track_by_ID(m_tracks[i]->child_one);
             TrackletPtr child_j = get_track_by_ID(m_tracks[i]->child_two);
 
@@ -356,10 +374,12 @@ void TrackManager::build_trees(void) {
             // create a new node and associate the track with it
             LineageTreeNode root_node = LineageTreeNode(m_tracks[i]);
 
-            // since we know this is a root node, set the generational depth to zero
+            // since we know this is a root node, set the generational depth to
+            // zero
             root_node.m_depth = 0;
 
-            // check to see whether the track has children, if so, traverse the tree
+            // check to see whether the track has children, if so, traverse the
+            // tree
             if (root_node.has_children()) {
                 // start a queue
                 std::vector<LineageTreeNode> queue;
@@ -372,13 +392,17 @@ void TrackManager::build_trees(void) {
 
                     if (node.has_children()) {
                         // get the tracks by ID
-                        TrackletPtr track_left = get_track_by_ID(node.m_track->child_one);
-                        TrackletPtr track_right = get_track_by_ID(node.m_track->child_two);
+                        TrackletPtr track_left =
+                            get_track_by_ID(node.m_track->child_one);
+                        TrackletPtr track_right =
+                            get_track_by_ID(node.m_track->child_two);
 
                         LineageTreeNode left_node = LineageTreeNode(track_left);
-                        LineageTreeNode right_node = LineageTreeNode(track_right);
+                        LineageTreeNode right_node =
+                            LineageTreeNode(track_right);
 
-                        // set the generational depth as one greater than the parent node
+                        // set the generational depth as one greater than the
+                        // parent node
                         unsigned int generation_of_children = node.m_depth + 1;
                         left_node.m_depth = generation_of_children;
                         right_node.m_depth = generation_of_children;

@@ -21,19 +21,12 @@
 #include <cmath>
 #include <tuple>
 
-namespace BayesianUpdateFunctions
-{
-  std::tuple<double, double> safe_bayesian_update(
-    double prior_assign,
-    double prob_assign,
-    double prob_not_assign
-  );
+namespace BayesianUpdateFunctions {
+std::tuple<double, double> safe_bayesian_update(double prior_assign,
+                                                double prob_assign,
+                                                double prob_not_assign);
 
-  double safe_bayesian_update_simple(
-    double prior,
-    double likelihood
-  );
-}
-
+double safe_bayesian_update_simple(double prior, double likelihood);
+}  // namespace BayesianUpdateFunctions
 
 #endif

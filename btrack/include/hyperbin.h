@@ -18,34 +18,30 @@
 #define _HASH_H_INCLUDED_
 
 // #include <python2.7/Python.h>
-#include <vector>
-#include <iostream>
-#include <map>
 #include <cmath>
+#include <iostream>
 #include <limits>
+#include <map>
+#include <vector>
 
-#include "types.h"
 #include "tracklet.h"
-
+#include "types.h"
 
 // Hash index for use with the hash cube
 struct HashIndex {
-  int x = 0;
-  int y = 0;
-  int z = 0;
-  int n = 0;
+    int x = 0;
+    int y = 0;
+    int z = 0;
+    int n = 0;
 
-  // comparison operator for hash map, strict weak ordering
-  bool operator<(const HashIndex &o) const {
-    if (x != o.x) return x < o.x;
-    if (y != o.y) return y < o.y;
-    if (z != o.z) return z < o.z;
-    return n < o.n;
-  }
+    // comparison operator for hash map, strict weak ordering
+    bool operator<(const HashIndex &o) const {
+        if (x != o.x) return x < o.x;
+        if (y != o.y) return y < o.y;
+        if (z != o.z) return z < o.z;
+        return n < o.n;
+    }
 };
-
-
-
 
 // A 4D hash (hyper) cube object.
 //
@@ -55,177 +51,150 @@ struct HashIndex {
 // functionality
 //
 //
-template <typename T> class HashBin
-{
-public:
+template <typename T>
+class HashBin {
+   public:
+    // constructors and desctructors
+    HashBin();
+    ~HashBin();
 
-  // constructors and desctructors
-  HashBin();
-  ~HashBin();
+    // set up a hashbin with specific xyz and n sized bins
+    HashBin(const unsigned int bin_xyz, const unsigned int bin_n);
 
-  // set up a hashbin with specific xyz and n sized bins
-  HashBin(const unsigned int bin_xyz,
-          const unsigned int bin_n);
+    // return a 4D index into the hypercube using cartesian coordinates (and
+    // time)
+    HashIndex hash_index(const float x, const float y, const float z,
+                         const float n) const;
 
-  // return a 4D index into the hypercube using cartesian coordinates (and time)
-  HashIndex hash_index(const float x,
-                       const float y,
-                       const float z,
-                       const float n) const;
+    // get the contents of a bin
+    std::vector<T> get_contents(const HashIndex a_idx);
 
-  // get the contents of a bin
-  std::vector<T> get_contents(const HashIndex a_idx);
+    // private:
+    //  bin size x,y,z,t
+    float m_bin_size[4] = {0., 0., 0., 0.};
 
-//private:
-  // bin size x,y,z,t
-  float m_bin_size[4] = {0., 0., 0., 0.};
-
-  // a map to the tracks found in a certain bin
-  std::map<HashIndex, std::vector<T>> m_cube;
-
+    // a map to the tracks found in a certain bin
+    std::map<HashIndex, std::vector<T>> m_cube;
 };
-
-
 
 // This should be the parent class of the HypercubeBin and ObjectBin
-template <typename T> class BinMap
-{
-public:
-  BinMap();
-  BinMap(const unsigned int bin_xyz, const unsigned int bin_n) = 0;
-  ~BinMap();
+template <typename T>
+class BinMap {
+   public:
+    BinMap();
+    BinMap(const unsigned int bin_xyz, const unsigned int bin_n) = 0;
+    ~BinMap();
 
-  // add a generic object
-  void add_object(T a_obj);
+    // add a generic object
+    void add_object(T a_obj);
 
-  // return a 4D index into the hypercube using an object
-  HashIndex hash_index(TrackObjectPtr a_obj) const {
-    return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
-  };
+    // return a 4D index into the hypercube using an object
+    HashIndex hash_index(TrackObjectPtr a_obj) const {
+        return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
+    };
 
-  // return a 4D index into the hypercube using cartesian coordinates (and time)
-  HashIndex hash_index( const float x,
-                        const float y,
-                        const float z,
-                        const float n ) const;
+    // return a 4D index into the hypercube using cartesian coordinates (and
+    // time)
+    HashIndex hash_index(const float x, const float y, const float z,
+                         const float n) const;
 
-  private:
+   private:
     //
-  protected:
+   protected:
     //
 };
-
-
-
-
-
-
-
-
 
 // A 4D hash (hyper) cube object.
 //
 // Essentially a way of binsorting trajectory data for easy lookup,
 // thus preventing excessive searching over non-local trajectories.
 //
-class HypercubeBin
-{
-public:
+class HypercubeBin {
+   public:
+    // constructors and destructors
+    HypercubeBin();
+    HypercubeBin(const unsigned int bin_xyz, const unsigned int bin_n);
+    ~HypercubeBin();
 
-  // constructors and destructors
-  HypercubeBin();
-  HypercubeBin(const unsigned int bin_xyz, const unsigned int bin_n);
-  ~HypercubeBin();
+    // is the hypercube empty?
+    bool empty() const { return m_cube.empty(); };
 
-  // is the hypercube empty?
-  bool empty() const { return m_cube.empty(); };
+    // clear the map
+    void clear() { m_cube.clear(); };
 
-  // clear the map
-  void clear() { m_cube.clear(); };
+    // return a 4D index into the hypercube using the object at the start or
+    // end of an exisiting track
+    HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
 
-  // return a 4D index into the hypercube using the object at the start or
-  // end of an exisiting track
-  HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
+    // return a 4D index into the hypercube using an object
+    HashIndex hash_index(TrackObjectPtr a_obj) const {
+        return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
+    };
 
-  // return a 4D index into the hypercube using an object
-  HashIndex hash_index(TrackObjectPtr a_obj) const {
-    return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
-  };
+    // return a 4D index into the hypercube using cartesian coordinates (and
+    // time)
+    HashIndex hash_index(const float x, const float y, const float z,
+                         const float n) const;
 
-  // return a 4D index into the hypercube using cartesian coordinates (and time)
-  HashIndex hash_index( const float x,
-                        const float y,
-                        const float z,
-                        const float n ) const;
+    // bin sort a track in the hypercube, default behaviour is to add the tracks
+    // so that the bin stores the first object of the track. Use the full
+    // version with the a_start flag (set to false) to store the last known
+    // position of the track during lookup
+    void add_tracklet(TrackletPtr a_trk);
+    void add_tracklet(TrackletPtr a_trk, const bool a_start);
 
-  // bin sort a track in the hypercube, default behaviour is to add the tracks
-  // so that the bin stores the first object of the track. Use the full version
-  // with the a_start flag (set to false) to store the last known position of
-  // the track during lookup
-  void add_tracklet(TrackletPtr a_trk);
-  void add_tracklet(TrackletPtr a_trk, const bool a_start);
+    // return tracks found in a bin
+    std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
+    std::vector<TrackletPtr> get(TrackObjectPtr a_obj);
 
-  // return tracks found in a bin
-  std::vector<TrackletPtr> get(TrackletPtr a_trk, const bool a_start);
-  std::vector<TrackletPtr> get(TrackObjectPtr a_obj);
+   private:
+    // bin size x,y,z,t
+    float m_bin_size[4] = {0., 0., 0., 0.};
 
-private:
-  // bin size x,y,z,t
-  float m_bin_size[4] = {0., 0., 0., 0.};
-
-  // a map to the tracks found in a certain bin
-  std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
+    // a map to the tracks found in a certain bin
+    std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
 };
-
-
 
 // a type to maintain the object index, object_ptr pair
 typedef std::pair<TrackObjectPtr, unsigned int> TrackObjectPtr_and_Index;
 
+class ObjectBin {
+   public:
+    // constructors and destructors
+    ObjectBin();
+    ObjectBin(const unsigned int bin_xyz, const unsigned int bin_n);
+    ~ObjectBin();
 
+    // return a 4D index into the hypercube using an object
+    HashIndex hash_index(TrackObjectPtr a_obj) const {
+        return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
+    };
 
-class ObjectBin
-{
-public:
-  // constructors and destructors
-  ObjectBin();
-  ObjectBin(const unsigned int bin_xyz, const unsigned int bin_n);
-  ~ObjectBin();
+    // return a 4D index into the hypercube using the object at the start or
+    // end of an exisiting track
+    HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
 
-  // return a 4D index into the hypercube using an object
-  HashIndex hash_index(TrackObjectPtr a_obj) const {
-    return hash_index(a_obj->x, a_obj->y, a_obj->z, a_obj->t);
-  };
+    // return a 4D index into the hypercube using cartesian coordinates (and
+    // time)
+    HashIndex hash_index(const float x, const float y, const float z,
+                         const float n) const;
 
-  // return a 4D index into the hypercube using the object at the start or
-  // end of an exisiting track
-  HashIndex hash_index(TrackletPtr a_trk, const bool a_start) const;
+    // add an object
+    void add_object(TrackObjectPtr a_obj);
 
-  // return a 4D index into the hypercube using cartesian coordinates (and time)
-  HashIndex hash_index( const float x,
-                        const float y,
-                        const float z,
-                        const float n ) const;
+    // return tracks found in a bin
+    std::vector<TrackObjectPtr_and_Index> get(TrackletPtr a_trk,
+                                              const bool a_start);
 
-  // add an object
-  void add_object(TrackObjectPtr a_obj);
+   private:
+    // bin size x,y,z,t
+    float m_bin_size[4] = {0., 0., 0., 0.};
 
-  // return tracks found in a bin
-  std::vector<TrackObjectPtr_and_Index> get(TrackletPtr a_trk,
-                                            const bool a_start);
+    // number of objects
+    unsigned int n_objects = 0;
 
-private:
-  // bin size x,y,z,t
-  float m_bin_size[4] = {0., 0., 0., 0.};
-
-  // number of objects
-  unsigned int n_objects = 0;
-
-  // a map to the tracks found in a certain bin
-  std::map<HashIndex, std::vector<TrackObjectPtr_and_Index>> m_cube;
+    // a map to the tracks found in a certain bin
+    std::map<HashIndex, std::vector<TrackObjectPtr_and_Index>> m_cube;
 };
-
-
-
 
 #endif

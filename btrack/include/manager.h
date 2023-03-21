@@ -183,7 +183,7 @@ class TrackManager {
     void split(const TrackletPtr &a_trk, const unsigned int a_label_i,
                const unsigned int a_label_j);
 
-      private:
+   private:
     // // track maintenance
     // void renumber();
     // void purge();

@@ -29,7 +29,8 @@ void write_belief_matrix_to_CSV(std::string a_filename,
 }
 
 // set up the tracker using an existing track manager
-BayesianTracker::BayesianTracker(const bool verbose, const unsigned int update_mode,
+BayesianTracker::BayesianTracker(const bool verbose,
+                                 const unsigned int update_mode,
                                  TrackManager* a_manager) {
     // set up verbosity
     this->verbose = verbose;
@@ -68,7 +69,8 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
     } else {
         // throw std::runtime_error("CUDA update method not supported");
 
-        std::cout << "CUDA update method not currently supported, reverting to EXACT.";
+        std::cout << "CUDA update method not currently supported, reverting to "
+                     "EXACT.";
         std::cout << std::endl;
 
         m_cost_fn = &BayesianTracker::cost_EXACT;
@@ -78,7 +80,8 @@ void BayesianTracker::set_update_mode(const unsigned int update_mode) {
 unsigned int BayesianTracker::set_motion_model(
     const unsigned int measurements, const unsigned int states, double* A_raw,
     double* H_raw, double* P_raw, double* Q_raw, double* R_raw, const double dt,
-    const double accuracy, const unsigned int max_lost, const double prob_not_assign) {
+    const double accuracy, const unsigned int max_lost,
+    const double prob_not_assign) {
     // do some error checking
     if (prob_not_assign <= 0. || prob_not_assign >= 1.)
         return ERROR_prob_not_assign_out_of_range;
@@ -97,14 +100,16 @@ unsigned int BayesianTracker::set_motion_model(
         std::cout << "PROB_NOT_ASSIGN: " << this->prob_not_assign << std::endl;
     }
 
-    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
+                          Eigen::RowMajor>
         RowMajMat;
 
     // map the arrays to Eigen matrices
     Eigen::MatrixXd H = Eigen::Map<RowMajMat>(H_raw, measurements, states);
     Eigen::MatrixXd Q = Eigen::Map<RowMajMat>(Q_raw, states, states);
     Eigen::MatrixXd P = Eigen::Map<RowMajMat>(P_raw, states, states);
-    Eigen::MatrixXd R = Eigen::Map<RowMajMat>(R_raw, measurements, measurements);
+    Eigen::MatrixXd R =
+        Eigen::Map<RowMajMat>(R_raw, measurements, measurements);
     Eigen::MatrixXd A = Eigen::Map<RowMajMat>(A_raw, states, states);
 
     // set up a new motion model
@@ -155,8 +160,10 @@ unsigned int BayesianTracker::initialise() {
     if (initialised) return SUCCESS;
 
     if (DEBUG) {
-        std::cout << "Using motion features: " << use_motion_features() << std::endl;
-        std::cout << "Using visual features: " << use_visual_features() << std::endl;
+        std::cout << "Using motion features: " << use_motion_features()
+                  << std::endl;
+        std::cout << "Using visual features: " << use_visual_features()
+                  << std::endl;
     }
 
     // check to make sure that we've got some objects to track
@@ -285,7 +292,8 @@ void BayesianTracker::step(const unsigned int steps) {
 
         // if we have an empty frame, append dummies to everthing and continue
         if (new_objects.empty()) {
-            // std::cout << "Frame " << current_frame << " is empty..." << std::endl;
+            // std::cout << "Frame " << current_frame << " is empty..." <<
+            // std::endl;
             for (size_t i = 0; i < n_active; i++) {
                 active[i]->append_dummy(use_motion_features());
             }
@@ -306,7 +314,8 @@ void BayesianTracker::step(const unsigned int steps) {
         unsigned int update_iteration = 0;
 
         // now do the Bayesian updates using the correct mode
-        // use an implicit function pointer call to the appropriate cost function
+        // use an implicit function pointer call to the appropriate cost
+        // function
         if (use_motion_features()) {
             m_update_fn = &BayesianTracker::prob_update_motion;
             (this->*m_cost_fn)(belief, n_active, n_obs,
@@ -324,7 +333,8 @@ void BayesianTracker::step(const unsigned int steps) {
         // write out belief matrix here
         if (WRITE_BELIEF_MATRIX) {
             std::stringstream belief_filename;
-            belief_filename << DEBUG_FILEPATH << "belief_" << current_frame << ".csv";
+            belief_filename << DEBUG_FILEPATH << "belief_" << current_frame
+                            << ".csv";
             write_belief_matrix_to_CSV(belief_filename.str(), belief);
         }
 
@@ -342,11 +352,12 @@ void BayesianTracker::step(const unsigned int steps) {
                 double prob = prob_assign_per_obj.maxCoeff(&best_candidate);
                 if (int(best_candidate) == n_obs) continue;
 
-                // note that this doesn't store an edge to `lost`, but we can infer it
-                // as 1 - sum(scores) for each association
+                // note that this doesn't store an edge to `lost`, but we can
+                // infer it as 1 - sum(scores) for each association
                 for (size_t obj = 0; obj < n_obs; obj++) {
-                    manager->push_edge(active[trk]->track.back(), new_objects[obj],
-                                       prob_assign_per_obj[obj], GRAPH_EDGE_link);
+                    manager->push_edge(
+                        active[trk]->track.back(), new_objects[obj],
+                        prob_assign_per_obj[obj], GRAPH_EDGE_link);
                 }
             }
         }
@@ -371,7 +382,8 @@ void BayesianTracker::step(const unsigned int steps) {
 }
 
 bool BayesianTracker::update_active() {
-    // TODO: MAKE INTERMEDIATE LIST OF TRACKS TO MINIMISE LOOPING OVER EVERYTHING
+    // TODO: MAKE INTERMEDIATE LIST OF TRACKS TO MINIMISE LOOPING OVER
+    // EVERYTHING
 
     // clear the active list
     active.clear();
@@ -405,7 +417,8 @@ void BayesianTracker::debug_output(const unsigned int frm) const {
     // std::cout << max_lost << " frames. Removing..." << std::endl;
     // std::cout << " + Started " << tracks.size()-active.size();
     // std::cout << " new tracklets..." << std::endl;
-    // std::cout << " ~ Found " << num_conflicts << " conflicts..." << std::endl;
+    // std::cout << " ~ Found " << num_conflicts << " conflicts..." <<
+    // std::endl;
 }
 
 double BayesianTracker::prob_update_motion(const TrackletPtr& trk,
@@ -481,17 +494,19 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
         // loop through each candidate object
         for (size_t obj = 0; obj != n_objects; obj++) {
             // call the assignment function
-            double prob_assign = (this->*m_update_fn)(active[trk], new_objects[obj]);
+            double prob_assign =
+                (this->*m_update_fn)(active[trk], new_objects[obj]);
 
             // now do the bayesian updates
             prior_assign = v_posterior(obj);
 
             std::tie(safe_update, posterior) =
-                BayesianUpdateFunctions::safe_bayesian_update(prior_assign, prob_assign,
-                                                              prob_not_assign);
+                BayesianUpdateFunctions::safe_bayesian_update(
+                    prior_assign, prob_assign, prob_not_assign);
 
             v_update.fill(safe_update);
-            v_update(obj) = 1.;  // this means the posterior at obj will not be updated?
+            v_update(obj) =
+                1.;  // this means the posterior at obj will not be updated?
 
             // do the update
             v_posterior = v_posterior.array() * v_update.array();
@@ -510,7 +525,8 @@ void BayesianTracker::cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief,
 
 // make the cost matrix of all possible linkages
 void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
-                                       const size_t n_tracks, const size_t n_objects,
+                                       const size_t n_tracks,
+                                       const size_t n_objects,
                                        const bool use_uniform_prior) {
     // start a timer
     std::clock_t t_update_start = std::clock();
@@ -550,8 +566,8 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
         }
 
         // TODO(arl):
-        // now that we know which local updates are to be made, approximate all of
-        // the updates that we would have made, set the prior probabilities
+        // now that we know which local updates are to be made, approximate all
+        // of the updates that we would have made, set the prior probabilities
         //
         // calculate the local uniform prior for only those objects that we have
         // selected the local objects
@@ -576,8 +592,8 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
             prior_assign = v_posterior(local_objects[obj].second);
 
             std::tie(safe_update, posterior) =
-                BayesianUpdateFunctions::safe_bayesian_update(prior_assign, prob_assign,
-                                                              prob_not_assign);
+                BayesianUpdateFunctions::safe_bayesian_update(
+                    prior_assign, prob_assign, prob_not_assign);
 
             v_update.fill(safe_update);
 
@@ -602,8 +618,8 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
 }
 
 // make the cost matrix of all possible linkages
-void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
-                           const size_t n_objects) {
+void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,
+                           const size_t n_tracks, const size_t n_objects) {
     // start a timer
     std::clock_t t_update_start = std::clock();
 
@@ -614,7 +630,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
     }
 
     // make a track map
-    HypothesisMap<LinkHypothesis> map = HypothesisMap<LinkHypothesis>(n_objects);
+    HypothesisMap<LinkHypothesis> map =
+        HypothesisMap<LinkHypothesis>(n_objects);
 
     for (size_t trk = 0; trk < n_tracks; trk++) {
         // get the object with the best match for this track...
@@ -626,8 +643,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
             prob = 0.0;
         }
 
-        // since we're using zero-indexing, n_objects is equivalent to the index of
-        // the last object + 1, i.e. the column for the lost hypothesis...
+        // since we're using zero-indexing, n_objects is equivalent to the index
+        // of the last object + 1, i.e. the column for the lost hypothesis...
         if (int(best_object) != int(n_objects)) {
             // push this putative linkage to the map
             map.push(best_object, LinkHypothesis(trk, prob));
@@ -656,12 +673,14 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
 
             if (not_used.count(trk) < 1) {
                 // TODO(arl): make this error more useful
-                std::cout << "ERROR: Exhausted potential linkages." << std::endl;
+                std::cout << "ERROR: Exhausted potential linkages."
+                          << std::endl;
                 continue;
             }
 
             // make sure that we only make links that are possible
-            if (euclidean_dist(active[trk], new_objects[obj]) > max_search_radius &&
+            if (euclidean_dist(active[trk], new_objects[obj]) >
+                    max_search_radius &&
                 CLIP_MAXIMUM_LINKAGE_DISTANCE) {
                 continue;
             }
@@ -677,8 +696,8 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
 
         } else if (n_links < 1) {
             // this object has no matches, add a new tracklet
-            TrackletPtr trk = std::make_shared<Tracklet>(get_new_ID(), new_objects[obj],
-                                                         max_lost, this->motion_model);
+            TrackletPtr trk = std::make_shared<Tracklet>(
+                get_new_ID(), new_objects[obj], max_lost, this->motion_model);
             // tracks.push_back( trk );
             manager->push_track(trk);
 
@@ -698,12 +717,14 @@ void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tr
 
             if (not_used.count(trk) < 1) {
                 // TODO(arl): make this error more useful
-                std::cout << "ERROR: Exhausted potential linkages." << std::endl;
+                std::cout << "ERROR: Exhausted potential linkages."
+                          << std::endl;
                 continue;
             }
 
             // make sure that we only make links that are possible
-            if (euclidean_dist(active[trk], new_objects[obj]) > max_search_radius &&
+            if (euclidean_dist(active[trk], new_objects[obj]) >
+                    max_search_radius &&
                 CLIP_MAXIMUM_LINKAGE_DISTANCE) {
                 continue;
             }

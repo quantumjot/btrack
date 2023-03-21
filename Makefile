@@ -4,7 +4,7 @@ ifeq ($(UNAME), Linux)
 	ifeq ($(WINDOWS_CROSS_COMPILE),true)
 		# do something Windowsy
 		CXX = x86_64-w64-mingw32-g++
-		EXT	 = DLL
+		EXT	= DLL
 		XLDFLAGS = -static-libgcc -static-libstdc++
 	else
 		# do something Linux #-fopenmp -static

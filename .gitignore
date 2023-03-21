@@ -1,11 +1,10 @@
 btrack/include/eigen
-btrack/__pycache__
-btrack/optimise/__pycache__
+__pycache__
 btrack/agents.py
 btrack/render_movie.py
 models/MDCK_*
 examples/napari.png
-examples/.ipynb_checkpoints
+*.ipynb_checkpoints
 models/test_config.json
 notebooks
 deprecated
@@ -25,3 +24,6 @@ docs/api/*
 coverage.xml
 .envrc
 .hypothesis
+*.DLL
+*.dylib
+*.so

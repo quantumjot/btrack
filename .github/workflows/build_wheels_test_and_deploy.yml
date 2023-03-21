@@ -12,8 +12,10 @@ on:
 jobs:
   build_wheels:
     name: |
-      Build wheels on ${{ matrix.os }} with
-      windows_cross_compile=${{ matrix.windows_cross_compile }}
+      Build wheels on ${{ matrix.os }}
+      {% if matrix.windows_cross_compile %}
+         with windows_cross_compile=${{ matrix.windows_cross_compile }}
+      {% endif %}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:

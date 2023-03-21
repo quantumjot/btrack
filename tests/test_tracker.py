@@ -1,6 +1,7 @@
 import json
 
 import numpy as np
+import pytest
 
 from ._utils import (
     TEST_DATA_PATH,
@@ -94,3 +95,22 @@ def test_tracker_frames():
     assert len(tracks) == 1
     track = tracks[0]
     np.testing.assert_equal(track.t, objects["t"])
+
+
+@pytest.mark.parametrize("store_graph", [False, True])
+def test_tracker_candidate_graph(test_real_objects, store_graph):
+    """Check that a candidate graph is returned if we set the flag to store it."""
+    tracker = full_tracker_example(
+        test_real_objects,
+        store_candidate_graph=store_graph,
+    )
+    # tracker.store_candidate_graph = True
+    assert tracker.store_candidate_graph == store_graph
+
+    edges = tracker.candidate_graph_edges()
+
+    # graph should contain edges
+    if not store_graph:
+        assert edges, f"Found {len(edges)} edges in candidate graph."
+    else:
+        assert not edges, f"Found {len(edges)} edges in candidate graph."

@@ -1,0 +1,6 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        # allow a small drop due to flaky tests

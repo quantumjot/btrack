@@ -26,6 +26,7 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <filesystem>
 
 #include "bayes.h"
 #include "defs.h"
@@ -263,6 +264,9 @@ class BayesianTracker : public UpdateFeatures {
 
     // set up a structure for the statistics
     PyTrackInfo statistics;
+
+    // member variable to store an output path for debugging
+    std::filesystem::path m_debug_filepath;
 };
 
 // utils to write out belief matrix to CSV files

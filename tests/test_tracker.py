@@ -104,13 +104,10 @@ def test_tracker_candidate_graph(test_real_objects, store_graph):
         test_real_objects,
         store_candidate_graph=store_graph,
     )
-    # tracker.store_candidate_graph = True
     assert tracker.store_candidate_graph == store_graph
-
     edges = tracker.candidate_graph_edges()
 
     # graph should contain edges
-    if store_graph:
-        assert edges, f"Found {len(edges)} edges in candidate graph."
-    else:
-        assert not edges, f"Found {len(edges)} edges in candidate graph."
+    assert (
+        bool(edges) == store_graph
+    ), f"Found {len(edges)} edges in candidate graph."

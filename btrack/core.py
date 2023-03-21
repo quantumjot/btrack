@@ -705,12 +705,7 @@ class BayesianTracker:
                 "``config.store_candidate_graph`` is set to "
                 f"{self.configuration.store_candidate_graph}"
             )
-        graph_edges = [
+        return [
             self._lib.get_graph_edge(self._engine, idx)
             for idx in range(num_edges)
         ]
-        return graph_edges
-
-
-if __name__ == "__main__":
-    pass

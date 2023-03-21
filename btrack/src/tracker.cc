@@ -21,7 +21,7 @@ using namespace BayesianUpdateFunctions;
 
 void write_belief_matrix_to_CSV(std::string a_filename,
                                 Eigen::Ref<Eigen::MatrixXd> a_belief) {
-    std::cout << a_filename << std::endl;
+    std::cout << "Writing: " << a_filename << std::endl;
     std::ofstream belief_file;
     belief_file.open(a_filename);
     belief_file << a_belief.format(CSVFormat);
@@ -51,6 +51,13 @@ BayesianTracker::BayesianTracker(const bool verbose,
 
     // set the appropriate cost function
     set_update_mode(update_mode);
+
+    // set a outputfile path
+    // define a filepath for debugging output
+    if (WRITE_BELIEF_MATRIX) {
+        m_debug_filepath = std::filesystem::temp_directory_path();
+        std::cout << "Using temp file path: " << m_debug_filepath << std::endl;
+    }
 }
 
 BayesianTracker::~BayesianTracker() {
@@ -333,7 +340,7 @@ void BayesianTracker::step(const unsigned int steps) {
         // write out belief matrix here
         if (WRITE_BELIEF_MATRIX) {
             std::stringstream belief_filename;
-            belief_filename << DEBUG_FILEPATH << "belief_" << current_frame
+            belief_filename << m_debug_filepath << "belief_" << current_frame
                             << ".csv";
             write_belief_matrix_to_CSV(belief_filename.str(), belief);
         }
@@ -341,7 +348,7 @@ void BayesianTracker::step(const unsigned int steps) {
         // if we're storing the graph edges for future optimization, do so here
         // this should be done *BEFORE* linking because it relies on the
         // unlinked tracks to store the original hypothesis
-        if (STORE_GRAPH_EDGES) {
+        if (manager->get_store_candidate_graph()) {
             for (size_t trk = 0; trk < n_active; trk++) {
                 Eigen::VectorXd prob_assign_per_obj;
                 prob_assign_per_obj = belief.col(trk);

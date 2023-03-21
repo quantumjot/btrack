@@ -45,8 +45,6 @@
 #define STRICT_TRACKLET_LINKING 0
 #endif
 
-// define a filepath for debugging output
-#define DEBUG_FILEPATH "/home/quantumjot/Documents/"
 
 // store some information about the compilation
 static unsigned int v_major = VERSION_MAJOR;
@@ -76,7 +74,7 @@ const double kRootTwoPi = std::sqrt(2.0 * M_PI);
 #define WRITE_BELIEF_MATRIX false
 #define RESOLVE_CONFLICTS true
 #define CLIP_MAXIMUM_LINKAGE_DISTANCE true
-#define STORE_GRAPH_EDGES true
+// #define STORE_GRAPH_EDGES false
 
 // reserve space for objects and tracks
 #define RESERVE_NEW_OBJECTS 10000

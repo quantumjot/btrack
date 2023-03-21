@@ -453,7 +453,7 @@ void HypothesisEngine::hypothesis_link(TrackletPtr a_trk,
                              0.5 * safe_log(P_TP(a_trk_lnk));
         m_hypotheses.push_back(h_link);
 
-        if (STORE_GRAPH_EDGES) {
+        if (manager->get_store_candidate_graph()) {
             manager->push_edge(a_trk->track.back(), a_trk_lnk->track.front(),
                                std::exp(h_link.probability),
                                GRAPH_EDGE_hyperlink);
@@ -476,7 +476,7 @@ void HypothesisEngine::hypothesis_branch(TrackletPtr a_trk,
                              0.5 * safe_log(P_TP(a_trk_c1));
         m_hypotheses.push_back(h_divn);
 
-        if (STORE_GRAPH_EDGES) {
+        if (manager->get_store_candidate_graph()) {
             manager->push_edge(a_trk->track.back(), a_trk_c0->track.front(),
                                std::exp(h_divn.probability),
                                GRAPH_EDGE_hyperlink);

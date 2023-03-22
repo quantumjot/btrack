@@ -76,6 +76,7 @@ fix = true
 force-exclude = true
 ignore = [
     "B905", # python>=3.10
+    "N806",
 ]
 select = [
     "A",
@@ -106,6 +107,14 @@ select = [
 ]
 isort.known-first-party = ["napari_btrack"]
 mccabe.max-complexity = 18
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = [
+    "F401", # unused-import
+]
+"test_*.py" = [
+    "S101", # use of 'assert'
+]
 
 [tool.setuptools_scm]
 write_to = "napari_btrack/_version.py"

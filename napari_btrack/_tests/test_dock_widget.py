@@ -1,22 +1,23 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from magicgui.widgets import Container
+
 import json
 from unittest.mock import patch
 
+import btrack
 import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
 from btrack import datasets
-from btrack.config import load_config
 from btrack.datasets import cell_config, particle_config
-from magicgui.widgets import Container
 
-from napari_btrack.track import (
-    _update_widgets_from_config,
-    _widgets_to_tracker_config,
-    track,
-)
+import napari_btrack
+import napari_btrack.main
 
 OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2
@@ -32,14 +33,14 @@ def test_add_widget(make_napari_viewer):
         widget_name="Track",
     )
 
-    assert len(list(viewer.window._dock_widgets)) == num_dw + 1  # noqa: S101
+    assert len(list(viewer.window._dock_widgets)) == num_dw + 1
 
 
 @pytest.fixture
 def track_widget(make_napari_viewer) -> Container:
     """Provides an instance of the track widget to test"""
     make_napari_viewer()  # make sure there is a viewer available
-    return track()
+    return napari_btrack.main.create_btrack_widget()
 
 
 @pytest.mark.parametrize("config", [cell_config(), particle_config()])
@@ -47,64 +48,77 @@ def test_config_to_widgets_round_trip(track_widget, config):
     """Tests that going back and forth between
     config objects and widgets works as expected.
     """
-    expected_config = load_config(config)
-    _update_widgets_from_config(track_widget, expected_config)
-    actual_config = _widgets_to_tracker_config(track_widget)
+
+    expected_config = btrack.config.load_config(config).json()
+
+    unscaled_config = napari_btrack.config.UnscaledTrackerConfig(config)
+    napari_btrack.sync.update_widgets_from_config(unscaled_config, track_widget)
+    napari_btrack.sync.update_config_from_widgets(unscaled_config, track_widget)
+
+    actual_config = unscaled_config.scale_config().json()
+
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(actual_config.json()) == json.loads(  # noqa: S101
-        expected_config.json()
-    )
+    assert json.loads(actual_config) == json.loads(expected_config)
 
 
-@pytest.fixture
-def user_config_path() -> str:
-    """Provides a (dummy) string to represent a user-provided config path."""
-    return "user_config.json"
-
-
-def test_save_button(user_config_path, track_widget):
+def test_save_button(track_widget):
     """Tests that clicking the save configuration button
     triggers a call to btrack.config.save_config with expected arguments.
     """
-    with patch("napari_btrack.track.save_config") as save_config, patch(
-        "napari_btrack.track.get_save_path"
-    ) as get_save_path:
-        get_save_path.return_value = user_config_path
+
+    unscaled_config = napari_btrack.config.UnscaledTrackerConfig(cell_config())
+    unscaled_config.tracker_config.name = "cell"  # this is done in in the gui too
+    expected_config = unscaled_config.scale_config().json()
+
+    with patch(
+        "napari_btrack.widgets.save_path_dialogue_box"
+    ) as save_path_dialogue_box:
+        save_path_dialogue_box.return_value = "user_config.json"
         track_widget.save_config_button.clicked()
-    assert save_config.call_args[0][0] == user_config_path  # noqa: S101
+
+    actual_config = btrack.config.load_config("user_config.json").json()
+
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(save_config.call_args[0][1].json()) == json.loads(  # noqa: S101
-        load_config(cell_config()).json()
-    )
+    assert json.loads(expected_config) == json.loads(actual_config)
 
 
-def test_load_button(user_config_path, track_widget):
-    """Tests that clicking the load configuration button
-    triggers a call to btrack.config.load_config with the expected argument
-    """
-    with patch("napari_btrack.track.load_config") as load_config, patch(
-        "napari_btrack.track.get_load_path"
-    ) as get_load_path:
-        get_load_path.return_value = user_config_path
+def test_load_config(track_widget):
+    """Tests that another TrackerConfig can be loaded and made the current config."""
+
+    # this is set to be 'cell' rather than 'Default'
+    original_config_name = track_widget.config.current_choice
+
+    with patch(
+        "napari_btrack.widgets.load_path_dialogue_box"
+    ) as load_path_dialogue_box:
+        load_path_dialogue_box.return_value = cell_config()
         track_widget.load_config_button.clicked()
-    assert load_config.call_args[0][0] == user_config_path  # noqa: S101
+
+    # We didn't override the name, so it should be 'Default'
+    new_config_name = track_widget.config.current_choice
+
+    assert track_widget.config.value == "Default"
+    assert new_config_name != original_config_name
 
 
 def test_reset_button(track_widget):
-    """Tests that clicking the reset button with
-    particle-config-populated widgets resets to the default (i.e. cell-config)
-    """
-    # change config to particle
-    _update_widgets_from_config(track_widget, load_config(particle_config()))
+    """Tests that clicking the reset button restores the default config values"""
 
-    # click reset button (default is cell_config)
+    original_max_search_radius = track_widget.max_search_radius.value
+    original_relax = track_widget.relax.value
+
+    # change some widget values
+    track_widget.max_search_radius.value += 10
+    track_widget.relax.value = not track_widget.relax
+
+    # click reset button - restores defaults of the currently-selected base config
     track_widget.reset_button.clicked()
-    config_after_reset = _widgets_to_tracker_config(track_widget)
 
-    # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
-    assert json.loads(config_after_reset.json()) == json.loads(  # noqa: S101
-        load_config(cell_config()).json()
-    )
+    new_max_search_radius = track_widget.max_search_radius.value
+    new_relax = track_widget.relax.value
+
+    assert new_max_search_radius == original_max_search_radius
+    assert new_relax == original_relax
 
 
 @pytest.fixture
@@ -127,14 +141,12 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
     """Tests that clicking the run button calls run_tracker,
     and that the napari viewer has an additional tracks layer after running.
     """
-    with patch("napari_btrack.track.run_tracker") as run_tracker:
+    with patch("napari_btrack.main._run_tracker") as run_tracker:
         run_tracker.return_value = simplistic_tracker_outputs
         segmentation = datasets.example_segmentation()
         track_widget.viewer.add_labels(segmentation)
-        assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS  # noqa: S101
+        assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
         track_widget.call_button.clicked()
-    assert run_tracker.called  # noqa: S101
-    assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS  # noqa: S101
-    assert isinstance(  # noqa: S101
-        track_widget.viewer.layers[-1], napari.layers.Tracks
-    )
+    assert run_tracker.called
+    assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS
+    assert isinstance(track_widget.viewer.layers[-1], napari.layers.Tracks)

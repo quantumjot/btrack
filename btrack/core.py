@@ -7,9 +7,13 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
+from btrack import _version
+
 from . import btypes, config, constants, libwrapper, models, utils
 from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
+
+__version__ = _version.version
 
 # get the logger instance
 logger = logging.getLogger(__name__)

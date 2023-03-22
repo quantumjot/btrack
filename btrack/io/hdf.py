@@ -11,7 +11,7 @@ import h5py
 import numpy as np
 
 # import core
-from btrack import __version__, btypes, constants, utils
+from btrack import _version, btypes, constants, utils
 
 from .utils import (
     check_object_type,
@@ -569,7 +569,7 @@ class HDF5FileHandler:
             grp.attrs["f_expr"] = f_expr
 
         # also save the version number as an attribute
-        grp.attrs["version"] = __version__
+        grp.attrs["version"] = _version.version
 
         # write out dummies
         if dummies:

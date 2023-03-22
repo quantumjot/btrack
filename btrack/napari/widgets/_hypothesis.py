@@ -7,13 +7,13 @@ if TYPE_CHECKING:
 
 import magicgui
 
-import napari_btrack.constants
+import btrack.napari.constants
 
 
 def _create_hypotheses_widgets() -> list[Widget]:
     """Create widgets for selecting which hypotheses to generate."""
 
-    hypotheses = napari_btrack.constants.HYPOTHESES
+    hypotheses = btrack.napari.constants.HYPOTHESES
     tooltips = [
         "Hypothesis that a tracklet is a false positive detection. Always required.",
         "Hypothesis that a tracklet starts at the beginning of the movie or edge of the field of view.",  # noqa: E501

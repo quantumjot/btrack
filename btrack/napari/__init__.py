@@ -5,7 +5,7 @@ except ImportError:
 
 import logging
 
-from napari_btrack import constants, main
+from btrack.napari import constants, main
 
 __all__ = [
     "constants",

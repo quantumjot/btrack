@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     from btrack.config import TrackerConfig
     from magicgui.widgets import Container
 
-    from napari_btrack.config import TrackerConfigs
+    from btrack.napari.config import TrackerConfigs
 
 import logging
 
@@ -17,9 +17,9 @@ import napari
 import qtpy.QtWidgets
 from btrack.utils import segmentation_to_objects
 
-import napari_btrack.config
-import napari_btrack.sync
-import napari_btrack.widgets
+import btrack.napari.config
+import btrack.napari.sync
+import btrack.napari.widgets
 
 __all__ = [
     "create_btrack_widget",
@@ -46,13 +46,13 @@ def create_btrack_widget() -> Container:
     """Create widgets for the btrack plugin."""
 
     # First create our UI along with some default configs for the widgets
-    all_configs = napari_btrack.config.create_default_configs()
-    widgets = napari_btrack.widgets.create_widgets()
+    all_configs = btrack.napari.config.create_default_configs()
+    widgets = btrack.napari.widgets.create_widgets()
     btrack_widget = magicgui.widgets.Container(widgets=widgets, scrollable=True)
     btrack_widget.viewer = napari.current_viewer()
 
     # Set the cell_config defaults in the gui
-    napari_btrack.sync.update_widgets_from_config(
+    btrack.napari.sync.update_widgets_from_config(
         unscaled_config=all_configs["cell"],
         container=btrack_widget,
     )
@@ -96,7 +96,7 @@ def select_config(
     # first update the previous config with the current widget values
     previous_config_name = configs.current_config
     previous_config = configs[previous_config_name]
-    previous_config = napari_btrack.sync.update_config_from_widgets(
+    previous_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=previous_config,
         container=btrack_widget,
     )
@@ -104,7 +104,7 @@ def select_config(
     # now load the newly-selected config and set widget values
     configs.current_config = new_config_name
     new_config = configs[new_config_name]
-    new_config = napari_btrack.sync.update_widgets_from_config(
+    new_config = btrack.napari.sync.update_widgets_from_config(
         unscaled_config=new_config,
         container=btrack_widget,
     )
@@ -117,7 +117,7 @@ def run(btrack_widget: Container, configs: TrackerConfigs) -> None:
     """
 
     unscaled_config = configs[btrack_widget.config.current_choice]
-    unscaled_config = napari_btrack.sync.update_config_from_widgets(
+    unscaled_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         container=btrack_widget,
     )
@@ -178,7 +178,7 @@ def restore_defaults(btrack_widget: Container, configs: TrackerConfigs) -> None:
     )
 
     config = configs[config_name]
-    config = napari_btrack.sync.update_widgets_from_config(
+    config = btrack.napari.sync.update_widgets_from_config(
         unscaled_config=config,
         container=btrack_widget,
     )
@@ -187,7 +187,7 @@ def restore_defaults(btrack_widget: Container, configs: TrackerConfigs) -> None:
 def save_config_to_json(btrack_widget: Container, configs: TrackerConfigs) -> None:
     """Save widget values to file"""
 
-    save_path = napari_btrack.widgets.save_path_dialogue_box()
+    save_path = btrack.napari.widgets.save_path_dialogue_box()
     if save_path is None:
         _msg = (
             "napari-btrack: Configuration not saved - operation cancelled by the user."
@@ -196,7 +196,7 @@ def save_config_to_json(btrack_widget: Container, configs: TrackerConfigs) -> No
         return
 
     unscaled_config = configs[btrack_widget.config.current_choice]
-    napari_btrack.sync.update_config_from_widgets(
+    btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         container=btrack_widget,
     )
@@ -208,7 +208,7 @@ def save_config_to_json(btrack_widget: Container, configs: TrackerConfigs) -> No
 def load_config_from_json(btrack_widget: Container, configs: TrackerConfigs) -> None:
     """Load a config from file and set it as the selected base config"""
 
-    load_path = napari_btrack.widgets.load_path_dialogue_box()
+    load_path = btrack.napari.widgets.load_path_dialogue_box()
     if load_path is None:
         _msg = "napari-btrack: No file loaded - operation cancelled by the user."
         logger.info(_msg)

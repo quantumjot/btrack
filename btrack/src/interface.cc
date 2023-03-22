@@ -52,16 +52,6 @@ EXTERN_DECL {
   }
 
   /* =========================================================================
-  CHECK SHARED LIB VERSION NUMBER
-  ========================================================================= */
-
-  SHARED_LIB bool check_library_version(
-      InterfaceWrapper * h, const uint8_t a_major, const uint8_t a_minor,
-      const uint8_t a_build) {
-    return h->check_library_version(a_major, a_minor, a_build);
-  }
-
-  /* =========================================================================
   SET THE TRACKER TO STORE THE CANDIDATE GRAPH
   ========================================================================= */
 

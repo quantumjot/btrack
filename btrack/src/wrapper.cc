@@ -21,8 +21,7 @@
 InterfaceWrapper::InterfaceWrapper() {
   if (DEBUG) {
     std::cout << "Instantiating BTRACK interface wrapper (";
-    std::cout << "v" << v_major << "." << v_minor;
-    std::cout << "." << v_build << ", compiled " << build_date << " at ";
+    std::cout << "compiled " << build_date << " at ";
     std::cout << build_time << ")" << std::endl;
   }
 
@@ -38,19 +37,6 @@ InterfaceWrapper::~InterfaceWrapper() {
     std::cout << "Deleting BTRACK interface wrapper" << std::endl;
   }
 };
-
-// sanity check that this is the correct verion of the shared library
-bool InterfaceWrapper::check_library_version(const uint8_t a_major,
-                                             const uint8_t a_minor,
-                                             const uint8_t a_build) const {
-  if (a_major == v_major && a_minor == v_minor && a_build == v_build) {
-    return true;
-  }
-
-  // throw an error or let python deal with it?
-  // throw std::runtime_error("Library version number mismatch.");
-  return false;
-}
 
 // set the tracker to store the candidate graph
 void InterfaceWrapper::set_store_candidate_graph(const bool a_store_graph) {

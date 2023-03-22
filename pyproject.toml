@@ -160,10 +160,10 @@ pep8-naming.classmethod-decorators = [
 
 [tool.setuptools]
 dynamic.dependencies.file = "requirements.txt"
-dynamic.version.file = "btrack/VERSION.txt"
 packages.find = {}
 
 [tool.setuptools_scm]
+write_to = "btrack/_version.py"
 
 [tool.tomlsort]
 sort_inline_arrays = false

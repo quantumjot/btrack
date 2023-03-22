@@ -64,3 +64,4 @@ pip-log.txt
 sdist
 target
 var
+_version.py

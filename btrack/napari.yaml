@@ -7,6 +7,9 @@ contributions:
   - id: btrack.read_btrack
     title: Read btrack files
     python_name: btrack.napari.reader:get_reader
+  - id: btrack.track
+    title: Create Track
+    python_name: btrack.napari.main:create_btrack_widget
 
   readers:
   - command: btrack.read_btrack
@@ -15,3 +18,7 @@ contributions:
     - '*.hdf'
     - '*.hdf5'
     accepts_directories: false
+
+  widgets:
+    - command: btrack.track
+      display_name: Track

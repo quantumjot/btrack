@@ -1,43 +1,36 @@
 name: Linting
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
-  build:
+  linting:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout source
+      - name: Checkout source
         uses: actions/checkout@v3
 
-      - name: set up python
+      - name: Cache pre-commit
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+
+      - name: Set up python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.11"
           cache: "pip"
           cache-dependency-path: "pyproject.toml"
 
-      - name: set PY
-        run: echo "PY=$(python -VV | sha256sum | cut -d' ' -f1)" >> $GITHUB_ENV
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pre-commit
+          pre-commit install
 
-      - name: cache stuff
-        uses: actions/cache@v3
-        with:
-          path: |
-            ${{ env.pythonLocation }}
-            ~/.cache/pre-commit
-          key: |
-            pre-commit-${{ env.PY }}-${{ hashFiles('.pre-commit-config.yaml') }}
-
-      - name: install dependencies
-        run: pip install pre-commit
-
-      - name: Install pre-commit hooks
-        run: pre-commit install
-
-      # This will run on all files in the repo not just those that have been
-      # committed. Once formatting has been applied once globally, from then on
-      # the files being changed by pre-commit should be just those that are
-      # being committed - provided that people are using the pre-commit hook to
-      # format their code.
-      - name: run pre-commit
+      - name: Run pre-commit
         run: pre-commit run --all-files --color always

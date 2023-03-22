@@ -1,11 +1,8 @@
-import pytest
-
-# Only run tests if napari is installed
-napari_reader = pytest.importorskip("btrack.napari.reader")
+from btrack.napari.reader import get_reader
 
 
 def test_reader(hdf5_file_path_or_paths):
-    reader = napari_reader.get_reader(hdf5_file_path_or_paths)
+    reader = get_reader(hdf5_file_path_or_paths)
     assert reader is not None
 
     tracks = reader(hdf5_file_path_or_paths)

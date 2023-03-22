@@ -45,7 +45,6 @@
 #define STRICT_TRACKLET_LINKING 0
 #endif
 
-
 // store some information about the compilation
 static unsigned int v_major = VERSION_MAJOR;
 static unsigned int v_minor = VERSION_MINOR;
@@ -145,22 +144,22 @@ const double kRootTwoPi = std::sqrt(2.0 * M_PI);
 #define TYPE_undef 999
 
 enum class HypothesisType : unsigned int {
-    false_positive = 0,
-    init = 1,
-    term = 2,
-    link = 3,
-    branch = 4,
-    apop = 5,
-    merge = 6,
-    extrude = 7,
-    init_border = 10,
-    init_front = 11,
-    init_lazy = 12,
-    term_border = 20,
-    term_back = 21,
-    term_lazy = 22,
-    dead = 666,
-    undefined = 999
+  false_positive = 0,
+  init = 1,
+  term = 2,
+  link = 3,
+  branch = 4,
+  apop = 5,
+  merge = 6,
+  extrude = 7,
+  init_border = 10,
+  init_front = 11,
+  init_lazy = 12,
+  term_border = 20,
+  term_back = 21,
+  term_lazy = 22,
+  dead = 666,
+  undefined = 999
 };
 
 // errors
@@ -177,17 +176,17 @@ enum class HypothesisType : unsigned int {
 #define ERROR_none 910
 
 enum class TrackingError : unsigned int {
-    success = 900,
-    empty_queue = 901,
-    no_tracks = 902,
-    no_useable_frames = 903,
-    track_empty = 904,
-    incorrect_motion_model = 905,
-    max_lost_out_of_range = 906,
-    accuracy_out_of_range = 907,
-    prob_not_assign_out_of_range = 908,
-    not_defined = 909,
-    none = 910
+  success = 900,
+  empty_queue = 901,
+  no_tracks = 902,
+  no_useable_frames = 903,
+  track_empty = 904,
+  incorrect_motion_model = 905,
+  max_lost_out_of_range = 906,
+  accuracy_out_of_range = 907,
+  prob_not_assign_out_of_range = 908,
+  not_defined = 909,
+  none = 910
 };
 
 // possible states of objects
@@ -200,13 +199,13 @@ enum class TrackingError : unsigned int {
 #define STATE_dummy 99
 
 enum class ObjectStateLabel : unsigned int {
-    interphase = 0,
-    prometaphase = 1,
-    metaphase = 2,
-    anaphase = 3,
-    apoptosis = 4,
-    null = 5,
-    dummy = 99
+  interphase = 0,
+  prometaphase = 1,
+  metaphase = 2,
+  anaphase = 3,
+  apoptosis = 4,
+  null = 5,
+  dummy = 99
 };
 
 #define GRAPH_EDGE_link 0

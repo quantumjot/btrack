@@ -163,7 +163,6 @@ class PyTrackObject(ctypes.Structure):
         fields = {k: kt for k, kt in PyTrackObject._fields_}
         attr = [k for k in fields if k in properties]
         for key in attr:
-
             new_data = properties[key]
 
             # fix for implicit type conversion
@@ -363,7 +362,6 @@ class Tracklet:
         children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-
         assert all([isinstance(o, PyTrackObject) for o in data])
 
         self.ID = ID

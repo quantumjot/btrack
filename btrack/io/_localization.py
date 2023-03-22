@@ -46,7 +46,6 @@ def _centroids_from_single_arr(
 
     # if class id is specified then extract that property first
     if assign_class_ID:
-
         # ensure regionprops can properly read label image
         labeled = label(segmentation)
 
@@ -203,7 +202,6 @@ def segmentation_to_objects(  # noqa: PLR0913
     if inspect.isgeneratorfunction(segmentation) or isinstance(
         segmentation, Generator
     ):
-
         for frame, seg in enumerate(segmentation):
             intens = next(intensity_image) if USE_INTENSITY else None
             _centroids = _centroids_from_single_arr(
@@ -220,7 +218,6 @@ def segmentation_to_objects(  # noqa: PLR0913
             centroids = _concat_centroids(centroids, _centroids)
 
     else:
-
         if segmentation.ndim not in (
             Dimensionality.THREE,
             Dimensionality.FOUR,

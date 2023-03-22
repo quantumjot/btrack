@@ -63,7 +63,6 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
 
     for _path in paths:
         with HDF5FileHandler(_path, "r") as hdf:
-
             # get the segmentation if there is one
             segmentation = hdf.segmentation
             if segmentation is not None:
@@ -71,7 +70,6 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
 
             # iterate over object types and create a layer for each
             for obj_type in hdf.object_types:
-
                 # set the object type, and retrieve the tracks
                 hdf.object_type = obj_type
 

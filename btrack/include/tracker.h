@@ -20,13 +20,13 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <limits>
 #include <map>
 #include <set>
 #include <vector>
-#include <filesystem>
 
 #include "bayes.h"
 #include "defs.h"
@@ -73,200 +73,198 @@ typedef std::pair<unsigned int, double> LinkHypothesis;
 // posterior probability.
 
 class BayesianTracker : public UpdateFeatures {
-   public:
-    // Constructor
-    BayesianTracker(){};
-    // BayesianTracker(const bool verbose);
-    // BayesianTracker(
-    //   const bool verbose,
-    //   const unsigned int update_mode
-    // );
-    BayesianTracker(const bool verbose, const unsigned int update_mode,
-                    TrackManager* a_manager);
+public:
+  // Constructor
+  BayesianTracker(){};
+  // BayesianTracker(const bool verbose);
+  // BayesianTracker(
+  //   const bool verbose,
+  //   const unsigned int update_mode
+  // );
+  BayesianTracker(const bool verbose, const unsigned int update_mode,
+                  TrackManager *a_manager);
 
-    // Default destructor
-    ~BayesianTracker();
+  // Default destructor
+  ~BayesianTracker();
 
-    // set some parameters
-    // TODO(arl): is this essential anymore?
-    // unsigned int setup(const double prob_not_assign, const unsigned int
-    // max_lost,
-    //                                    const double accuracy);
+  // set some parameters
+  // TODO(arl): is this essential anymore?
+  // unsigned int setup(const double prob_not_assign, const unsigned int
+  // max_lost,
+  //                                    const double accuracy);
 
-    // set the cost function to use
-    void set_update_mode(const unsigned int update_mode);
+  // set the cost function to use
+  void set_update_mode(const unsigned int update_mode);
 
-    // set up the motion model. matrices are in the form of c-style linear
-    // arrays
-    unsigned int set_motion_model(const unsigned int measurements,
-                                  const unsigned int states, double* A_raw,
-                                  double* H_raw, double* P_raw, double* Q_raw,
-                                  double* R_raw, const double dt,
-                                  const double accuracy,
-                                  const unsigned int max_lost,
-                                  const double prob_not_assign);
+  // set up the motion model. matrices are in the form of c-style linear
+  // arrays
+  unsigned int
+  set_motion_model(const unsigned int measurements, const unsigned int states,
+                   double *A_raw, double *H_raw, double *P_raw, double *Q_raw,
+                   double *R_raw, const double dt, const double accuracy,
+                   const unsigned int max_lost, const double prob_not_assign);
 
-    // set up the object model
-    unsigned int set_object_model(const unsigned int states,
-                                  double* transition_raw, double* emission_raw,
-                                  double* start_raw);
+  // set up the object model
+  unsigned int set_object_model(const unsigned int states,
+                                double *transition_raw, double *emission_raw,
+                                double *start_raw);
 
-    // set the maximum search radius
-    void set_max_search_radius(const float search_radius) {
-        this->max_search_radius = search_radius;
-    }
+  // set the maximum search radius
+  void set_max_search_radius(const float search_radius) {
+    this->max_search_radius = search_radius;
+  }
 
-    // add new objects
-    unsigned int xyzt(const double* xyzt);
-    unsigned int append(const PyTrackObject& new_object);
+  // add new objects
+  unsigned int xyzt(const double *xyzt);
+  unsigned int append(const PyTrackObject &new_object);
 
-    // infer the volume of observations
-    void infer_tracking_volume() const;
+  // infer the volume of observations
+  void infer_tracking_volume() const;
 
-    // initialise the tracker with the first observations
-    unsigned int initialise();
+  // initialise the tracker with the first observations
+  unsigned int initialise();
 
-    // track and update tracks NOTE: this will be deprecated
-    // unsigned int track(const unsigned int end_frame);
+  // track and update tracks NOTE: this will be deprecated
+  // unsigned int track(const unsigned int end_frame);
 
-    // run the tracking on the entire set
-    void track_all();
+  // run the tracking on the entire set
+  void track_all();
 
-    // move the tracking forward by n iterations, used in interactive mode
-    void step() { step(1); };
-    void step(const unsigned int n_steps);
+  // move the tracking forward by n iterations, used in interactive mode
+  void step() { step(1); };
+  void step(const unsigned int n_steps);
 
-    // get the number of tracks
-    inline unsigned int size() const { return manager->num_tracks(); };
+  // get the number of tracks
+  inline unsigned int size() const { return manager->num_tracks(); };
 
-    // // return the Euclidean distance between object and trajectory
-    // double euclidean_dist(const size_t trk, const size_t obj) const {
-    //   Eigen::Vector3d dxyz =
-    //   tracks[trk]->position()-new_objects[obj]->position(); return
-    //   std::sqrt(dxyz.transpose()*dxyz);
-    // };
+  // // return the Euclidean distance between object and trajectory
+  // double euclidean_dist(const size_t trk, const size_t obj) const {
+  //   Eigen::Vector3d dxyz =
+  //   tracks[trk]->position()-new_objects[obj]->position(); return
+  //   std::sqrt(dxyz.transpose()*dxyz);
+  // };
 
-    double euclidean_dist(const TrackletPtr& trk,
-                          const TrackObjectPtr& obj) const {
-        Eigen::Vector3d dxyz = trk->position() - obj->position();
-        return std::sqrt(dxyz.transpose() * dxyz);
-    };
+  double euclidean_dist(const TrackletPtr &trk,
+                        const TrackObjectPtr &obj) const {
+    Eigen::Vector3d dxyz = trk->position() - obj->position();
+    return std::sqrt(dxyz.transpose() * dxyz);
+  };
 
-    // track maintenance
-    bool purge();
+  // track maintenance
+  bool purge();
 
-    // calculate the cost matrix using different methods
-    void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
-                    const size_t n_objects, const bool use_uniform_prior);
+  // calculate the cost matrix using different methods
+  void cost_EXACT(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
+                  const size_t n_objects, const bool use_uniform_prior);
 
-    void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
-                          const size_t n_tracks, const size_t n_objects,
-                          const bool use_uniform_prior);
+  void cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
+                        const size_t n_tracks, const size_t n_objects,
+                        const bool use_uniform_prior);
 
-    void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
-                   const size_t n_objects, const bool use_uniform_prior);
+  void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
+                 const size_t n_objects, const bool use_uniform_prior);
 
-    // calculate linkages based on belief matrix
-    void link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
-              const size_t n_objects);
+  // calculate linkages based on belief matrix
+  void link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
+            const size_t n_objects);
 
-    double prob_update_motion(const TrackletPtr& trk,
-                              const TrackObjectPtr& obj) const;
-    double prob_update_visual(const TrackletPtr& trk,
-                              const TrackObjectPtr& obj) const;
+  double prob_update_motion(const TrackletPtr &trk,
+                            const TrackObjectPtr &obj) const;
+  double prob_update_visual(const TrackletPtr &trk,
+                            const TrackObjectPtr &obj) const;
 
-    // somewhere to store the tracks
-    // TrackManager tracks;
+  // somewhere to store the tracks
+  // TrackManager tracks;
 
-    // maintain the size of the ImagingVolume
-    ImagingVolume volume;
+  // maintain the size of the ImagingVolume
+  ImagingVolume volume;
 
-    // statistics
-    const PyTrackInfo* stats() { return &statistics; }
+  // statistics
+  const PyTrackInfo *stats() { return &statistics; }
 
-    // space to store the entire graph
-    // std::vector<PyGraphEdge> graph_edges;
+  // space to store the entire graph
+  // std::vector<PyGraphEdge> graph_edges;
 
-   private:
-    // verbose output to stdio
-    bool verbose = false;
+private:
+  // verbose output to stdio
+  bool verbose = false;
 
-    // default motion model, must remain uninitialised
-    MotionModel motion_model;
+  // default motion model, must remain uninitialised
+  MotionModel motion_model;
 
-    // default object model, must remain uninitialised
-    ObjectModel object_model;
+  // default object model, must remain uninitialised
+  ObjectModel object_model;
 
-    // cost function mode
-    // NOTE(arl): this is probably obsolete now
-    unsigned int cost_function_mode;
+  // cost function mode
+  // NOTE(arl): this is probably obsolete now
+  unsigned int cost_function_mode;
 
-    // reference to an update function
-    double (BayesianTracker::*m_update_fn)(const TrackletPtr&,
-                                           const TrackObjectPtr&) const;
+  // reference to an update function
+  double (BayesianTracker::*m_update_fn)(const TrackletPtr &,
+                                         const TrackObjectPtr &) const;
 
-    // reference to a cost function
-    void (BayesianTracker::*m_cost_fn)(const Eigen::Ref<Eigen::MatrixXd>,
-                                       const size_t, const size_t, const bool);
+  // reference to a cost function
+  void (BayesianTracker::*m_cost_fn)(const Eigen::Ref<Eigen::MatrixXd>,
+                                     const size_t, const size_t, const bool);
 
-    // default tracking parameters
-    double prob_not_assign = PROB_NOT_ASSIGN;
-    double accuracy = DEFAULT_ACCURACY;
-    unsigned int max_lost = MAX_LOST;
+  // default tracking parameters
+  double prob_not_assign = PROB_NOT_ASSIGN;
+  double accuracy = DEFAULT_ACCURACY;
+  unsigned int max_lost = MAX_LOST;
 
-    // provide a global ID counter for new tracks
-    // NOTE(arl): because the increment is before the return, all tracks will
-    // be numbered 1 and upward.
-    inline unsigned int get_new_ID() {
-        new_ID++;
-        return new_ID;
-    };
+  // provide a global ID counter for new tracks
+  // NOTE(arl): because the increment is before the return, all tracks will
+  // be numbered 1 and upward.
+  inline unsigned int get_new_ID() {
+    new_ID++;
+    return new_ID;
+  };
 
-    // display the debug output to std::out
-    void debug_output(const unsigned int frm) const;
+  // display the debug output to std::out
+  void debug_output(const unsigned int frm) const;
 
-    // update the list of active tracks
-    bool update_active();
+  // update the list of active tracks
+  bool update_active();
 
-    // pointer to the track manager
-    TrackManager* manager;
+  // pointer to the track manager
+  TrackManager *manager;
 
-    // maintain pointers to tracks
-    std::vector<TrackletPtr> active;
-    std::vector<TrackObjectPtr> new_objects;
+  // maintain pointers to tracks
+  std::vector<TrackletPtr> active;
+  std::vector<TrackObjectPtr> new_objects;
 
-    // some space to store the objects
-    // std::vector<TrackObjectPtr> objects;
+  // some space to store the objects
+  // std::vector<TrackObjectPtr> objects;
 
-    // sizes of various vectors
-    size_t n_objects;
+  // sizes of various vectors
+  size_t n_objects;
 
-    unsigned int current_frame;
-    unsigned int o_counter;
+  unsigned int current_frame;
+  unsigned int o_counter;
 
-    // store the frame numbers of incoming tracks
-    std::set<unsigned int> frames_set;
-    std::vector<unsigned int> frames;
+  // store the frame numbers of incoming tracks
+  std::set<unsigned int> frames_set;
+  std::vector<unsigned int> frames;
 
-    // tracker initialisation
-    bool initialised = false;
+  // tracker initialisation
+  bool initialised = false;
 
-    // ID counter for new tracks
-    unsigned int new_ID = 0;
+  // ID counter for new tracks
+  unsigned int new_ID = 0;
 
-    // counter to run the purge function
-    unsigned int purge_iter;
+  // counter to run the purge function
+  unsigned int purge_iter;
 
-    // counters for the number of lost tracks and number of conflicts
-    unsigned int n_lost = 0;
-    unsigned int n_conflicts = 0;
-    float max_search_radius = MAX_SEARCH_RADIUS;
+  // counters for the number of lost tracks and number of conflicts
+  unsigned int n_lost = 0;
+  unsigned int n_conflicts = 0;
+  float max_search_radius = MAX_SEARCH_RADIUS;
 
-    // set up a structure for the statistics
-    PyTrackInfo statistics;
+  // set up a structure for the statistics
+  PyTrackInfo statistics;
 
-    // member variable to store an output path for debugging
-    std::filesystem::path m_debug_filepath;
+  // member variable to store an output path for debugging
+  std::filesystem::path m_debug_filepath;
 };
 
 // utils to write out belief matrix to CSV files

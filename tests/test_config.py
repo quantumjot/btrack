@@ -72,7 +72,6 @@ def test_config_tracker_setters():
     """Test configuring the tracker using setters."""
     options = _random_config()
     with btrack.BayesianTracker() as tracker:
-
         # use the setters to apply the comfiguration
         for key, value in options.items():
             setattr(tracker, key, value)

@@ -9,8 +9,9 @@ import copy
 import os
 from dataclasses import dataclass, field
 
-import btrack
 import numpy as np
+
+import btrack
 from btrack import datasets
 
 __all__ = [
@@ -166,7 +167,10 @@ class TrackerConfigs:
 
         # TODO: Make the combobox editable so config names can be changed within the GUI
         if config_name in self.configs and not overwrite:
-            _msg = f"Config '{config_name}' already exists - config names must be unique."
+            _msg = (
+                f"Config '{config_name}' already exists - "
+                "config names must be unique."
+            )
             raise ValueError(_msg)
 
         self.configs[config_name] = config

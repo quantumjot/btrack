@@ -8,16 +8,16 @@ if TYPE_CHECKING:
 import json
 from unittest.mock import patch
 
-import btrack
 import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
-from btrack import datasets
-from btrack.datasets import cell_config, particle_config
 
+import btrack
 import btrack.napari
 import btrack.napari.main
+from btrack import datasets
+from btrack.datasets import cell_config, particle_config
 
 OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2

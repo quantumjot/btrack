@@ -4,22 +4,22 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-    from btrack.config import TrackerConfig
     from magicgui.widgets import Container
 
+    from btrack.config import TrackerConfig
     from btrack.napari.config import TrackerConfigs
 
 import logging
 
-import btrack
 import magicgui.widgets
 import napari
 import qtpy.QtWidgets
-from btrack.utils import segmentation_to_objects
 
+import btrack
 import btrack.napari.config
 import btrack.napari.sync
 import btrack.napari.widgets
+from btrack.utils import segmentation_to_objects
 
 __all__ = [
     "create_btrack_widget",
@@ -197,7 +197,10 @@ def save_config_to_json(
 
     save_path = btrack.napari.widgets.save_path_dialogue_box()
     if save_path is None:
-        _msg = "napari-btrack: Configuration not saved - operation cancelled by the user."
+        _msg = (
+            "napari-btrack: Configuration not saved - "
+            "operation cancelled by the user."
+        )
         logger.info(_msg)
         return
 

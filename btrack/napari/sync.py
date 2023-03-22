@@ -7,9 +7,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from btrack.config import TrackerConfig
     from magicgui.widgets import Container
 
+    from btrack.config import TrackerConfig
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
 import btrack.napari.constants

@@ -1,11 +1,10 @@
 import logging
 
-from btrack import _version
-
+from ._version import version
 from .core import BayesianTracker
 
 __all__ = ["BayesianTracker"]
-__version__ = _version.version
+__version__ = version
 
 # get the logger instance
 logger = logging.getLogger(__name__)

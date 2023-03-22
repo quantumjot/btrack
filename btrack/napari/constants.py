@@ -1,6 +1,6 @@
 """
 This module contains variables that are used throughout the
-napari_btrack package.
+napari plugin of the btrack package.
 """
 
 HYPOTHESES = [

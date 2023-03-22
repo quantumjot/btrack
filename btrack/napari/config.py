@@ -73,7 +73,9 @@ class UnscaledTrackerConfig:
         config = btrack.config.load_config(self.filename)
         self.tracker_config, self.sigmas = self._unscale_config(config)
 
-    def _unscale_config(self, config: TrackerConfig) -> tuple[TrackerConfig, Sigmas]:
+    def _unscale_config(
+        self, config: TrackerConfig
+    ) -> tuple[TrackerConfig, Sigmas]:
         """Convert the matrices of a scaled TrackerConfig MotionModel to unscaled."""
 
         P_sigma = np.max(config.motion_model.P)
@@ -164,9 +166,7 @@ class TrackerConfigs:
 
         # TODO: Make the combobox editable so config names can be changed within the GUI
         if config_name in self.configs and not overwrite:
-            _msg = (
-                f"Config '{config_name}' already exists - config names must be unique."
-            )
+            _msg = f"Config '{config_name}' already exists - config names must be unique."
             raise ValueError(_msg)
 
         self.configs[config_name] = config

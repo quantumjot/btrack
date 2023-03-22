@@ -10,9 +10,9 @@ if TYPE_CHECKING:
     from btrack.config import TrackerConfig
     from magicgui.widgets import Container
 
-    from napari_btrack.config import Sigmas, UnscaledTrackerConfig
+    from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
-import napari_btrack.constants
+import btrack.napari.constants
 
 
 def update_config_from_widgets(
@@ -29,7 +29,9 @@ def update_config_from_widgets(
     # Update TrackerConfig values
     config = unscaled_config.tracker_config
     update_method_name = container.update_method.current_choice
-    update_method_index = container.update_method.choices.index(update_method_name)
+    update_method_index = container.update_method.choices.index(
+        update_method_name
+    )
     config.update_method = update_method_index
     config.max_search_radius = container.max_search_radius.value
 
@@ -42,19 +44,23 @@ def update_config_from_widgets(
     hypothesis_model = config.hypothesis_model
     hypothesis_model.hypotheses = [
         hypothesis
-        for hypothesis in napari_btrack.constants.HYPOTHESES
+        for hypothesis in btrack.napari.constants.HYPOTHESES
         if container[hypothesis].value
     ]
 
     # Update HypothesisModel scaling factors
-    for scaling_factor in napari_btrack.constants.HYPOTHESIS_SCALING_FACTORS:
-        setattr(hypothesis_model, scaling_factor, container[scaling_factor].value)
+    for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
+        setattr(
+            hypothesis_model, scaling_factor, container[scaling_factor].value
+        )
 
     # Update HypothesisModel thresholds
-    for threshold in napari_btrack.constants.HYPOTHESIS_THRESHOLDS:
+    for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
         setattr(hypothesis_model, threshold, container[threshold].value)
 
-    hypothesis_model.segmentation_miss_rate = container.segmentation_miss_rate.value
+    hypothesis_model.segmentation_miss_rate = (
+        container.segmentation_miss_rate.value
+    )
 
     return unscaled_config
 
@@ -85,18 +91,22 @@ def update_widgets_from_config(
 
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
-    for hypothesis in napari_btrack.constants.HYPOTHESES:
+    for hypothesis in btrack.napari.constants.HYPOTHESES:
         is_checked = hypothesis in hypothesis_model.hypotheses
         container[hypothesis].value = is_checked
 
     # Update widgets from HypothesisModel scaling factors
-    for scaling_factor in napari_btrack.constants.HYPOTHESIS_SCALING_FACTORS:
-        container[scaling_factor].value = getattr(hypothesis_model, scaling_factor)
+    for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
+        container[scaling_factor].value = getattr(
+            hypothesis_model, scaling_factor
+        )
 
     # Update widgets from HypothesisModel thresholds
-    for threshold in napari_btrack.constants.HYPOTHESIS_THRESHOLDS:
+    for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
         container[threshold].value = getattr(hypothesis_model, threshold)
 
-    container.segmentation_miss_rate.value = hypothesis_model.segmentation_miss_rate
+    container.segmentation_miss_rate.value = (
+        hypothesis_model.segmentation_miss_rate
+    )
 
     return container

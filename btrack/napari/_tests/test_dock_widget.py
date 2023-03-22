@@ -16,8 +16,8 @@ import pytest
 from btrack import datasets
 from btrack.datasets import cell_config, particle_config
 
-import napari_btrack
-import napari_btrack.main
+import btrack.napari
+import btrack.napari.main
 
 OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2
@@ -40,7 +40,7 @@ def test_add_widget(make_napari_viewer):
 def track_widget(make_napari_viewer) -> Container:
     """Provides an instance of the track widget to test"""
     make_napari_viewer()  # make sure there is a viewer available
-    return napari_btrack.main.create_btrack_widget()
+    return btrack.napari.main.create_btrack_widget()
 
 
 @pytest.mark.parametrize("config", [cell_config(), particle_config()])
@@ -51,9 +51,13 @@ def test_config_to_widgets_round_trip(track_widget, config):
 
     expected_config = btrack.config.load_config(config).json()
 
-    unscaled_config = napari_btrack.config.UnscaledTrackerConfig(config)
-    napari_btrack.sync.update_widgets_from_config(unscaled_config, track_widget)
-    napari_btrack.sync.update_config_from_widgets(unscaled_config, track_widget)
+    unscaled_config = btrack.napari.config.UnscaledTrackerConfig(config)
+    btrack.napari.sync.update_widgets_from_config(
+        unscaled_config, track_widget
+    )
+    btrack.napari.sync.update_config_from_widgets(
+        unscaled_config, track_widget
+    )
 
     actual_config = unscaled_config.scale_config().json()
 
@@ -66,12 +70,14 @@ def test_save_button(track_widget):
     triggers a call to btrack.config.save_config with expected arguments.
     """
 
-    unscaled_config = napari_btrack.config.UnscaledTrackerConfig(cell_config())
-    unscaled_config.tracker_config.name = "cell"  # this is done in in the gui too
+    unscaled_config = btrack.napari.config.UnscaledTrackerConfig(cell_config())
+    unscaled_config.tracker_config.name = (
+        "cell"  # this is done in in the gui too
+    )
     expected_config = unscaled_config.scale_config().json()
 
     with patch(
-        "napari_btrack.widgets.save_path_dialogue_box"
+        "btrack.napari.widgets.save_path_dialogue_box"
     ) as save_path_dialogue_box:
         save_path_dialogue_box.return_value = "user_config.json"
         track_widget.save_config_button.clicked()
@@ -89,7 +95,7 @@ def test_load_config(track_widget):
     original_config_name = track_widget.config.current_choice
 
     with patch(
-        "napari_btrack.widgets.load_path_dialogue_box"
+        "btrack.napari.widgets.load_path_dialogue_box"
     ) as load_path_dialogue_box:
         load_path_dialogue_box.return_value = cell_config()
         track_widget.load_config_button.clicked()
@@ -141,7 +147,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
     """Tests that clicking the run button calls run_tracker,
     and that the napari viewer has an additional tracks layer after running.
     """
-    with patch("napari_btrack.main._run_tracker") as run_tracker:
+    with patch("btrack.napari.main._run_tracker") as run_tracker:
         run_tracker.return_value = simplistic_tracker_outputs
         segmentation = datasets.example_segmentation()
         track_widget.viewer.add_labels(segmentation)

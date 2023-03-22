@@ -17,23 +17,21 @@
 #ifndef _INFERENCE_H_INCLUDED_
 #define _INFERENCE_H_INCLUDED_
 
+#include <vector>
+
 #include "eigen/Eigen/Dense"
 #include "types.h"
 
-#include <vector>
-
 #define RESERVE_STATE_SEQUENCE 1000
 
-class ObjectModel
-{
-  public:
-    ObjectModel() {};
-    ~ObjectModel() {};
+class ObjectModel {
+   public:
+    ObjectModel(){};
+    ~ObjectModel(){};
 
     // initialise with transition, emission and start matrices
     ObjectModel(const Eigen::MatrixXd &transition,
-                const Eigen::MatrixXd &emission,
-                const Eigen::MatrixXd &start);
+                const Eigen::MatrixXd &emission, const Eigen::MatrixXd &start);
 
     // initialise with a uniform prior
     ObjectModel(const Eigen::MatrixXd &transition,
@@ -45,8 +43,7 @@ class ObjectModel
     // make a prediction from the model
     Eigen::VectorXd predict();
 
-  private:
-
+   private:
     // the emission and transition matrices
     Eigen::MatrixXd transition;
     Eigen::MatrixXd emission;

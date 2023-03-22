@@ -17,24 +17,23 @@
 #ifndef _MOTION_H_INCLUDED_
 #define _MOTION_H_INCLUDED_
 
+#include <algorithm>
+#include <cmath>
+#include <iostream>
+#include <limits>
+#include <map>
+#include <set>
+#include <vector>
+
 #include "eigen/Eigen/Dense"
 #include "types.h"
 
-#include <vector>
-#include <iostream>
-#include <map>
-#include <cmath>
-#include <limits>
-#include <algorithm>
-#include <set>
-
 // Implements a Kalman filter for motion modelling in the tracker. Note that we
 // do not implement the 'control' updates from the full Kalman filter
-class MotionModel
-{
-  public:
+class MotionModel {
+   public:
     // Default constructor for MotionModel
-    MotionModel() {};
+    MotionModel(){};
 
     // Initialise a motion model with matrices representing the motion model.
     // A: State transition matrix
@@ -44,14 +43,12 @@ class MotionModel
     // R: Estimated error in measurements
     // Certain parameters are inferred from the shapes of the matrices, such as
     // the number of states and measurements
-    MotionModel(const Eigen::MatrixXd &A,
-                const Eigen::MatrixXd &H,
-                const Eigen::MatrixXd &P,
-                const Eigen::MatrixXd &R,
+    MotionModel(const Eigen::MatrixXd &A, const Eigen::MatrixXd &H,
+                const Eigen::MatrixXd &P, const Eigen::MatrixXd &R,
                 const Eigen::MatrixXd &Q);
 
     // Default destructor
-    ~MotionModel() {};
+    ~MotionModel(){};
 
     // Setup the filter from a new object, set x_hat to the object position
     void setup(const TrackObjectPtr new_object);
@@ -63,18 +60,15 @@ class MotionModel
     Prediction predict() const;
 
     // get the motion vector
-    Eigen::Vector3d get_motion_vector() const {
-      return motion_vector;
-    }
+    Eigen::Vector3d get_motion_vector() const { return motion_vector; }
 
     // return the system dimensions
-    void dimensions(unsigned int* m,
-                    unsigned int* s) const {
-      *m = measurements;
-      *s = states;
-     };
+    void dimensions(unsigned int *m, unsigned int *s) const {
+        *m = measurements;
+        *s = states;
+    };
 
-  private:
+   private:
     // matrices for Kalman filter
     Eigen::MatrixXd A;
     Eigen::MatrixXd H;

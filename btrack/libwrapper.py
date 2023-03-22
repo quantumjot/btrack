@@ -5,9 +5,9 @@ import platform
 
 import numpy as np
 
-from .btypes import PyTrackingInfo, PyTrackObject
-from .constants import BTRACK_PATH
-from .optimise import hypothesis
+from btrack.btypes import PyGraphEdge, PyTrackingInfo, PyTrackObject
+from btrack.constants import BTRACK_PATH
+from btrack.optimise import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -117,6 +117,10 @@ def get_library():  # noqa: PLR0915
     lib.set_update_features.restype = None
     lib.set_update_features.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # set the tracker to store the candidate graph
+    lib.set_store_candidate_graph.restype = None
+    lib.set_store_candidate_graph.argtypes = [ctypes.c_void_p, ctypes.c_bool]
+
     # set the motion model
     lib.motion.restype = None
     lib.motion.argtypes = [
@@ -221,6 +225,14 @@ def get_library():  # noqa: PLR0915
     # get the number of tracks
     lib.size.restype = ctypes.c_uint
     lib.size.argtypes = [ctypes.c_void_p]
+
+    # get the number of graph edges
+    lib.num_edges.restype = ctypes.c_uint
+    lib.num_edges.argtypes = [ctypes.c_void_p]
+
+    # get the graph edges
+    lib.get_graph_edge.restype = PyGraphEdge
+    lib.get_graph_edge.argtypes = [ctypes.c_void_p, ctypes.c_int]
 
     # calculate the hypotheses
     lib.create_hypotheses.restype = ctypes.c_uint

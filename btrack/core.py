@@ -216,6 +216,7 @@ class BayesianTracker:
             "max_search_radius",
             "volume",
             "update_method",
+            "store_candidate_graph",
         ]
         if attr in attrs_to_update and value is not None:
             update_lib_func = getattr(self, f"_{attr}")
@@ -231,6 +232,13 @@ class BayesianTracker:
     def _update_method(self, method: Union[str, constants.BayesianUpdates]):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         self._lib.set_update_mode(self._engine, method.value)
+
+    def _store_candidate_graph(
+        self,
+        store_graph: bool,  # noqa: FBT001
+    ) -> None:
+        """Set the flag to store the candidate graph."""
+        self._lib.set_store_candidate_graph(self._engine, store_graph)
 
     @property
     def n_tracks(self) -> int:
@@ -685,7 +693,19 @@ class BayesianTracker:
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
         return utils.tracks_to_napari(
-            self.tracks,
-            ndim=ndim,
-            replace_nan=replace_nan,
+            self.tracks, ndim=ndim, replace_nan=replace_nan
         )
+
+    def candidate_graph_edges(self) -> List[btypes.PyGraphEdge]:
+        """Return the edges from the full candidate graph."""
+        num_edges = self._lib.num_edges(self._engine)
+        if num_edges < 1:
+            logger.warning(
+                "No edges were found in the candidate graph. "
+                "``config.store_candidate_graph`` is set to "
+                f"{self.configuration.store_candidate_graph}"
+            )
+        return [
+            self._lib.get_graph_edge(self._engine, idx)
+            for idx in range(num_edges)
+        ]

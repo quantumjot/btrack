@@ -148,13 +148,13 @@ class PyTrackObject(ctypes.Structure):
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
-        stats = {
+        node = {
             k: getattr(self, k)
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        stats.update(self.properties)
-        return stats
+        node |= self.properties
+        return node
 
     @staticmethod
     def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
@@ -248,6 +248,39 @@ class PyTrackingInfo(ctypes.Structure):
         """Return the current status."""
         no_error = constants.Errors(self.error) == constants.Errors.NO_ERROR
         return no_error and not self.complete
+
+
+class PyGraphEdge(ctypes.Structure):
+    """A structure defining an edge in the association graph. This is derived
+    from the Bayesian belief matrix in the initial step of the tracking
+    algorithm.
+
+    Parameters
+    ----------
+    source : int
+        A reference to a source object.
+    target : int
+        A reference to a target object.
+    score : float
+        The posterior probability of linking the target object to the source.
+
+    Notes
+    -----
+    This structure does not guarantee that the target timestamp is *after* the
+    source timestamp, we just assume that the tracker has done it's job.
+    """
+
+    _fields_ = [
+        ("source", ctypes.c_long),
+        ("target", ctypes.c_long),
+        ("score", ctypes.c_double),
+        ("edge_type", ctypes.c_uint),
+    ]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a dictionary describing the edge."""
+        edge = {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
+        return edge
 
 
 class Tracklet:

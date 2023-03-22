@@ -225,11 +225,14 @@ def create_test_segmentation_and_tracks(
 
 
 def full_tracker_example(
-    objects: List[btrack.btypes.PyTrackObject],
+    objects: List[btrack.btypes.PyTrackObject], **kwargs
 ) -> btrack.BayesianTracker:
+    """Set up a full tracker example. kwargs can supply configuration options."""
     # run the tracking
     tracker = btrack.BayesianTracker()
     tracker.configure(CONFIG_FILE)
+    for cfg_key, cfg_value in kwargs.items():
+        setattr(tracker, cfg_key, cfg_value)
     tracker.append(objects)
     tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
     tracker.track(step_size=100)

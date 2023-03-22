@@ -12,19 +12,16 @@ authors = [
 ]
 classifiers = [
     "Framework :: napari",
-    "Operating System :: MacOS",
-    "Operating System :: Microsoft :: Windows",
-    "Operating System :: POSIX",
-    "Operating System :: Unix",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
     "Programming Language :: C++",
-    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition",
-    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Visualization",
 ]
 description = "A framework for Bayesian multi-object tracking"
 dynamic = [
@@ -35,6 +32,7 @@ name = "btrack"
 readme = "README.md"
 requires-python = ">=3.8"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
+license.file = "LICENSE.md"
 optional-dependencies.docs = [
     "numpydoc",
     "pytz",
@@ -44,7 +42,23 @@ optional-dependencies.docs = [
     "sphinx",
 ]
 optional-dependencies.napari = [
+    "magicgui>=0.5.0",
+    "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
+    "numpy",
+    "qtpy",
+]
+optional-dependencies.pyqt = [
+    "btrack[napari]",
+    "PyQt5 >= 5.12.3, != 5.15.0",
+]
+optional-dependencies.pyside = [
+    "btrack[napari]",
+    "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
+    "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
+]
+optional-dependencies.qt = [
+    "btrack[pyside]",
 ]
 urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
 urls.documentation = "https://btrack.readthedocs.io"
@@ -104,6 +118,11 @@ ignore = [
     "UP007",
     "UP015",
 ]
+per-file-ignores = {"__init__.py" = [
+    "F401", # unused-import
+], "test_*.py" = [
+    "S101", # use of 'assert'
+]}
 select = [
     "A",
     "B",
@@ -160,23 +179,34 @@ legacy_tox_ini = """
 python =
     3.8: py38
     3.9: py39
-    3.10: py310, py310-napari
+    3.10: py310
 
 [testenv]
 deps =
     dask
+    magicgui
+    napari
+    pyqt5
     pytest
     pytest-cov
+    pytest-qt
+    pytest-xvfb ; sys_platform == 'linux'
+    qtpy
 conda_deps =
     # Use conda to install cvxopt so tests work on macOS
     cvxopt
 conda_channels = conda-forge
 commands = pytest --cov --cov-report=xml
-extras =
-    napari: napari
+passenv =
+    CI
+    DISPLAY
+    GITHUB_ACTIONS
+    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+    PYVISTA_OFF_SCREEN
+    XAUTHORITY
 
 [tox]
-envlist = py{38,39,310}{,-napari}
+envlist = py{38,39,310}
 isolated_build = True
 requires = tox-conda
 """

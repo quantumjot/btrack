@@ -29,7 +29,7 @@ def test_add_widget(make_napari_viewer):
     viewer = make_napari_viewer()
     num_dw = len(list(viewer.window._dock_widgets))
     viewer.window.add_plugin_dock_widget(
-        plugin_name="napari-btrack",
+        plugin_name="btrack",
         widget_name="Track",
     )
 

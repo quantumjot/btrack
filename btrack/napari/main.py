@@ -198,7 +198,7 @@ def save_config_to_json(
     save_path = btrack.napari.widgets.save_path_dialogue_box()
     if save_path is None:
         _msg = (
-            "napari-btrack: Configuration not saved - "
+            "btrack napari plugin: Configuration not saved - "
             "operation cancelled by the user."
         )
         logger.info(_msg)
@@ -221,9 +221,7 @@ def load_config_from_json(
 
     load_path = btrack.napari.widgets.load_path_dialogue_box()
     if load_path is None:
-        _msg = (
-            "napari-btrack: No file loaded - operation cancelled by the user."
-        )
+        _msg = "btrack napari plugin: No file loaded - operation cancelled by the user."
         logger.info(_msg)
         return
 

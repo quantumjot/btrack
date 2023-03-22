@@ -31,4 +31,3 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 ## associated plugins
 
 * [napari-arboretum](https://www.napari-hub.org/plugins/napari-arboretum) - Napari plugin to enable track graph and lineage tree visualization.
-* [napari-btrack](https://github.com/lowe-lab-ucl/napari-btrack) - (Experimental) Napari plugin to provide a frontend GUI for `btrack`.

@@ -7,11 +7,13 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
+from btrack import _version
+
 from . import btypes, config, constants, libwrapper, models, utils
 from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
-__version__ = constants.get_version()
+__version__ = _version.version
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -133,13 +135,6 @@ class BayesianTracker:
 
         # store a default config
         self._config = config.TrackerConfig(verbose=verbose)
-
-        # sanity check library version
-        version_tuple = constants.get_version_tuple()
-        if not self._lib.check_library_version(self._engine, *version_tuple):
-            logger.warning(f"btrack (v{__version__}) shared library mismatch.")
-        else:
-            logger.info(f"btrack (v{__version__}) library imported")
 
         # silently set the update method to EXACT
         self._lib.set_update_mode(

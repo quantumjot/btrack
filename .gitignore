@@ -27,3 +27,4 @@ coverage.xml
 *.DLL
 *.dylib
 *.so
+_version.py

@@ -1,8 +1,10 @@
 import logging
 
-from .core import BayesianTracker, __version__  # noqa: F401
+from ._version import version
+from .core import BayesianTracker
 
 __all__ = ["BayesianTracker"]
+__version__ = version
 
 # get the logger instance
 logger = logging.getLogger(__name__)

@@ -29,10 +29,6 @@ public:
   InterfaceWrapper();
   virtual ~InterfaceWrapper();
 
-  // check that this is the correct version of the shared lib
-  bool check_library_version(const uint8_t a_major, const uint8_t a_minor,
-                             const uint8_t a_build) const;
-
   // set the tracker to store the candidate graph
   void set_store_candidate_graph(const bool a_store_graph);
 

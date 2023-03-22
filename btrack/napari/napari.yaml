@@ -1,0 +1,10 @@
+name: napari-btrack
+schema_version: 0.1.0
+contributions:
+  commands:
+    - id: napari-btrack.track
+      title: Create Track
+      python_name: napari_btrack.main:create_btrack_widget
+  widgets:
+    - command: napari-btrack.track
+      display_name: Track

@@ -2,7 +2,7 @@
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/btrack.svg)](https://python.org)
 [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tests](https://github.com/quantumjot/btrack/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/test.yml)
+[![Tests](https://github.com/quantumjot/btrack/actions/workflows/build_wheels_test_and_deploy.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/build_wheels_test_and_deploy.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/quantumjot/btrack/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/btrack)

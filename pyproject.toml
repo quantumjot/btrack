@@ -45,7 +45,6 @@ optional-dependencies.napari = [
     "magicgui>=0.5.0",
     "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
-    "numpy",
     "qtpy",
 ]
 optional-dependencies.pyqt = [

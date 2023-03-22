@@ -48,7 +48,9 @@ def create_btrack_widget() -> Container:
     # First create our UI along with some default configs for the widgets
     all_configs = btrack.napari.config.create_default_configs()
     widgets = btrack.napari.widgets.create_widgets()
-    btrack_widget = magicgui.widgets.Container(widgets=widgets, scrollable=True)
+    btrack_widget = magicgui.widgets.Container(
+        widgets=widgets, scrollable=True
+    )
     btrack_widget.viewer = napari.current_viewer()
 
     # Set the cell_config defaults in the gui
@@ -153,7 +155,9 @@ def _run_tracker(
         # napari order of dimensions is T(Z)XY
         # so we ignore the first dimension (time) and reverse the others
         dimensions = segmentation.level_shapes[0, 1:]
-        tracker.volume = tuple((0, dimension) for dimension in reversed(dimensions))
+        tracker.volume = tuple(
+            (0, dimension) for dimension in reversed(dimensions)
+        )
 
         # track them (in interactive mode)
         tracker.track_interactive(step_size=100)
@@ -166,7 +170,9 @@ def _run_tracker(
         return data, properties, graph
 
 
-def restore_defaults(btrack_widget: Container, configs: TrackerConfigs) -> None:
+def restore_defaults(
+    btrack_widget: Container, configs: TrackerConfigs
+) -> None:
     """Reload the config file then set widgets to the config's default values."""
 
     config_name = configs.current_config
@@ -184,14 +190,14 @@ def restore_defaults(btrack_widget: Container, configs: TrackerConfigs) -> None:
     )
 
 
-def save_config_to_json(btrack_widget: Container, configs: TrackerConfigs) -> None:
+def save_config_to_json(
+    btrack_widget: Container, configs: TrackerConfigs
+) -> None:
     """Save widget values to file"""
 
     save_path = btrack.napari.widgets.save_path_dialogue_box()
     if save_path is None:
-        _msg = (
-            "napari-btrack: Configuration not saved - operation cancelled by the user."
-        )
+        _msg = "napari-btrack: Configuration not saved - operation cancelled by the user."
         logger.info(_msg)
         return
 
@@ -205,12 +211,16 @@ def save_config_to_json(btrack_widget: Container, configs: TrackerConfigs) -> No
     btrack.config.save_config(save_path, config)
 
 
-def load_config_from_json(btrack_widget: Container, configs: TrackerConfigs) -> None:
+def load_config_from_json(
+    btrack_widget: Container, configs: TrackerConfigs
+) -> None:
     """Load a config from file and set it as the selected base config"""
 
     load_path = btrack.napari.widgets.load_path_dialogue_box()
     if load_path is None:
-        _msg = "napari-btrack: No file loaded - operation cancelled by the user."
+        _msg = (
+            "napari-btrack: No file loaded - operation cancelled by the user."
+        )
         logger.info(_msg)
         return
 

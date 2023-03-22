@@ -70,7 +70,9 @@ def _create_scaling_factor_widgets() -> list[Widget]:
     ]
 
     scaling_factor_widgets = []
-    for value, name, label, tooltip in zip(widget_values, names, labels, tooltips):
+    for value, name, label, tooltip in zip(
+        widget_values, names, labels, tooltips
+    ):
         widget = magicgui.widgets.create_widget(
             value=value,
             name=name,

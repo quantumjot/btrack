@@ -129,7 +129,6 @@ class HDF5FileHandler:
         *,
         obj_type: str = "obj_type_1",
     ):
-
         self._f_expr = None  # DO NOT USE
         self.object_type = obj_type
 

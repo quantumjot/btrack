@@ -293,7 +293,3 @@ def update_segmentation(
         )
 
     return relabeled
-
-
-if __name__ == "__main__":
-    pass

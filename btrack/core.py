@@ -160,7 +160,7 @@ class BayesianTracker:
 
     def configure_from_file(self, filename: os.PathLike) -> None:
         """Configure the tracker from a configuration file. See `configure`."""
-        warnings.warn(
+        warnings.warn(  # noqa: B028
             "This function will be deprecated. Use `.configure()` instead.",
             DeprecationWarning,
         )

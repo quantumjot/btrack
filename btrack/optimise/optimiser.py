@@ -141,7 +141,6 @@ class TrackOptimiser:
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
         for counter, h in enumerate(self.hypotheses):
-
             # set the hypothesis score
             rho[counter] = h.log_likelihood
 

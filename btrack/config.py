@@ -7,6 +7,8 @@ from typing import List, Optional
 import numpy as np
 from pydantic import BaseModel, conlist, validator
 
+from btrack import __version__
+
 from . import constants
 from .btypes import ImagingVolume
 from .models import HypothesisModel, MotionModel, ObjectModel
@@ -71,7 +73,7 @@ class TrackerConfig(BaseModel):
     """
 
     name: str = "Default"
-    version: str = constants.get_version()
+    version: str = __version__
     verbose: bool = False
     motion_model: Optional[MotionModel] = None
     object_model: Optional[ObjectModel] = None

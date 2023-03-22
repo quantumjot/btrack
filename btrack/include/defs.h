@@ -25,16 +25,6 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#ifndef VERSION_MAJOR
-#define VERSION_MAJOR 0
-#endif
-#ifndef VERSION_MINOR
-#define VERSION_MINOR 0
-#endif
-#ifndef VERSION_BUILD
-#define VERSION_BUILD 0
-#endif
-
 #ifndef DEBUG
 #define DEBUG 0
 #endif
@@ -46,9 +36,6 @@
 #endif
 
 // store some information about the compilation
-static unsigned int v_major = VERSION_MAJOR;
-static unsigned int v_minor = VERSION_MINOR;
-static unsigned int v_build = VERSION_BUILD;
 static std::string build_date = __DATE__;
 static std::string build_time = __TIME__;
 

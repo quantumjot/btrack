@@ -22,12 +22,9 @@
 #include <cuda_runtime.h>
 
 // update the belief matrix using a CUDA kernel
-void cost_CUDA( float* belief_matrix,
-                const float* new_positions,
-                const float* predicted_positions,
-                const unsigned int N,
-                const unsigned int T,
-                const float prob_not_assign,
-                const float accuracy );
+void cost_CUDA(float *belief_matrix, const float *new_positions,
+               const float *predicted_positions, const unsigned int N,
+               const unsigned int T, const float prob_not_assign,
+               const float accuracy);
 
 #endif

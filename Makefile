@@ -18,7 +18,7 @@ ifeq ($(UNAME), Darwin)
 	# do something OSX
 	CXX = clang++ -arch x86_64 -arch arm64
 	EXT = dylib
-	XLD_FLAGS = -arch x86_64 -arch arm64
+	XLDFLAGS =
 endif
 
 NVCC = nvcc
@@ -26,7 +26,7 @@ NVCC = nvcc
 # If your compiler is a bit older you may need to change -std=c++17 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
 LLDBFLAGS =
-CXXFLAGS = -c -std=c++17 -m64 -fPIC -I"./btrack/include" \
+CXXFLAGS = -c -std=gnu++17 -m64 -fPIC -I"./btrack/include" \
 	       -DDEBUG=false -DBUILD_SHARED_LIB
 OPTFLAGS = -O3
 LDFLAGS = -shared $(XLDFLAGS)

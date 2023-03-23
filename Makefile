@@ -8,7 +8,7 @@ ifeq ($(UNAME), Linux)
 		XLDFLAGS = -static-libgcc -static-libstdc++
 	else
 		# do something Linux #-fopenmp -static
-		CXX = g++
+		CXX = g++ -lstdc++fs
 		EXT = so
 		XLDFLAGS = -Wl,--no-undefined -Wl,--no-allow-shlib-undefined
 		#-L/usr/local/cuda/lib64 -lcuda -lcudart

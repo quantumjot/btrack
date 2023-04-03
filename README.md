@@ -12,7 +12,7 @@
 
 ![logo](./docs/_static/btrack_logo.png)
 
-# Bayesian Tracker (btrack) :microscope::computer:
+# Bayesian Tracker (btrack) 🔬💻
 
 `btrack` is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
 Here, we use a probabilistic network of information to perform the trajectory linking.
@@ -30,7 +30,7 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 
 [Read more about the science][cellx].
 
-You can also --> :star: :wink:
+You can also --> ⭐ 😉
 
 ## Installation
 

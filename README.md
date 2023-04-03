@@ -10,7 +10,7 @@
 [docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/
 [cellx]: http://lowe.cs.ucl.ac.uk/cellx.html
 
-![logo](./docs/_static/btrack_logo.png)
+![logo](https://btrack.readthedocs.io/en/latest/_images/btrack_logo.png)
 
 # Bayesian Tracker (btrack) 🔬💻
 

@@ -28,7 +28,7 @@ The global solution identifies a sequence of high-likelihood hypotheses that acc
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
-[Read more about the science](cellx).
+[Read more about the science][cellx].
 
 You can also --> ⭐ 😉
 
@@ -55,7 +55,7 @@ pip install btrack
 
 ## Usage examples
 
-Visit [btrack documentation](docs) to learn how to use it and see other examples.
+Visit [btrack documentation][docs] to learn how to use it and see other examples.
 
 ### Cell tracking in time-lapse imaging data
 
@@ -74,7 +74,7 @@ Visit [btrack documentation](docs) to learn how to use it and see other examples
 ## Development
 
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
-If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide](docs-dev).
+If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide][docs-dev].
 
 
 ---

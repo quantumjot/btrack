@@ -1,0 +1,1 @@
+recursive-include btrack/libs *.DLL *.dylib *.so

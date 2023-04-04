@@ -163,6 +163,7 @@ dynamic.dependencies.file = "requirements.txt"
 packages.find = {}
 
 [tool.setuptools_scm]
+local_scheme = "no-local-version"
 write_to = "btrack/_version.py"
 
 [tool.tomlsort]

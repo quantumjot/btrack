@@ -69,6 +69,12 @@ jobs:
       - name: Build distributions
         run: python -m build
 
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TESTPYPI_SECRET }}
+          repository-url: https://test.pypi.org/legacy/
+
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:

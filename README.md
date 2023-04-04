@@ -6,10 +6,6 @@
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/quantumjot/btrack/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/btrack)
 
-[docs]: https://btrack.readthedocs.io/en/latest/
-[docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/
-[cellx]: http://lowe.cs.ucl.ac.uk/cellx.html
-
 ![logo](https://btrack.readthedocs.io/en/latest/_images/btrack_logo.png)
 
 # Bayesian Tracker (btrack) 🔬💻
@@ -27,10 +23,6 @@ The likelihood of each hypothesis is calculated for some or all of the tracklets
 The global solution identifies a sequence of high-likelihood hypotheses that accounts for all observations.
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
-
-[Read more about the science][cellx].
-
-You can also --> ⭐ 😉
 
 ## Installation
 
@@ -55,7 +47,7 @@ pip install btrack
 
 ## Usage examples
 
-Visit [btrack documentation][docs] to learn how to use it and see other examples.
+Visit [btrack documentation](https://btrack.readthedocs.io) to learn how to use it and see other examples.
 
 ### Cell tracking in time-lapse imaging data
 
@@ -74,7 +66,7 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 ## Development
 
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
-If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide][docs-dev].
+If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide](https://btrack.readthedocs.io/en/latest/dev_guide).
 
 
 ---

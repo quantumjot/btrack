@@ -131,4 +131,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TESTPYPI_SECRET }}
-          repository-url: https://test.pypi.org/project/btrack/
+          repository-url: https://test.pypi.org/legacy/

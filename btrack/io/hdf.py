@@ -76,40 +76,34 @@ class HDF5FileHandler:
 
     Notes
     -----
-    ```
-    Basic format of the HDF file is:
+    Basic format of the HDF file is::
 
-    data.h5/
-    ├─ segmentation/
-    │  ├─ images                (J x (d) x h x w) uint16 segmentation
-    ├─ objects/
-    │  ├─ obj_type_1/
-    │  │  ├─ coords             (I x 5) [t, x, y, z, object_type]
-    │  │  ├─ labels             (I x D) [label, (softmax scores ...)]
-    │  │  ├─ map                (J x 2) [start_index, end_index] -> coords array
-    │  │  ├─ properties /
-    │  │  │  ├─ area            (I x 1) first named property (e.g. `area`)
-    │  │  │  ├─ ...
-    │  ├─ obj_type_2/
-    │  ├─ ...
-    ├─ tracks/
-    │  ├─ obj_type_1/
-    │  │  ├─ tracks             (I x 1) [index into coords]
-    │  │  ├─ dummies            similar to objects/coords, but for dummy objects
-    │  │  ├─ map                (K x 2) [start_index, end_index] -> tracks array
-    │  │  ├─ LBEPRG             (K x 6) [L, B, E, P, R, G]
-    │  │  ├─ fates              (K x n) [fate_from_tracker, ...future_expansion]
-    │  ├─ obj_type_2/
-    │  ├─ ...
+        data.h5/
+        ├─ segmentation/
+        │  ├─ images                (J x (d) x h x w) uint16 segmentation
+        ├─ objects/
+        │  ├─ obj_type_1/
+        │  │  ├─ coords             (I x 5) [t, x, y, z, object_type]
+        │  │  ├─ labels             (I x D) [label, (softmax scores ...)]
+        │  │  ├─ map                (J x 2) [start_index, end_index] -> coords array
+        │  │  ├─ properties /
+        │  │  │  ├─ area            (I x 1) first named property (e.g. `area`)
+        │  │  │  ├─ ...
+        │  ├─ obj_type_2/
+        │  ├─ ...
+        ├─ tracks/
+        │  ├─ obj_type_1/
+        │  │  ├─ tracks             (I x 1) [index into coords]
+        │  │  ├─ dummies            similar to objects/coords, but for dummy objects
+        │  │  ├─ map                (K x 2) [start_index, end_index] -> tracks array
+        │  │  ├─ LBEPRG             (K x 6) [L, B, E, P, R, G]
+        │  │  ├─ fates              (K x n) [fate_from_tracker, ...future_expansion]
+        │  ├─ obj_type_2/
+        │  ├─ ...
 
-    Where:
-        I - number of objects
-        J - number of frames
-        K - number of tracks
-    ```
-
-    LBEPR is a modification of the LBEP format to also include the root node
-    of the tree.
+    Where ``I`` is the number of objects, ``J`` is the number of frames and
+    ``K`` is number of tracks. LBEPR is a modification of the LBEP format to
+    also include the root node of the tree.
 
 
     Examples

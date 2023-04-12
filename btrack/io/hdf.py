@@ -109,15 +109,19 @@ class HDF5FileHandler:
     Examples
     --------
     Read objects from a file:
+
     >>> with HDF5FileHandler('file.h5', 'r') as handler:
-    >>>    objects = handler.objects
+    ...    objects = handler.objects
 
     Use filtering by property for object retrieval:
+
     >>> obj = handler.filtered_objects('flag==1')
-    >>> obj = handler.filtered_objects('area>100')
+    ... obj = handler.filtered_objects('area>100')
 
     Write tracks directly to a file:
+
     >>> handler.write_tracks(tracks)
+
     """
 
     def __init__(

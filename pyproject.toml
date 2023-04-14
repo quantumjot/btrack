@@ -88,7 +88,9 @@ target-version = [
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
-run = {branch = true, parallel = true, source = ["btrack"]}
+run = {branch = true, parallel = true, source = [
+    "btrack",
+]}
 paths.source = [
     "btrack",
     ".tox*/*/lib/python*/site-packages",
@@ -152,7 +154,9 @@ select = [
     "YTT",
 ]
 target-version = "py38"
-isort.known-first-party = ["btrack"]
+isort.known-first-party = [
+    "btrack",
+]
 mccabe.max-complexity = 18
 pep8-naming.classmethod-decorators = [
     "classmethod",

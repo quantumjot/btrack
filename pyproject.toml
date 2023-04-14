@@ -117,6 +117,19 @@ ignore = [
     "UP007",
     "UP015",
 ]
+isort = {known-first-party = [
+    "black",
+], section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "napari",
+    "first-party",
+    "local-folder",
+], "sections.napari" = [
+    "magicgui",
+    "napari",
+]}
 per-file-ignores = {"__init__.py" = [
     "F401", # unused-import
 ], "test_*.py" = [
@@ -150,9 +163,6 @@ select = [
     "YTT",
 ]
 target-version = "py38"
-isort.known-first-party = [
-    "btrack",
-]
 mccabe.max-complexity = 18
 pep8-naming.classmethod-decorators = [
     "classmethod",
@@ -175,6 +185,7 @@ trailing_comma_inline_array = true
 overrides."project.classifiers".inline_arrays = false
 overrides."tool.black.target-version".inline_arrays = false
 overrides."tool.coverage.paths.source".inline_arrays = false
+overrides."tool.ruff.isort.section-order".inline_arrays = false
 
 [tool.tox]
 legacy_tox_ini = """

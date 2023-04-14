@@ -34,22 +34,22 @@ name = "btrack"
 optional-dependencies = {docs = [
     "numpydoc",
     "pytz",
-    "sphinx_rtd_theme",
+    "sphinx",
     "sphinx-automodapi",
     "sphinx-panels",
-    "sphinx",
+    "sphinx_rtd_theme",
 ], napari = [
     "magicgui>=0.5.0",
     "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
     "qtpy",
 ], pyqt = [
-    "btrack[napari]",
     "PyQt5 >= 5.12.3, != 5.15.0",
-], pyside = [
     "btrack[napari]",
+], pyside = [
     "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
     "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
+    "btrack[napari]",
 ], qt = [
     "btrack[pyside]",
 ]}
@@ -80,7 +80,11 @@ exclude = '''
 )
 '''
 line-length = 79
-target-version = ["py38", "py39", "py310"]
+target-version = [
+    "py38",
+    "py39",
+    "py310",
+]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
@@ -165,11 +169,12 @@ local_scheme = "no-local-version"
 write_to = "btrack/_version.py"
 
 [tool.tomlsort]
-sort_inline_arrays = false
-sort_inline_tables = true
-sort_table_keys = true
+all = true
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
+overrides."project.classifiers".inline_arrays = false
+overrides."tool.black.target-version".inline_arrays = false
+overrides."tool.coverage.paths.source".inline_arrays = false
 
 [tool.tox]
 legacy_tox_ini = """

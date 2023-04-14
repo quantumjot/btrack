@@ -160,7 +160,7 @@ class PyTrackObject(ctypes.Structure):
     def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = {k: kt for k, kt in PyTrackObject._fields_}
+        fields = dict(PyTrackObject._fields_)
         attr = [k for k in fields if k in properties]
         for key in attr:
             new_data = properties[key]

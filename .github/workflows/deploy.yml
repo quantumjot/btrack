@@ -26,7 +26,8 @@ jobs:
           sudo apt-get install -y mingw-w64
         if: matrix.windows_cross_compile
 
-      - uses: actions/checkout@v3
+      - name: Checkout source
+        uses: actions/checkout@v3
 
       - name: Build wheels
         run: bash build.sh
@@ -81,12 +82,6 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v3
-
-      - name: Download artefacts
-        uses: actions/download-artifact@v3
-        with:
-            name: artefacts
-            path: btrack/libs
 
       - name: Set up python
         uses: actions/setup-python@v4

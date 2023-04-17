@@ -16,6 +16,15 @@ def test_create_object():
         np.testing.assert_equal(getattr(obj, k), v)
 
 
+def test_object_to_dict():
+    """Test than an object can be converted to a dictionary using the built-in
+    method."""
+    obj, data = create_test_object()
+    obj_as_dict = obj.to_dict()
+    for k, v in data.items():
+        np.testing.assert_equal(obj_as_dict[k], v)
+
+
 @pytest.mark.parametrize("properties", [{}, create_test_properties()])
 def test_create_object_with_properties(properties: dict):
     """Test an object with some properties."""

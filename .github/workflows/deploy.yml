@@ -13,11 +13,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
-        windows_cross_compile: [false, true]
-        exclude:
-          - os: macos-latest
-            windows_cross_compile: true
+        # os: [macos-latest, ubuntu-latest]
+        # windows_cross_compile: [false, true]
+        include:
+          - os: ubuntu-latest
+            windows_cross_compile: false
 
     steps:
       - name: Install dependencies

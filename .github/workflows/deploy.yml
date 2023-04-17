@@ -17,7 +17,7 @@ jobs:
         windows_cross_compile: [false, true]
         exclude:
           - os: macos-latest
-            windows_cross_compile: false
+            windows_cross_compile: true
 
     steps:
       - name: Install dependencies

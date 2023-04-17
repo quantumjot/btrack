@@ -41,7 +41,7 @@ jobs:
               btrack/libs/*
             if-no-files-found: error
 
-  deploy:
+  deploy-to-testpypi:
     needs: build_wheels
     runs-on: "ubuntu-latest"
     steps:
@@ -74,6 +74,68 @@ jobs:
         with:
           password: ${{ secrets.TESTPYPI_SECRET }}
           repository-url: https://test.pypi.org/legacy/
+
+  verify-testpypi-contains-binary:
+    needs: build_wheels
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Download artefacts
+        uses: actions/download-artifact@v3
+        with:
+            name: artefacts
+            path: btrack/libs
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - name: Install package from TestPyPI
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install \
+          -i https://test.pypi.org/simple/ \
+          --extra-index-url https://pypi.org/simple \
+          --upgrade btrack
+
+      - name: Create BayesianTracker instance
+        run: |
+          import btrack
+          btrack.BayesianTracker()
+        shell: python
+
+  deploy-to-pypi:
+    needs: verify-testpypi-contains-binary
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v3
+
+      - name: Download artefacts
+        uses: actions/download-artifact@v3
+        with:
+            name: artefacts
+            path: btrack/libs
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+
+      - name: Build distributions
+        run: python -m build
 
       - name: Publish package to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1

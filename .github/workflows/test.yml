@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: |
+        run: |-
           sudo apt-get update
           sudo apt-get install -y mingw-w64
         if: matrix.windows_cross_compile
@@ -89,8 +89,7 @@ jobs:
       # and
       # tox-conda: https://github.com/tox-dev/tox-conda
       - name: Install dependencies
-        run: |
-          python -m pip install "tox<4" tox-gh-actions tox-conda
+        run: python -m pip install "tox<4" tox-gh-actions tox-conda
 
       - name: Test with tox
         run: tox

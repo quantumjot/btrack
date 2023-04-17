@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Install dependencies
-        run: |
+        run: |-
           sudo apt-get update
           sudo apt-get install -y mingw-w64
         if: matrix.windows_cross_compile
@@ -101,7 +101,7 @@ jobs:
           --upgrade btrack
 
       - name: Create BayesianTracker instance
-        run: |
+        run: |-
           import btrack
           btrack.BayesianTracker()
         shell: python

@@ -63,9 +63,7 @@ jobs:
           cache-dependency-path: "pyproject.toml"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
+        run: python -m pip install build
 
       - name: Build distributions
         run: python -m build
@@ -95,9 +93,6 @@ jobs:
           python-version: "3.10"
           cache: "pip"
           cache-dependency-path: "pyproject.toml"
-
-      - name: Upgrade pip
-        run: python -m pip install --upgrade pip
 
       - name: Install package from TestPyPI
         run: >-
@@ -133,9 +128,7 @@ jobs:
           cache-dependency-path: "pyproject.toml"
 
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
+        run: python -m pip install build
 
       - name: Build distributions
         run: python -m build

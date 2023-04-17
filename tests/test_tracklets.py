@@ -17,7 +17,7 @@ def test_create_object():
 
 
 def test_object_to_dict():
-    """Test than an object can be converted to a dictionary using the built-in
+    """Test that an object can be converted to a dictionary using the built-in
     method."""
     obj, data = create_test_object()
     obj_as_dict = obj.to_dict()
@@ -99,3 +99,17 @@ def test_create_tracklet_with_properties(track_len: int):
 
     for k, v in properties.items():
         np.testing.assert_equal(t_properties[k], v)
+
+
+def test_tracklet_to_dict():
+    """Test that a tracklet can be converted to a dictionary using the built-in
+    method."""
+    track_len = 10
+    tracklet, data, properties, track_ID = create_test_tracklet(track_len)
+    tracklet_as_dict = tracklet.to_dict()
+    # now check that the track data is correct
+    assert track_ID == tracklet_as_dict["ID"]
+    fields = ["x", "y", "z", "t"]
+    for field in fields:
+        obj_data = [getattr(obj, field) for obj in data]
+        np.testing.assert_equal(obj_data, tracklet_as_dict[field])

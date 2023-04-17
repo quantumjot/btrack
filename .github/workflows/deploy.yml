@@ -13,10 +13,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-11, ubuntu-20.04]
         windows_cross_compile: [false, true]
         exclude:
-          - os: macos-latest
+          - os: macos-11
             windows_cross_compile: true
 
     steps:

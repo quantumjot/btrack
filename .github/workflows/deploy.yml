@@ -78,7 +78,12 @@ jobs:
 
   verify-testpypi-contains-binary:
     needs: deploy-to-testpypi
-    runs-on: "ubuntu-latest"
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
     steps:
       - name: Checkout source
         uses: actions/checkout@v3

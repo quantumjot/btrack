@@ -77,7 +77,7 @@ jobs:
           repository-url: https://test.pypi.org/legacy/
 
   verify-testpypi-contains-binary:
-    needs: build_wheels
+    needs: deploy-to-testpypi
     runs-on: "ubuntu-latest"
     steps:
       - name: Checkout source

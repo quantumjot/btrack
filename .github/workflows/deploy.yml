@@ -110,35 +110,35 @@ jobs:
           btrack.BayesianTracker()
         shell: python
 
-  deploy-to-pypi:
-    needs: build_wheels
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+  # deploy-to-pypi:
+  #   needs: build_wheels
+  #   runs-on: "ubuntu-latest"
+  #   steps:
+  #     - name: Checkout source
+  #       uses: actions/checkout@v3
 
-      - name: Download artefacts
-        uses: actions/download-artifact@v3
-        with:
-            name: artefacts
-            path: btrack/libs
+  #     - name: Download artefacts
+  #       uses: actions/download-artifact@v3
+  #       with:
+  #           name: artefacts
+  #           path: btrack/libs
 
-      - name: Set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-          cache: "pip"
-          cache-dependency-path: "pyproject.toml"
+  #     - name: Set up python
+  #       uses: actions/setup-python@v4
+  #       with:
+  #         python-version: "3.x"
+  #         cache: "pip"
+  #         cache-dependency-path: "pyproject.toml"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
+  #     - name: Install dependencies
+  #       run: |
+  #         python -m pip install --upgrade pip
+  #         python -m pip install build
 
-      - name: Build distributions
-        run: python -m build
+  #     - name: Build distributions
+  #       run: python -m build
 
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_PASSWORD }}
+  #     - name: Publish package to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         password: ${{ secrets.PYPI_PASSWORD }}

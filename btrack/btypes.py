@@ -153,7 +153,7 @@ class PyTrackObject(ctypes.Structure):
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        node |= self.properties
+        node.update(self.properties)
         return node
 
     @staticmethod

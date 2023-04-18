@@ -8,7 +8,7 @@ Installing the latest development version
 .. |Python| image:: https://img.shields.io/pypi/pyversions/btrack
 
 ``btrack`` has been tested with |Python| on ``x86_64`` ``macos>=11``,
-``ubuntu>=20.04`` and ``windows>=10.0.17763 Build 4131``.
+``ubuntu>=20.04`` and ``windows>=10.0.17763``.
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
 
 If you would rather install the latest development version, and/or compile directly from source, you can clone and install from this repo:

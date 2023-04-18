@@ -10,7 +10,7 @@ Requirements
 .. |Python| image:: https://img.shields.io/pypi/pyversions/btrack
 
 ``btrack`` has been tested with |Python| on ``x86_64`` ``macos>=11``,
-``ubuntu>=20.04`` and ``windows>=10.0.17763 Build 4131``.
+``ubuntu>=20.04`` and ``windows>=10.0.17763``.
 
 Installing Scientific Python
 ============================

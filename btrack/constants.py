@@ -1,8 +1,7 @@
 import enum
-import os
 from pathlib import Path
 
-BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+BTRACK_PATH = Path(__file__).resolve().parent
 BTRACK_LIB_PATH = Path(BTRACK_PATH) / "libs" / "libtracker"
 
 MAX_SEARCH_RADIUS = 100

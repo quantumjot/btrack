@@ -17,7 +17,7 @@ endif
 ifeq ($(UNAME), Darwin)
 	# do something OSX
 	CXX = clang++ -arch x86_64 -arch arm64
-	EXT = dylib
+	EXT = so
 	XLD_FLAGS = -arch x86_64 -arch arm64
 endif
 

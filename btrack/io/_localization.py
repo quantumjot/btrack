@@ -227,7 +227,7 @@ def segmentation_to_objects(
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
     if isinstance(properties, tuple) and "label" in properties:
-        logger.warning("Cannot use scikit-image label as a property.")
+        logger.warning("Cannot use `scikit-image` `label` as a property.")
         properties = set(properties)
         properties.remove("label")
         properties = tuple(properties)

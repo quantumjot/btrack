@@ -118,6 +118,27 @@ def test_regionprops():
         assert set(obj.properties.keys()) == set(properties)
 
 
+def test_extra_regionprops():
+    """Test adding a callable function for extra property calculation."""
+    img, centroids = create_test_image()
+
+    def extra_prop(_mask) -> float:
+        return np.sum(_mask)
+
+    extra_properties = (extra_prop,)
+
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...],
+        extra_properties=extra_properties,
+    )
+
+    extra_prop_keys = [fn.__name__ for fn in extra_properties]
+
+    # check that the properties keys match
+    for obj in objects:
+        assert set(obj.properties.keys()) == set(extra_prop_keys)
+
+
 @pytest.mark.parametrize("ndim", [2, 3])
 def test_intensity_image(default_rng, ndim):
     """Test using an intensity image."""

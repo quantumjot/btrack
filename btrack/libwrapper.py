@@ -77,7 +77,7 @@ def load_library(filename: os.PathLike) -> ctypes.CDLL:
     system = platform.system()
 
     file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".DLL"}
-    full_lib_file = lib_file.with_suffix(file_ext[system])
+    full_lib_file = str(lib_file.with_suffix(file_ext[system]))
 
     lib = ctypes.cdll.LoadLibrary(full_lib_file)
     logger.info(f"Loaded btrack: {full_lib_file}")

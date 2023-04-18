@@ -14,6 +14,7 @@ __all__ = [
     "HDF5FileHandler",
     "import_CSV",
     "localizations_to_objects",
+    "segmentation_to_objects",
     "objects_from_array",
     "objects_from_dict",
 ]

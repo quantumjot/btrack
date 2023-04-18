@@ -22,7 +22,7 @@ jobs:
         run: |-
           sudo apt-get update
           sudo apt-get install -y mingw-w64
-        if: matrix.windows_cross_compile
+        if: ${{ matrix.windows_cross_compile }}
 
       - uses: actions/checkout@v3
 

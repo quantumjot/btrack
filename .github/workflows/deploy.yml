@@ -38,8 +38,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
             name: artefacts
-            path: |
-              btrack/libs/*
+            path: btrack/libs/*
             if-no-files-found: error
 
   deploy-to-testpypi:

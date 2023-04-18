@@ -7,9 +7,9 @@ Installation
 Requirements
 ============
 
-``btrack`` has been tested with |PythonVersion| on ``x86_64`` ``macos>=11``, ``ubuntu>=20.04`` and ``windows>=2019``.
-
 .. |PythonVersion| image:: https://img.shields.io/pypi/pyversions/btrack.svg
+
+``btrack`` has been tested with |PythonVersion| on ``x86_64`` ``macos>=11``, ``ubuntu>=20.04`` and ``windows>=2019``.
 
 Installing Scientific Python
 ============================

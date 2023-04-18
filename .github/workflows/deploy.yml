@@ -7,11 +7,17 @@ on:
 
 jobs:
   build_wheels:
-    name: Windows_cross_compile=${{ matrix.windows_cross_compile }}
-    runs-on: ubuntu-20.04
+    name: |
+      Build wheels on ${{ matrix.os }} with
+      windows_cross_compile=${{ matrix.windows_cross_compile }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [macos-11, ubuntu-20.04]
         windows_cross_compile: [false, true]
+        exclude:
+          - os: macos-11
+            windows_cross_compile: true
 
     steps:
       - name: Install dependencies
@@ -32,7 +38,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
             name: artefacts
-            path: btrack/libs/*
+            path: |
+              btrack/libs/*
             if-no-files-found: error
 
   deploy-to-testpypi:

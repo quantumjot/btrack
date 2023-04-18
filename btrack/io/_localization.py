@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import dataclasses
 import inspect
 import logging
-from typing import Generator, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np
-from skimage.measure import label, regionprops_table
+import numpy.typing as npt
+from skimage.measure import label, regionprops, regionprops_table
 
 from btrack import btypes
 from btrack.constants import Dimensionality
@@ -16,119 +18,159 @@ from .utils import localizations_to_objects
 logger = logging.getLogger(__name__)
 
 
-def _centroids_from_single_arr(
-    segmentation: Union[np.ndarray, Generator],
+try:
+    from tqdm import tqdm
+except ImportError:
+
+    def tqdm(iterator, *args, **kwargs):
+        logger.info("Try installing ``tqdm`` for progress bar rendering.")
+        return iterator
+
+
+def _is_unique(x: npt.NDArray) -> bool:
+    """Check whether a segmentation is equivalent to the labeled version."""
+    # check if image is uniquely labelled (necessary for regionprops)
+    # return np.max(label(x)) == np.max(x)
+    return np.array_equal(label(x), x)
+
+
+def _nodes_from_single_arr(
+    segmentation: npt.NDArray,
     properties: Tuple[str],
     frame: int,
-    intensity_image: Optional[np.ndarray] = None,
-    scale: Optional[Tuple[float]] = None,
     *,
-    use_weighted_centroid: bool = False,
+    centroid_type: str = "centroid",
+    intensity_image: Optional[npt.NDArray] = None,
+    scale: Optional[Tuple[float]] = None,
     assign_class_ID: bool = False,
-) -> np.ndarray:
+    extra_properties: Optional[Tuple[Callable]] = None,
+) -> Dict[str, Any]:
     """Return the object centroids from a numpy array representing the
     image data."""
 
     if np.sum(segmentation) == 0:
         return {}
 
-    def _is_unique(x: np.ndarray) -> bool:
-        # check if image is uniquely labelled (necessary for regionprops)
-        return np.max(label(x)) == np.max(x)
+    if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
+        raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-    if use_weighted_centroid and intensity_image is not None:
-        CENTROID_PROPERTY = "weighted_centroid"
-    else:
-        CENTROID_PROPERTY = "centroid"
+    labeled = (
+        label(segmentation) if not _is_unique(segmentation) else segmentation
+    )
+    props = regionprops(
+        labeled,
+        intensity_image=intensity_image,
+        extra_properties=extra_properties,
+    )
+    num_nodes = len(props)
+    scale = tuple([1.0] * segmentation.ndim) if scale is None else scale
 
-    if CENTROID_PROPERTY not in properties:
-        properties = (CENTROID_PROPERTY, *properties)
+    if len(scale) != segmentation.ndim:
+        raise ValueError(
+            f"Scale dimensions do not match segmentation: {scale}."
+        )
 
-    # if class id is specified then extract that property first
+    centroids = list(
+        zip(*[getattr(props[idx], centroid_type) for idx in range(num_nodes)])
+    )[::-1]
+    centroid_dims = ["x", "y", "z"][: segmentation.ndim]
+
+    coords = {
+        centroid_dims[dim]: np.asarray(centroids[dim]) * scale[::-1][dim]
+        for dim in range(len(centroids))
+    }
+
+    nodes = {"t": [frame] * num_nodes}
+    nodes.update(coords)
+
+    extra_img_props = tuple(
+        [str(fn.__name__) for fn in extra_properties]
+        if extra_properties
+        else []
+    )
+    img_props = properties + extra_img_props
+
+    for img_prop in img_props:
+        nodes[img_prop] = [
+            getattr(props[idx], img_prop) for idx in range(num_nodes)
+        ]
+
     if assign_class_ID:
-        # ensure regionprops can properly read label image
-        labeled = label(segmentation)
-
-        # pull class_ID from segments using pixel intensity
-        _class_ID_centroids = regionprops_table(
+        _class_id = regionprops_table(
             labeled,
             intensity_image=segmentation,
             properties=("max_intensity",),
         )
+        nodes["class_id"] = _class_id["max_intensity"]
 
-        # rename class_ID column and remove keyword from properties
-        _class_ID_centroids["class_id"] = _class_ID_centroids.pop(
-            "max_intensity"
-        )
-
-        # run regionprops to record other intensity image properties
-        _centroids = regionprops_table(
-            labeled,
-            intensity_image=intensity_image,
-            properties=properties,
-        )
-
-        # merge centroids with class ID centroids
-        _centroids.update(_class_ID_centroids)
-
-        assert "class_id" in _centroids, _centroids.keys()
-
-    else:
-        # check to see whether the segmentation is unique
-        labeled = (
-            label(segmentation)
-            if not _is_unique(segmentation)
-            else segmentation
-        )
-
-        _centroids = regionprops_table(
-            labeled,
-            intensity_image=intensity_image,
-            properties=properties,
-        )
-
-    # add time to the array
-    _centroids["t"] = np.full(
-        _centroids[f"{CENTROID_PROPERTY}-0"].shape, frame
-    )
-
-    # apply the anistropic scaling
-    if scale is not None:
-        if len(scale) != segmentation.ndim:
-            raise ValueError("Scale dimensions do not match segmentation.")
-
-        # perform the anistropic scaling
-        for dim in range(segmentation.ndim):
-            _centroids[f"{CENTROID_PROPERTY}-{dim}"] = np.multiply(
-                _centroids[f"{CENTROID_PROPERTY}-{dim}"], float(scale[dim])
-            )
-
-    # now rename the axes for btrack
-    dim_names = ["z", "y", "x"][-(segmentation.ndim) :]
-    for dim in range(segmentation.ndim):
-        dim_name = dim_names[dim]
-        _centroids[dim_name] = _centroids.pop(f"{CENTROID_PROPERTY}-{dim}")
-
-    return _centroids
+    return nodes
 
 
-def _concat_centroids(centroids, new_centroids):
+def _concat_nodes(
+    nodes: Dict[str, Any], new_nodes: Dict[str, Any]
+) -> Dict[str, Any]:
     """Concatentate centroid dictionaries."""
-    for key, values in new_centroids.items():
-        if key not in centroids:
-            centroids[key] = values
+    for key, values in new_nodes.items():
+        if key not in nodes:
+            nodes[key] = values
         else:
-            centroids[key] = np.concatenate([centroids[key], values])
-    return centroids
+            nodes[key] = np.concatenate([nodes[key], values])
+    return nodes
 
 
-def segmentation_to_objects(  # noqa: PLR0913
+@dataclasses.dataclass
+class SegmentationContainer:
+    """Container for segmentation data."""
+
+    segmentation: Union[Generator, npt.NDArray]
+    intensity_image: Optional[Union[Generator, npt.NDArray]] = None
+
+    def __post_init__(self):
+        self._is_generator = inspect.isgeneratorfunction(
+            self.segmentation
+        ) or isinstance(self.segmentation, Generator)
+
+    def __iter__(self):
+        self._iter = 0
+        return self
+
+    def __next__(self):
+        if self._is_generator:
+            seg = next(self.segmentation)
+            intens = (
+                next(self.intensity_image)
+                if self.intensity_image is not None
+                else None
+            )
+        elif self._iter < len(self):
+            seg = np.asarray(self.segmentation[self._iter, ...])
+            intens = (
+                np.asarray(self.intensity_image[self._iter, ...])
+                if self.intensity_image is not None
+                else None
+            )
+        else:
+            raise StopIteration
+
+        data = (self._iter, seg, intens)
+        self._iter += 1
+        return data
+
+    def __len__(self) -> int:
+        if not self._is_generator:
+            return self.segmentation.shape[0]
+        return 0
+
+
+def segmentation_to_objects(
     segmentation: Union[np.ndarray, Generator],
+    *,
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
     properties: Optional[Tuple[str]] = (),
+    extra_properties: Optional[Tuple[Callable]] = None,
     scale: Optional[Tuple[float]] = None,
-    use_weighted_centroid: bool = True,  # noqa: FBT001,FBT002
-    assign_class_ID: bool = False,  # noqa: FBT001,FBT002
+    use_weighted_centroid: bool = True,
+    assign_class_ID: bool = False,
 ) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 
@@ -143,6 +185,9 @@ def segmentation_to_objects(  # noqa: PLR0913
     properties : tuple of str, optional
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
+        See `skimage.measure.regionprops` for more info.
+    extra_properties : tuple of callable
+        Callable functions to calculate additional properties.
         See `skimage.measure.regionprops` for more info.
     scale : tuple
         A scale for each spatial dimension of the input segmentation. Defaults
@@ -170,26 +215,14 @@ def segmentation_to_objects(  # noqa: PLR0913
     ... )
     """
 
-    centroids: dict = {}
-    USE_INTENSITY = False
-    USE_WEIGHTED = False
-
+    nodes: dict = {}
     logger.info("Localizing objects from segmentation...")
 
-    # if we have an intensity image, add that here
-    if intensity_image is not None:
-        if type(intensity_image) != type(segmentation):
-            raise TypeError(
-                "Segmentation and intensity image must be the same type."
-            )
-        USE_INTENSITY = True
-        USE_WEIGHTED = use_weighted_centroid and USE_INTENSITY
-
-    if USE_INTENSITY:
-        logger.info("Found intensity_image data")
-
-    if USE_WEIGHTED:
-        logger.info("Calculating weighted centroids using intensity_image")
+    centroid_type = (
+        "centroid_weighted"
+        if (use_weighted_centroid and intensity_image is not None)
+        else "centroid"
+    )
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
@@ -199,60 +232,30 @@ def segmentation_to_objects(  # noqa: PLR0913
         properties.remove("label")
         properties = tuple(properties)
 
-    if inspect.isgeneratorfunction(segmentation) or isinstance(
-        segmentation, Generator
-    ):
-        for frame, seg in enumerate(segmentation):
-            intens = next(intensity_image) if USE_INTENSITY else None
-            _centroids = _centroids_from_single_arr(
-                seg,
-                properties,
-                frame,
-                intensity_image=intens,
-                scale=scale,
-                use_weighted_centroid=USE_WEIGHTED,
-                assign_class_ID=assign_class_ID,
-            )
+    container = SegmentationContainer(segmentation, intensity_image)
 
-            # concatenate the centroids
-            centroids = _concat_centroids(centroids, _centroids)
+    for frame, seg, intens in tqdm(container, total=len(container)):
+        _nodes = _nodes_from_single_arr(
+            seg,
+            properties,
+            frame,
+            intensity_image=intens,
+            scale=scale,
+            centroid_type=centroid_type,
+            assign_class_ID=assign_class_ID,
+            extra_properties=extra_properties,
+        )
 
-    else:
-        if segmentation.ndim not in (
-            Dimensionality.THREE,
-            Dimensionality.FOUR,
-        ):
-            raise ValueError("Segmentation array must have 3 or 4 dims.")
+        # concatenate the centroids
+        nodes = _concat_nodes(nodes, _nodes)
 
-        for frame in range(segmentation.shape[0]):
-            # try to cast to numpy array, should work for dask arrays and implicitly
-            # call the `.compute()` method
-            seg = np.asarray(segmentation[frame, ...])
-            intens = (
-                np.asarray(intensity_image[frame, ...])
-                if USE_INTENSITY
-                else None
-            )
-            _centroids = _centroids_from_single_arr(
-                seg,
-                properties,
-                frame,
-                intensity_image=intens,
-                scale=scale,
-                use_weighted_centroid=USE_WEIGHTED,
-                assign_class_ID=assign_class_ID,
-            )
-
-            # concatenate the centroids
-            centroids = _concat_centroids(centroids, _centroids)
-
-    if not centroids:
+    if not nodes:
         logger.warning("...Found no objects.")
         return []
 
     # now create the btrack objects
-    objects = localizations_to_objects(centroids)
-    n_frames = int(np.max(centroids["t"]) + 1)
+    objects = localizations_to_objects(nodes)
+    n_frames = int(np.max(nodes["t"]) + 1)
 
     logger.info(f"...Found {len(objects)} objects in {n_frames} frames.")
 

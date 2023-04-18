@@ -2,12 +2,14 @@ import ctypes
 import logging
 import os
 import platform
+from pathlib import Path
 
 import numpy as np
 
 from btrack.btypes import PyGraphEdge, PyTrackingInfo, PyTrackObject
-from btrack.constants import BTRACK_PATH
+from btrack.constants import BTRACK_LIB_PATH
 from btrack.optimise import hypothesis
+from btrack.utils import log_debug_info
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -56,7 +58,8 @@ def np_int_vec_p():
     )  # , flags='C_CONTIGUOUS')
 
 
-def load_library(filename):
+@log_debug_info
+def load_library(filename: os.PathLike) -> ctypes.CDLL:
     """Return the platform for shared library loading.
 
     Parameters
@@ -70,28 +73,22 @@ def load_library(filename):
         The ctypes `btrack` library.
     """
 
-    if not isinstance(filename, str):
-        raise TypeError("Filename must be a string")
-
-    lib_file, ext = os.path.splitext(filename)
-
+    lib_file = Path(filename)
     system = platform.system()
 
     file_ext = {"Linux": ".so", "Darwin": ".dylib", "Windows": ".DLL"}
-    full_lib_file = lib_file + file_ext[system]
+    full_lib_file = lib_file.with_suffix(file_ext[system])
 
-    try:
-        lib = ctypes.cdll.LoadLibrary(full_lib_file)
-        logger.info(f"Loaded btrack: {full_lib_file}")
-    except OSError as err:
-        raise OSError(f"Cannot load shared library {full_lib_file}") from err
+    lib = ctypes.cdll.LoadLibrary(full_lib_file)
+    logger.info(f"Loaded btrack: {full_lib_file}")
 
     return lib
 
 
-def get_library():  # noqa: PLR0915
+def get_library() -> ctypes.CDLL:  # noqa: PLR0915
     """Loads and returns the btrack shared library."""
-    lib = load_library(os.path.join(BTRACK_PATH, "libs", "libtracker"))
+
+    lib = load_library(BTRACK_LIB_PATH)
 
     # deal with constructors/destructors
     lib.new_interface.restype = ctypes.c_void_p

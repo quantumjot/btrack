@@ -7,7 +7,7 @@ Installation
 Requirements
 ============
 
-.. |Python| image:: https://img.shields.io/pypi/pyversions/btrack.svg
+.. |Python| image:: https://img.shields.io/pypi/pyversions/btrack
 
 ``btrack`` has been tested with |Python| on ``x86_64`` ``macos>=11``,
 ``ubuntu>=20.04`` and ``windows>=2019``.

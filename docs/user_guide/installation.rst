@@ -7,7 +7,10 @@ Installation
 Requirements
 ============
 
-btrack has been tested with Python 3.8+ on OS X, Linux and Win10.
+``btrack`` has been tested with |Latest Version| on ``x86_64`` ``macos>=11``, ``ubuntu>=20.04`` and ``windows>=2019``.
+
+.. |Latest Version| image:: https://img.shields.io/pypi/v/sunpy.svg
+   :target: https://pypi.python.org/pypi/sunpy/
 
 Installing Scientific Python
 ============================

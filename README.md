@@ -26,7 +26,7 @@ We developed `btrack` for cell tracking in time-lapse microscopy data.
 
 ## Installation
 
-`btrack` has been tested with Python 3.8+ on OS X, Linux and Win10.
+`btrack` has been tested with ![Python](https://img.shields.io/pypi/pyversions/btrack) on `x86_64` `macos>=11`, `ubuntu>=20.04` and `windows>=2019`.
 
 
 #### Installing the latest stable version

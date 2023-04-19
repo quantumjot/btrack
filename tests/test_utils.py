@@ -62,10 +62,13 @@ def test_segmentation_to_objects_type_generator():
 @pytest.mark.parametrize("ndim", [2, 3])
 @pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
 @pytest.mark.parametrize("binary", [True, False])
-def test_segmentation_to_objects(ndim, nobj, binary):
+@pytest.mark.parametrize("num_workers", [1, 2, 4])
+def test_segmentation_to_objects(ndim, nobj, binary, num_workers):
     """Test different types of segmentation images."""
     img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=binary)
-    objects = utils.segmentation_to_objects(img[np.newaxis, ...])
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], num_workers=num_workers
+    )
     _validate_centroids(centroids, objects)
 
 

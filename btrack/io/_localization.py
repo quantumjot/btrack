@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import dataclasses
-import inspect
 import logging
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
+from multiprocessing.pool import ThreadPool as Pool
+from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 try:
     from tqdm import tqdm
 except ImportError:
-
+    # this provides a dummy progress bar incase tqdm is not installed.
     def tqdm(iterator, *args, **kwargs):
         logger.info("Try installing ``tqdm`` for progress bar rendering.")
         return iterator
@@ -29,86 +29,25 @@ except ImportError:
 
 def _is_unique(x: npt.NDArray) -> bool:
     """Check whether a segmentation is equivalent to the labeled version."""
-    # check if image is uniquely labelled (necessary for regionprops)
-    # return np.max(label(x)) == np.max(x)
     return np.array_equal(label(x), x)
 
 
-def _nodes_from_single_arr(
-    segmentation: npt.NDArray,
-    properties: Tuple[str],
-    frame: int,
-    *,
-    centroid_type: str = "centroid",
-    intensity_image: Optional[npt.NDArray] = None,
-    scale: Optional[Tuple[float]] = None,
-    assign_class_ID: bool = False,
-    extra_properties: Optional[Tuple[Callable]] = None,
-) -> Dict[str, Any]:
-    """Return the object centroids from a numpy array representing the
-    image data."""
-
-    if np.sum(segmentation) == 0:
-        return {}
-
-    if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
-        raise ValueError("Segmentation array must have 3 or 4 dims.")
-
-    labeled = (
-        label(segmentation) if not _is_unique(segmentation) else segmentation
-    )
-    props = regionprops(
-        labeled,
-        intensity_image=intensity_image,
-        extra_properties=extra_properties,
-    )
-    num_nodes = len(props)
-    scale = tuple([1.0] * segmentation.ndim) if scale is None else scale
-
-    if len(scale) != segmentation.ndim:
-        raise ValueError(
-            f"Scale dimensions do not match segmentation: {scale}."
-        )
-
-    centroids = list(
-        zip(*[getattr(props[idx], centroid_type) for idx in range(num_nodes)])
-    )[::-1]
-    centroid_dims = ["x", "y", "z"][: segmentation.ndim]
-
-    coords = {
-        centroid_dims[dim]: np.asarray(centroids[dim]) * scale[::-1][dim]
-        for dim in range(len(centroids))
-    }
-
-    nodes = {"t": [frame] * num_nodes}
-    nodes.update(coords)
-
-    extra_img_props = tuple(
-        [str(fn.__name__) for fn in extra_properties]
-        if extra_properties
-        else []
-    )
-    img_props = properties + extra_img_props
-
-    for img_prop in img_props:
-        nodes[img_prop] = [
-            getattr(props[idx], img_prop) for idx in range(num_nodes)
-        ]
-
-    if assign_class_ID:
-        _class_id = regionprops_table(
-            labeled,
-            intensity_image=segmentation,
-            properties=("max_intensity",),
-        )
-        nodes["class_id"] = _class_id["max_intensity"]
-
-    return nodes
+# def _nodes_from_single_arr(
+#     segmentation: npt.NDArray,
+#     properties: Tuple[str],
+#     frame: int,
+#     *,
+#     centroid_type: str = "centroid",
+#     intensity_image: Optional[npt.NDArray] = None,
+#     scale: Optional[Tuple[float]] = None,
+#     assign_class_ID: bool = False,
+#     extra_properties: Optional[Tuple[Callable]] = None,
+# ) -> Dict[str, Any]:
 
 
 def _concat_nodes(
-    nodes: Dict[str, Any], new_nodes: Dict[str, Any]
-) -> Dict[str, Any]:
+    nodes: Dict[str, npt.NDArray], new_nodes: Dict[str, npt.NDArray]
+) -> Dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
         if key not in nodes:
@@ -125,33 +64,40 @@ class SegmentationContainer:
     segmentation: Union[Generator, npt.NDArray]
     intensity_image: Optional[Union[Generator, npt.NDArray]] = None
 
-    def __post_init__(self):
-        self._is_generator = inspect.isgeneratorfunction(
-            self.segmentation
-        ) or isinstance(self.segmentation, Generator)
+    def __post_init__(self) -> None:
+        self._is_generator = isinstance(self.segmentation, Generator)
+        self._next = (
+            self._next_generator if self._is_generator else self._next_array
+        )
 
-    def __iter__(self):
+    def _next_generator(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+        """__next__ method for a generator input."""
+        seg = next(self.segmentation)
+        intens = (
+            next(self.intensity_image)
+            if self.intensity_image is not None
+            else None
+        )
+        return seg, intens
+
+    def _next_array(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+        """__next__ method for an array-like input."""
+        if self._iter >= len(self):
+            raise StopIteration
+        seg = np.asarray(self.segmentation[self._iter, ...])
+        intens = (
+            np.asarray(self.intensity_image[self._iter, ...])
+            if self.intensity_image is not None
+            else None
+        )
+        return seg, intens
+
+    def __iter__(self) -> SegmentationContainer:
         self._iter = 0
         return self
 
-    def __next__(self):
-        if self._is_generator:
-            seg = next(self.segmentation)
-            intens = (
-                next(self.intensity_image)
-                if self.intensity_image is not None
-                else None
-            )
-        elif self._iter < len(self):
-            seg = np.asarray(self.segmentation[self._iter, ...])
-            intens = (
-                np.asarray(self.intensity_image[self._iter, ...])
-                if self.intensity_image is not None
-                else None
-            )
-        else:
-            raise StopIteration
-
+    def __next__(self) -> Tuple[int, npt.NDArray, Optional[npt.NDArray]]:
+        seg, intens = self._next()
         data = (self._iter, seg, intens)
         self._iter += 1
         return data
@@ -160,6 +106,94 @@ class SegmentationContainer:
         if not self._is_generator:
             return self.segmentation.shape[0]
         return 0
+
+
+@dataclasses.dataclass
+class NodeProcessor:
+    properties: Tuple[str]
+    centroid_type: str = "centroid"
+    intensity_image: Optional[npt.NDArray] = None
+    scale: Optional[Tuple[float]] = None
+    assign_class_ID: bool = False  # noqa: N815
+    extra_properties: Optional[Tuple[Callable]] = None
+
+    @property
+    def img_props(self) -> List[str]:
+        extra_img_props = tuple(
+            [str(fn.__name__) for fn in self.extra_properties]
+            if self.extra_properties
+            else []
+        )
+        return self.properties + extra_img_props
+
+    def __call__(
+        self, data: Tuple[int, npt.NDAarray, Optional[npt.NDArray]]
+    ) -> Dict[str, npt.NDArray]:
+        """Return the object centroids from a numpy array representing the
+        image data."""
+
+        frame, segmentation, intensity_image = data
+
+        if np.sum(segmentation) == 0:
+            return {}
+
+        if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
+            raise ValueError("Segmentation array must have 3 or 4 dims.")
+
+        labeled = (
+            label(segmentation)
+            if not _is_unique(segmentation)
+            else segmentation
+        )
+        props = regionprops(
+            labeled,
+            intensity_image=intensity_image,
+            extra_properties=self.extra_properties,
+        )
+        num_nodes = len(props)
+        scale = (
+            tuple([1.0] * segmentation.ndim)
+            if self.scale is None
+            else self.scale
+        )
+
+        if len(scale) != segmentation.ndim:
+            raise ValueError(
+                f"Scale dimensions do not match segmentation: {scale}."
+            )
+
+        centroids = list(
+            zip(
+                *[
+                    getattr(props[idx], self.centroid_type)
+                    for idx in range(num_nodes)
+                ]
+            )
+        )[::-1]
+        centroid_dims = ["x", "y", "z"][: segmentation.ndim]
+
+        coords = {
+            centroid_dims[dim]: np.asarray(centroids[dim]) * scale[::-1][dim]
+            for dim in range(len(centroids))
+        }
+
+        nodes = {"t": [frame] * num_nodes}
+        nodes.update(coords)
+
+        for img_prop in self.img_props:
+            nodes[img_prop] = [
+                getattr(props[idx], img_prop) for idx in range(num_nodes)
+            ]
+
+        if self.assign_class_ID:
+            _class_id = regionprops_table(
+                labeled,
+                intensity_image=segmentation,
+                properties=("max_intensity",),
+            )
+            nodes["class_id"] = _class_id["max_intensity"]
+
+        return nodes
 
 
 def segmentation_to_objects(
@@ -171,6 +205,7 @@ def segmentation_to_objects(
     scale: Optional[Tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
+    num_workers: int = 1,
 ) -> List[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 
@@ -186,10 +221,11 @@ def segmentation_to_objects(
         Properties passed to scikit-image regionprops. These additional
         properties are added as metadata to the btrack objects.
         See `skimage.measure.regionprops` for more info.
-    extra_properties : tuple of callable
-        Callable functions to calculate additional properties.
-        See `skimage.measure.regionprops` for more info.
-    scale : tuple
+    extra_properties : tuple of callable, optional
+        Callable functions to calculate additional properties from the
+        segmentation and intensity image data. See `skimage.measure.regionprops`
+        for more info.
+    scale : tuple, optional
         A scale for each spatial dimension of the input segmentation. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
     use_weighted_centroid : bool, default True
@@ -199,11 +235,18 @@ def segmentation_to_objects(
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,
         i.e. object type 1 will have pixel value 1.
+    num_workers : int
+        Number of workers to use while processing the image data.
 
     Returns
     -------
     objects : list
         A list of :py:meth:`btrack.btypes.PyTrackObject` trackable objects.
+
+
+    Notes
+    -----
+    If `tqdm` is installed a progress bar will be provided.
 
     Examples
     --------
@@ -232,22 +275,35 @@ def segmentation_to_objects(
         properties.remove("label")
         properties = tuple(properties)
 
+    processor = NodeProcessor(
+        properties=properties,
+        scale=scale,
+        centroid_type=centroid_type,
+        assign_class_ID=assign_class_ID,
+        extra_properties=extra_properties,
+    )
+
     container = SegmentationContainer(segmentation, intensity_image)
 
-    for frame, seg, intens in tqdm(container, total=len(container)):
-        _nodes = _nodes_from_single_arr(
-            seg,
-            properties,
-            frame,
-            intensity_image=intens,
-            scale=scale,
-            centroid_type=centroid_type,
-            assign_class_ID=assign_class_ID,
-            extra_properties=extra_properties,
+    if extra_properties:
+        logger.warning(
+            "Cannot use multiprocessing when `extra_properties` are defined."
         )
+        num_workers = 1
 
-        # concatenate the centroids
-        nodes = _concat_nodes(nodes, _nodes)
+    if num_workers <= 1:
+        for data in tqdm(container, total=len(container)):
+            _nodes = processor(data)
+            nodes = _concat_nodes(nodes, _nodes)
+    else:
+        logger.info(f"Processing using {num_workers} workers.")
+        with Pool(processes=num_workers) as pool:
+            result = list(
+                tqdm(pool.imap(processor, container), total=len(container))
+            )
+
+        for _nodes in result:
+            nodes = _concat_nodes(nodes, _nodes)
 
     if not nodes:
         logger.warning("...Found no objects.")
@@ -255,7 +311,7 @@ def segmentation_to_objects(
 
     # now create the btrack objects
     objects = localizations_to_objects(nodes)
-    n_frames = int(np.max(nodes["t"]) + 1)
+    n_frames = int(max(nodes["t"]) + 1)
 
     logger.info(f"...Found {len(objects)} objects in {n_frames} frames.")
 

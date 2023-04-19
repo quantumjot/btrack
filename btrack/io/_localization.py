@@ -97,6 +97,8 @@ class SegmentationContainer:
 
 @dataclasses.dataclass
 class NodeProcessor:
+    """Processor to extract nodes from a segmentation image."""
+
     properties: Tuple[str]
     centroid_type: str = "centroid"
     intensity_image: Optional[npt.NDArray] = None

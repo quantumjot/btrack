@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 try:
     from tqdm import tqdm
 except ImportError:
-    # this provides a dummy progress bar incase tqdm is not installed.
+    # this provides a dummy progress bar in case `tqdm` is not installed.
     def tqdm(iterator, *args, **kwargs):
         logger.info("Try installing ``tqdm`` for progress bar rendering.")
         return iterator
@@ -108,6 +108,7 @@ class NodeProcessor:
 
     @property
     def img_props(self) -> List[str]:
+        # need to infer the name of the function provided
         extra_img_props = tuple(
             [str(fn.__name__) for fn in self.extra_properties]
             if self.extra_properties
@@ -235,7 +236,7 @@ def segmentation_to_objects(
 
     Notes
     -----
-    If `tqdm` is installed a progress bar will be provided.
+    If `tqdm` is installed, a progress bar will be provided.
 
     Examples
     --------
@@ -244,7 +245,22 @@ def segmentation_to_objects(
     ...   properties=('area', ),
     ...   scale=(1., 1.),
     ...   assign_class_ID=True,
+    ...   num_workers=4,
     ... )
+
+    It's also possible to provide custom analysis functions :
+
+    >>> def foo(_mask: npt.NDArray) -> float:
+    ...     return np.sum(_mask)
+
+    that can be passed to :py:func:`btrack.utils.segmentation_to_objects` :
+
+    >>> objects = btrack.utils.segmentation_to_objects(
+    ...   segmentation,
+    ...   extra_properties=(foo, ),
+    ...   num_workers=1,
+    ... )
+
     """
 
     nodes: dict = {}

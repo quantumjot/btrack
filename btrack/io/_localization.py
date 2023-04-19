@@ -32,19 +32,6 @@ def _is_unique(x: npt.NDArray) -> bool:
     return np.array_equal(label(x), x)
 
 
-# def _nodes_from_single_arr(
-#     segmentation: npt.NDArray,
-#     properties: Tuple[str],
-#     frame: int,
-#     *,
-#     centroid_type: str = "centroid",
-#     intensity_image: Optional[npt.NDArray] = None,
-#     scale: Optional[Tuple[float]] = None,
-#     assign_class_ID: bool = False,
-#     extra_properties: Optional[Tuple[Callable]] = None,
-# ) -> Dict[str, Any]:
-
-
 def _concat_nodes(
     nodes: Dict[str, npt.NDArray], new_nodes: Dict[str, npt.NDArray]
 ) -> Dict[str, npt.NDArray]:

@@ -249,7 +249,7 @@ class HDF5FileHandler:
                 )
             )
             properties = {k: grp["properties"][k][:] for k in p_keys}
-            assert all([len(p) == len(txyz) for p in properties.values()])
+            assert all(len(p) == len(txyz) for p in properties.values())
 
         # note that this doesn't do much error checking at the moment
         # TODO(arl): this should now reference the `properties`

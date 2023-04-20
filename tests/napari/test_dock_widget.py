@@ -8,10 +8,11 @@ if TYPE_CHECKING:
 import json
 from unittest.mock import patch
 
-import napari
 import numpy as np
 import numpy.typing as npt
 import pytest
+
+import napari
 
 import btrack
 import btrack.napari

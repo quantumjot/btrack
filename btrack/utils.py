@@ -88,7 +88,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 
     def within(o):
         return all(
-            [getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes]
+            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
         )
 
     return [o for o in objects if within(o)]
@@ -103,7 +103,7 @@ def _cat_tracks_as_dict(
     tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
     """Concatenate all tracks as dictionary."""
-    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
+    assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
     data: dict = {}
 

@@ -362,7 +362,7 @@ class Tracklet:
         children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-        assert all([isinstance(o, PyTrackObject) for o in data])
+        assert all(isinstance(o, PyTrackObject) for o in data)
 
         self.ID = ID
         self._data = data

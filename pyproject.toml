@@ -117,19 +117,6 @@ ignore = [
     "UP007",
     "UP015",
 ]
-isort = {known-first-party = [
-    "black",
-], section-order = [
-    "future",
-    "standard-library",
-    "third-party",
-    "napari",
-    "first-party",
-    "local-folder",
-], "sections.napari" = [
-    "magicgui",
-    "napari",
-]}
 per-file-ignores = {"__init__.py" = [
     "F401", # unused-import
 ], "test_*.py" = [
@@ -163,6 +150,21 @@ select = [
     "YTT",
 ]
 target-version = "py38"
+isort.known-first-party = [
+    "black",
+]
+isort.section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "napari",
+    "first-party",
+    "local-folder",
+]
+isort.sections.napari = [
+    "magicgui",
+    "napari",
+]
 mccabe.max-complexity = 18
 pep8-naming.classmethod-decorators = [
     "classmethod",

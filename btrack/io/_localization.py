@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-from multiprocessing.pool import ThreadPool as Pool
+from multiprocessing.pool import Pool
 from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
 from skimage.measure import label, regionprops, regionprops_table
+from tqdm import tqdm
 
 from btrack import btypes
 from btrack.constants import Dimensionality
@@ -16,15 +17,6 @@ from .utils import localizations_to_objects
 
 # get the logger instance
 logger = logging.getLogger(__name__)
-
-
-try:
-    from tqdm import tqdm
-except ImportError:
-    # this provides a dummy progress bar in case `tqdm` is not installed.
-    def tqdm(iterator, *args, **kwargs):
-        logger.info("Try installing ``tqdm`` for progress bar rendering.")
-        return iterator
 
 
 def _is_unique(x: npt.NDArray) -> bool:
@@ -37,7 +29,9 @@ def _concat_nodes(
 ) -> Dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
-        nodes[key] = np.concatenate([nodes[key], values]) if key in nodes else values
+        nodes[key] = (
+            np.concatenate([nodes[key], values]) if key in nodes else values
+        )
     return nodes
 
 
@@ -125,7 +119,9 @@ class NodeProcessor:
         if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-        labeled = segmentation if _is_unique(segmentation) else label(segmentation)
+        labeled = (
+            segmentation if _is_unique(segmentation) else label(segmentation)
+        )
         props = regionprops(
             labeled,
             intensity_image=intensity_image,

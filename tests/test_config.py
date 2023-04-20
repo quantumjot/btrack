@@ -16,6 +16,7 @@ def _random_config() -> dict:
         "max_search_radius": rng.uniform(1, 100),
         "update_method": rng.choice(btrack.constants.BayesianUpdates),
         "return_kalman": bool(rng.uniform(0, 2)),
+        "store_candidate_graph": bool(rng.uniform(0, 2)),
         "verbose": bool(rng.uniform(0, 2)),
         "volume": tuple([(0, rng.uniform(1, 100)) for _ in range(3)]),
     }
@@ -61,11 +62,16 @@ def test_import_config():
     assert isinstance(cfg, btrack.config.TrackerConfig)
 
 
+def test_config_to_json():
+    """Test that a config can be converted to json format without raising an error"""
+    cfg = btrack.config.load_config(CONFIG_FILE)
+    cfg.json()
+
+
 def test_config_tracker_setters():
     """Test configuring the tracker using setters."""
     options = _random_config()
     with btrack.BayesianTracker() as tracker:
-
         # use the setters to apply the comfiguration
         for key, value in options.items():
             setattr(tracker, key, value)

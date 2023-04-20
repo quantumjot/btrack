@@ -1,6 +1,6 @@
 /*
 --------------------------------------------------------------------------------
- Name:     BayesianTracker
+ Name:     btrack
  Purpose:  A multi object tracking library, specifically used to reconstruct
            tracks in crowded fields. Here we use a probabilistic network of
            information to perform the trajectory linking. This method uses
@@ -17,51 +17,39 @@
 #ifndef _TRACKLET_H_INCLUDED_
 #define _TRACKLET_H_INCLUDED_
 
-#include "eigen/Eigen/Dense"
 #include <vector>
 
-#include "types.h"
-#include "motion.h"
-#include "inference.h"
 #include "defs.h"
-
-// #define MAX_LOST 5
-
-
-
-
+#include "eigen/Eigen/Dense"
+#include "inference.h"
+#include "motion.h"
+#include "types.h"
 
 // Tracklet object. A container class to keep the list of track objects as well
 // as a dedicated motion and object models for the object.
-class Tracklet
-{
+class Tracklet {
 public:
   // default constructor for Tracklet
-  Tracklet() : remove_flag(false) {};
+  Tracklet() : remove_flag(false){};
 
-  // construct Tracklet using a new ID, new object and model specific parameters
-  Tracklet( const unsigned int new_ID,
-            const TrackObjectPtr& new_object,
-            const unsigned int max_lost,
-            const MotionModel& model );
+  // construct Tracklet using a new ID, new object and model specific
+  // parameters
+  Tracklet(const unsigned int new_ID, const TrackObjectPtr &new_object,
+           const unsigned int max_lost, const MotionModel &model);
 
   // default destructor for Tracklet
-  ~Tracklet() {};
+  ~Tracklet(){};
 
-  // append a new track object to the trajectory, update flag tells the function
-  // whether to update the motion model or not - new tracks should not update
-  // the motion model
-  void append(const TrackObjectPtr& new_object, bool update);
-  void append(const TrackObjectPtr& new_object) {
-    append(new_object, true);
-  }
+  // append a new track object to the trajectory, update flag tells the
+  // function whether to update the motion model or not - new tracks should
+  // not update the motion model
+  void append(const TrackObjectPtr &new_object, bool update);
+  void append(const TrackObjectPtr &new_object) { append(new_object, true); }
   // append a dummy object to the trajectory in case of a missed observation
   // only update the predicted position in cases where we're using a motion
   // model, default with no args is to update the position
   void append_dummy(const bool update_position);
-  void append_dummy() {
-    append_dummy(true);
-  };
+  void append_dummy() { append_dummy(true); };
 
   // return the length of the trajectory
   unsigned int length() const { return track.size(); };
@@ -73,7 +61,7 @@ public:
   }
 
   // return a boolean representing the status (active/inactive) of the track
-  bool active() const { return lost<=max_lost; };
+  bool active() const { return lost <= max_lost; };
 
   // trim trailing dummy objects - should only be called when the tracking is
   // finished
@@ -81,7 +69,7 @@ public:
 
   // get the track data as a C-type array
   // TODO(arl): implement this
-  double* get();
+  double *get();
 
   // get the position coordinates over time
   // TODO(arl): implement these
@@ -98,40 +86,32 @@ public:
   };
 
   // set the track to lost - permanently!
-  void set_lost() {
-    lost = max_lost+1;
-  }
+  void set_lost() { lost = max_lost + 1; }
 
   // check to see whether this should be removed;
-  bool to_remove() const {
-    return remove_flag;
-  }
+  bool to_remove() const { return remove_flag; }
 
   // set a flag to remove this track
-  void to_remove(bool a_remove) {
-    remove_flag = a_remove;
-  }
-
+  void to_remove(bool a_remove) { remove_flag = a_remove; }
 
   // does this track have children
-  bool has_children() const {
-    return (child_one != child_two);
-  }
-
+  bool has_children() const { return (child_one != child_two); }
 
   // get the latest prediction from the motion model. Note that the current
   // prediction from the Tracklet object is different to the prediction of the
   // motion model. The tracklet adds any extra model information to the
-  // last known position, while the motion model is the filtered version of the
-  // data which may contain some lag. This is a critical part of the prediction
+  // last known position, while the motion model is the filtered version of
+  // the data which may contain some lag. This is a critical part of the
+  // prediction
   // TODO(arl): make this model agnostic
   Prediction predict() const;
 
   // Identifier for the tracklet
   unsigned int ID = 0;
 
-  // these are vectors storing the predicted new position and the Kalman output
-  // as well as the pointers to the track objects comprising the trajectory
+  // these are vectors storing the predicted new position and the Kalman
+  // output as well as the pointers to the track objects comprising the
+  // trajectory
   std::vector<Prediction> kalman;
   std::vector<Prediction> prediction;
   std::vector<TrackObjectPtr> track;
@@ -148,9 +128,7 @@ public:
   unsigned int fate = TYPE_undef;
   unsigned int generation = 0;
 
-
 private:
-
   // if the lost counter exceeds max_lost, the track is considered inactive
   unsigned int max_lost = MAX_LOST;
 

@@ -16,6 +16,15 @@ def test_create_object():
         np.testing.assert_equal(getattr(obj, k), v)
 
 
+def test_object_to_dict():
+    """Test that an object can be converted to a dictionary using the built-in
+    method."""
+    obj, data = create_test_object()
+    obj_as_dict = obj.to_dict()
+    for k, v in data.items():
+        np.testing.assert_equal(obj_as_dict[k], v)
+
+
 @pytest.mark.parametrize("properties", [{}, create_test_properties()])
 def test_create_object_with_properties(properties: dict):
     """Test an object with some properties."""
@@ -74,7 +83,7 @@ def test_create_tracklet(track_len: int):
     assert len(tracklet) == len(data)
 
     # now check that the track data is correct
-    assert tracklet.ID == track_ID
+    assert track_ID == tracklet.ID
     fields = ["x", "y", "z", "t"]
     for field in fields:
         obj_data = [getattr(obj, field) for obj in data]
@@ -90,3 +99,17 @@ def test_create_tracklet_with_properties(track_len: int):
 
     for k, v in properties.items():
         np.testing.assert_equal(t_properties[k], v)
+
+
+def test_tracklet_to_dict():
+    """Test that a tracklet can be converted to a dictionary using the built-in
+    method."""
+    track_len = 10
+    tracklet, data, properties, track_ID = create_test_tracklet(track_len)
+    tracklet_as_dict = tracklet.to_dict()
+    # now check that the track data is correct
+    assert track_ID == tracklet_as_dict["ID"]
+    fields = ["x", "y", "z", "t"]
+    for field in fields:
+        obj_data = [getattr(obj, field) for obj in data]
+        np.testing.assert_equal(obj_data, tracklet_as_dict[field])

@@ -7,6 +7,8 @@ from typing import List, Optional
 import numpy as np
 from pydantic import BaseModel, conlist, validator
 
+from btrack import _version
+
 from . import constants
 from .btypes import ImagingVolume
 from .models import HypothesisModel, MotionModel, ObjectModel
@@ -71,13 +73,14 @@ class TrackerConfig(BaseModel):
     """
 
     name: str = "Default"
-    version: str = constants.get_version()
+    version: str = _version.version
     verbose: bool = False
     motion_model: Optional[MotionModel] = None
     object_model: Optional[ObjectModel] = None
     hypothesis_model: Optional[HypothesisModel] = None
     max_search_radius: float = constants.MAX_SEARCH_RADIUS
     return_kalman: bool = False
+    store_candidate_graph: bool = False
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS

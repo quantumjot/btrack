@@ -1,6 +1,6 @@
 /*
 --------------------------------------------------------------------------------
- Name:     BayesianTracker
+ Name:     btrack
  Purpose:  A multi object tracking library, specifically used to reconstruct
            tracks in crowded fields. Here we use a probabilistic network of
            information to perform the trajectory linking. This method uses
@@ -23,58 +23,45 @@ using namespace ProbabilityDensityFunctions;
 // http://cs229.stanford.edu/section/gaussians.pdf
 
 double ProbabilityDensityFunctions::cheat_multivariate_normal(
-  const TrackletPtr& trk,
-  const TrackObjectPtr& obj
-)
-{
-
+    const TrackletPtr &trk, const TrackObjectPtr &obj) {
   Prediction p = trk->predict();
   Eigen::Vector3d x = obj->position();
 
   double prob_density =
 
-  (1./(kRootTwoPi*sqrt(p.covar(0,0)))) * exp(-(1./(2.*p.covar(0,0))) *
-  (x(0)-p.mu(0)) * (x(0)-p.mu(0)) ) *
-  (1./(kRootTwoPi*sqrt(p.covar(1,1)))) * exp(-(1./(2.*p.covar(1,1))) *
-  (x(1)-p.mu(1)) * (x(1)-p.mu(1)) ) *
-  (1./(kRootTwoPi*sqrt(p.covar(2,2)))) * exp(-(1./(2.*p.covar(2,2))) *
-  (x(2)-p.mu(2)) * (x(2)-p.mu(2)) );
+      (1. / (kRootTwoPi * sqrt(p.covar(0, 0)))) *
+      exp(-(1. / (2. * p.covar(0, 0))) * (x(0) - p.mu(0)) * (x(0) - p.mu(0))) *
+      (1. / (kRootTwoPi * sqrt(p.covar(1, 1)))) *
+      exp(-(1. / (2. * p.covar(1, 1))) * (x(1) - p.mu(1)) * (x(1) - p.mu(1))) *
+      (1. / (kRootTwoPi * sqrt(p.covar(2, 2)))) *
+      exp(-(1. / (2. * p.covar(2, 2))) * (x(2) - p.mu(2)) * (x(2) - p.mu(2)));
 
   return prob_density;
-
 }
-
-
-
 
 // also we need to calculate the probability (the integral), so we use erf
 // http://en.cppreference.com/w/cpp/numeric/math/erf
 
-double ProbabilityDensityFunctions::multivariate_erf(
-  const TrackletPtr& trk,
-  const TrackObjectPtr& obj,
-  const double accuracy=2.
-)
-{
-
+double
+ProbabilityDensityFunctions::multivariate_erf(const TrackletPtr &trk,
+                                              const TrackObjectPtr &obj,
+                                              const double accuracy = 2.) {
   Prediction p = trk->predict();
   Eigen::Vector3d x = obj->position();
 
   double phi = 1.;
   double phi_x, std_x, d_x;
 
-  for (unsigned int axis=0; axis<3; axis++) {
-
-    std_x = std::sqrt(p.covar(axis,axis));
-    d_x = x(axis)-p.mu(axis);
+  for (unsigned int axis = 0; axis < 3; axis++) {
+    std_x = std::sqrt(p.covar(axis, axis));
+    d_x = x(axis) - p.mu(axis);
 
     // intergral +/- accuracy
-    phi_x = std::erf((d_x+accuracy) / (std_x*kRootTwo)) -
-            std::erf((d_x-accuracy) / (std_x*kRootTwo));
+    phi_x = std::erf((d_x + accuracy) / (std_x * kRootTwo)) -
+            std::erf((d_x - accuracy) / (std_x * kRootTwo));
 
     // calculate product of integrals for the axes i.e. joint probability?
-    phi *= .5*phi_x;
-
+    phi *= .5 * phi_x;
   }
 
   // we don't want a NaN!
@@ -83,16 +70,10 @@ double ProbabilityDensityFunctions::multivariate_erf(
   return phi;
 }
 
-
-
-
 // cosine similarity
-double ProbabilityDensityFunctions::cosine_similarity(
-  const TrackletPtr& trk,
-  const TrackObjectPtr& obj
-)
-{
-
+double
+ProbabilityDensityFunctions::cosine_similarity(const TrackletPtr &trk,
+                                               const TrackObjectPtr &obj) {
   TrackObjectPtr trk_last = trk->track.back();
 
   // calculate cosine similarity between two feature vectors
@@ -100,7 +81,7 @@ double ProbabilityDensityFunctions::cosine_similarity(
   double f_mag = (trk_last->features).norm() * (obj->features).norm();
   double cosine_similarity = f_dot / f_mag;
 
-  if (!(cosine_similarity>=-1.0 && cosine_similarity <=1.0)) {
+  if (!(cosine_similarity >= -1.0 && cosine_similarity <= 1.0)) {
     if (DEBUG) {
       std::cout << cosine_similarity;
       std::cout << " f_dot: " << f_dot;

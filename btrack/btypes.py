@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -------------------------------------------------------------------------------
-# Name:     BayesianTracker
+# Name:     btrack
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
 #           information to perform the trajectory linking. This method uses
@@ -34,7 +34,11 @@ class ImagingVolume(NamedTuple):
     @property
     def ndim(self) -> int:
         """Infer the dimensionality from the volume."""
-        return 2 if self.z is None else 3
+        return (
+            constants.Dimensionality.TWO
+            if self.z is None
+            else constants.Dimensionality.THREE
+        )
 
 
 class PyTrackObject(ctypes.Structure):
@@ -125,7 +129,7 @@ class PyTrackObject(ctypes.Structure):
             self.n_features = 0
             return
 
-        if not all(k in self.properties.keys() for k in keys):
+        if not all(k in self.properties for k in keys):
             missing_features = list(
                 set(keys).difference(set(self.properties.keys()))
             )
@@ -144,22 +148,21 @@ class PyTrackObject(ctypes.Structure):
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
-        stats = {
+        node = {
             k: getattr(self, k)
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        stats.update(self.properties)
-        return stats
+        node.update(self.properties)
+        return node
 
     @staticmethod
     def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = {k: kt for k, kt in PyTrackObject._fields_}
-        attr = [k for k in fields.keys() if k in properties.keys()]
+        attr = [k for k in fields if k in properties]
         for key in attr:
-
             new_data = properties[key]
 
             # fix for implicit type conversion
@@ -246,6 +249,39 @@ class PyTrackingInfo(ctypes.Structure):
         return no_error and not self.complete
 
 
+class PyGraphEdge(ctypes.Structure):
+    """A structure defining an edge in the association graph. This is derived
+    from the Bayesian belief matrix in the initial step of the tracking
+    algorithm.
+
+    Parameters
+    ----------
+    source : int
+        A reference to a source object.
+    target : int
+        A reference to a target object.
+    score : float
+        The posterior probability of linking the target object to the source.
+
+    Notes
+    -----
+    This structure does not guarantee that the target timestamp is *after* the
+    source timestamp, we just assume that the tracker has done it's job.
+    """
+
+    _fields_ = [
+        ("source", ctypes.c_long),
+        ("target", ctypes.c_long),
+        ("score", ctypes.c_double),
+        ("edge_type", ctypes.c_uint),
+    ]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a dictionary describing the edge."""
+        edge = {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
+        return edge
+
+
 class Tracklet:
     """A `btrack` Tracklet object used to store track information.
 
@@ -255,7 +291,7 @@ class Tracklet:
         A unique integer identifier for the tracklet.
     data : list[PyTrackObject]
         The objects linked together to form the track.
-    parent : int,
+    parent : int
         The identifiers of the parent track(s).
     children : list
         The identifiers of the child tracks.
@@ -323,10 +359,9 @@ class Tracklet:
         data: List[PyTrackObject],
         *,
         parent: Optional[int] = None,
-        children: List[int] = [],
+        children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-
         assert all([isinstance(o, PyTrackObject) for o in data])
 
         self.ID = ID
@@ -335,7 +370,7 @@ class Tracklet:
 
         self.root = None
         self.parent = parent
-        self.children = children
+        self.children = children if children is not None else []
         self.type = None
         self.fate = fate
         self.generation = 0
@@ -502,7 +537,7 @@ class Tracklet:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
-        for key, values in data.items():
+        for values in data.values():
             np_values = np.asarray(values)
             if np_values.size == 1:
                 np_values = np.tile(np_values, len(self))
@@ -511,7 +546,7 @@ class Tracklet:
 
         tmp_track = np.concatenate(tmp_track, axis=-1)
         assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == 2
+        assert tmp_track.ndim == constants.Dimensionality.TWO
         return tmp_track.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:
@@ -548,10 +583,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
+    n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
         if not isinstance(v, (list, np.ndarray)):

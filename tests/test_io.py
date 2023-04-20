@@ -17,7 +17,7 @@ from ._utils import (
 def test_hdf5_write(hdf5_file_path, test_objects):
     """Test writing an HDF5 file with some objects."""
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         objects_from_file = h.objects
 
     properties = ["x", "y", "z", "t", "label", "ID"]
@@ -33,15 +33,15 @@ def test_hdf5_write_with_properties(hdf5_file_path):
 
     objects = []
     for i in range(10):
-        obj, _ = create_test_object(id=i)
+        obj, _ = create_test_object(test_id=i)
         obj.properties = create_test_properties()
         objects.append(obj)
 
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "w") as h:
         h.write_objects(objects)
 
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         objects_from_file = h.objects
 
     extra_props = list(create_test_properties().keys())
@@ -89,11 +89,11 @@ def test_write_tracks_only(
     tracker = full_tracker_example(test_real_objects)
     tracks = tracker.tracks
 
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "w") as h:
         h.write_tracks(tracks)
 
     # now try to read those objects and compare with those used to write
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         tracks_from_file = h.tracks
 
     for orig, read in zip(tracks, tracks_from_file):
@@ -114,7 +114,7 @@ def test_write_lbep(tmp_path, test_real_objects):
     tracks = tracker.tracks
 
     fn = Path(tmp_path) / "LBEP_test.txt"
-    btrack.dataio.export_LBEP(fn, tracker.tracks)
+    btrack.io.export_LBEP(fn, tracker.tracks)
 
     # check that the file contains the correct number of lines
     with open(fn, "r") as lbep_file:
@@ -123,16 +123,16 @@ def test_write_lbep(tmp_path, test_real_objects):
     # and that the LBEP entries match
     for entry in entries:
         lbep = [int(e) for e in entry.strip("/n").split()]
-        track = next(filter(lambda t: t.ID == lbep[0], tracks))
+        track = next(filter(lambda t: lbep[0] == t.ID, tracks))
         assert lbep == [track.ID, track.start, track.stop, track.parent]
 
 
 def test_write_hdf_segmentation(hdf5_file_path):
     """Test writing a segmentation to the hdf file."""
     segmentation = np.random.randint(0, 255, size=(100, 64, 64))
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "w") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "w") as h:
         h.write_segmentation(segmentation)
 
-    with btrack.dataio.HDF5FileHandler(hdf5_file_path, "r") as h:
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         segmentation_from_file = h.segmentation
     np.testing.assert_equal(segmentation, segmentation_from_file)

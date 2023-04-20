@@ -4,12 +4,14 @@ import numpy as np
 import pytest
 
 from btrack import btypes, utils
+from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
+from btrack.io import objects_from_array
 
 from ._utils import create_test_image, create_test_tracklet
 
 
 def _example_segmentation_generator():
-    for i in range(10):
+    for _ in range(10):
         img, centroids = create_test_image()
         yield img
 
@@ -27,7 +29,7 @@ def _validate_centroids(centroids, objects, scale=None):
     ndim = centroids.shape[-1]
 
     obj_as_array = np.array([[obj.z, obj.y, obj.x] for obj in objects])
-    if ndim == 2:
+    if ndim == Dimensionality.TWO:
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis
@@ -60,10 +62,13 @@ def test_segmentation_to_objects_type_generator():
 @pytest.mark.parametrize("ndim", [2, 3])
 @pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
 @pytest.mark.parametrize("binary", [True, False])
-def test_segmentation_to_objects(ndim, nobj, binary):
+@pytest.mark.parametrize("num_workers", [1, 4])
+def test_segmentation_to_objects(ndim, nobj, binary, num_workers):
     """Test different types of segmentation images."""
     img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=binary)
-    objects = utils.segmentation_to_objects(img[np.newaxis, ...])
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...], num_workers=num_workers
+    )
     _validate_centroids(centroids, objects)
 
 
@@ -114,6 +119,27 @@ def test_regionprops():
     # check that the properties keys match
     for obj in objects:
         assert set(obj.properties.keys()) == set(properties)
+
+
+def test_extra_regionprops():
+    """Test adding a callable function for extra property calculation."""
+    img, centroids = create_test_image()
+
+    def extra_prop(_mask) -> float:
+        return np.sum(_mask)
+
+    extra_properties = (extra_prop,)
+
+    objects = utils.segmentation_to_objects(
+        img[np.newaxis, ...],
+        extra_properties=extra_properties,
+    )
+
+    extra_prop_keys = [fn.__name__ for fn in extra_properties]
+
+    # check that the properties keys match
+    for obj in objects:
+        assert set(obj.properties.keys()) == set(extra_prop_keys)
 
 
 @pytest.mark.parametrize("ndim", [2, 3])
@@ -204,8 +230,8 @@ def test_tracks_to_napari(ndim: int):
     # check the properties keys are correct, note that nD keys are replaced with
     # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
     # and so forth
-    for key in tracks[0].properties.keys():
-        assert any([k.startswith(key) for k in properties.keys()])
+    for key in tracks[0].properties:
+        assert any([k.startswith(key) for k in properties])
 
 
 @pytest.mark.parametrize("ndim", [1, 4])
@@ -218,3 +244,41 @@ def test_tracks_to_napari_incorrect_ndim(ndim: int):
 
     with pytest.raises(ValueError):
         data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
+
+
+@pytest.mark.parametrize("ndim", [2, 3])
+def test_tracks_to_napari_ndim_inference(ndim: int):
+    """Test inferring the correct dimensions from track data when using
+    `tracks_to_napari`."""
+
+    # make a fake track with n dimensions
+    track_len = 10
+    tracks = [create_test_tracklet(track_len, 1, ndim=ndim)[0]]
+    data, _, _ = utils.tracks_to_napari(tracks, ndim=None)
+
+    # check the data is of the correct shape (ID, T + ndim)
+    assert data.shape[-1] == ndim + 2
+
+
+def test_objects_from_array(test_objects):
+    """Test creation of a list of objects from a numpy array."""
+
+    obj_arr = np.stack(
+        [
+            [getattr(obj, k) for k in DEFAULT_OBJECT_KEYS]
+            for obj in test_objects
+        ],
+        axis=0,
+    )
+
+    obj_from_arr = objects_from_array(obj_arr)
+
+    assert obj_arr.shape[0] == len(test_objects)
+    assert obj_arr.shape[-1] == len(DEFAULT_OBJECT_KEYS)
+
+    assert len(obj_from_arr) == len(test_objects)
+
+    for test_obj, obj in zip(test_objects, obj_from_arr):
+        assert isinstance(obj, btypes.PyTrackObject)
+        for key in DEFAULT_OBJECT_KEYS:
+            assert getattr(test_obj, key) == getattr(obj, key)

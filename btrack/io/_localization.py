@@ -125,11 +125,7 @@ class NodeProcessor:
         if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-        labeled = (
-            label(segmentation)
-            if not _is_unique(segmentation)
-            else segmentation
-        )
+        labeled = segmentation if _is_unique(segmentation) else label(segmentation)
         props = regionprops(
             labeled,
             intensity_image=intensity_image,

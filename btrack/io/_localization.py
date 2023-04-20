@@ -37,10 +37,7 @@ def _concat_nodes(
 ) -> Dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
-        if key not in nodes:
-            nodes[key] = values
-        else:
-            nodes[key] = np.concatenate([nodes[key], values])
+        nodes[key] = np.concatenate([nodes[key], values]) if key in nodes else values
     return nodes
 
 

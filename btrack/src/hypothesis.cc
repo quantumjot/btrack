@@ -604,15 +604,6 @@ double HypothesisEngine::P_link(TrackletPtr a_trk, TrackletPtr a_trk_lnk,
   double prior;
   double likelihood;
   double posterior;
-  // // try to not link metaphase to anaphase
-  // if (DISALLOW_METAPHASE_ANAPHASE_LINKING) {
-  //   if (a_trk->track.back()->label == STATE_metaphase &&
-  //       a_trk_lnk->track.front()->label == STATE_anaphase) {
-  //
-  //     std::cout << a_trk->ID << " -> " << a_trk_lnk->ID << " forbidden
-  //     M->A" << std::endl; return m_params.eta;
-  //   }
-  // }
 
   // default prior
   prior = 0.5;
@@ -665,12 +656,6 @@ double HypothesisEngine::P_link(TrackletPtr a_trk, TrackletPtr a_trk_lnk,
   return posterior;
 }
 
-// DONE(arl): need to penalise longer times between tracks, dt acts as
-// a linear scaling penalty - scale the distance linearly by time
-// return std::exp(-(d*dt)/m_params.lambda_link);
-return std::exp(-(d * link_penalty) / m_params.lambda_link);
-}
-
 // DIVISION HYPOTHESIS
 // Different possible branches:
 //
@@ -690,114 +675,72 @@ return std::exp(-(d * link_penalty) / m_params.lambda_link);
 
 double HypothesisEngine::P_branch(TrackletPtr a_trk, TrackletPtr a_trk_c0,
                                   TrackletPtr a_trk_c1) const {
-  double HypothesisEngine::P_branch(TrackletPtr a_trk, TrackletPtr a_trk_c0,
-                                    TrackletPtr a_trk_c1) const {
-    // calculate the distance between the previous observation and both of the
-    // putative children these are the normalising factors for the dot product
-    // a dot product < 0 would indicate that the cells are aligned with the
-    // metaphase phase i.e. a good division
-    Eigen::Vector3d d_c0, d_c1;
-    d_c0 =
-        a_trk_c0->track.front()->position() - a_trk->track.back()->position();
-    d_c1 =
-        a_trk_c1->track.front()->position() - a_trk->track.back()->position();
 
-    // normalise the vectors to calculate the dot product
-    double dot_product = d_c0.normalized().transpose() * d_c1.normalized();
+  // initialise variables
+  double prior;
+  double dot_product;
+  double likelihood;
+  double posterior;
 
-    // initialise variables
-    double prior;
-    double dot_product;
-    double likelihood;
-    double posterior;
+  // test which combination
+  bool parent_is_metaphase = a_trk->track.back()->label == STATE_metaphase;
+  bool both_daughters_anaphase =
+      ((a_trk_c0->track.front()->label == STATE_anaphase) &&
+       (a_trk_c1->track.front()->label == STATE_anaphase));
+  bool single_daughter_anaphase =
+      ((a_trk_c0->track.front()->label == STATE_anaphase) !=
+       (a_trk_c1->track.front()->label == STATE_anaphase));
 
-    // test which combination
-    bool parent_is_metaphase = a_trk->track.back()->label == STATE_metaphase;
-    bool both_daughters_anaphase =
-        ((a_trk_c0->track.front()->label == STATE_anaphase) &&
-         (a_trk_c1->track.front()->label == STATE_anaphase));
-    bool single_daughter_anaphase =
-        ((a_trk_c0->track.front()->label == STATE_anaphase) !=
-         (a_trk_c1->track.front()->label == STATE_anaphase));
+  // parent is metaphase
+  if (parent_is_metaphase) {
+    if (both_daughters_anaphase) {
+      prior = PRIOR_METAPHASE_ANAPHASE_ANAPHASE;
+    } else if (single_daughter_anaphase) {
+      prior = PRIOR_METAPHASE_ANAPHASE;
+    } else {
+      prior = PRIOR_METAPHASE;
+    }
 
-    // parent is metaphase
-    if (parent_is_metaphase) {
-      if (both_daughters_anaphase) {
-        prior = PRIOR_METAPHASE_ANAPHASE_ANAPHASE;
-      } else if (single_daughter_anaphase) {
-        prior = PRIOR_METAPHASE_ANAPHASE;
-        // parent is metaphase
-        if (a_trk->track.back()->label == STATE_metaphase) {
-          if (a_trk_c0->track.front()->label == STATE_anaphase &&
-              a_trk_c1->track.front()->label == STATE_anaphase) {
-            // BEST
-            weight = WEIGHT_METAPHASE_ANAPHASE_ANAPHASE;
-          } else if (a_trk_c0->track.front()->label == STATE_anaphase ||
-                     a_trk_c1->track.front()->label == STATE_anaphase) {
-            // PRETTY GOOD
-            weight = WEIGHT_METAPHASE_ANAPHASE;
-          } else {
-            prior = PRIOR_METAPHASE;
-            // OK
-            weight = WEIGHT_METAPHASE;
-          }
+    // parent is not metaphase
+  } else {
+    if (both_daughters_anaphase) {
+      prior = PRIOR_ANAPHASE_ANAPHASE;
+    } else if (single_daughter_anaphase) {
+      prior = PRIOR_ANAPHASE;
+    } else {
+      // in this case, none of the criteria are satisfied
+      double weight =
+          WEIGHT_OTHER + 10. * P_dead(a_trk_c0) + 10. * P_dead(a_trk_c1);
 
-          // parent is not metaphase
-        } else {
-          if (both_daughters_anaphase) {
-            prior = PRIOR_ANAPHASE_ANAPHASE;
-          } else if (single_daughter_anaphase) {
-            prior = PRIOR_ANAPHASE;
-            if (a_trk_c0->track.front()->label == STATE_anaphase &&
-                a_trk_c1->track.front()->label == STATE_anaphase) {
-              // PRETTY GOOD
-              weight = WEIGHT_ANAPHASE_ANAPHASE;
-            } else if (a_trk_c0->track.front()->label == STATE_anaphase ||
-                       a_trk_c1->track.front()->label == STATE_anaphase) {
-              // OK
-              weight = WEIGHT_ANAPHASE;
-            } else {
-              // in this case, none of the criteria are satisfied
-              double weight = WEIGHT_OTHER + 10. * P_dead(a_trk_c0) +
-                              10. * P_dead(a_trk_c1);
-              weight = WEIGHT_OTHER + 10. * P_dead(a_trk_c0) +
-                       10. * P_dead(a_trk_c1);
+      // return here if none of the criteria are satisfied
+      return std::exp(-weight / (2. * m_params.lambda_branch));
+    }
+  }
 
-              // return here if none of the criteria are satisfied
-              return std::exp(-weight / (2. * m_params.lambda_branch));
-            }
-          }
+  // calculate the distance between the previous observation and both of the
+  // putative children these are the normalising factors for the dot product
+  // a dot product < 0 would indicate that the cells are aligned with the
+  // metaphase phase i.e. a good division
+  Eigen::Vector3d d_c0, d_c1;
+  d_c0 = a_trk_c0->track.front()->position() - a_trk->track.back()->position();
+  d_c1 = a_trk_c1->track.front()->position() - a_trk->track.back()->position();
 
-          // calculate the distance between the previous observation and both of
-          // the putative children these are the normalising factors for the dot
-          // product a dot product < 0 would indicate that the cells are aligned
-          // with the metaphase phase i.e. a good division
-          Eigen::Vector3d d_c0, d_c1;
-          d_c0 = a_trk_c0->track.front()->position() -
-                 a_trk->track.back()->position();
-          d_c1 = a_trk_c1->track.front()->position() -
-                 a_trk->track.back()->position();
+  // normalise the vectors to calculate the dot product
+  dot_product = d_c0.normalized().transpose() * d_c1.normalized();
 
-          // normalise the vectors to calculate the dot product
-          dot_product = d_c0.normalized().transpose() * d_c1.normalized();
+  // weighted angle between the daughter cells and the parent
+  // use an erf as the weighting function
+  // dot product scales between -1 (ideal) where the daughters are on opposite
+  // sides of the parent, to 1, where the daughters are close in space on the
+  // same side (worst case). Error function will scale these from ~0. to ~1.
+  // meaning that the ideal case minimises the weight
+  // likelihood = (( 1.-std::erf(dot_product*3.) ) / 2.0);
+  likelihood =
+      std::exp(-((1 + dot_product) / 2.0) / (2. * m_params.lambda_branch));
 
-          // weighted angle between the daughter cells and the parent
-          // use an erf as the weighting function
-          // dot product scales between -1 (ideal) where the daughters are on
-          // opposite sides of the parent, to 1, where the daughters are close
-          // in space on the same side (worst case). Error function will scale
-          // these from ~0. to ~1. meaning that the ideal case minimises the
-          // weight
-          // likelihood = (( 1.-std::erf(dot_product*3.) ) / 2.0);
-          likelihood = std::exp(-((1 + dot_product) / 2.0) /
-                                (2. * m_params.lambda_branch));
-          daughter_angle = 1.0 - ((1. - std::erf(dot_product * 3.)) / 2.0);
+  // now do the Bayesian update
+  posterior =
+      BayesianUpdateFunctions::safe_bayesian_update_simple(prior, likelihood);
 
-          // now do the Bayesian update
-          posterior = BayesianUpdateFunctions::safe_bayesian_update_simple(
-              prior, likelihood);
-
-          return posterior;
-          return std::exp(-(weight * daughter_angle) /
-                          (2. * m_params.lambda_branch));
-        }
+  return posterior;
+}

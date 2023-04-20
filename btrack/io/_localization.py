@@ -87,9 +87,7 @@ class SegmentationContainer:
         return data
 
     def __len__(self) -> int:
-        if not self._is_generator:
-            return self.segmentation.shape[0]
-        return 0
+        return 0 if self._is_generator else self.segmentation.shape[0]
 
 
 @dataclasses.dataclass

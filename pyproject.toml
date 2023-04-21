@@ -16,6 +16,8 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -29,36 +31,32 @@ dynamic = [
     "version",
 ]
 name = "btrack"
-readme = "README.md"
-requires-python = ">=3.8"
-entry-points."napari.manifest".btrack = "btrack:napari.yaml"
-license.file = "LICENSE.md"
-optional-dependencies.docs = [
+optional-dependencies = {docs = [
     "numpydoc",
     "pytz",
-    "sphinx_rtd_theme",
+    "sphinx",
     "sphinx-automodapi",
     "sphinx-panels",
-    "sphinx",
-]
-optional-dependencies.napari = [
+    "sphinx_rtd_theme",
+], napari = [
     "magicgui>=0.5.0",
     "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
     "qtpy",
-]
-optional-dependencies.pyqt = [
-    "btrack[napari]",
+], pyqt = [
     "PyQt5 >= 5.12.3, != 5.15.0",
-]
-optional-dependencies.pyside = [
     "btrack[napari]",
+], pyside = [
     "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
     "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
-]
-optional-dependencies.qt = [
+    "btrack[napari]",
+], qt = [
     "btrack[pyside]",
-]
+]}
+readme = "README.md"
+requires-python = ">=3.8"
+entry-points."napari.manifest".btrack = "btrack:napari.yaml"
+license.file = "LICENSE.md"
 urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
 urls.documentation = "https://btrack.readthedocs.io"
 urls.homepage = "https://github.com/quantumjot/btrack"
@@ -82,19 +80,21 @@ exclude = '''
 )
 '''
 line-length = 79
-target-version = ["py38", "py39", "py310"]
+target-version = [
+    "py38",
+    "py39",
+    "py310",
+]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
-run = {branch = true, parallel = true, source = ["btrack"]}
+run = {branch = true, parallel = true, source = [
+    "btrack",
+]}
 paths.source = [
     "btrack",
     ".tox*/*/lib/python*/site-packages",
 ]
-
-[tool.isort]
-line_length = 79
-profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "--color=yes -ra -v"
@@ -150,7 +150,21 @@ select = [
     "YTT",
 ]
 target-version = "py38"
-isort.known-first-party = ["btrack"]
+isort.known-first-party = [
+    "black",
+]
+isort.section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "napari",
+    "first-party",
+    "local-folder",
+]
+isort.sections.napari = [
+    "magicgui",
+    "napari",
+]
 mccabe.max-complexity = 18
 pep8-naming.classmethod-decorators = [
     "classmethod",
@@ -167,11 +181,13 @@ local_scheme = "no-local-version"
 write_to = "btrack/_version.py"
 
 [tool.tomlsort]
-sort_inline_arrays = false
-sort_inline_tables = true
-sort_table_keys = true
+all = true
 spaces_indent_inline_array = 4
 trailing_comma_inline_array = true
+overrides."project.classifiers".inline_arrays = false
+overrides."tool.black.target-version".inline_arrays = false
+overrides."tool.coverage.paths.source".inline_arrays = false
+overrides."tool.ruff.isort.section-order".inline_arrays = false
 
 [tool.tox]
 legacy_tox_ini = """

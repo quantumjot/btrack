@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import numpy.typing as npt
+
     from magicgui.widgets import Container
 
     from btrack.config import TrackerConfig
@@ -11,9 +12,10 @@ if TYPE_CHECKING:
 
 import logging
 
+import qtpy.QtWidgets
+
 import magicgui.widgets
 import napari
-import qtpy.QtWidgets
 
 import btrack
 import btrack.napari.config

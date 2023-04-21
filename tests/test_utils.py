@@ -49,14 +49,14 @@ def test_segmentation_to_objects_type():
     """Test that btrack objects are returned."""
     img, centroids = create_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
-    assert all([isinstance(o, btypes.PyTrackObject) for o in objects])
+    assert all(isinstance(o, btypes.PyTrackObject) for o in objects)
 
 
 def test_segmentation_to_objects_type_generator():
     """Test generator as input."""
     generator = _example_segmentation_generator()
     objects = utils.segmentation_to_objects(generator)
-    assert all([isinstance(o, btypes.PyTrackObject) for o in objects])
+    assert all(isinstance(o, btypes.PyTrackObject) for o in objects)
 
 
 @pytest.mark.parametrize("ndim", [2, 3])
@@ -231,7 +231,7 @@ def test_tracks_to_napari(ndim: int):
     # keys that start with the property key, e.g. `nD` is replaced with `nD-0`
     # and so forth
     for key in tracks[0].properties:
-        assert any([k.startswith(key) for k in properties])
+        assert any(k.startswith(key) for k in properties)
 
 
 @pytest.mark.parametrize("ndim", [1, 4])

@@ -63,7 +63,7 @@ def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
     objects = []
     n_objects = int(objects_dict["t"].shape[0])
 
-    assert all([v.shape[0] == n_objects for k, v in objects_dict.items()])
+    assert all(v.shape[0] == n_objects for k, v in objects_dict.items())
 
     for i in range(n_objects):
         data = {k: v[i] for k, v in objects_dict.items()}

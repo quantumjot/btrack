@@ -1,10 +1,10 @@
 repos:
     - repo: https://github.com/charliermarsh/ruff-pre-commit
-      rev: v0.0.257
+      rev: v0.0.262
       hooks:
         - id: ruff
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.4.2
+      rev: v1.5.1
       hooks:
         - id: remove-tabs
           exclude: Makefile|docs/Makefile|\.bat$
@@ -23,7 +23,7 @@ repos:
           - id: trailing-whitespace
             args: [--markdown-linebreak-ext=md]
     - repo: https://github.com/psf/black
-      rev: 23.1.0
+      rev: 23.3.0
       hooks:
           - id: black
     - repo: https://github.com/pappasam/toml-sort

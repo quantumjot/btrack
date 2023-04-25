@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - cvxopt>=1.2.0
-  - h5py>=2.10.0
+  - pyqt>=5.15.7
   - pip
   - python=3.10
   - pip:

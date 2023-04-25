@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import logging
 from typing import List, Optional
 
@@ -293,3 +294,31 @@ def update_segmentation(
         )
 
     return relabeled
+
+
+def log_debug_info(fn):
+    """Wrapper to provide additional debug info when loading a shared library
+    or any other function that needs special debuggin info."""
+
+    @functools.wraps(fn)
+    def wrapped_func_to_debug(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as err:
+            from platform import platform
+
+            from ._version import version
+
+            logger.error(
+                "DEBUG INFO: \n"
+                f" - btrack: v{version} \n"
+                f" - Platform: {platform()} \n"
+                f" - Function: {fn} \n"
+                f" - Exception: {err} \n"
+                f" - Arguments: {args} \n"
+                f" - Kwargs: {kwargs} \n"
+            )
+
+            raise Exception from err
+
+    return wrapped_func_to_debug

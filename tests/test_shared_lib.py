@@ -25,6 +25,6 @@ def test_debug_info():
     system_info = btrack.SystemInformation()
 
     assert isinstance(repr(system_info), str)
-    assert system_info._info["version"] == btrack.__version__
-    assert system_info._info["platform"] == platform.platform()
-    assert system_info._info["python"] == platform.python_version()
+    assert system_info.btrack_version == btrack.__version__
+    assert system_info.system_platform == platform.platform()
+    assert system_info.system_python == platform.python_version()

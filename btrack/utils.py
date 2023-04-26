@@ -1,14 +1,15 @@
 from __future__ import annotations
 
+import dataclasses
 import functools
 import logging
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 
 import numpy as np
 from skimage.util import map_array
 
 # import core
-from . import btypes, constants
+from . import _version, btypes, constants
 from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
 from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
@@ -296,16 +297,20 @@ def update_segmentation(
     return relabeled
 
 
-def _debug_info() -> Dict[str, Any]:
-    import platform
+@dataclasses.dataclass(frozen=True, init=False)
+class SystemInformation:
+    btrack_version: str = _version.version
+    system_platform: str = constants.BTRACK_PLATFORM
+    system_python: str = constants.BTRACK_PYTHON_VERSION
 
-    from ._version import version
-
-    return {
-        "version": version,
-        "platform": platform.platform(),
-        "python": platform.python_version(),
-    }
+    def __repr__(self) -> str:
+        # override to have slightly nicer formatting
+        return "\n".join(
+            [
+                f"{key}: {value}"
+                for key, value in dataclasses.asdict(self).items()
+            ]
+        )
 
 
 def log_debug_info(fn):
@@ -317,7 +322,7 @@ def log_debug_info(fn):
         try:
             return fn(*args, **kwargs)
         except Exception as err:
-            debug_info = _debug_info()
+            debug_info = dataclasses.asdict(SystemInformation())
             exception_info = {
                 "function": fn,
                 "exception": err,

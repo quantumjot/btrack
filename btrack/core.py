@@ -19,17 +19,6 @@ __version__ = _version.version
 logger = logging.getLogger(__name__)
 
 
-class SystemInformation:
-    from btrack.utils import _debug_info
-
-    _info = _debug_info()
-
-    def __repr__(self) -> str:
-        return "\n".join(
-            [f"{key}: {value}" for key, value in self._info.items()]
-        )
-
-
 class BayesianTracker:
     """BayesianTracker.
 

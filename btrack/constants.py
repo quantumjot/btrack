@@ -1,8 +1,12 @@
 import enum
+import platform
 from pathlib import Path
 
 BTRACK_PATH = Path(__file__).resolve().parent
 BTRACK_LIB_PATH = Path(BTRACK_PATH) / "libs" / "libtracker"
+
+BTRACK_PLATFORM = platform.platform()
+BTRACK_PYTHON_VERSION = platform.python_version()
 
 MAX_SEARCH_RADIUS = 100
 DEFAULT_LOW_PROBABILITY = -1e5

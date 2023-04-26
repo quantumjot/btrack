@@ -135,10 +135,8 @@ def run(btrack_widget: Container, configs: TrackerConfigs) -> None:
         properties=properties,
         graph=graph,
         name=f"{segmentation}_btrack",
-        scale=segmentation.scale if hasattr(segmentation, "scale") else None,
-        translate=segmentation.translate
-        if hasattr(segmentation, "translate")
-        else None,
+        scale=segmentation.scale,
+        translate=segmentation.translate,
     )
 
 

@@ -216,10 +216,6 @@ deps =
     pytest-qt
     pytest-xvfb ; sys_platform == 'linux'
     qtpy
-conda_deps =
-    # Use conda to install cvxopt so tests work on macOS
-    cvxopt
-conda_channels = conda-forge
 commands = pytest --cov --cov-report=xml
 passenv =
     CI
@@ -231,6 +227,4 @@ passenv =
 
 [tox]
 envlist = py{38,39,310}
-isolated_build = True
-requires = tox-conda
 """

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 from skimage.util import map_array
@@ -296,28 +296,41 @@ def update_segmentation(
     return relabeled
 
 
+def _debug_info() -> Dict[str, Any]:
+    import platform
+
+    from ._version import version
+
+    return {
+        "version": version,
+        "platform": platform.platform(),
+        "python": platform.python_version(),
+    }
+
+
 def log_debug_info(fn):
     """Wrapper to provide additional debug info when loading a shared library
-    or any other function that needs special debuggin info."""
+    or any other function that needs special debugging info."""
 
     @functools.wraps(fn)
     def wrapped_func_to_debug(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
         except Exception as err:
-            from platform import platform
+            debug_info = _debug_info()
+            exception_info = {
+                "function": fn,
+                "exception": err,
+                "arguments": args,
+                "keywords": kwargs,
+            }
 
-            from ._version import version
-
-            logger.error(
-                "DEBUG INFO: \n"
-                f" - btrack: v{version} \n"
-                f" - Platform: {platform()} \n"
-                f" - Function: {fn} \n"
-                f" - Exception: {err} \n"
-                f" - Arguments: {args} \n"
-                f" - Kwargs: {kwargs} \n"
+            debug_info.update(exception_info)
+            debug_str = "\n".join(
+                [f" - {key}: {value}" for key, value in debug_info.items()]
             )
+
+            logger.error(f"Exception caught:\n{debug_str}")
 
             raise Exception from err
 

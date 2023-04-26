@@ -40,7 +40,7 @@ To install the `napari` plugin associated with `btrack` run the command.
 pip install btrack[napari]
 ```
 
-If working on M1 Mac/Apple Silicon/osx-arm64 make sure to install the following
+If working on Apple Silicon make sure to also install the following
 packages from `conda-forge`.
 
 ```sh

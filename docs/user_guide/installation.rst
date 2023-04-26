@@ -24,7 +24,7 @@ If you don't currently have a working scientific Python distribution then follow
 
 
 .. note::
-Miniconda is a lighter version of conda. But all the commands are the same.
+    Miniconda is a lighter version of conda. But all the commands are the same.
 
 Setting up a conda environment
 ------------------------------

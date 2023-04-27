@@ -8,7 +8,7 @@ ifeq ($(UNAME), Linux)
 		XLDFLAGS = -static-libgcc -static-libstdc++
 	else
 		# do something Linux #-fopenmp -static
-		CXX = g++ -lstdc++fs
+		CXX = g++
 		EXT = so
 		XLDFLAGS = -Wl,--no-undefined -Wl,--no-allow-shlib-undefined
 		#-L/usr/local/cuda/lib64 -lcuda -lcudart
@@ -23,7 +23,7 @@ endif
 
 NVCC = nvcc
 
-# If your compiler is a bit older you may need to change -std=c++17 to -std=c++0x
+# If your compiler is a bit older you may need to change -std=c++11 to -std=c++0x
 #-I/usr/include/python2.7 -L/usr/lib/python2.7 # -O3
 LLDBFLAGS =
 CXXFLAGS = -c -std=c++11 -m64 -fPIC -I"./btrack/include" \

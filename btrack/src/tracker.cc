@@ -19,14 +19,14 @@
 using namespace ProbabilityDensityFunctions;
 using namespace BayesianUpdateFunctions;
 
-void write_belief_matrix_to_CSV(std::string a_filename,
-                                Eigen::Ref<Eigen::MatrixXd> a_belief) {
-  std::cout << "Writing: " << a_filename << std::endl;
-  std::ofstream belief_file;
-  belief_file.open(a_filename);
-  belief_file << a_belief.format(CSVFormat);
-  belief_file.close();
-}
+// void write_belief_matrix_to_CSV(std::string a_filename,
+//                                 Eigen::Ref<Eigen::MatrixXd> a_belief) {
+//   std::cout << "Writing: " << a_filename << std::endl;
+//   std::ofstream belief_file;
+//   belief_file.open(a_filename);
+//   belief_file << a_belief.format(CSVFormat);
+//   belief_file.close();
+// }
 
 // set up the tracker using an existing track manager
 BayesianTracker::BayesianTracker(const bool verbose,
@@ -52,12 +52,12 @@ BayesianTracker::BayesianTracker(const bool verbose,
   // set the appropriate cost function
   set_update_mode(update_mode);
 
-  // set a outputfile path
-  // define a filepath for debugging output
-  if (WRITE_BELIEF_MATRIX) {
-    m_debug_filepath = std::experimental::filesystem::temp_directory_path();
-    std::cout << "Using temp file path: " << m_debug_filepath << std::endl;
-  }
+  // // set a outputfile path
+  // // define a filepath for debugging output
+  // if (WRITE_BELIEF_MATRIX) {
+  //   m_debug_filepath = std::experimental::filesystem::temp_directory_path();
+  //   std::cout << "Using temp file path: " << m_debug_filepath << std::endl;
+  // }
 }
 
 BayesianTracker::~BayesianTracker() {
@@ -340,13 +340,13 @@ void BayesianTracker::step(const unsigned int steps) {
       update_iteration++;
     }
 
-    // write out belief matrix here
-    if (WRITE_BELIEF_MATRIX) {
-      std::stringstream belief_filename;
-      belief_filename << m_debug_filepath << "belief_" << current_frame
-                      << ".csv";
-      write_belief_matrix_to_CSV(belief_filename.str(), belief);
-    }
+    // // write out belief matrix here
+    // if (WRITE_BELIEF_MATRIX) {
+    //   std::stringstream belief_filename;
+    //   belief_filename << m_debug_filepath << "belief_" << current_frame
+    //                   << ".csv";
+    //   write_belief_matrix_to_CSV(belief_filename.str(), belief);
+    // }
 
     // if we're storing the graph edges for future optimization, do so here
     // this should be done *BEFORE* linking because it relies on the

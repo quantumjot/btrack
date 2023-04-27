@@ -76,50 +76,52 @@ class HDF5FileHandler:
 
     Notes
     -----
-    ```
-    Basic format of the HDF file is:
-        segmentation/
-            images          - (J x (d) x h x w) uint16 segmentation
-        objects/
-            obj_type_1/
-                coords      - (I x 5) [t, x, y, z, object_type]
-                labels      - (I x D) [label, (softmax scores ...)]
-                map         - (J x 2) [start_index, end_index] -> coords array
-                properties/
-                    area  - (I x 1) first named property (e.g. `area`)
-                    ...
-            ...
-        tracks/
-            obj_type_1/
-                tracks      - (I x 1) [index into coords]
-                dummies     - similar to coords, but for dummy objects
-                map         - (K x 2) [start_index, end_index] -> tracks array
-                LBEPRG      - (K x 6) [L, B, E, P, R, G]
-                fates       - (K x n) [fate_from_tracker, ...future_expansion]
-            ...
+    Basic format of the HDF file is::
 
-    Where:
-        I - number of objects
-        J - number of frames
-        K - number of tracks
-    ```
+        data.h5/
+        ├─ segmentation/
+        │  ├─ images                (J x (d) x h x w) uint16 segmentation
+        ├─ objects/
+        │  ├─ obj_type_1/
+        │  │  ├─ coords             (I x 5) [t, x, y, z, object_type]
+        │  │  ├─ labels             (I x D) [label, (softmax scores ...)]
+        │  │  ├─ map                (J x 2) [start_index, end_index] -> coords array
+        │  │  ├─ properties /
+        │  │  │  ├─ area            (I x 1) first named property (e.g. `area`)
+        │  │  │  ├─ ...
+        │  ├─ obj_type_2/
+        │  ├─ ...
+        ├─ tracks/
+        │  ├─ obj_type_1/
+        │  │  ├─ tracks             (I x 1) [index into coords]
+        │  │  ├─ dummies            similar to objects/coords, but for dummy objects
+        │  │  ├─ map                (K x 2) [start_index, end_index] -> tracks array
+        │  │  ├─ LBEPRG             (K x 6) [L, B, E, P, R, G]
+        │  │  ├─ fates              (K x n) [fate_from_tracker, ...future_expansion]
+        │  ├─ obj_type_2/
+        │  ├─ ...
 
-    LBEPR is a modification of the LBEP format to also include the root node
-    of the tree.
+    Where ``I`` is the number of objects, ``J`` is the number of frames and
+    ``K`` is number of tracks. LBEPR is a modification of the LBEP format to
+    also include the root node of the tree.
 
 
     Examples
     --------
     Read objects from a file:
+
     >>> with HDF5FileHandler('file.h5', 'r') as handler:
-    >>>    objects = handler.objects
+    ...    objects = handler.objects
 
     Use filtering by property for object retrieval:
+
     >>> obj = handler.filtered_objects('flag==1')
-    >>> obj = handler.filtered_objects('area>100')
+    ... obj = handler.filtered_objects('area>100')
 
     Write tracks directly to a file:
+
     >>> handler.write_tracks(tracks)
+
     """
 
     def __init__(
@@ -247,7 +249,7 @@ class HDF5FileHandler:
                 )
             )
             properties = {k: grp["properties"][k][:] for k in p_keys}
-            assert all([len(p) == len(txyz) for p in properties.values()])
+            assert all(len(p) == len(txyz) for p in properties.values())
 
         # note that this doesn't do much error checking at the moment
         # TODO(arl): this should now reference the `properties`

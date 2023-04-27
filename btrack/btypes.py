@@ -153,14 +153,14 @@ class PyTrackObject(ctypes.Structure):
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        node |= self.properties
+        node.update(self.properties)
         return node
 
     @staticmethod
     def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = {k: kt for k, kt in PyTrackObject._fields_}
+        fields = dict(PyTrackObject._fields_)
         attr = [k for k in fields if k in properties]
         for key in attr:
             new_data = properties[key]
@@ -362,7 +362,7 @@ class Tracklet:
         children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-        assert all([isinstance(o, PyTrackObject) for o in data])
+        assert all(isinstance(o, PyTrackObject) for o in data)
 
         self.ID = ID
         self._data = data

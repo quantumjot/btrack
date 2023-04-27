@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import functools
 import logging
 from typing import List, Optional
 
@@ -7,7 +9,7 @@ import numpy as np
 from skimage.util import map_array
 
 # import core
-from . import btypes, constants
+from . import _version, btypes, constants
 from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
 from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
@@ -88,7 +90,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 
     def within(o):
         return all(
-            [getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes]
+            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
         )
 
     return [o for o in objects if within(o)]
@@ -103,7 +105,7 @@ def _cat_tracks_as_dict(
     tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
     """Concatenate all tracks as dictionary."""
-    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
+    assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
     data: dict = {}
 
@@ -293,3 +295,48 @@ def update_segmentation(
         )
 
     return relabeled
+
+
+@dataclasses.dataclass(frozen=True, init=False)
+class SystemInformation:
+    btrack_version: str = _version.version
+    system_platform: str = constants.BTRACK_PLATFORM
+    system_python: str = constants.BTRACK_PYTHON_VERSION
+
+    def __repr__(self) -> str:
+        # override to have slightly nicer formatting
+        return "\n".join(
+            [
+                f"{key}: {value}"
+                for key, value in dataclasses.asdict(self).items()
+            ]
+        )
+
+
+def log_debug_info(fn):
+    """Wrapper to provide additional debug info when loading a shared library
+    or any other function that needs special debugging info."""
+
+    @functools.wraps(fn)
+    def wrapped_func_to_debug(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as err:
+            debug_info = dataclasses.asdict(SystemInformation())
+            exception_info = {
+                "function": fn,
+                "exception": err,
+                "arguments": args,
+                "keywords": kwargs,
+            }
+
+            debug_info.update(exception_info)
+            debug_str = "\n".join(
+                [f" - {key}: {value}" for key, value in debug_info.items()]
+            )
+
+            logger.error(f"Exception caught:\n{debug_str}")
+
+            raise Exception from err
+
+    return wrapped_func_to_debug

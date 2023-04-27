@@ -4,8 +4,9 @@ This module is a reader plugin btrack files for napari.
 import os
 from typing import Callable, List, Optional, Sequence, Union
 
-from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation
+
+from napari.types import LayerDataTuple
 
 from btrack.io import HDF5FileHandler
 from btrack.utils import tracks_to_napari

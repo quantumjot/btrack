@@ -1,4 +1,4 @@
-name: Build Wheels, Test & Deploy
+name: Test
 
 on:
   push:
@@ -11,24 +11,24 @@ on:
 
 jobs:
   build_wheels:
-    name: |
+    name: |-
       Build wheels on ${{ matrix.os }} with
       windows_cross_compile=${{ matrix.windows_cross_compile }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [macos-11, ubuntu-20.04]
         windows_cross_compile: [false, true]
         exclude:
-          - os: macos-latest
+          - os: macos-11
             windows_cross_compile: true
 
     steps:
       - name: Install dependencies
-        run: |
+        run: |-
           sudo apt-get update
           sudo apt-get install -y mingw-w64
-        if: matrix.windows_cross_compile
+        if: ${{ matrix.windows_cross_compile }}
 
       - uses: actions/checkout@v3
 
@@ -41,8 +41,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
             name: artefacts
-            path: |
-              btrack/libs/*
+            path: btrack/libs/*
             if-no-files-found: error
 
   test:
@@ -53,11 +52,16 @@ jobs:
       matrix:
         python-version: ["3.8", "3.9", "3.10"]
         os: [ubuntu-latest]
-        # Include one windows and macos run
         include:
+          - os: macos-11
+            python-version: "3.10"
           - os: macos-latest
             python-version: "3.10"
+          - os: windows-2019
+            python-version: "3.10"
           - os: windows-latest
+            python-version: "3.10"
+          - os: ubuntu-20.04
             python-version: "3.10"
 
     steps:
@@ -72,14 +76,14 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
           cache: "pip"
           cache-dependency-path: "pyproject.toml"
 
       - uses: conda-incubator/setup-miniconda@v2
         with:
           auto-update-conda: true
-          python-version: "3.10"
+          python-version: ${{ matrix.python-version }}
 
       # these libraries enable testing on Qt on linux
       - uses: tlambert03/setup-qt-libs@v1
@@ -89,50 +93,10 @@ jobs:
       # and
       # tox-conda: https://github.com/tox-dev/tox-conda
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install "tox<4" tox-gh-actions tox-conda
+        run: python -m pip install "tox<4" tox-gh-actions tox-conda
 
       - name: Test with tox
         run: tox
 
       - name: Coverage
         uses: codecov/codecov-action@v3
-
-  deploy:
-    needs: test
-    runs-on: "ubuntu-latest"
-    if: |
-      github.repository == 'quantumjot/btrack'
-      && github.event_name == 'push'
-      && startsWith(github.ref, 'refs/tags')
-
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
-
-      - name: Download artefacts
-        uses: actions/download-artifact@v3
-        with:
-            name: artefacts
-            path: btrack/libs
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-          cache-dependency-path: "pyproject.toml"
-
-      - name: Install build dependencies
-        run: python -m pip install build wheel
-
-      - name: Build distributions
-        shell: bash -l {0}
-        run: python -m build
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_PASSWORD }}

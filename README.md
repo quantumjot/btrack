@@ -1,18 +1,14 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)
 [![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Tests](https://github.com/quantumjot/btrack/actions/workflows/build_wheels_test_and_deploy.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/build_wheels_test_and_deploy.yml)
+[![Tests](https://github.com/quantumjot/btrack/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/test.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
 [![Documentation](https://readthedocs.org/projects/btrack/badge/?version=latest)](https://btrack.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/quantumjot/btrack/branch/main/graph/badge.svg?token=QCFC9AWK0R)](https://codecov.io/gh/quantumjot/btrack)
 
-[docs]: https://btrack.readthedocs.io/en/latest/
-[docs-dev]: https://btrack.readthedocs.io/en/latest/dev_guide/
-[cellx]: http://lowe.cs.ucl.ac.uk/cellx.html
+![logo](https://btrack.readthedocs.io/en/latest/_images/btrack_logo.png)
 
-![logo](./docs/_static/btrack_logo.png)
-
-# Bayesian Tracker (btrack) :microscope::computer:
+# Bayesian Tracker (btrack) 🔬💻
 
 `btrack` is a Python library for multi object tracking, used to reconstruct trajectories in crowded fields.
 Here, we use a probabilistic network of information to perform the trajectory linking.
@@ -28,14 +24,13 @@ The global solution identifies a sequence of high-likelihood hypotheses that acc
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
-[Read more about the science][cellx].
-
-You can also --> :star: :wink:
-
 ## Installation
 
-`btrack` has been tested with Python 3.8+ on OS X, Linux and Win10.
-
+`btrack` has been tested with ![Python](https://img.shields.io/pypi/pyversions/btrack)
+on `x86_64` `macos>=11`, `ubuntu>=20.04` and `windows>=10.0.17763`.
+Note that `btrack<=0.5.0` was built against earlier version of
+[Eigen](https://eigen.tuxfamily.org) which used `C++=11`, as of `btrack==0.5.1`
+it is now built against `C++=17`.
 
 #### Installing the latest stable version
 
@@ -55,7 +50,7 @@ pip install btrack
 
 ## Usage examples
 
-Visit [btrack documentation][docs] to learn how to use it and see other examples.
+Visit [btrack documentation](https://btrack.readthedocs.io) to learn how to use it and see other examples.
 
 ### Cell tracking in time-lapse imaging data
 
@@ -74,7 +69,7 @@ Visit [btrack documentation][docs] to learn how to use it and see other examples
 ## Development
 
 The tracker and hypothesis engine are mostly written in C++ with a Python wrapper.
-If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide][docs-dev].
+If you would like to contribute to btrack, you will need to install the latest version from GitHub. Follow the [instructions on our developer guide](https://btrack.readthedocs.io/en/latest/dev_guide).
 
 
 ---

@@ -1,4 +1,5 @@
 __pycache__
+_version.py
 .cache
 .coverage
 .coverage.*
@@ -63,5 +64,5 @@ pip-delete-this-directory.txt
 pip-log.txt
 sdist
 target
+user_config.json
 var
-_version.py

@@ -25,9 +25,18 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
+dependencies = [
+    "cvxopt>=1.2.0",
+    "h5py>=2.10.0",
+    "numpy>=1.17.3",
+    "pooch>=1.0.0",
+    "pydantic>=1.9.0",
+    "scikit-image>=0.16.2",
+    "scipy>=1.3.1",
+    "tqdm>=4.65.0",
+]
 description = "A framework for Bayesian multi-object tracking"
 dynamic = [
-    "dependencies",
     "version",
 ]
 name = "btrack"
@@ -173,7 +182,6 @@ pep8-naming.classmethod-decorators = [
 ]
 
 [tool.setuptools]
-dynamic.dependencies.file = "requirements.txt"
 packages.find = {}
 
 [tool.setuptools_scm]
@@ -208,10 +216,6 @@ deps =
     pytest-qt
     pytest-xvfb ; sys_platform == 'linux'
     qtpy
-conda_deps =
-    # Use conda to install cvxopt so tests work on macOS
-    cvxopt
-conda_channels = conda-forge
 commands = pytest --cov --cov-report=xml
 passenv =
     CI
@@ -223,6 +227,4 @@ passenv =
 
 [tox]
 envlist = py{38,39,310}
-isolated_build = True
-requires = tox-conda
 """

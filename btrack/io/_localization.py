@@ -284,15 +284,18 @@ def segmentation_to_objects(
         num_workers = 1
 
     if num_workers <= 1:
-        for data in tqdm(container, total=len(container), position = 0):
+        for data in tqdm(container, total=len(container), position=0):
             _nodes = processor(data)
             nodes = _concat_nodes(nodes, _nodes)
     else:
         logger.info(f"Processing using {num_workers} workers.")
         with Pool(processes=num_workers) as pool:
             result = list(
-                tqdm(pool.imap(processor, container), total=len(container),
-                     position = 0)
+                tqdm(
+                    pool.imap(processor, container),
+                    total=len(container),
+                    position=0,
+                )
             )
 
         for _nodes in result:

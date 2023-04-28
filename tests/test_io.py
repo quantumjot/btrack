@@ -56,12 +56,15 @@ def test_hdf5_write_with_properties(hdf5_file_path):
             np.testing.assert_allclose(orig.properties[p], read.properties[p])
 
 
-@pytest.mark.parametrize("num_dummies", [1, 5, 9])
-def test_hdf5_write_dummies(hdf5_file_path, test_objects, num_dummies):
+@pytest.mark.parametrize("frac_dummies", [0.1, 0.5, 0.9])
+def test_hdf5_write_dummies(hdf5_file_path, test_objects, frac_dummies):
     """Test writing tracks with a variable proportion of dummy objects."""
+
+    num_dummies = int(len(test_objects) * frac_dummies)
+
     for obj in test_objects[:num_dummies]:
         obj.dummy = True
-        obj.ID = -(obj.ID)
+        obj.ID = -(obj.ID + 1)
 
     track_id = 1
     track_with_dummies = btrack.btypes.Tracklet(track_id, test_objects)

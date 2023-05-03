@@ -1,0 +1,68 @@
+{
+  "TrackerConfig":
+    {
+      "MotionModel":
+        {
+          "name": "cell_motion",
+          "dt": 1.0,
+          "measurements": 3,
+          "states": 6,
+          "accuracy": 7.5,
+          "prob_not_assign": 0.1,
+          "max_lost": 5,
+          "A": {
+            "matrix": [1,0,0,1,0,0,
+                       0,1,0,0,1,0,
+                       0,0,1,0,0,1,
+                       0,0,0,1,0,0,
+                       0,0,0,0,1,0,
+                       0,0,0,0,0,1]
+          },
+          "H": {
+            "matrix": [1,0,0,0,0,0,
+                       0,1,0,0,0,0,
+                       0,0,1,0,0,0]
+          },
+          "P": {
+            "sigma": 150.0,
+            "matrix": [0.1,0,0,0,0,0,
+                       0,0.1,0,0,0,0,
+                       0,0,0.1,0,0,0,
+                       0,0,0,1,0,0,
+                       0,0,0,0,1,0,
+                       0,0,0,0,0,1]
+          },
+          "G": {
+            "sigma": 15.0,
+            "matrix": [0.5,0.5,0.5,1,1,1]
+
+          },
+          "R": {
+            "sigma": 5.0,
+            "matrix": [1,0,0,
+                       0,1,0,
+                       0,0,1]
+          }
+        },
+      "ObjectModel":
+        {},
+      "HypothesisModel":
+        {
+          "name": "cell_hypothesis",
+          "hypotheses": ["P_FP", "P_init", "P_term", "P_link", "P_branch", "P_dead"],
+          "lambda_time": 5.0,
+          "lambda_dist": 3.0,
+          "lambda_link": 10.0,
+          "lambda_branch": 50.0,
+          "eta": 1e-10,
+          "theta_dist": 20.0,
+          "theta_time": 5.0,
+          "dist_thresh": 40,
+          "time_thresh": 2,
+          "apop_thresh": 5,
+          "segmentation_miss_rate": 0.1,
+          "apoptosis_rate": 0.001,
+          "relax": true
+        }
+    }
+}

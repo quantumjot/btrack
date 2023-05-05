@@ -170,7 +170,7 @@ def _run_tracker(
         tracker.optimize()
 
         # get the tracks in a format for napari visualization
-        data, properties, graph = tracker.to_napari(ndim=2)
+        data, properties, graph = tracker.to_napari()
         return data, properties, graph
 
 

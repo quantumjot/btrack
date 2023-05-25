@@ -207,7 +207,7 @@ python =
 
 [testenv]
 deps =
-    pyqt
+    pyqt5
     pytest-cov
     pytest-qt
 commands = pytest --cov --cov-report=xml

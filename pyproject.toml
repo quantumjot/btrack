@@ -18,7 +18,6 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
@@ -52,18 +51,9 @@ optional-dependencies = {docs = [
     "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
     "qtpy",
-], pyqt = [
-    "PyQt5 >= 5.12.3, != 5.15.0",
-    "btrack[napari]",
-], pyside = [
-    "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
-    "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
-    "btrack[napari]",
-], qt = [
-    "btrack[pyside]",
 ]}
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 license.file = "LICENSE.md"
 urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
@@ -90,7 +80,6 @@ exclude = '''
 '''
 line-length = 79
 target-version = [
-    "py38",
     "py39",
     "py310",
 ]
@@ -158,7 +147,7 @@ select = [
     "W",
     "YTT",
 ]
-target-version = "py38"
+target-version = "py39"
 isort.known-first-party = [
     "black",
 ]
@@ -201,7 +190,6 @@ overrides."tool.ruff.isort.section-order".inline_arrays = false
 legacy_tox_ini = """
 [gh-actions]
 python =
-    3.8: py38
     3.9: py39
     3.10: py310
 
@@ -226,5 +214,5 @@ passenv =
     XAUTHORITY
 
 [tox]
-envlist = py{38,39,310}
+envlist = py{39,310}
 """

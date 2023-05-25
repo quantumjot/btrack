@@ -207,7 +207,7 @@ python =
 
 [testenv]
 deps =
-    magicgui
+    dask
     napari
     pyqt5
     pytest-cov

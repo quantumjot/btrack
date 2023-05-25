@@ -207,15 +207,8 @@ python =
 
 [testenv]
 deps =
-    dask
-    magicgui
-    napari
-    pyqt5
-    pytest
     pytest-cov
     pytest-qt
-    pytest-xvfb ; sys_platform == 'linux'
-    qtpy
 commands = pytest --cov --cov-report=xml
 passenv =
     CI

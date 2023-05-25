@@ -207,7 +207,7 @@ python =
 
 [testenv]
 deps =
-    dask
+    pytest-xvfb ; sys_platform == 'linux'
     napari
     pyqt5
     pytest-cov

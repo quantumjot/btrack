@@ -207,6 +207,7 @@ python =
 
 [testenv]
 deps =
+    napari
     pyqt5
     pytest-cov
     pytest-qt

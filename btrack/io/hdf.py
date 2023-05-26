@@ -261,14 +261,13 @@ class HDF5FileHandler:
             if m is None:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
 
-            f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
-
-            if m["name"] in properties:
-                data = properties[m["name"]]
-                filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
-            else:
+            if m["name"] not in properties:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
 
+            data = properties[m["name"]]
+            f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
+
+            filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
 
@@ -293,7 +292,7 @@ class HDF5FileHandler:
 
         # add the filtered properties
         for key, props in properties.items():
-            objects_dict.update({key: props[filtered_idx]})
+            objects_dict[key] = props[filtered_idx]
 
         return objects_from_dict(objects_dict)
 
@@ -395,15 +394,7 @@ class HDF5FileHandler:
 
             # Check if the property is already in the props_grp:
             if key in props_grp:
-                if allow_overwrite is False:
-                    logger.info(
-                        f"Property '{key}' already written in the file"
-                    )
-                    raise KeyError(
-                        f"Property '{key}' already in file -> switch on "
-                        "'overwrite' param to replace existing property "
-                    )
-                else:
+                if allow_overwrite:
                     del self._hdf[f"objects/{self.object_type}/properties"][
                         key
                     ]
@@ -411,6 +402,14 @@ class HDF5FileHandler:
                         f"Property '{key}' erased to be overwritten..."
                     )
 
+                else:
+                    logger.info(
+                        f"Property '{key}' already written in the file"
+                    )
+                    raise KeyError(
+                        f"Property '{key}' already in file -> switch on "
+                        "'overwrite' param to replace existing property "
+                    )
             # Now that you handled overwriting, write the values:
             logger.info(
                 f"Writing properties/{self.object_type}/{key} {values.shape}"
@@ -450,9 +449,8 @@ class HDF5FileHandler:
         obj = self.filtered_objects(f_expr=f_expr)
 
         def _get_txyz(_ref: int) -> int:
-            if _ref >= 0:
-                return obj[_ref]
-            return dummy_obj[abs(_ref) - 1]  # references are -ve for dummies
+            # references are -ve for dummies
+            return obj[_ref] if _ref >= 0 else dummy_obj[abs(_ref) - 1]
 
         tracks = []
         for i in range(track_map.shape[0]):

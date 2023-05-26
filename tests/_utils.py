@@ -42,13 +42,12 @@ def create_test_object(
 def create_test_properties() -> Dict[str, float]:
     """Create test properties for an object."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
-    properties = {
+    return {
         "speed": rng.uniform(0.0, 1.0),
         "circularity": rng.uniform(0.0, 1.0),
         "reporter": rng.uniform(0.0, 1.0),
         "nD": rng.uniform(0.0, 1.0, size=(5,)),
     }
-    return properties
 
 
 def create_test_tracklet(
@@ -75,7 +74,7 @@ def create_test_tracklet(
 
     # convert to dictionary {key: [p0,...,pn]}
     properties = (
-        {} if not props else {k: [p[k] for p in props] for k in props[0]}
+        {k: [p[k] for p in props] for k in props[0]} if props else {}
     )
 
     return tracklet, data, properties, track_id
@@ -101,8 +100,7 @@ def create_realistic_tracklet(  # noqa: PLR0913
     }
 
     objects = btrack.io.objects_from_dict(data)
-    track = btrack.btypes.Tracklet(track_ID, objects)
-    return track
+    return btrack.btypes.Tracklet(track_ID, objects)
 
 
 def create_test_image(
@@ -147,9 +145,7 @@ def create_test_image(
     centroids = []
     for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
-        slices = tuple(
-            [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
-        )
+        slices = tuple(slice(b * binsize, b * binsize + binsize, 1) for b in bin)
         val = 1 if binary else v + 1
         img[slices] = sample * val
 

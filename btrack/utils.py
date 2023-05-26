@@ -27,10 +27,7 @@ logger = logging.getLogger(__name__)
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
-    if (
-        error != constants.Errors.SUCCESS
-        and error != constants.Errors.NO_ERROR
-    ):
+    if error not in [constants.Errors.SUCCESS, constants.Errors.NO_ERROR]:
         logger.error(f"ERROR: {error}")
         return True
     return False
@@ -65,23 +62,17 @@ def log_stats(stats: dict) -> None:
 
 def read_motion_model(cfg: dict) -> Optional[MotionModel]:
     cfg = cfg.get("MotionModel", {})
-    if not cfg:
-        return None
-    return MotionModel(**cfg)
+    return MotionModel(**cfg) if cfg else None
 
 
 def read_object_model(cfg: dict) -> Optional[ObjectModel]:
     cfg = cfg.get("ObjectModel", {})
-    if not cfg:
-        return None
-    return ObjectModel(**cfg)
+    return ObjectModel(**cfg) if cfg else None
 
 
 def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
     cfg = cfg.get("HypothesisModel", {})
-    if not cfg:
-        return None
-    return HypothesisModel(**cfg)
+    return HypothesisModel(**cfg) if cfg else None
 
 
 def crop_volume(objects, volume=constants.VOLUME):

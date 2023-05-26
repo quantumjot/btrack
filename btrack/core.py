@@ -462,7 +462,7 @@ class BayesianTracker:
         # bitwise OR is equivalent to int sum here
         self._lib.set_update_features(
             self._engine,
-            sum([int(f.value) for f in self.configuration.tracking_updates]),
+            sum(int(f.value) for f in self.configuration.tracking_updates),
         )
 
         stats = self.step()
@@ -512,12 +512,9 @@ class BayesianTracker:
             self._frame_range[1],
         )
 
-        # now get all of the hypotheses
-        h = [
-            self._lib.get_hypothesis(self._engine, h)
-            for h in range(n_hypotheses)
+        return [
+            self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)
         ]
-        return h
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""

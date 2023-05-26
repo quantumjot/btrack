@@ -109,9 +109,7 @@ class PyTrackObject(ctypes.Structure):
 
     @property
     def properties(self) -> Dict[str, Any]:
-        if self.dummy:
-            return {}
-        return self._properties
+        return {} if self.dummy else self._properties
 
     @properties.setter
     def properties(self, properties: Dict[str, Any]):
@@ -129,7 +127,7 @@ class PyTrackObject(ctypes.Structure):
             self.n_features = 0
             return
 
-        if not all(k in self.properties for k in keys):
+        if any(k not in self.properties for k in keys):
             missing_features = list(
                 set(keys).difference(set(self.properties.keys()))
             )
@@ -153,7 +151,7 @@ class PyTrackObject(ctypes.Structure):
             for k, _ in PyTrackObject._fields_
             if k not in ("features", "n_features")
         }
-        node.update(self.properties)
+        node |= self.properties
         return node
 
     @staticmethod
@@ -237,10 +235,7 @@ class PyTrackingInfo(ctypes.Structure):
 
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the statistics"""
-        # TODO(arl): make this more readable by converting seconds, ms
-        # and interpreting error messages?
-        stats = {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
-        return stats
+        return {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
 
     @property
     def tracker_active(self) -> bool:
@@ -278,8 +273,7 @@ class PyGraphEdge(ctypes.Structure):
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary describing the edge."""
-        edge = {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
-        return edge
+        return {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
 
 
 class Tracklet:
@@ -526,7 +520,7 @@ class Tracklet:
         """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
-        trk_tuple = tuple([(p, getattr(self, p)) for p in properties])
+        trk_tuple = tuple((p, getattr(self, p)) for p in properties)
         data = OrderedDict(trk_tuple)
         data.update(self.properties)
         return data

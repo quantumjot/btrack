@@ -112,13 +112,13 @@ def export_LBEP(filename: os.PathLike, tracks: list):
 
 
 def _export_HDF(
-    filename: os.PathLike, tracker, obj_type=None, filter_by: str = None
+    filename: os.PathLike, tracker, obj_type=None, filter_by: Optional[str] = None
 ):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)
     if ext != ".h5":
-        filename = filename_noext + ".h5"
+        filename = f"{filename_noext}.h5"
         logger.warning(f"Changing HDF filename to {filename}")
 
     with HDF5FileHandler(filename, read_write="a", obj_type=obj_type) as hdf:

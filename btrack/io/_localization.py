@@ -173,9 +173,9 @@ class NodeProcessor:
 
 
 def segmentation_to_objects(  # noqa: PLR0913
-    segmentation: Union[np.ndarray, Generator],
+    segmentation: Union[npt.NDArray, Generator],
     *,
-    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
+    intensity_image: Optional[Union[npt.NDArray, Generator]] = None,
     properties: Optional[tuple[str]] = (),
     extra_properties: Optional[tuple[Callable]] = None,
     scale: Optional[tuple[float]] = None,
@@ -187,10 +187,10 @@ def segmentation_to_objects(  # noqa: PLR0913
 
     Parameters
     ----------
-    segmentation : np.ndarray, dask.array.core.Array or Generator
+    segmentation : npt.NDArray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
+    intensity_image : npt.NDArray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional

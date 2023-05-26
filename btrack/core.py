@@ -6,6 +6,7 @@ import warnings
 from typing import Optional, Union
 
 import numpy as np
+from numpy import typing as npt
 
 from btrack import _version
 
@@ -384,7 +385,7 @@ class BayesianTracker:
         return self._objects
 
     def append(
-        self, objects: Union[list[btypes.PyTrackObject], np.ndarray]
+        self, objects: Union[list[btypes.PyTrackObject], npt.NDArray]
     ) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
@@ -393,7 +394,7 @@ class BayesianTracker:
 
         Parameters
         ----------
-        objects : list, np.ndarray
+        objects : list, npt.NDArray
             A list of objects to track.
         """
 
@@ -680,7 +681,7 @@ class BayesianTracker:
         self,
         replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
-    ) -> tuple[np.ndarray, dict, dict]:
+    ) -> tuple[npt.NDArray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 

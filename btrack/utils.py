@@ -6,6 +6,7 @@ import logging
 from typing import Optional
 
 import numpy as np
+from numpy import typing as npt
 from skimage.util import map_array
 
 # import core
@@ -87,7 +88,7 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
+def _lbep_table(tracks: list[btypes.Tracklet]) -> npt.NDArray:
     """Create an LBEP table from a track."""
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
@@ -220,16 +221,16 @@ def tracks_to_napari(
 
 
 def update_segmentation(
-    segmentation: np.ndarray,
+    segmentation: npt.NDArray,
     tracks: list[btypes.Tracklet],
     *,
     color_by: str = "ID",
-) -> np.ndarray:
+) -> npt.NDArray:
     """Map tracks back into a masked array.
 
     Parameters
     ----------
-    segmentation : np.array
+    segmentation : npt.NDArray
         Array containing a timeseries of single cell masks. Dimensions should be
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
@@ -239,7 +240,7 @@ def update_segmentation(
 
     Returns
     -------
-    relabeled : np.array
+    relabeled : npt.NDArray
         Array containing the same masks as segmentation but relabeled to
         maintain single cell identity over time.
 

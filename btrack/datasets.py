@@ -1,7 +1,7 @@
 import os
 
-import numpy as np
 import pooch
+from numpy import typing as npt
 from skimage.io import imread
 
 from .btypes import PyTrackObject
@@ -47,7 +47,7 @@ def example_segmentation_file() -> os.PathLike:
     return POOCH.fetch("examples/segmented.tif")
 
 
-def example_segmentation() -> np.ndarray:
+def example_segmentation() -> npt.NDArray:
     """Return the U-Net segmentation as a numpy array of dimensions (T, Y, X)."""
     file_path = example_segmentation_file()
     return imread(file_path)

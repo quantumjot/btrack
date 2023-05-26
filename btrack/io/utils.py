@@ -4,6 +4,7 @@ import logging
 from typing import Any, Union
 
 import numpy as np
+from numpy import typing as npt
 
 # import core
 from btrack import btypes, constants
@@ -14,14 +15,14 @@ logger = logging.getLogger(__name__)
 
 def localizations_to_objects(
     localizations: Union[
-        np.ndarray, list[btypes.PyTrackObject], dict[str, Any]
+        npt.NDArray, list[btypes.PyTrackObject], dict[str, Any]
     ]
 ) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
     ----------
-    localizations : list[PyTrackObject], np.ndarray, pandas.DataFrame
+    localizations : list[PyTrackObject], npt.NDArray, pandas.DataFrame
         A list or array of localizations.
 
     Returns
@@ -70,7 +71,7 @@ def objects_from_dict(objects_dict: dict) -> list[btypes.PyTrackObject]:
 
 
 def objects_from_array(
-    objects_arr: np.ndarray,
+    objects_arr: npt.NDArray,
     *,
     default_keys: list[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> list[btypes.PyTrackObject]:

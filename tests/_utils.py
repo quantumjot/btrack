@@ -73,9 +73,7 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    properties = (
-        {k: [p[k] for p in props] for k in props[0]} if props else {}
-    )
+    properties = {k: [p[k] for p in props] for k in props[0]} if props else {}
 
     return tracklet, data, properties, track_id
 
@@ -145,7 +143,9 @@ def create_test_image(
     centroids = []
     for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
-        slices = tuple(slice(b * binsize, b * binsize + binsize, 1) for b in bin)
+        slices = tuple(
+            slice(b * binsize, b * binsize + binsize, 1) for b in bin
+        )
         val = 1 if binary else v + 1
         img[slices] = sample * val
 

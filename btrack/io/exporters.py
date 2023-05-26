@@ -112,7 +112,10 @@ def export_LBEP(filename: os.PathLike, tracks: list):
 
 
 def _export_HDF(
-    filename: os.PathLike, tracker, obj_type=None, filter_by: Optional[str] = None
+    filename: os.PathLike,
+    tracker,
+    obj_type=None,
+    filter_by: Optional[str] = None,
 ):
     """Export to HDF."""
 

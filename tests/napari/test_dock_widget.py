@@ -143,6 +143,7 @@ def simplistic_tracker_outputs() -> (
     graph = {0: [0]}
     return data, properties, graph
 
+
 def _click_call_button(simplistic_tracker_outputs, run_tracker, track_widget):
     """Helper method which loads a segmentation, add labels
     and ultimate click the call button.

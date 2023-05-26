@@ -106,7 +106,7 @@ class NodeProcessor:
         return self.properties + extra_img_props
 
     def __call__(
-        self, data: Tuple[int, npt.NDAarray, Optional[npt.NDArray]]
+        self, data: Tuple[int, npt.NDArray, Optional[npt.NDArray]]
     ) -> Dict[str, npt.NDArray]:
         """Return the object centroids from a numpy array representing the
         image data."""

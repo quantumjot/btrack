@@ -382,7 +382,7 @@ class Tracklet:
     def properties(self) -> Dict[str, np.ndarray]:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
-        keys = set()
+        keys: set = set()
         for obj in self._data:
             keys.update(obj.properties.keys())
 

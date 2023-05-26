@@ -513,7 +513,8 @@ class BayesianTracker:
         )
 
         return [
-            self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)
+            self._lib.get_hypothesis(self._engine, h)
+            for h in range(n_hypotheses)
         ]
 
     def optimize(self, **kwargs):

@@ -512,6 +512,7 @@ class BayesianTracker:
             self._frame_range[1],
         )
 
+        # now get all of the hypotheses
         return [
             self._lib.get_hypothesis(self._engine, h)
             for h in range(n_hypotheses)

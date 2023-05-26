@@ -89,7 +89,7 @@ class SegmentationContainer:
 class NodeProcessor:
     """Processor to extract nodes from a segmentation image."""
 
-    properties: tuple[str]
+    properties: Optional[tuple[str]]
     centroid_type: str = "centroid"
     intensity_image: Optional[npt.NDArray] = None
     scale: Optional[tuple[float]] = None
@@ -97,7 +97,7 @@ class NodeProcessor:
     extra_properties: Optional[tuple[Callable]] = None
 
     @property
-    def img_props(self) -> list[str]:
+    def img_props(self) -> tuple[str]:
         # need to infer the name of the function provided
         extra_img_props = tuple(
             [str(fn.__name__) for fn in self.extra_properties]
@@ -108,7 +108,7 @@ class NodeProcessor:
 
     def __call__(
         self, data: tuple[int, npt.NDArray, Optional[npt.NDArray]]
-    ) -> dict[str, npt.NDArray]:
+    ) -> dict:
         """Return the object centroids from a numpy array representing the
         image data."""
 
@@ -262,9 +262,9 @@ def segmentation_to_objects(  # noqa: PLR0913
     # objects
     if isinstance(properties, tuple) and "label" in properties:
         logger.warning("Cannot use `scikit-image` `label` as a property.")
-        properties = set(properties)
-        properties.remove("label")
-        properties = tuple(properties)
+        properties_set = set(properties)
+        properties_set.remove("label")
+        properties = tuple(properties_set)
 
     processor = NodeProcessor(
         properties=properties,

@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import h5py
 import numpy as np
@@ -140,7 +140,7 @@ class HDF5FileHandler:
         self._states = list(constants.States)
 
     @property
-    def object_types(self) -> List[str]:
+    def object_types(self) -> list[str]:
         return list(self._hdf["objects"].keys())
 
     def __enter__(self):
@@ -191,7 +191,7 @@ class HDF5FileHandler:
         )
 
     @property
-    def objects(self) -> List[btypes.PyTrackObject]:
+    def objects(self) -> list[btypes.PyTrackObject]:
         """Return the objects in the file."""
         return self.filtered_objects()
 
@@ -201,8 +201,8 @@ class HDF5FileHandler:
         f_expr: Optional[str] = None,
         *,
         lazy_load_properties: bool = True,
-        exclude_properties: Optional[List[str]] = None,
-    ) -> List[btypes.PyTrackObject]:
+        exclude_properties: Optional[list[str]] = None,
+    ) -> list[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata.
 
         Parameters
@@ -298,7 +298,7 @@ class HDF5FileHandler:
         return objects_from_dict(objects_dict)
 
     def write_objects(
-        self, data: Union[List[btypes.PyTrackObject], BayesianTracker]
+        self, data: Union[list[btypes.PyTrackObject], BayesianTracker]
     ) -> None:
         """Write objects to HDF file.
 
@@ -358,7 +358,7 @@ class HDF5FileHandler:
 
     @h5check_property_exists("objects")
     def write_properties(
-        self, data: Dict[str, Any], *, allow_overwrite: bool = False
+        self, data: dict[str, Any], *, allow_overwrite: bool = False
     ) -> None:
         """Write object properties to HDF file.
 
@@ -419,7 +419,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def tracks(self) -> List[btypes.Tracklet]:
+    def tracks(self) -> list[btypes.Tracklet]:
         """Return the tracks in the file."""
 
         logger.info(f"Loading tracks/{self.object_type}")
@@ -490,7 +490,7 @@ class HDF5FileHandler:
 
     def write_tracks(  # noqa: PLR0912
         self,
-        data: Union[List[btypes.Tracklet], BayesianTracker],
+        data: Union[list[btypes.Tracklet], BayesianTracker],
         *,
         f_expr: Optional[str] = None,
     ) -> None:

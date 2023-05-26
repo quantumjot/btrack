@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from skimage.util import map_array
@@ -96,13 +96,13 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _lbep_table(tracks: List[btypes.Tracklet]) -> np.array:
+def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
     """Create an LBEP table from a track."""
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
 def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: List[str]
+    tracks: list[btypes.Tracklet], properties: list[str]
 ) -> dict:
     """Concatenate all tracks as dictionary."""
     assert all(isinstance(t, btypes.Tracklet) for t in tracks)

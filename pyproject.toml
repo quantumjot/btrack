@@ -40,7 +40,12 @@ dynamic = [
     "version",
 ]
 name = "btrack"
-optional-dependencies = {docs = [
+optional-dependencies = {"dev" = [
+    "black",
+    "mypy",
+    "pre-commit",
+    "ruff",
+], docs = [
     "numpydoc",
     "pytz",
     "sphinx",
@@ -103,6 +108,12 @@ run = {branch = true, parallel = true, source = [
 paths.source = [
     "btrack",
     ".tox*/*/lib/python*/site-packages",
+]
+
+[tool.mypy]
+plugins = [
+    "numpy.typing.mypy_plugin",
+    "pydantic.mypy",
 ]
 
 [tool.pytest.ini_options]

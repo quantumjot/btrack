@@ -353,7 +353,7 @@ class Tracklet:
     x values.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         ID: int,
         data: List[PyTrackObject],

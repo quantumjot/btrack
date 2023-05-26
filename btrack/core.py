@@ -5,6 +5,7 @@ import os
 import warnings
 from typing import Optional, Union
 
+import btypes.PyTrackingInfo
 import numpy as np
 from numpy import typing as npt
 
@@ -466,7 +467,7 @@ class BayesianTracker:
             sum(int(f.value) for f in self.configuration.tracking_updates),
         )
 
-        stats = self.step()
+        stats: btypes.PyTrackingInfo = self.step()
         frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:

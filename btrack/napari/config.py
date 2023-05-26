@@ -112,6 +112,7 @@ class UnscaledTrackerConfig:
         assert scaled_config.motion_model is not None
         scaled_config.motion_model.P *= self.sigmas.P
         scaled_config.motion_model.R *= self.sigmas.R
+        assert scaled_config.motion_model.G is not None
         scaled_config.motion_model.G *= self.sigmas.G
         scaled_config.motion_model.Q = (
             scaled_config.motion_model.G.T @ scaled_config.motion_model.G

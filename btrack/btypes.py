@@ -361,7 +361,7 @@ class Tracklet:
 
         self.ID = ID
         self._data = data
-        self._kalman = None
+        self._kalman = np.empty(0)
 
         self.root = None
         self.parent = parent
@@ -553,7 +553,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> tuple[int, int, int, int, int, int]:
+    def LBEP(self) -> tuple[int, list, list, Optional[int], None, int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,

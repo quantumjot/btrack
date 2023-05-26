@@ -28,7 +28,7 @@ Later, tracks can then be loaded using the inbuilt track reader, as follows:
 
 .. code:: python
 
-  with btrack.dataio.HDF5FileHandler(
+  with btrack.io.HDF5FileHandler(
     '/path/to/tracks.h5', 'r', obj_type='obj_type_1'
   ) as reader:
     tracks = reader.tracks

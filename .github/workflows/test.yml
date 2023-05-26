@@ -1,70 +1,97 @@
-name: Run tests
+name: Test
 
-# run on all pull requests, but only pushes to main
 on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "docs/**"
-      - "btrack/include/**"
-      - "btrack/src/**"
-      - ".napari-hub/**"
-      - "examples/**"
-      - "README.md"
-      - "CHANGELOG.rst"
-      - "CITATION.cff"
   pull_request:
     paths-ignore:
-      - "docs/**"
-      - "btrack/include/**"
-      - "btrack/src/**"
       - ".napari-hub/**"
+      - "**.cff"
+      - "**.md"
+      - "**.rst"
+      - "docs/**"
       - "examples/**"
-      - "README.md"
-      - "CHANGELOG.rst"
-      - "CITATION.cff"
 
 jobs:
-  build:
-    name: ${{ matrix.platform }} py${{ matrix.python-version }}
-    runs-on: ${{ matrix.platform }}
+  build_wheels:
+    name: |-
+      Build wheels on ${{ matrix.os }} with
+      windows_cross_compile=${{ matrix.windows_cross_compile }}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        # Run all supported Python versions on linux
+        os: [macos-11, ubuntu-20.04]
+        windows_cross_compile: [false, true]
+        exclude:
+          - os: macos-11
+            windows_cross_compile: true
+
+    steps:
+      - name: Install dependencies
+        run: |-
+          sudo apt-get update
+          sudo apt-get install -y mingw-w64
+        if: ${{ matrix.windows_cross_compile }}
+
+      - uses: actions/checkout@v3
+
+      - name: Build wheels
+        run: bash build.sh
+        env:
+          WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
+
+      - name: Upload artefacts
+        uses: actions/upload-artifact@v3
+        with:
+            name: artefacts
+            path: btrack/libs/*
+            if-no-files-found: error
+
+  test:
+    needs: build_wheels
+    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
         python-version: ["3.8", "3.9", "3.10"]
-        platform: [ubuntu-latest]
-        # Include one windows and macos run
+        os: [ubuntu-latest]
         include:
-        - platform: macos-latest
-          python-version: "3.9"
-        - platform: windows-latest
-          python-version: "3.9"
+          - os: macos-11
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.10"
+          - os: windows-2019
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.10"
+          - os: ubuntu-20.04
+            python-version: "3.10"
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v3
+      - name: Download artefacts
+        uses: actions/download-artifact@v3
+        with:
+            name: artefacts
+            path: btrack/libs
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
+          cache-dependency-path: "pyproject.toml"
 
-      - uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-update-conda: true
-          python-version: ${{ matrix.python-version }}
+      # these libraries enable testing on Qt on linux
+      - uses: tlambert03/setup-qt-libs@v1
 
-      # note: if you need dependencies from conda, considering using
-      # setup-miniconda: https://github.com/conda-incubator/setup-miniconda
-      # and
-      # tox-conda: https://github.com/tox-dev/tox-conda
       - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install tox tox-gh-actions tox-conda
+        run: python -m pip install tox tox-gh-actions
 
       - name: Test with tox
         run: tox
 
       - name: Coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3

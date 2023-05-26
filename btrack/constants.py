@@ -1,18 +1,12 @@
 import enum
-import os
+import platform
+from pathlib import Path
 
-BTRACK_PATH = os.path.dirname(os.path.abspath(__file__))
+BTRACK_PATH = Path(__file__).resolve().parent
+BTRACK_LIB_PATH = Path(BTRACK_PATH) / "libs" / "libtracker"
 
-
-def get_version():
-    with open(os.path.join(BTRACK_PATH, "VERSION.txt"), "r") as ver:
-        version = ver.readline()
-    return version.rstrip()
-
-
-def get_version_tuple():
-    return tuple([int(v) for v in get_version().split(".")])
-
+BTRACK_PLATFORM = platform.platform()
+BTRACK_PYTHON_VERSION = platform.python_version()
 
 MAX_SEARCH_RADIUS = 100
 DEFAULT_LOW_PROBABILITY = -1e5
@@ -90,6 +84,12 @@ class BayesianUpdates(enum.Enum):
     EXACT = 0
     APPROXIMATE = 1
     CUDA = 2
+
+
+@enum.unique
+class BayesianUpdateFeatures(enum.Enum):
+    MOTION = 0b0000001
+    VISUAL = 0b0000010
 
 
 class Dimensionality(enum.IntEnum):

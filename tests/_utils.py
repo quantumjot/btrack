@@ -16,22 +16,23 @@ RANDOM_SEED = 1234
 
 
 def create_test_object(
-    id: Optional[int] = None,
+    test_id: Optional[int] = None,
+    ndim: int = 3,
 ) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
     """Create a test object."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
     data = {
-        "ID": rng.integers(0, 1000) if id is None else int(id),
+        "ID": rng.integers(0, 1000) if test_id is None else int(test_id),
         "x": rng.uniform(0.0, 1000.0),
         "y": rng.uniform(0.0, 1000.0),
-        "z": rng.uniform(0.0, 1000.0),
+        "z": rng.uniform(0.0, 1000.0)
+        if ndim == btrack.constants.Dimensionality.THREE
+        else 0.0,
         "t": rng.integers(0, 1000),
         "dummy": False,
-        "states": 5,
         "label": 0,
-        "prob": 0.5,
     }
 
     obj = btrack.btypes.PyTrackObject().from_dict(data)
@@ -53,6 +54,7 @@ def create_test_properties() -> Dict[str, float]:
 def create_test_tracklet(
     track_len: int,
     track_id: Optional[int] = None,
+    ndim: int = 3,
 ) -> Tuple[
     btrack.btypes.Tracklet,
     List[btrack.btypes.PyTrackObject],
@@ -62,8 +64,8 @@ def create_test_tracklet(
     """Create a test track."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
-    data = [create_test_object()[0] for i in range(track_len)]
-    props = [create_test_properties() for i in range(track_len)]
+    data = [create_test_object(ndim=ndim)[0] for _ in range(track_len)]
+    props = [create_test_properties() for _ in range(track_len)]
     for idx, obj in enumerate(data):
         obj.properties = props[idx]
     track_id = rng.integers(0, 1000) if track_id is None else track_id
@@ -72,15 +74,14 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    if not props:
-        properties = {}
-    else:
-        properties = {k: [p[k] for p in props] for k in props[0].keys()}
+    properties = (
+        {} if not props else {k: [p[k] for p in props] for k in props[0]}
+    )
 
     return tracklet, data, properties, track_id
 
 
-def create_realistic_tracklet(
+def create_realistic_tracklet(  # noqa: PLR0913
     start_x: float,
     start_y: float,
     dx: float,
@@ -99,7 +100,7 @@ def create_realistic_tracklet(
         ),
     }
 
-    objects = btrack.dataio.objects_from_dict(data)
+    objects = btrack.io.objects_from_dict(data)
     track = btrack.btypes.Tracklet(track_ID, objects)
     return track
 
@@ -109,6 +110,7 @@ def create_test_image(
     ndim: int = 2,
     nobj: int = 10,
     binsize: int = 5,
+    *,
     binary: bool = True,
 ) -> Tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
@@ -143,7 +145,7 @@ def create_test_image(
 
     # iterate over the bins and add a smaple
     centroids = []
-    for v, bin in enumerate(rbins):
+    for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
         slices = tuple(
             [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
@@ -177,6 +179,7 @@ def create_test_segmentation_and_tracks(
     padding: int = 16,
     nframes: int = 10,
     ndim: int = 2,
+    *,
     binary: bool = False,
 ) -> Tuple[np.ndarray, np.ndarray, List[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""
@@ -222,14 +225,17 @@ def create_test_segmentation_and_tracks(
 
 
 def full_tracker_example(
-    objects: List[btrack.btypes.PyTrackObject],
+    objects: List[btrack.btypes.PyTrackObject], **kwargs
 ) -> btrack.BayesianTracker:
+    """Set up a full tracker example. kwargs can supply configuration options."""
     # run the tracking
     tracker = btrack.BayesianTracker()
     tracker.configure(CONFIG_FILE)
+    for cfg_key, cfg_value in kwargs.items():
+        setattr(tracker, cfg_key, cfg_value)
     tracker.append(objects)
     tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
-    tracker.track_interactive(step_size=100)
+    tracker.track(step_size=100)
     tracker.optimize()
     return tracker
 
@@ -242,7 +248,7 @@ def simple_tracker_example() -> Tuple[btrack.BayesianTracker, Dict[str, Any]]:
     z = np.zeros(x.shape)
 
     objects_dict = {"x": x, "y": y, "z": z, "t": t}
-    objects = btrack.dataio.objects_from_dict(objects_dict)
+    objects = btrack.io.objects_from_dict(objects_dict)
 
     tracker = full_tracker_example(objects)
     return tracker, objects_dict

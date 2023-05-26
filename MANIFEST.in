@@ -1,3 +1,1 @@
-include requirements*.txt
-include btrack/VERSION.txt
-include btrack/libs/libtracker*
+graft btrack/libs

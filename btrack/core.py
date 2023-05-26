@@ -7,11 +7,13 @@ from typing import List, Optional, Tuple, Union
 
 import numpy as np
 
+from btrack import _version
+
 from . import btypes, config, constants, libwrapper, models, utils
-from .dataio import export_delegator, localizations_to_objects
+from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
-__version__ = constants.get_version()
+__version__ = _version.version
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -69,9 +71,9 @@ class BayesianTracker:
     Data can be passed in in the following formats:
 
         * numpy arrays
-        * :py:meth:`btrack.btypes.PyTrackObject`
-        * CSV (see :py:meth:`btrack.dataio.import_CSV`)
-        * HDF (see :py:meth:`btrack.dataio.HDF5FileHandler`)
+        * :py:class:`btrack.btypes.PyTrackObject`
+        * CSV (see :py:meth:`btrack.io.import_CSV`)
+        * HDF (see :py:class:`btrack.io.HDF5FileHandler`)
 
     The tracker can be used to return all of the original data neatly packaged
     into tracklet objects, or as a nested list of references to the original
@@ -79,7 +81,7 @@ class BayesianTracker:
     protocol, or other metadata is needed for further analysis. The references
     can be used to make symbolic links in HDF5 files, for example. Use
     `optimise` to generate hypotheses for global optimisation [3]_ [4]_. Read the
-    :py:meth:`optimiser.TrackOptimiser` documentation for more information about the
+    :py:class:`optimiser.TrackOptimiser` documentation for more information about the
     track linker.
 
     Full details of the implementation can be found in [5]_ and [6]_.
@@ -119,7 +121,7 @@ class BayesianTracker:
 
     def __init__(
         self,
-        verbose: bool = True,
+        verbose: bool = True,  # noqa: FBT001 FBT002
     ):
         """Initialise the BayesianTracker C++ engine and parameters."""
 
@@ -133,13 +135,6 @@ class BayesianTracker:
 
         # store a default config
         self._config = config.TrackerConfig(verbose=verbose)
-
-        # sanity check library version
-        version_tuple = constants.get_version_tuple()
-        if not self._lib.check_library_version(self._engine, *version_tuple):
-            logger.warning(f"btrack (v{__version__}) shared library mismatch.")
-        else:
-            logger.info(f"btrack (v{__version__}) library imported")
 
         # silently set the update method to EXACT
         self._lib.set_update_mode(
@@ -160,7 +155,7 @@ class BayesianTracker:
 
     def configure_from_file(self, filename: os.PathLike) -> None:
         """Configure the tracker from a configuration file. See `configure`."""
-        warnings.warn(
+        warnings.warn(  # noqa: B028
             "This function will be deprecated. Use `.configure()` instead.",
             DeprecationWarning,
         )
@@ -210,16 +205,17 @@ class BayesianTracker:
             object.__setattr__(self, attr, value)
 
         # if we need to update the C++ library instance, do it here
-        if attr in (
+        attrs_to_update = [
             "motion_model",
             "object_model",
             "max_search_radius",
             "volume",
             "update_method",
-        ):
-            if value is not None:
-                update_lib_func = getattr(self, f"_{attr}")
-                update_lib_func(value)
+            "store_candidate_graph",
+        ]
+        if attr in attrs_to_update and value is not None:
+            update_lib_func = getattr(self, f"_{attr}")
+            update_lib_func(value)
 
     def __len__(self) -> int:
         return self.n_tracks
@@ -231,6 +227,13 @@ class BayesianTracker:
     def _update_method(self, method: Union[str, constants.BayesianUpdates]):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         self._lib.set_update_mode(self._engine, method.value)
+
+    def _store_candidate_graph(
+        self,
+        store_graph: bool,  # noqa: FBT001
+    ) -> None:
+        """Set the flag to store the candidate graph."""
+        self._lib.set_store_candidate_graph(self._engine, store_graph)
 
     @property
     def n_tracks(self) -> int:
@@ -317,7 +320,7 @@ class BayesianTracker:
         volume = btypes.ImagingVolume(*volume)
 
         # if we've only provided 2 dims, set the last one to a default
-        if volume.ndim == 2:
+        if volume.ndim == constants.Dimensionality.TWO:
             z = (-1e5, 1e5)
             volume = btypes.ImagingVolume(volume.x, volume.y, z)
 
@@ -397,9 +400,14 @@ class BayesianTracker:
         objects = localizations_to_objects(objects)
 
         for idx, obj in enumerate(objects):
-            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
             if not isinstance(obj, btypes.PyTrackObject):
                 raise TypeError("track_object must be a `PyTrackObject`")
+
+            obj.ID = idx + len(self._objects)  # make sure ID tracks properly
+
+            # call the `obj.set_features` method for each object, which will
+            # set the pointer to the array for the tracker
+            obj.set_features(self.configuration.features)
 
             self._frame_range[1] = max(obj.t, self._frame_range[1])
             _ = self._lib.append(self._engine, obj)
@@ -415,31 +423,20 @@ class BayesianTracker:
 
         return info_ptr.contents
 
-    def track(self) -> None:
-        """Run the actual tracking algorithm."""
+    def track_interactive(self, *args, **kwargs) -> None:
+        logger.warning(
+            "`track_interactive` will be deprecated. Use `track` instead."
+        )
+        return self.track(*args, **kwargs)
 
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
-
-        logger.info("Starting tracking... ")
-        ret = self._lib.track(self._engine)
-
-        # get the statistics
-        stats = self._stats(ret)
-
-        if not utils.log_error(stats.error):
-            logger.info(
-                (
-                    f"SUCCESS. Found {self.n_tracks} tracks in"
-                    f"{1+self._frame_range[1]} frames"
-                )
-            )
-
-        # can log the statistics as well
-        utils.log_stats(stats.to_dict())
-
-    def track_interactive(self, step_size: int = 100) -> None:
+    def track(
+        self,
+        *,
+        step_size: int = 100,
+        tracking_updates: Optional[
+            List[Union[str, constants.BayesianUpdateFeatures]]
+        ] = None,
+    ) -> None:
         """Run the tracking in an interactive mode.
 
         Parameters
@@ -448,46 +445,51 @@ class BayesianTracker:
             The number of tracking steps to be taken before returning summary
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
+        tracking_updates : list, optional
+            A list of tracking updates to perform. See
+            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
         """
-
-        # TODO(arl): this needs cleaning up to have some decent output
-        if not self._initialised:
-            logger.error("Tracker has not been configured")
-            return
 
         logger.info("Starting tracking... ")
 
+        if tracking_updates is not None:
+            self.configuration.tracking_updates = tracking_updates
+
+        logger.info(
+            f"Update using: {[f.name for f in self.configuration.tracking_updates]}"
+        )
+
+        # bitwise OR is equivalent to int sum here
+        self._lib.set_update_features(
+            self._engine,
+            sum([int(f.value) for f in self.configuration.tracking_updates]),
+        )
+
         stats = self.step()
-        frm = 0
+        frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:
         while stats.tracker_active:
             logger.info(
-                (
-                    f"Tracking objects in frames {frm} to "
-                    f"{min(frm+step_size-1, self._frame_range[1]+1)} "
-                    f"(of {self._frame_range[1]+1})..."
-                )
+                f"Tracking objects in frames {frame} to "
+                f"{min(frame+step_size-1, self._frame_range[1]+1)} "
+                f"(of {self._frame_range[1]+1})..."
             )
 
             stats = self.step(step_size)
             utils.log_stats(stats.to_dict())
-            frm += step_size
+            frame += step_size
 
         if not utils.log_error(stats.error):
             logger.info("SUCCESS.")
             logger.info(
-                (
-                    f" - Found {self.n_tracks} tracks in "
-                    f"{1+self._frame_range[1]} frames "
-                    f"(in {stats.t_total_time}s)"
-                )
+                f" - Found {self.n_tracks} tracks in "
+                f"{1+self._frame_range[1]} frames "
+                f"(in {stats.t_total_time}s)"
             )
             logger.info(
-                (
-                    f" - Inserted {self.n_dummies} dummy objects to fill "
-                    "tracking gaps"
-                )
+                f" - Inserted {self.n_dummies} dummy objects to fill "
+                "tracking gaps"
             )
 
     def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
@@ -552,7 +554,9 @@ class BayesianTracker:
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
         options = (
-            self.configuration.optimizer_options if not options else options
+            options
+            if options is not None
+            else self.configuration.optimizer_options
         )
 
         # if we don't have any hypotheses return
@@ -570,16 +574,14 @@ class BayesianTracker:
             logger.warning("Optimization failed.")
             return []
 
-        h_original = [h.type for h in hypotheses]
-        h_optimise = [h.type for h in optimised]
-        h_types = sorted(list(set(h_original)), key=lambda h: h.value)
+        h_original = [h.hypothesis_type for h in hypotheses]
+        h_optimise = [h.hypothesis_type for h in optimised]
+        h_types = sorted(set(h_original), key=lambda h: h.value)
 
         for h_type in h_types:
             logger.info(
-                (
-                    f" - {h_type}: {h_optimise.count(h_type)}"
-                    f" (of {h_original.count(h_type)})"
-                )
+                f" - {h_type}: {h_optimise.count(h_type)}"
+                f" (of {h_original.count(h_type)})"
             )
         logger.info(f" - TOTAL: {len(hypotheses)} hypotheses")
 
@@ -611,10 +613,7 @@ class BayesianTracker:
         trk_id = self._lib.get_ID(self._engine, idx)
 
         # convert the array of children to a python list
-        if nc > 0:
-            c = children.tolist()
-        else:
-            c = []
+        c = children.tolist() if nc > 0 else []
 
         # now build the track from the references
         refs = refs.tolist()
@@ -680,7 +679,7 @@ class BayesianTracker:
 
     def to_napari(
         self,
-        replace_nan: bool = True,
+        replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
     ) -> Tuple[np.ndarray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
@@ -689,9 +688,19 @@ class BayesianTracker:
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
         return utils.tracks_to_napari(
-            self.tracks, ndim, replace_nan=replace_nan
+            self.tracks, ndim=ndim, replace_nan=replace_nan
         )
 
-
-if __name__ == "__main__":
-    pass
+    def candidate_graph_edges(self) -> List[btypes.PyGraphEdge]:
+        """Return the edges from the full candidate graph."""
+        num_edges = self._lib.num_edges(self._engine)
+        if num_edges < 1:
+            logger.warning(
+                "No edges were found in the candidate graph. "
+                "``config.store_candidate_graph`` is set to "
+                f"{self.configuration.store_candidate_graph}"
+            )
+        return [
+            self._lib.get_graph_edge(self._engine, idx)
+            for idx in range(num_edges)
+        ]

@@ -4,7 +4,7 @@
 User's Guide
 ************
 
-Welcome to the user guide for btrack.
+Welcome to the user guide for ``btrack``.
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +12,7 @@ Welcome to the user guide for btrack.
    installation
    simple_example
    configuration
+   using_features
    napari
    saving_tracks
    large_datasets

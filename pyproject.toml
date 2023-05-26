@@ -1,14 +1,77 @@
 [build-system]
-requires = [
-  "setuptools >= 42",
-  "wheel",
-  "setuptools_scm[toml]>=3.4"
-]
 build-backend = "setuptools.build_meta"
+requires = [
+    "setuptools",
+    "setuptools-scm",
+    "wheel",
+]
+
+[project]
+authors = [
+    {email = "a.lowe@ucl.ac.uk", name = "Alan R. Lowe"},
+]
+classifiers = [
+    "Framework :: napari",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+    "Topic :: Scientific/Engineering :: Visualization",
+]
+dependencies = [
+    "cvxopt>=1.2.0",
+    "h5py>=2.10.0",
+    "numpy>=1.17.3",
+    "pooch>=1.0.0",
+    "pydantic>=1.9.0",
+    "scikit-image>=0.16.2",
+    "scipy>=1.3.1",
+    "tqdm>=4.65.0",
+]
+description = "A framework for Bayesian multi-object tracking"
+dynamic = [
+    "version",
+]
+name = "btrack"
+optional-dependencies = {docs = [
+    "numpydoc",
+    "pytz",
+    "sphinx",
+    "sphinx-automodapi",
+    "sphinx-panels",
+    "sphinx_rtd_theme",
+], napari = [
+    "magicgui>=0.5.0",
+    "napari-plugin-engine>=0.1.4",
+    "napari>=0.4.16",
+    "qtpy",
+], pyqt = [
+    "PyQt5 >= 5.12.3, != 5.15.0",
+    "btrack[napari]",
+], pyside = [
+    "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
+    "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
+    "btrack[napari]",
+], qt = [
+    "btrack[pyside]",
+]}
+readme = "README.md"
+requires-python = ">=3.8"
+entry-points."napari.manifest".btrack = "btrack:napari.yaml"
+license.file = "LICENSE.md"
+urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
+urls.documentation = "https://btrack.readthedocs.io"
+urls.homepage = "https://github.com/quantumjot/btrack"
+urls.usersupport = "https://github.com/quantumjot/btrack/discussions"
 
 [tool.black]
-target-version = ['py38', 'py39', 'py310']
-line-length = 79
 exclude = '''
 (
   /(
@@ -25,7 +88,143 @@ exclude = '''
   )/
 )
 '''
+line-length = 79
+target-version = [
+    "py38",
+    "py39",
+    "py310",
+]
 
-[tool.isort]
-profile = "black"
-line_length = 79
+[tool.coverage]
+report = {skip_covered = true, sort = "cover"}
+run = {branch = true, parallel = true, source = [
+    "btrack",
+]}
+paths.source = [
+    "btrack",
+    ".tox*/*/lib/python*/site-packages",
+]
+
+[tool.pytest.ini_options]
+addopts = "--color=yes -ra -v"
+testpaths = [
+    "tests",
+]
+
+[tool.ruff]
+fix = true
+force-exclude = true
+ignore = [
+    "B905", # python>=3.10
+    "EM101",
+    "EM102",
+    "N802",
+    "N803",
+    "N806",
+    "S101",
+    "UP006",
+    "UP007",
+    "UP015",
+]
+per-file-ignores = {"__init__.py" = [
+    "F401", # unused-import
+], "test_*.py" = [
+    "S101", # use of 'assert'
+]}
+select = [
+    "A",
+    "B",
+    "C",
+    "DTZ",
+    "E",
+    "EM",
+    "F",
+    "FBT",
+    "I",
+    "ICN",
+    "ISC",
+    "N",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "Q",
+    "RUF",
+    "S",
+    "SIM",
+    "T",
+    "TID",
+    "UP",
+    "W",
+    "YTT",
+]
+target-version = "py38"
+isort.known-first-party = [
+    "black",
+]
+isort.section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "napari",
+    "first-party",
+    "local-folder",
+]
+isort.sections.napari = [
+    "magicgui",
+    "napari",
+]
+mccabe.max-complexity = 18
+pep8-naming.classmethod-decorators = [
+    "classmethod",
+    "pydantic.root_validator",
+    "pydantic.validator",
+]
+
+[tool.setuptools]
+packages.find = {}
+
+[tool.setuptools_scm]
+local_scheme = "no-local-version"
+write_to = "btrack/_version.py"
+
+[tool.tomlsort]
+all = true
+spaces_indent_inline_array = 4
+trailing_comma_inline_array = true
+overrides."project.classifiers".inline_arrays = false
+overrides."tool.black.target-version".inline_arrays = false
+overrides."tool.coverage.paths.source".inline_arrays = false
+overrides."tool.ruff.isort.section-order".inline_arrays = false
+
+[tool.tox]
+legacy_tox_ini = """
+[gh-actions]
+python =
+    3.8: py38
+    3.9: py39
+    3.10: py310
+
+[testenv]
+deps =
+    dask
+    magicgui
+    napari
+    pyqt5
+    pytest
+    pytest-cov
+    pytest-qt
+    pytest-xvfb ; sys_platform == 'linux'
+    qtpy
+commands = pytest --cov --cov-report=xml
+passenv =
+    CI
+    DISPLAY
+    GITHUB_ACTIONS
+    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+    PYVISTA_OFF_SCREEN
+    XAUTHORITY
+
+[tox]
+envlist = py{38,39,310}
+"""

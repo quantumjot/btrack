@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -------------------------------------------------------------------------------
-# Name:     BayesianTracker
+# Name:     btrack
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
 #           information to perform the trajectory linking. This method uses
@@ -112,7 +112,7 @@ class TrackOptimiser:
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
-    def optimise(self):
+    def optimise(self):  # noqa: PLR0915
         """Run the opimization algorithm.
 
         Returns
@@ -131,7 +131,7 @@ class TrackOptimiser:
 
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
-        N = max(set([int(h.ID) for h in self.hypotheses]))
+        N = max(int(h.ID) for h in self.hypotheses)
 
         # A is the constraints matrix (store as sparse since mostly empty)
         # note that we make this in the already transposed form...
@@ -141,38 +141,37 @@ class TrackOptimiser:
         # iterate over the hypotheses and build the constraints
         # TODO(arl): vectorize this for increased performance
         for counter, h in enumerate(self.hypotheses):
-
             # set the hypothesis score
             rho[counter] = h.log_likelihood
 
-            if h.type == Fates.FALSE_POSITIVE:
+            if h.hypothesis_type == Fates.FALSE_POSITIVE:
                 # is this a false positive?
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.type in INIT_FATES:
+            elif h.hypothesis_type in INIT_FATES:
                 # an initialisation, therefore we only present this in the
                 # second half of the A matrix
                 trk = trk_idx(h.ID)
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.type in TERM_FATES:
+            elif h.hypothesis_type in TERM_FATES:  # noqa: SIM114
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 continue
 
-            elif h.type == Fates.APOPTOSIS:
+            elif h.hypothesis_type == Fates.APOPTOSIS:
                 # an apoptosis event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1
                 # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
                 continue
 
-            elif h.type == Fates.LINK:
+            elif h.hypothesis_type == Fates.LINK:
                 # a linkage event
                 trk_i = trk_idx(h.ID)
                 trk_j = trk_idx(h.link_ID)
@@ -180,7 +179,7 @@ class TrackOptimiser:
                 A[N + trk_j, counter] = 1
                 continue
 
-            elif h.type == Fates.DIVIDE:
+            elif h.hypothesis_type == Fates.DIVIDE:
                 # a branch event
                 trk = trk_idx(h.ID)
                 child_one = trk_idx(h.child_one_ID)
@@ -190,7 +189,7 @@ class TrackOptimiser:
                 A[N + child_two, counter] = 1
                 continue
 
-            elif h.type == Fates.MERGE:
+            elif h.hypothesis_type == Fates.MERGE:
                 # a merge event
                 trk = trk_idx(h.ID)
                 parent_one = trk_idx(h.parent_one_ID)
@@ -201,7 +200,7 @@ class TrackOptimiser:
                 continue
 
             else:
-                raise ValueError(f"Unknown hypothesis: {h.type}")
+                raise ValueError(f"Unknown hypothesis: {h.hypothesis_type}")
 
         logger.info("Optimizing...")
 

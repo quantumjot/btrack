@@ -1,6 +1,6 @@
 /*
 --------------------------------------------------------------------------------
- Name:     BayesianTracker
+ Name:     btrack
  Purpose:  A multi object tracking library, specifically used to reconstruct
            tracks in crowded fields. Here we use a probabilistic network of
            information to perform the trajectory linking. This method uses
@@ -17,63 +17,25 @@
 #ifndef _HYPOTHESIS_H_INCLUDED_
 #define _HYPOTHESIS_H_INCLUDED_
 
+// forward declaration of trackmanager and hypothesis to enable import
+class TrackManager;
+class Hypothesis;
+
 // #include <python2.7/Python.h>
-#include <vector>
-#include <iostream>
-#include <map>
 #include <cmath>
+#include <iostream>
 #include <limits>
+#include <map>
+#include <vector>
 
-#include "types.h"
-#include "tracklet.h"
-#include "hyperbin.h"
+#include "bayes.h"
 #include "defs.h"
-
-// #define TYPE_Pfalse 0
-// #define TYPE_Pinit 1
-// #define TYPE_Pterm 2
-// #define TYPE_Plink 3
-// #define TYPE_Pdivn 4
-// #define TYPE_Papop 5
-// #define TYPE_Pdead 6
-// #define TYPE_Pmrge 7
-// #define TYPE_undef 999
-//
-//
-// #define STATE_interphase 0
-// #define STATE_prometaphase 1
-// #define STATE_metaphase 2
-// #define STATE_anaphase 3
-// #define STATE_apoptosis 4
-// #define STATE_null 5
-
-// #define MAX_TRACK_LEN 150
-// #define DEFAULT_LOW_PROBABILITY 1e-308
-//
-// #define WEIGHT_METAPHASE_ANAPHASE_ANAPHASE 0.01
-// #define WEIGHT_METAPHASE_ANAPHASE 0.1
-// #define WEIGHT_METAPHASE 2.0
-// #define WEIGHT_ANAPHASE_ANAPHASE 1.0
-// #define WEIGHT_ANAPHASE 2.0
-// #define WEIGHT_OTHER 5.0
-
-
-// // Hash index for use with the hash cube
-// struct HashIndex {
-//   int x = 0;
-//   int y = 0;
-//   int z = 0;
-//   int n = 0;
-//
-//   // comparison operator for hash map, strict weak ordering
-//   bool operator<(const HashIndex &o) const {
-//     if (x != o.x) return x < o.x;
-//     if (y != o.y) return y < o.y;
-//     if (z != o.z) return z < o.z;
-//     return n < o.n;
-//   }
-// };
-
+#include "hyperbin.h"
+#include "manager.h"
+#include "pdf.h"
+#include "tracklet.h"
+#include "types.h"
+#include "updates.h"
 
 // Store a hypothesis to return to Python
 // NOTE(arl): the probability is actually the log probability
@@ -87,79 +49,66 @@ extern "C" struct PyHypothesis {
   unsigned int parent_one_ID;
   unsigned int parent_two_ID;
 
-  PyHypothesis(unsigned int h, unsigned int id): hypothesis(h), ID(id) {};
+  PyHypothesis(unsigned int h, unsigned int id) : hypothesis(h), ID(id){};
 };
-
 
 // Internal hypothesis class
-class Hypothesis
-{
-  public:
-    Hypothesis() {};
-    ~Hypothesis() {};
-    Hypothesis( const unsigned int h,
-                const TrackletPtr a_trk ): hypothesis(h), ID(a_trk->ID),
-                trk_ID(a_trk) {};
+class Hypothesis {
+public:
+  Hypothesis(){};
+  ~Hypothesis(){};
+  Hypothesis(const unsigned int h, const TrackletPtr a_trk)
+      : hypothesis(h), ID(a_trk->ID), trk_ID(a_trk){};
 
-    unsigned int hypothesis = TYPE_undef;
-    unsigned int ID;
-    double probability;
+  unsigned int hypothesis = TYPE_undef;
+  unsigned int ID;
+  double probability;
 
-    // store pointers to the tracks
-    TrackletPtr trk_ID;
+  // store pointers to the tracks
+  TrackletPtr trk_ID;
 
-    // used only for track joining
-    TrackletPtr trk_link_ID;
+  // used only for track joining
+  TrackletPtr trk_link_ID;
 
-    // used for track branching
-    TrackletPtr trk_child_one_ID;
-    TrackletPtr trk_child_two_ID;
+  // used for track branching
+  TrackletPtr trk_child_one_ID;
+  TrackletPtr trk_child_two_ID;
 
-    // used for track merging
-    TrackletPtr trk_parent_one_ID;
-    TrackletPtr trk_parent_two_ID;
+  // used for track merging
+  TrackletPtr trk_parent_one_ID;
+  TrackletPtr trk_parent_two_ID;
 
+  // return a python compatible hypothesis
+  PyHypothesis get_hypothesis() const {
+    assert(this->hypothesis != TYPE_undef);
 
-    // return a python compatible hypothesis
-    PyHypothesis get_hypothesis() const {
+    PyHypothesis h = PyHypothesis(this->hypothesis, this->trk_ID->ID);
+    h.probability = this->probability;
 
-      assert(this->hypothesis != TYPE_undef);
-
-      PyHypothesis h = PyHypothesis(this->hypothesis, this->trk_ID->ID);
-      h.probability = this->probability;
-
-
-      // track joining
-      if (this->hypothesis == TYPE_Plink &&
-          trk_link_ID != NULL) {
-        h.link_ID = this->trk_link_ID->ID;
-      };
-
-      // track branching
-      if (this->hypothesis == TYPE_Pdivn &&
-          trk_child_one_ID != NULL &&
-          trk_child_two_ID != NULL) {
-        h.child_one_ID = this->trk_child_one_ID->ID;
-        h.child_two_ID = this->trk_child_two_ID->ID;
-      };
-
-      // track merging
-      if (this->hypothesis == TYPE_Pmrge &&
-          trk_parent_one_ID != NULL &&
-          trk_parent_two_ID != NULL) {
-        h.parent_one_ID = this->trk_parent_one_ID->ID;
-        h.parent_two_ID = this->trk_parent_two_ID->ID;
-      };
-
-      return h;
+    // track joining
+    if (this->hypothesis == TYPE_Plink && trk_link_ID != NULL) {
+      h.link_ID = this->trk_link_ID->ID;
     };
 
-  private:
+    // track branching
+    if (this->hypothesis == TYPE_Pdivn && trk_child_one_ID != NULL &&
+        trk_child_two_ID != NULL) {
+      h.child_one_ID = this->trk_child_one_ID->ID;
+      h.child_two_ID = this->trk_child_two_ID->ID;
+    };
+
+    // track merging
+    if (this->hypothesis == TYPE_Pmrge && trk_parent_one_ID != NULL &&
+        trk_parent_two_ID != NULL) {
+      h.parent_one_ID = this->trk_parent_one_ID->ID;
+      h.parent_two_ID = this->trk_parent_two_ID->ID;
+    };
+
+    return h;
+  };
+
+private:
 };
-
-
-
-
 
 // // A 4D hash (hyper) cube object.
 // //
@@ -188,10 +137,6 @@ class Hypothesis
 //   std::map<HashIndex, std::vector<TrackletPtr>> m_cube;
 // };
 
-
-
-
-
 // A structure to store hypothesis generation parameters
 extern "C" struct PyHypothesisParams {
   double lambda_time;
@@ -210,9 +155,6 @@ extern "C" struct PyHypothesisParams {
   unsigned int hypotheses_to_generate;
 };
 
-
-
-
 // count the number of apoptosis detections
 unsigned int count_apoptosis(const TrackletPtr a_trk);
 
@@ -221,23 +163,14 @@ unsigned int count_state_track(const TrackletPtr a_trk,
                                const unsigned int a_state_label,
                                const bool a_from_back);
 
-
 // calculate the linkage distance
-double link_distance(const TrackletPtr a_trk,
-                     const TrackletPtr a_trk_lnk);
-
+double link_distance(const TrackletPtr a_trk, const TrackletPtr a_trk_lnk);
 
 // calculate the time between the start of new track and end of old track
-double link_time(const TrackletPtr a_trk,
-                 const TrackletPtr a_trk_lnk);
+double link_time(const TrackletPtr a_trk, const TrackletPtr a_trk_lnk);
 
 // safe log function
 double safe_log(double value);
-
-
-
-
-
 
 // HypothesisEngine
 //
@@ -257,112 +190,98 @@ double safe_log(double value);
 //   6. P_dead: an apoptosis event
 //   7. P_extrude: a cell extrusion event. A cell is removed from the tissue.
 
-class HypothesisEngine
-{
-  public:
-    // constructors and destructors
-    HypothesisEngine();
-    ~HypothesisEngine();
-    HypothesisEngine( const unsigned int a_start_frame,
-                      const unsigned int a_stop_frame,
-                      const PyHypothesisParams& a_params );
+class HypothesisEngine : public UpdateFeatures {
+public:
+  // constructors and destructors
+  HypothesisEngine();
+  ~HypothesisEngine();
+  HypothesisEngine(const unsigned int a_start_frame,
+                   const unsigned int a_stop_frame,
+                   const PyHypothesisParams &a_params, TrackManager *a_manager);
 
-    // add a track to the hypothesis engine
-    void add_track(TrackletPtr a_trk);
+  // add a track to the hypothesis engine
+  void add_track(TrackletPtr a_trk);
 
-    // process the trajectories
-    void create();
-    //void log_error(Hypothesis *h);
+  // process the trajectories
+  void create();
+  // void log_error(Hypothesis *h);
 
-    // reset the hypothesis engine
-    void reset();
-    void clear(){ reset(); };
+  // reset the hypothesis engine
+  void reset();
+  void clear() { reset(); };
 
-    // return the number of hypotheses
-    size_t size() const {
-      return m_hypotheses.size();
-    }
+  // return the number of hypotheses
+  size_t size() const { return m_hypotheses.size(); }
 
-    // test whether we need to generate this hypothesis
-    bool hypothesis_allowed(const unsigned int a_hypothesis_type) const;
+  // test whether we need to generate this hypothesis
+  bool hypothesis_allowed(const unsigned int a_hypothesis_type) const;
 
-    // get a hypothesis
-    // TODO(arl): return a reference?
-    const PyHypothesis get_hypothesis(const unsigned int a_ID) const {
-      return m_hypotheses[a_ID].get_hypothesis();
-    }
+  // get a hypothesis
+  // TODO(arl): return a reference?
+  const PyHypothesis get_hypothesis(const unsigned int a_ID) const {
+    return m_hypotheses[a_ID].get_hypothesis();
+  }
 
-    // space to store the hypotheses
-    std::vector<Hypothesis> m_hypotheses;
+  // space to store the hypotheses
+  std::vector<Hypothesis> m_hypotheses;
 
-    // frame size and number of frames
-    // NOTE(arl): technically, this info is already in the imaging volume...
-    unsigned int m_frame_range[2] = {0,1};
+  // frame size and number of frames
+  // NOTE(arl): technically, this info is already in the imaging volume...
+  unsigned int m_frame_range[2] = {0, 1};
 
-    // space to store the imaging volume when setting up the HashCube
-    ImagingVolume volume;
+  // space to store the imaging volume when setting up the HashCube
+  ImagingVolume volume;
 
-  private:
+private:
+  // create hypotheses
+  void hypothesis_false_positive(TrackletPtr a_trk);
+  void hypothesis_init(TrackletPtr a_trk);
+  void hypothesis_term(TrackletPtr a_trk);
+  void hypothesis_dead(TrackletPtr a_trk);
+  void hypothesis_link(TrackletPtr a_trk, TrackletPtr a_trk_lnk);
+  void hypothesis_branch(TrackletPtr a_trk, TrackletPtr a_trk_c0,
+                         TrackletPtr a_trk_c1);
 
-    // create hypotheses
-    void hypothesis_false_positive(TrackletPtr a_trk);
-    void hypothesis_init(TrackletPtr a_trk);
-    void hypothesis_term(TrackletPtr a_trk);
-    void hypothesis_dead(TrackletPtr a_trk);
-    void hypothesis_link(TrackletPtr a_trk,
-                         TrackletPtr a_trk_lnk);
-    void hypothesis_branch(TrackletPtr a_trk,
-                           TrackletPtr a_trk_c0,
-                           TrackletPtr a_trk_c1);
+  // calculation of probabilities
+  double P_TP(TrackletPtr a_trk) const;
+  double P_FP(TrackletPtr a_trk) const;
 
+  double P_init_border(TrackletPtr a_trk) const;
+  double P_init_front(TrackletPtr a_trk) const;
 
+  double P_term_border(TrackletPtr a_trk) const;
+  double P_term_back(TrackletPtr a_trk) const;
 
-    // calculation of probabilities
-    double P_TP(TrackletPtr a_trk) const;
-    double P_FP(TrackletPtr a_trk) const;
+  double P_link(TrackletPtr a_trk, TrackletPtr a_trk_link) const;
+  double P_link(TrackletPtr a_trk, TrackletPtr a_trk_link, float d,
+                float dt) const;
 
-    double P_init_border(TrackletPtr a_trk) const;
-    double P_init_front(TrackletPtr a_trk) const;
+  double P_branch(TrackletPtr a_trk, TrackletPtr a_trk_c0,
+                  TrackletPtr a_trk_c1) const;
 
-    double P_term_border(TrackletPtr a_trk) const;
-    double P_term_back(TrackletPtr a_trk) const;
+  double P_dead(TrackletPtr a_trk, const unsigned int n_dead) const;
+  double P_dead(TrackletPtr a_trk) const;
 
-    double P_link(TrackletPtr a_trk,
-                  TrackletPtr a_trk_link) const;
-    double P_link(TrackletPtr a_trk,
-                  TrackletPtr a_trk_link,
-                  float d,
-                  float dt) const;
+  double P_merge(TrackletPtr a_trk_m0, TrackletPtr a_trk_m1,
+                 TrackletPtr a_trk) const;
 
-    double P_branch(TrackletPtr a_trk,
-                    TrackletPtr a_trk_c0,
-                    TrackletPtr a_trk_c1) const;
+  double P_extrude(TrackletPtr a_trk) const;
 
-    double P_dead(TrackletPtr a_trk,
-                  const unsigned int n_dead) const;
-    double P_dead(TrackletPtr a_trk) const;
+  // calculate the distance of a track from the border of the imaging volume
+  float dist_from_border(TrackletPtr a_trk, bool a_start) const;
 
-    double P_merge(TrackletPtr a_trk_m0,
-                   TrackletPtr a_trk_m1,
-                   TrackletPtr a_trk) const;
+  // pointer to the track manager
+  TrackManager *manager;
 
-    double P_extrude(TrackletPtr a_trk) const;
+  // storage for the trajectories
+  unsigned int m_num_tracks = 0;
+  // std::vector<TrackletPtr> m_tracks;
 
-    // calculate the distance of a track from the border of the imaging volume
-    float dist_from_border( TrackletPtr a_trk, bool a_start ) const;
+  // space to store a hash cube
+  HypercubeBin m_cube;
 
-    // storage for the trajectories
-    unsigned int m_num_tracks = 0;
-    std::vector<TrackletPtr> m_tracks;
-
-    // space to store a hash cube
-    HypercubeBin m_cube;
-
-    // store the hypothesis generation parameters
-    PyHypothesisParams m_params;
+  // store the hypothesis generation parameters
+  PyHypothesisParams m_params;
 };
-
-
-
 
 #endif

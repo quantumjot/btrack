@@ -4,10 +4,11 @@ This module is a reader plugin btrack files for napari.
 import os
 from typing import Callable, List, Optional, Sequence, Union
 
-from napari.types import LayerDataTuple
 from napari_plugin_engine import napari_hook_implementation
 
-from btrack.dataio import HDF5FileHandler
+from napari.types import LayerDataTuple
+
+from btrack.io import HDF5FileHandler
 from btrack.utils import tracks_to_napari
 
 # Type definitions
@@ -63,7 +64,6 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
 
     for _path in paths:
         with HDF5FileHandler(_path, "r") as hdf:
-
             # get the segmentation if there is one
             segmentation = hdf.segmentation
             if segmentation is not None:
@@ -71,7 +71,6 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
 
             # iterate over object types and create a layer for each
             for obj_type in hdf.object_types:
-
                 # set the object type, and retrieve the tracks
                 hdf.object_type = obj_type
 
@@ -79,7 +78,7 @@ def reader_function(path: PathOrPaths) -> List[LayerDataTuple]:
                     continue
 
                 tracklets = hdf.tracks
-                tracks, properties, graph = tracks_to_napari(tracklets, ndim=2)
+                tracks, properties, graph = tracks_to_napari(tracklets)
 
                 # optional kwargs for the corresponding viewer.add_* method
                 # https://napari.org/docs/api/napari.components.html#module-napari.components.add_layers_mixin

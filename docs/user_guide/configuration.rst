@@ -62,7 +62,7 @@ The motion model is used to make forward predictions about the location of objec
 
 Detailed descriptions of the other parameters of the model can be found in the API documentation:
 
-* :py:meth:`btrack.models.MotionModel`
+* :py:class:`btrack.models.MotionModel`
 
 Hypothesis model
 ----------------
@@ -104,12 +104,12 @@ The hypothesis model is used by the global optimizer to build the final set of t
 
 Detailed descriptions of the other parameters of the model can be found in the API documentation:
 
-* :py:meth:`btrack.models.HypothesisModel`
+* :py:class:`btrack.models.HypothesisModel`
 
 Miscellaneous parameters
 ------------------------
 
-General tracking configuration options are detailed in :py:meth:`btrack.config.TrackerConfig`.
+General tracking configuration options are detailed in :py:class:`btrack.config.TrackerConfig`.
 
 - ``max_search_radius`` - The maximum search radius for the tracking algorithm in isotropic unit of the data. This parameter can be used to prevent very large displacements when linking objects.
 - ``update_mode`` - The update mode for the tracker. The default option considers all possible combinations of linking objects, so can be slow for very large datasets. See :ref:`update_methods` for more information.

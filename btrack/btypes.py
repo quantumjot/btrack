@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -------------------------------------------------------------------------------
-# Name:     BayesianTracker
+# Name:     btrack
 # Purpose:  A multi object tracking library, specifically used to reconstruct
 #           tracks in crowded fields. Here we use a probabilistic network of
 #           information to perform the trajectory linking. This method uses
@@ -34,7 +34,11 @@ class ImagingVolume(NamedTuple):
     @property
     def ndim(self) -> int:
         """Infer the dimensionality from the volume."""
-        return 2 if self.z is None else 3
+        return (
+            constants.Dimensionality.TWO
+            if self.z is None
+            else constants.Dimensionality.THREE
+        )
 
 
 class PyTrackObject(ctypes.Structure):
@@ -64,8 +68,10 @@ class PyTrackObject(ctypes.Structure):
         possible labels.
     label : int
         The label of the object.
-    prob : float
-        The probability of the label.
+    features : array
+        A vector of feature values.
+    n_features : int
+        The length of the feature vector.
 
     Attributes
     ----------
@@ -73,6 +79,10 @@ class PyTrackObject(ctypes.Structure):
         Dictionary of properties associated with this object.
     state : constants.States
         A state label for the object. See `constants.States`
+
+    Notes
+    -----
+    stackoverflow.com/questions/23329663/access-np-array-in-ctypes-struct
 
     """
 
@@ -85,16 +95,16 @@ class PyTrackObject(ctypes.Structure):
         ("dummy", ctypes.c_bool),
         ("states", ctypes.c_uint),
         ("label", ctypes.c_int),
-        ("prob", ctypes.c_double),
+        ("n_features", ctypes.c_int),
+        ("features", ctypes.POINTER(ctypes.c_double)),
     ]
 
     def __init__(self):
         super().__init__()
-        self.prob = 0
         self.dummy = False
         self.label = constants.States.NULL.value
-
-        self._raw_probability = None
+        self.states = len(constants.States)
+        self.n_features = 0
         self._properties = {}
 
     @property
@@ -109,33 +119,50 @@ class PyTrackObject(ctypes.Structure):
         self._properties.update(properties)
 
     @property
-    def probability(self):
-        return self._raw_probability
-
-    @probability.setter
-    def probability(self, probability):
-        if not isinstance(probability, np.ndarray):
-            raise TypeError(".probability should be a numpy array")
-        self._raw_probability = probability
-
-    @property
     def state(self) -> constants.States:
         return constants.States(self.label)
 
+    def set_features(self, keys: List[str]) -> None:
+        """Set features to be used by the tracking update."""
+
+        if not keys:
+            self.n_features = 0
+            return
+
+        if not all(k in self.properties for k in keys):
+            missing_features = list(
+                set(keys).difference(set(self.properties.keys()))
+            )
+            raise KeyError(f"Feature(s) missing: {missing_features}.")
+
+        # store a reference to the numpy array so that Python maintains
+        # ownership of the memory allocated to the numpy array
+        self._features = np.concatenate(
+            [np.asarray(self.properties[k]).ravel() for k in keys], axis=-1
+        ).astype(np.float64)
+
+        # NOTE(arl): do we want to normalise the features here???
+        # self._features = features / np.linalg.norm(features)
+        self.features = np.ctypeslib.as_ctypes(self._features)
+        self.n_features = len(self._features)
+
     def to_dict(self) -> Dict[str, Any]:
         """Return a dictionary of the fields and their values."""
-        stats = {k: getattr(self, k) for k, _ in PyTrackObject._fields_}
-        stats.update(self.properties)
-        return stats
+        node = {
+            k: getattr(self, k)
+            for k, _ in PyTrackObject._fields_
+            if k not in ("features", "n_features")
+        }
+        node.update(self.properties)
+        return node
 
     @staticmethod
     def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
-        fields = {k: kt for k, kt in PyTrackObject._fields_}
-        attr = [k for k in fields.keys() if k in properties.keys()]
+        fields = dict(PyTrackObject._fields_)
+        attr = [k for k in fields if k in properties]
         for key in attr:
-
             new_data = properties[key]
 
             # fix for implicit type conversion
@@ -222,6 +249,39 @@ class PyTrackingInfo(ctypes.Structure):
         return no_error and not self.complete
 
 
+class PyGraphEdge(ctypes.Structure):
+    """A structure defining an edge in the association graph. This is derived
+    from the Bayesian belief matrix in the initial step of the tracking
+    algorithm.
+
+    Parameters
+    ----------
+    source : int
+        A reference to a source object.
+    target : int
+        A reference to a target object.
+    score : float
+        The posterior probability of linking the target object to the source.
+
+    Notes
+    -----
+    This structure does not guarantee that the target timestamp is *after* the
+    source timestamp, we just assume that the tracker has done it's job.
+    """
+
+    _fields_ = [
+        ("source", ctypes.c_long),
+        ("target", ctypes.c_long),
+        ("score", ctypes.c_double),
+        ("edge_type", ctypes.c_uint),
+    ]
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return a dictionary describing the edge."""
+        edge = {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
+        return edge
+
+
 class Tracklet:
     """A `btrack` Tracklet object used to store track information.
 
@@ -231,7 +291,7 @@ class Tracklet:
         A unique integer identifier for the tracklet.
     data : list[PyTrackObject]
         The objects linked together to form the track.
-    parent : int,
+    parent : int
         The identifiers of the parent track(s).
     children : list
         The identifiers of the child tracks.
@@ -299,11 +359,10 @@ class Tracklet:
         data: List[PyTrackObject],
         *,
         parent: Optional[int] = None,
-        children: List[int] = [],
+        children: Optional[List[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
-
-        assert all([isinstance(o, PyTrackObject) for o in data])
+        assert all(isinstance(o, PyTrackObject) for o in data)
 
         self.ID = ID
         self._data = data
@@ -311,7 +370,7 @@ class Tracklet:
 
         self.root = None
         self.parent = parent
-        self.children = children
+        self.children = children if children is not None else []
         self.type = None
         self.fate = fate
         self.generation = 0
@@ -439,29 +498,31 @@ class Tracklet:
         return not self.children
 
     @property
-    def kalman(self):
+    def kalman(self) -> np.ndarray:
         return self._kalman
 
     @kalman.setter
-    def kalman(self, data):
+    def kalman(self, data: np.ndarray) -> None:
         assert isinstance(data, np.ndarray)
         self._kalman = data
 
-    def mu(self, index):
+    def mu(self, index: int) -> np.ndarray:
         """Return the Kalman filter mu. Note that we are only returning the mu
         for the positions (e.g. 3x1)."""
-        return np.matrix(self.kalman[index, 1:4]).reshape(3, 1)
+        return self.kalman[index, 1:4].reshape(3, 1)
 
-    def covar(self, index):
+    def covar(self, index: int) -> np.ndarray:
         """Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3)."""
-        return np.matrix(self.kalman[index, 4:13]).reshape(3, 3)
+        return self.kalman[index, 4:13].reshape(3, 3)
 
-    def predicted(self, index):
+    def predicted(self, index: int) -> np.ndarray:
         """Return the motion model prediction for the given timestep."""
-        return np.matrix(self.kalman[index, 13:]).reshape(3, 1)
+        return self.kalman[index, 13:].reshape(3, 1)
 
-    def to_dict(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
+    def to_dict(
+        self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
+    ) -> Dict[str, Any]:
         """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
@@ -470,20 +531,29 @@ class Tracklet:
         data.update(self.properties)
         return data
 
-    def to_array(self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES):
-        """Return a numpy array of the tracklet which can be used for MATLAB
-        export."""
+    def to_array(
+        self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
+    ) -> np.ndarray:
+        """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
-        tmp_track = np.zeros((len(self), len(data.keys())), dtype=np.float32)
-        for idx, key in enumerate(data.keys()):
-            tmp_track[:, idx] = np.asarray(data[key])
-        return tmp_track
+        tmp_track = []
+        for values in data.values():
+            np_values = np.asarray(values)
+            if np_values.size == 1:
+                np_values = np.tile(np_values, len(self))
+            np_values = np.reshape(np_values, (len(self), -1))
+            tmp_track.append(np_values)
 
-    def in_frame(self, frame):
+        tmp_track = np.concatenate(tmp_track, axis=-1)
+        assert tmp_track.shape[0] == len(self)
+        assert tmp_track.ndim == constants.Dimensionality.TWO
+        return tmp_track.astype(np.float32)
+
+    def in_frame(self, frame: int) -> bool:
         """Return true or false as to whether the track is in the frame."""
         return self.t[0] <= frame and self.t[-1] >= frame
 
-    def trim(self, frame, tail=75):
+    def trim(self, frame: int, tail: int = 75) -> Tracklet:
         """Trim the tracklet and return one with the trimmed data."""
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
@@ -513,10 +583,7 @@ def _pandas_html_repr(obj):
     obj_as_dict = obj.to_dict()
 
     # now try to process for display in the notebook
-    if hasattr(obj, "__len__"):
-        n_items = len(obj)
-    else:
-        n_items = 1
+    n_items = len(obj) if hasattr(obj, "__len__") else 1
 
     for k, v in obj_as_dict.items():
         if not isinstance(v, (list, np.ndarray)):

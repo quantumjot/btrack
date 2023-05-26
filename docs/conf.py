@@ -10,21 +10,27 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import datetime
+import os
+import sys
 
-import btrack
+import pytz
+
+sys.path.insert(0, os.path.abspath(".."))
+
+import btrack  # noqa: E402
 
 # -- Project information -----------------------------------------------------
 
 project = "Bayesian Tracker (btrack) 🔬💻"
-copyright = "2022, Alan R Lowe"
 author = "Alan R Lowe"
+year = datetime.datetime.now(tz=pytz.timezone("GMT")).year
+copyright = f"2014-{year}, {author}"  # noqa: A001
 
 
 # The full version, including alpha/beta/rc tags
-release = "v" + btrack.__version__
+version = f"v{btrack.__version__}"
+release = version
 
 
 # -- General configuration ---------------------------------------------------
@@ -65,5 +71,4 @@ html_static_path = ["_static"]
 html_logo = "_static/btrack_logo.png"
 html_theme_options = {
     "logo_only": True,
-    "display_version": False,
 }

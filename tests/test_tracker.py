@@ -1,6 +1,7 @@
 import json
 
 import numpy as np
+import pytest
 
 from ._utils import (
     TEST_DATA_PATH,
@@ -50,6 +51,28 @@ def test_tracker(test_real_objects):
         np.testing.assert_equal(track.refs, gt_refs)
 
 
+def test_tracker_kalman(test_real_objects):
+    """Test the Kalman filter output of the tracker."""
+    tracker = full_tracker_example(
+        test_real_objects,
+    )
+    tracker.return_kalman = True
+    assert tracker.return_kalman
+
+    tracks = tracker.tracks
+
+    for track in tracks:
+        assert track.kalman.shape[0] == len(track)
+        assert track.mu(0).shape == (3, 1)
+        assert track.covar(0).shape == (3, 3)
+        assert track.predicted(0).shape == (3, 1)
+
+        np.testing.assert_equal(
+            np.array([track.x[0], track.y[0], track.z[0]]),
+            np.squeeze(track.mu(0)),
+        )
+
+
 def test_tracker_graph(test_real_objects):
     """Test the graph output of the tracker, using the default config and known
     data."""
@@ -72,3 +95,19 @@ def test_tracker_frames():
     assert len(tracks) == 1
     track = tracks[0]
     np.testing.assert_equal(track.t, objects["t"])
+
+
+@pytest.mark.parametrize("store_graph", [False, True])
+def test_tracker_candidate_graph(test_real_objects, store_graph):
+    """Check that a candidate graph is returned if we set the flag to store it."""
+    tracker = full_tracker_example(
+        test_real_objects,
+        store_candidate_graph=store_graph,
+    )
+    assert tracker.store_candidate_graph == store_graph
+    edges = tracker.candidate_graph_edges()
+
+    # graph should contain edges
+    assert (
+        bool(edges) == store_graph
+    ), f"Found {len(edges)} edges in candidate graph."

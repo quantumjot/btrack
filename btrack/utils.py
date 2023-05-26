@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import dataclasses
+import functools
 import logging
 from typing import List, Optional
 
@@ -7,9 +9,9 @@ import numpy as np
 from skimage.util import map_array
 
 # import core
-from . import btypes, constants
-from ._localization import segmentation_to_objects
-from .constants import Dimensionality
+from . import _version, btypes, constants
+from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
+from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
 # Choose a subset of classes/functions to document in public facing API
@@ -41,21 +43,21 @@ def log_stats(stats: dict) -> None:
         return
 
     logger.info(
-        " - Timing (Bayesian updates: {0:.2f}ms, Linking:"
-        " {1:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
+        " - Timing (Bayesian updates: {:.2f}ms, Linking:"
+        " {:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
     )
 
     logger.info(
-        " - Probabilities (Link: {0:.5f}, Lost:"
-        " {1:.5f})".format(stats["p_link"], stats["p_lost"])
+        " - Probabilities (Link: {:.5f}, Lost:"
+        " {:.5f})".format(stats["p_link"], stats["p_lost"])
     )
 
     if stats["complete"]:
         return
 
     logger.info(
-        " - Stats (Active: {0:d}, Lost: {1:d}, Conflicts "
-        "resolved: {2:d})".format(
+        " - Stats (Active: {:d}, Lost: {:d}, Conflicts "
+        "resolved: {:d})".format(
             stats["n_active"], stats["n_lost"], stats["n_conflicts"]
         )
     )
@@ -88,7 +90,7 @@ def crop_volume(objects, volume=constants.VOLUME):
 
     def within(o):
         return all(
-            [getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes]
+            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
         )
 
     return [o for o in objects if within(o)]
@@ -103,21 +105,21 @@ def _cat_tracks_as_dict(
     tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
     """Concatenate all tracks as dictionary."""
-    assert all([isinstance(t, btypes.Tracklet) for t in tracks])
+    assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
     data: dict = {}
 
     for track in tracks:
         trk = track.to_dict(properties)
 
-        for key in trk.keys():
+        for key in trk:
             trk_property = np.asarray(trk[key])
 
             # if we have a scalar value, repeat it so the dimensions match
             if trk_property.ndim == 0:
                 trk_property = np.repeat(trk_property, len(track))
 
-            if trk_property.ndim > 2:
+            if trk_property.ndim > constants.Dimensionality.TWO:
                 raise ValueError(
                     f"Track properties of {trk_property.ndim} dimensions are "
                     "not currently supported."
@@ -125,7 +127,7 @@ def _cat_tracks_as_dict(
 
             assert trk_property.shape[0] == len(track)
 
-            if trk_property.ndim == 2:
+            if trk_property.ndim == constants.Dimensionality.TWO:
                 for idx in range(trk_property.shape[-1]):
                     tmp_key = f"{key}-{idx}"
                     if tmp_key not in data:
@@ -137,14 +139,17 @@ def _cat_tracks_as_dict(
                     data[key] = []
                 data[key].append(trk_property)
 
-    for key in data.keys():
+    for key in data:
         data[key] = np.concatenate(data[key])
 
     return data
 
 
 def tracks_to_napari(
-    tracks: list[btypes.Tracklet], ndim: int = 3, replace_nan: bool = True
+    tracks: list[btypes.Tracklet],
+    *,
+    ndim: int | None = None,
+    replace_nan: bool = True,
 ):
     """Convert a list of Tracklets to napari format input.
 
@@ -152,8 +157,10 @@ def tracks_to_napari(
     ----------
     tracks : list[btypes.Tracklet]
         A list of tracklet objects from BayesianTracker.
-    ndim : int
-        The number of spatial dimensions of the data. Must be 2 or 3.
+    ndim : int or None
+        The number of spatial dimensions of the data. If not specified, the
+        function attempts to guess the final dimensionality using the z
+        coordinates. If specified, it must have a value of 2 or 3.
     replace_nan : bool
         Replace instances of NaN/inf in the track properties with an
         interpolated value.
@@ -181,7 +188,12 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # TODO: arl guess the dimensionality from the data
+    # guess the dimensionality from the data by checking whether the z values
+    # are all zero. If all z are zero then the data are planar, i.e. 2D
+    if ndim is None:
+        z = np.concatenate([track.z for track in tracks])
+        ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
+
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
@@ -189,14 +201,12 @@ def tracks_to_napari(
     p_header = ["t", "state", "generation", "root", "parent"]
 
     # ensure lexicographic ordering of tracks
-    ordered = sorted(list(tracks), key=lambda t: t.ID)
+    ordered = sorted(tracks, key=lambda t: t.ID)
     header = t_header + p_header
     tracks_as_dict = _cat_tracks_as_dict(ordered, header)
 
     # note that there may be other metadata in the tracks, grab that too
-    prop_keys = p_header + [
-        k for k in tracks_as_dict.keys() if k not in t_header
-    ]
+    prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
     data = np.stack(
@@ -205,10 +215,12 @@ def tracks_to_napari(
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
+    def nans_idx(x):
+        return x.nonzero()[0]
+
     if replace_nan:
         for k, v in properties.items():
             nans = np.isnan(v)
-            nans_idx = lambda x: x.nonzero()[0]
             v[nans] = np.interp(nans_idx(nans), nans_idx(~nans), v[~nans])
             properties[k] = v
 
@@ -217,10 +229,12 @@ def tracks_to_napari(
 
 
 def update_segmentation(
-    segmentation: np.ndarray, tracks: list[btypes.Tracklet]
+    segmentation: np.ndarray,
+    tracks: list[btypes.Tracklet],
+    *,
+    color_by: str = "ID",
 ) -> np.ndarray:
-    """
-    Map btrack output tracks back into a masked array.
+    """Map tracks back into a masked array.
 
     Parameters
     ----------
@@ -229,6 +243,8 @@ def update_segmentation(
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
         A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+    color_by : str, default = "ID"
+        A value to recolor the segmentation by.
 
     Returns
     -------
@@ -236,34 +252,42 @@ def update_segmentation(
         Array containing the same masks as segmentation but relabeled to
         maintain single cell identity over time.
 
+    Notes
+    -----
+    Useful for recoloring a segmentation by a property such as track ID or
+    root tree node. Currently the property must be an integer value, greater
+    than zero.
+
     Example
     -------
-
-    import btrack
-    tracker = btrack.BayesianTracker()
-    objects = btrack.utils.segmentation_to_objects(segmentation)
-    tracker.append(objects)
-    ...
-    tracker.optimize()
-    tracks = tracker.tracks
-
-    tracked_segmentation = btrack.utils.update_segmentation(
-                                    segmentation, tracks)
+    >>> tracked_segmentation = btrack.utils.update_segmentation(
+    ...     segmentation, tracks, color_by="ID",
+    ... )
     """
+
+    keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
     coords_arr = np.concatenate(
         [
-            track.to_array()[~np.array(track.dummy)][:, :5].astype(int)
+            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
             for track in tracks
         ]
     )
+
+    if color_by not in keys:
+        raise ValueError(f"Property ``{color_by}`` not found in track.")
+
     relabeled = np.zeros_like(segmentation)
     for t, single_segmentation in enumerate(segmentation):
         frame_coords = coords_arr[coords_arr[:, 1] == t]
-        new_id, tc, xc, yc, zc = tuple(frame_coords.T)
-        if single_segmentation.ndim == 2:
+
+        xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
+        new_id = frame_coords[:, keys[color_by]]
+
+        if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
-        elif single_segmentation.ndim == 3:
+        elif single_segmentation.ndim == constants.Dimensionality.THREE:
+            zc = frame_coords[:, keys["z"]]
             old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
@@ -273,5 +297,46 @@ def update_segmentation(
     return relabeled
 
 
-if __name__ == "__main__":
-    pass
+@dataclasses.dataclass(frozen=True, init=False)
+class SystemInformation:
+    btrack_version: str = _version.version
+    system_platform: str = constants.BTRACK_PLATFORM
+    system_python: str = constants.BTRACK_PYTHON_VERSION
+
+    def __repr__(self) -> str:
+        # override to have slightly nicer formatting
+        return "\n".join(
+            [
+                f"{key}: {value}"
+                for key, value in dataclasses.asdict(self).items()
+            ]
+        )
+
+
+def log_debug_info(fn):
+    """Wrapper to provide additional debug info when loading a shared library
+    or any other function that needs special debugging info."""
+
+    @functools.wraps(fn)
+    def wrapped_func_to_debug(*args, **kwargs):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as err:
+            debug_info = dataclasses.asdict(SystemInformation())
+            exception_info = {
+                "function": fn,
+                "exception": err,
+                "arguments": args,
+                "keywords": kwargs,
+            }
+
+            debug_info.update(exception_info)
+            debug_str = "\n".join(
+                [f" - {key}: {value}" for key, value in debug_info.items()]
+            )
+
+            logger.error(f"Exception caught:\n{debug_str}")
+
+            raise Exception from err
+
+    return wrapped_func_to_debug

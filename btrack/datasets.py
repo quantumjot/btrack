@@ -15,6 +15,7 @@ CACHE_PATH = pooch.os_cache("btrack-examples")
 
 
 def _remote_registry() -> os.PathLike:
+    # URL to one of Pooch's test files
     return pooch.retrieve(
         path=CACHE_PATH,
         url=f"{BASE_URL}registry.txt",

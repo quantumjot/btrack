@@ -37,11 +37,13 @@ def update_config_from_widgets(
 
     # Update MotionModel values
     motion_model = config.motion_model
+    assert motion_model is not None
     motion_model.accuracy = container.accuracy.value
     motion_model.max_lost = container.max_lost.value
 
     # Update HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
+    assert hypothesis_model is not None
     hypothesis_model.hypotheses = [
         hypothesis
         for hypothesis in btrack.napari.constants.HYPOTHESES
@@ -86,11 +88,13 @@ def update_widgets_from_config(
 
     # Update widgets from MotionModel values
     motion_model = config.motion_model
+    assert motion_model is not None
     container.accuracy.value = motion_model.accuracy
     container.max_lost.value = motion_model.max_lost
 
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
+    assert hypothesis_model is not None
     for hypothesis in btrack.napari.constants.HYPOTHESES:
         is_checked = hypothesis in hypothesis_model.hypotheses
         container[hypothesis].value = is_checked

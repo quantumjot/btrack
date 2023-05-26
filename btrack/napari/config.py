@@ -79,6 +79,7 @@ class UnscaledTrackerConfig:
     ) -> tuple[TrackerConfig, Sigmas]:
         """Convert the matrices of a scaled TrackerConfig MotionModel to unscaled."""
 
+        assert config.motion_model is not None
         P_sigma = np.max(config.motion_model.P)
         config.motion_model.P /= P_sigma
 
@@ -90,6 +91,7 @@ class UnscaledTrackerConfig:
         # Instead, use G if it exists. If not, determine G from Q, which we can
         # do because Q = G.T @ G
         if config.motion_model.G is None:
+            assert config.motion_model.Q is not None
             config.motion_model.G = config.motion_model.Q.diagonal() ** 0.5
         G_sigma = np.max(config.motion_model.G)
         config.motion_model.G /= G_sigma
@@ -107,6 +109,7 @@ class UnscaledTrackerConfig:
 
         # Create a copy so that config values stay in sync with widget values
         scaled_config = copy.deepcopy(self.tracker_config)
+        assert scaled_config.motion_model is not None
         scaled_config.motion_model.P *= self.sigmas.P
         scaled_config.motion_model.R *= self.sigmas.R
         scaled_config.motion_model.G *= self.sigmas.G

@@ -14,7 +14,7 @@ def _random_config() -> dict:
     rng = np.random.default_rng(seed=RANDOM_SEED)
     return {
         "max_search_radius": rng.uniform(1, 100),
-        "update_method": rng.choice(btrack.constants.BayesianUpdates),
+        "update_method": rng.choice(list(btrack.constants.BayesianUpdates)),
         "return_kalman": bool(rng.uniform(0, 2)),
         "store_candidate_graph": bool(rng.uniform(0, 2)),
         "verbose": bool(rng.uniform(0, 2)),

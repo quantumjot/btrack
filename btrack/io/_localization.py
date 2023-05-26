@@ -176,7 +176,7 @@ def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[npt.NDArray, Generator],
     *,
     intensity_image: Optional[Union[npt.NDArray, Generator]] = None,
-    properties: Optional[tuple[str]] = (),
+    properties: Optional[tuple[str]] = None,
     extra_properties: Optional[tuple[Callable]] = None,
     scale: Optional[tuple[float]] = None,
     use_weighted_centroid: bool = True,

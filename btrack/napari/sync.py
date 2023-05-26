@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from magicgui.widgets import Container
 
-    from btrack.config import TrackerConfig
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
 import btrack.napari.constants
@@ -18,7 +17,7 @@ import btrack.napari.constants
 def update_config_from_widgets(
     unscaled_config: UnscaledTrackerConfig,
     container: Container,
-) -> TrackerConfig:
+) -> UnscaledTrackerConfig:
     """Update an UnscaledTrackerConfig with the current widget values."""
 
     # Update MotionModel matrix scaling factors

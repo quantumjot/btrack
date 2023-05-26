@@ -380,7 +380,7 @@ class Tracklet:
         return _pandas_html_repr(self)
 
     @property
-    def properties(self) -> dict[str, npt.NDArray]:
+    def properties(self) -> dict:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
         keys: set = set()
@@ -553,7 +553,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> tuple[int]:
+    def LBEP(self) -> tuple[int, int, int, int, int, int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,

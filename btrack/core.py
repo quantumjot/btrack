@@ -375,7 +375,7 @@ class BayesianTracker:
         )
 
     @property
-    def frame_range(self) -> tuple[int, int]:
+    def frame_range(self) -> tuple:
         """Return the frame range."""
         return tuple(self.configuration.frame_range)
 

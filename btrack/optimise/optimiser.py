@@ -17,7 +17,6 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 import logging
-from typing import List
 
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
@@ -101,7 +100,7 @@ class TrackOptimiser:
     """
 
     def __init__(self, options: dict = GLPK_OPTIONS):
-        self._hypotheses: List[hypothesis.Hypothesis] = []
+        self._hypotheses: list[hypothesis.Hypothesis] = []
         self.options = options  # TODO(arl): do some option parsing?
 
     @property

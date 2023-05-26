@@ -3,7 +3,7 @@ import itertools
 import logging
 import os
 import warnings
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 import numpy as np
 
@@ -49,7 +49,7 @@ class BayesianTracker:
         :py:meth:`btrack.btypes.ImagingVolume` for more details.
     frame_range : tuple
         The frame range for tracking, essentially the last dimension of volume.
-    LBEP : List[List]
+    LBEP : list[List]
         Return an LBEP table of the track lineages.
     configuration : config.TrackerConfig
         Return the current configuration.
@@ -142,7 +142,7 @@ class BayesianTracker:
         )
 
         # default parameters and space for stored objects
-        self._objects: List[btypes.PyTrackObject] = []
+        self._objects: list[btypes.PyTrackObject] = []
         self._frame_range = [0, 0]
 
     def __enter__(self):
@@ -248,7 +248,7 @@ class BayesianTracker:
         )
 
     @property
-    def tracks(self) -> List[btypes.Tracklet]:
+    def tracks(self) -> list[btypes.Tracklet]:
         """Return a sorted list of tracks, default is to sort by increasing
         length."""
         return [self[i] for i in range(self.n_tracks)]
@@ -305,7 +305,7 @@ class BayesianTracker:
         """
         return utils._lbep_table(self.tracks)
 
-    def _sort(self, tracks: List[btypes.Tracklet]) -> List[btypes.Tracklet]:
+    def _sort(self, tracks: list[btypes.Tracklet]) -> list[btypes.Tracklet]:
         """Return a sorted list of tracks"""
         return sorted(tracks, key=lambda t: len(t), reverse=True)
 
@@ -374,17 +374,17 @@ class BayesianTracker:
         )
 
     @property
-    def frame_range(self) -> Tuple[int, int]:
+    def frame_range(self) -> tuple[int, int]:
         """Return the frame range."""
         return tuple(self.configuration.frame_range)
 
     @property
-    def objects(self) -> List[btypes.PyTrackObject]:
+    def objects(self) -> list[btypes.PyTrackObject]:
         """Return the list of objects added through the append method."""
         return self._objects
 
     def append(
-        self, objects: Union[List[btypes.PyTrackObject], np.ndarray]
+        self, objects: Union[list[btypes.PyTrackObject], np.ndarray]
     ) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
@@ -434,7 +434,7 @@ class BayesianTracker:
         *,
         step_size: int = 100,
         tracking_updates: Optional[
-            List[Union[str, constants.BayesianUpdateFeatures]]
+            list[Union[str, constants.BayesianUpdateFeatures]]
         ] = None,
     ) -> None:
         """Run the tracking in an interactive mode.
@@ -499,7 +499,7 @@ class BayesianTracker:
             return None
         return self._stats(self._lib.step(self._engine, n_steps))
 
-    def hypotheses(self) -> List[hypothesis.Hypothesis]:
+    def hypotheses(self) -> list[hypothesis.Hypothesis]:
         """Calculate and return hypotheses using the hypothesis engine."""
 
         if not self.hypothesis_model:
@@ -523,7 +523,7 @@ class BayesianTracker:
 
     def optimise(
         self, options: Optional[dict] = None
-    ) -> List[hypothesis.Hypothesis]:
+    ) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.
 
         Parameters
@@ -679,7 +679,7 @@ class BayesianTracker:
         self,
         replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
-    ) -> Tuple[np.ndarray, dict, dict]:
+    ) -> tuple[np.ndarray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 
@@ -689,7 +689,7 @@ class BayesianTracker:
             self.tracks, ndim=ndim, replace_nan=replace_nan
         )
 
-    def candidate_graph_edges(self) -> List[btypes.PyGraphEdge]:
+    def candidate_graph_edges(self) -> list[btypes.PyGraphEdge]:
         """Return the edges from the full candidate graph."""
         num_edges = self._lib.num_edges(self._engine)
         if num_edges < 1:

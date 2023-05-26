@@ -1,5 +1,4 @@
 import os
-from typing import List
 
 import numpy as np
 import pooch
@@ -59,7 +58,7 @@ def example_track_objects_file() -> os.PathLike:
     return POOCH.fetch("examples/objects.csv")
 
 
-def example_track_objects() -> List[PyTrackObject]:
+def example_track_objects() -> list[PyTrackObject]:
     """Return the example localized and classified objects stored in a CSV file
     as a list `PyTrackObject`s to be used by the tracker."""
     file_path = example_track_objects_file()

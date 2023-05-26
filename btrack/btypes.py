@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
-from typing import Any, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, NamedTuple, Optional
 
 import numpy as np
 
@@ -27,9 +27,9 @@ __all__ = ["PyTrackObject", "Tracklet"]
 
 
 class ImagingVolume(NamedTuple):
-    x: Tuple[float, float]
-    y: Tuple[float, float]
-    z: Optional[Tuple[float, float]] = None
+    x: tuple[float, float]
+    y: tuple[float, float]
+    z: Optional[tuple[float, float]] = None
 
     @property
     def ndim(self) -> int:
@@ -75,7 +75,7 @@ class PyTrackObject(ctypes.Structure):
 
     Attributes
     ----------
-    properties : Dict[str, Union[int, float]]
+    properties : dict[str, Union[int, float]]
         Dictionary of properties associated with this object.
     state : constants.States
         A state label for the object. See `constants.States`
@@ -108,11 +108,11 @@ class PyTrackObject(ctypes.Structure):
         self._properties = {}
 
     @property
-    def properties(self) -> Dict[str, Any]:
+    def properties(self) -> dict[str, Any]:
         return {} if self.dummy else self._properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, Any]):
+    def properties(self, properties: dict[str, Any]):
         """Set the object properties."""
         self._properties.update(properties)
 
@@ -120,7 +120,7 @@ class PyTrackObject(ctypes.Structure):
     def state(self) -> constants.States:
         return constants.States(self.label)
 
-    def set_features(self, keys: List[str]) -> None:
+    def set_features(self, keys: list[str]) -> None:
         """Set features to be used by the tracking update."""
 
         if not keys:
@@ -144,7 +144,7 @@ class PyTrackObject(ctypes.Structure):
         self.features = np.ctypeslib.as_ctypes(self._features)
         self.n_features = len(self._features)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         node = {
             k: getattr(self, k)
@@ -155,7 +155,7 @@ class PyTrackObject(ctypes.Structure):
         return node
 
     @staticmethod
-    def from_dict(properties: Dict[str, Any]) -> PyTrackObject:
+    def from_dict(properties: dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
         obj = PyTrackObject()
         fields = dict(PyTrackObject._fields_)
@@ -233,7 +233,7 @@ class PyTrackingInfo(ctypes.Structure):
         ("complete", ctypes.c_bool),
     ]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the statistics"""
         return {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
 
@@ -317,7 +317,7 @@ class Tracklet:
     softmax : list[float]
         If defined, return the softmax score for the label of each object in the
         track.
-    properties : Dict[str, np.ndarray]
+    properties : dict[str, np.ndarray]
         Return a dictionary of track properties derived from
         :py:class:`btrack.btypes.PyTrackObject` properties.
     root : int,
@@ -350,10 +350,10 @@ class Tracklet:
     def __init__(  # noqa: PLR0913
         self,
         ID: int,
-        data: List[PyTrackObject],
+        data: list[PyTrackObject],
         *,
         parent: Optional[int] = None,
-        children: Optional[List[int]] = None,
+        children: Optional[list[int]] = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
         assert all(isinstance(o, PyTrackObject) for o in data)
@@ -379,7 +379,7 @@ class Tracklet:
         return _pandas_html_repr(self)
 
     @property
-    def properties(self) -> Dict[str, np.ndarray]:
+    def properties(self) -> dict[str, np.ndarray]:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
         keys: set = set()
@@ -425,7 +425,7 @@ class Tracklet:
         return properties
 
     @properties.setter
-    def properties(self, properties: Dict[str, np.ndarray]):
+    def properties(self, properties: dict[str, np.ndarray]):
         """Store properties associated with this Tracklet."""
         # TODO(arl): this will need to set the object properties
         pass
@@ -516,7 +516,7 @@ class Tracklet:
 
     def to_dict(
         self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Return a dictionary of the tracklet which can be used for JSON
         export. This is an ordered dictionary for nicer JSON output.
         """
@@ -552,7 +552,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> Tuple[int]:
+    def LBEP(self) -> tuple[int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 import numpy as np
 
@@ -14,9 +14,9 @@ logger = logging.getLogger(__name__)
 
 def localizations_to_objects(
     localizations: Union[
-        np.ndarray, List[btypes.PyTrackObject], Dict[str, Any]
+        np.ndarray, list[btypes.PyTrackObject], dict[str, Any]
     ]
-) -> List[btypes.PyTrackObject]:
+) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
@@ -54,7 +54,7 @@ def localizations_to_objects(
     return objects_from_dict(objects_dict)
 
 
-def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
+def objects_from_dict(objects_dict: dict) -> list[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a dictionary"""
     # now that we have the object dictionary, convert this to objects
     objects = []
@@ -72,8 +72,8 @@ def objects_from_dict(objects_dict: dict) -> List[btypes.PyTrackObject]:
 def objects_from_array(
     objects_arr: np.ndarray,
     *,
-    default_keys: List[str] = constants.DEFAULT_OBJECT_KEYS,
-) -> List[btypes.PyTrackObject]:
+    default_keys: list[str] = constants.DEFAULT_OBJECT_KEYS,
+) -> list[btypes.PyTrackObject]:
     """Construct PyTrackObjects from a numpy array."""
     assert objects_arr.ndim == constants.Dimensionality.TWO
 

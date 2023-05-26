@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 import numpy as np
 from skimage.measure import label
@@ -18,7 +18,7 @@ RANDOM_SEED = 1234
 def create_test_object(
     test_id: Optional[int] = None,
     ndim: int = 3,
-) -> Tuple[btrack.btypes.PyTrackObject, Dict[str, Any]]:
+) -> tuple[btrack.btypes.PyTrackObject, dict[str, Any]]:
     """Create a test object."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
@@ -39,7 +39,7 @@ def create_test_object(
     return obj, data
 
 
-def create_test_properties() -> Dict[str, float]:
+def create_test_properties() -> dict[str, float]:
     """Create test properties for an object."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
     return {
@@ -54,10 +54,10 @@ def create_test_tracklet(
     track_len: int,
     track_id: Optional[int] = None,
     ndim: int = 3,
-) -> Tuple[
+) -> tuple[
     btrack.btypes.Tracklet,
-    List[btrack.btypes.PyTrackObject],
-    List[Dict[str, Any]],
+    list[btrack.btypes.PyTrackObject],
+    list[dict[str, Any]],
     int,
 ]:
     """Create a test track."""
@@ -108,7 +108,7 @@ def create_test_image(
     binsize: int = 5,
     *,
     binary: bool = True,
-) -> Tuple[np.ndarray, Optional[np.ndarray]]:
+) -> tuple[np.ndarray, Optional[np.ndarray]]:
     """Make a test image that ensures that no two pixels are in contact."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
@@ -123,7 +123,7 @@ def create_test_image(
     # split this into voxels
     bins = boxsize // binsize
 
-    def _sample() -> Tuple[np.ndarray, Tuple[int]]:
+    def _sample() -> tuple[np.ndarray, tuple[int]]:
         _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
         _coord = tuple(rng.integers(1, binsize - 1, size=(ndim,)).tolist())
         _img[_coord] = 1
@@ -177,7 +177,7 @@ def create_test_segmentation_and_tracks(
     ndim: int = 2,
     *,
     binary: bool = False,
-) -> Tuple[np.ndarray, np.ndarray, List[btrack.btypes.Tracklet]]:
+) -> tuple[np.ndarray, np.ndarray, list[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""
 
     if ndim not in (btrack.constants.Dimensionality.TWO,):
@@ -221,7 +221,7 @@ def create_test_segmentation_and_tracks(
 
 
 def full_tracker_example(
-    objects: List[btrack.btypes.PyTrackObject], **kwargs
+    objects: list[btrack.btypes.PyTrackObject], **kwargs
 ) -> btrack.BayesianTracker:
     """Set up a full tracker example. kwargs can supply configuration options."""
     # run the tracking
@@ -236,7 +236,7 @@ def full_tracker_example(
     return tracker
 
 
-def simple_tracker_example() -> Tuple[btrack.BayesianTracker, Dict[str, Any]]:
+def simple_tracker_example() -> tuple[btrack.BayesianTracker, dict[str, Any]]:
     """Run a simple tracker example with some data."""
     x = np.array([200, 201, 202, 203, 204, 207, 208])
     y = np.array([503, 507, 499, 500, 510, 515, 518])

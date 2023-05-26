@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 import pytest
@@ -81,7 +81,7 @@ def test_config_tracker_setters():
         _validate_config(tracker.configuration, options)
 
 
-def _cfg_dict() -> Tuple[dict, dict]:
+def _cfg_dict() -> tuple[dict, dict]:
     cfg_raw = btrack.config.load_config(CONFIG_FILE)
     cfg = _random_config()
     cfg.update(cfg_raw.dict())
@@ -89,14 +89,14 @@ def _cfg_dict() -> Tuple[dict, dict]:
     return cfg, cfg
 
 
-def _cfg_file() -> Tuple[Path, dict]:
+def _cfg_file() -> tuple[Path, dict]:
     filename = CONFIG_FILE
     assert isinstance(filename, Path)
     cfg = btrack.config.load_config(filename)
     return filename, cfg.dict()
 
 
-def _cfg_pydantic() -> Tuple[btrack.config.TrackerConfig, dict]:
+def _cfg_pydantic() -> tuple[btrack.config.TrackerConfig, dict]:
     cfg = btrack.config.load_config(CONFIG_FILE)
     options = _random_config()
     for key, value in options.items():

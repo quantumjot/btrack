@@ -1,5 +1,5 @@
 import os
-from typing import List, Union
+from typing import Union
 
 import numpy as np
 import pytest
@@ -54,7 +54,7 @@ def hdf5_file_path(tmp_path, test_objects) -> os.PathLike:
 @pytest.fixture(params=["single", "list"])
 def hdf5_file_path_or_paths(
     tmp_path, test_objects, request
-) -> Union[os.PathLike, List[os.PathLike]]:
+) -> Union[os.PathLike, list[os.PathLike]]:
     """
     Create and save a btrack HDF5 file, and return the path.
 

@@ -207,11 +207,11 @@ python =
 
 [testenv]
 deps =
-    pytest-xvfb ; sys_platform == 'linux'
     napari
     pyqt5
     pytest-cov
     pytest-qt
+    pytest-xvfb ; sys_platform == 'linux'
 commands = pytest --cov --cov-report=xml
 passenv =
     CI

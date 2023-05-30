@@ -450,7 +450,7 @@ class HDF5FileHandler:
 
         obj = self.filtered_objects(f_expr=f_expr)
 
-        def _get_txyz(_ref: int) -> int:
+        def _get_txyz(_ref: int) -> btypes.PyTrackObject:
             # references are -ve for dummies
             return obj[_ref] if _ref >= 0 else dummy_obj[abs(_ref) - 1]
 

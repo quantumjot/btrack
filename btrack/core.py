@@ -5,7 +5,6 @@ import os
 import warnings
 from typing import Optional, Union
 
-import btypes.PyTrackingInfo
 import numpy as np
 from numpy import typing as npt
 
@@ -226,7 +225,7 @@ class BayesianTracker:
         """Set the maximum search radius for fast cost updates."""
         self._lib.max_search_radius(self._engine, max_search_radius)
 
-    def _update_method(self, method: Union[str, constants.BayesianUpdates]):
+    def _update_method(self, method: constants.BayesianUpdates):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         self._lib.set_update_mode(self._engine, method.value)
 
@@ -467,7 +466,7 @@ class BayesianTracker:
             sum(int(f.value) for f in self.configuration.tracking_updates),
         )
 
-        stats: btypes.PyTrackingInfo = self.step()
+        stats = self.step()
         frame = 0
 
         # while not stats.complete and stats.error not in constants.ERRORS:

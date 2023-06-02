@@ -10,7 +10,6 @@ import numpy as np
 import pytest
 
 import btrack
-import btrack.napari.main
 
 from ._utils import (
     RANDOM_SEED,

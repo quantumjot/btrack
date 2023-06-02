@@ -1,10 +1,16 @@
 import os
-from typing import Union
+from typing import TYPE_CHECKING, Union
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
+
+    from magicgui.widgets import Container
 
 import numpy as np
 import pytest
 
 import btrack
+import btrack.napari.main
 
 from ._utils import (
     RANDOM_SEED,
@@ -87,3 +93,26 @@ def default_rng():
     Create a default PRNG to use for tests.
     """
     return np.random.default_rng(seed=RANDOM_SEED)
+
+
+@pytest.fixture
+def track_widget(make_napari_viewer) -> Container:
+    """Provides an instance of the track widget to test"""
+    make_napari_viewer()  # make sure there is a viewer available
+    return btrack.napari.main.create_btrack_widget()
+
+
+@pytest.fixture
+def simplistic_tracker_outputs() -> (
+    tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
+):
+    """Provides simplistic return values of a btrack run.
+
+    They have the correct types and dimensions, but contain zeros.
+    Useful for mocking the tracker.
+    """
+    n, d = 10, 3
+    data = np.zeros((n, d + 1))
+    properties = {"some_property": np.zeros(n)}
+    graph = {0: [0]}
+    return data, properties, graph

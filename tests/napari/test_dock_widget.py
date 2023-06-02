@@ -1,15 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Container
-
 import json
 from unittest.mock import patch
 
-import numpy as np
-import numpy.typing as npt
 import pytest
 
 import napari
@@ -35,13 +28,6 @@ def test_add_widget(make_napari_viewer):
     )
 
     assert len(list(viewer.window._dock_widgets)) == num_dw + 1
-
-
-@pytest.fixture
-def track_widget(make_napari_viewer) -> Container:
-    """Provides an instance of the track widget to test"""
-    make_napari_viewer()  # make sure there is a viewer available
-    return btrack.napari.main.create_btrack_widget()
 
 
 @pytest.mark.parametrize("config", [cell_config(), particle_config()])
@@ -126,22 +112,6 @@ def test_reset_button(track_widget):
 
     assert new_max_search_radius == original_max_search_radius
     assert new_relax == original_relax
-
-
-@pytest.fixture
-def simplistic_tracker_outputs() -> (
-    tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
-):
-    """Provides simplistic return values of a btrack run.
-
-    They have the correct types and dimensions, but contain zeros.
-    Useful for mocking the tracker.
-    """
-    n, d = 10, 3
-    data = np.zeros((n, d + 1))
-    properties = {"some_property": np.zeros(n)}
-    graph = {0: [0]}
-    return data, properties, graph
 
 
 def test_run_button(track_widget, simplistic_tracker_outputs):

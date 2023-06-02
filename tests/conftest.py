@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING, Union
 if TYPE_CHECKING:
     import numpy.typing as npt
 
-    from magicgui.widgets import Container
-
 import numpy as np
 import pytest
+
+from magicgui.widgets import Container
 
 import btrack
 

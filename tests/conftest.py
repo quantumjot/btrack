@@ -1,10 +1,8 @@
 import os
-from typing import TYPE_CHECKING, Union
-
-if TYPE_CHECKING:
-    import numpy.typing as npt
+from typing import Union
 
 import numpy as np
+import numpy.typing as npt
 import pytest
 
 from magicgui.widgets import Container

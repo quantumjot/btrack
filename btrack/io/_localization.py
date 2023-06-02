@@ -30,9 +30,7 @@ def _concat_nodes(
 ) -> dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
-        nodes[key] = (
-            np.concatenate([nodes[key], values]) if key in nodes else values
-        )
+        nodes[key] = np.concatenate([nodes[key], values]) if key in nodes else values
     return nodes
 
 
@@ -45,17 +43,13 @@ class SegmentationContainer:
 
     def __post_init__(self) -> None:
         self._is_generator = isinstance(self.segmentation, Generator)
-        self._next = (
-            self._next_generator if self._is_generator else self._next_array
-        )
+        self._next = self._next_generator if self._is_generator else self._next_array
 
     def _next_generator(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
         """__next__ method for a generator input."""
         seg = next(self.segmentation)
         intens = (
-            next(self.intensity_image)
-            if self.intensity_image is not None
-            else None
+            next(self.intensity_image) if self.intensity_image is not None else None
         )
         return seg, intens
 
@@ -120,33 +114,20 @@ class NodeProcessor:
         if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-        labeled = (
-            segmentation if _is_unique(segmentation) else label(segmentation)
-        )
+        labeled = segmentation if _is_unique(segmentation) else label(segmentation)
         props = regionprops(
             labeled,
             intensity_image=intensity_image,
             extra_properties=self.extra_properties,
         )
         num_nodes = len(props)
-        scale = (
-            tuple([1.0] * segmentation.ndim)
-            if self.scale is None
-            else self.scale
-        )
+        scale = tuple([1.0] * segmentation.ndim) if self.scale is None else self.scale
 
         if len(scale) != segmentation.ndim:
-            raise ValueError(
-                f"Scale dimensions do not match segmentation: {scale}."
-            )
+            raise ValueError(f"Scale dimensions do not match segmentation: {scale}.")
 
         centroids = list(
-            zip(
-                *[
-                    getattr(props[idx], self.centroid_type)
-                    for idx in range(num_nodes)
-                ]
-            )
+            zip(*[getattr(props[idx], self.centroid_type) for idx in range(num_nodes)])
         )[::-1]
         centroid_dims = ["x", "y", "z"][: segmentation.ndim]
 
@@ -174,7 +155,7 @@ class NodeProcessor:
         return nodes
 
 
-def segmentation_to_objects(
+def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[np.ndarray, Generator],
     *,
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,

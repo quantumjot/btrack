@@ -29,9 +29,7 @@ def update_config_from_widgets(
     # Update TrackerConfig values
     config = unscaled_config.tracker_config
     update_method_name = container.update_method.current_choice
-    update_method_index = container.update_method.choices.index(
-        update_method_name
-    )
+    update_method_index = container.update_method.choices.index(update_method_name)
     config.update_method = update_method_index
     config.max_search_radius = container.max_search_radius.value
 
@@ -50,17 +48,13 @@ def update_config_from_widgets(
 
     # Update HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
-        setattr(
-            hypothesis_model, scaling_factor, container[scaling_factor].value
-        )
+        setattr(hypothesis_model, scaling_factor, container[scaling_factor].value)
 
     # Update HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
         setattr(hypothesis_model, threshold, container[threshold].value)
 
-    hypothesis_model.segmentation_miss_rate = (
-        container.segmentation_miss_rate.value
-    )
+    hypothesis_model.segmentation_miss_rate = container.segmentation_miss_rate.value
 
     return unscaled_config
 
@@ -97,16 +91,12 @@ def update_widgets_from_config(
 
     # Update widgets from HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
-        container[scaling_factor].value = getattr(
-            hypothesis_model, scaling_factor
-        )
+        container[scaling_factor].value = getattr(hypothesis_model, scaling_factor)
 
     # Update widgets from HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
         container[threshold].value = getattr(hypothesis_model, threshold)
 
-    container.segmentation_miss_rate.value = (
-        hypothesis_model.segmentation_miss_rate
-    )
+    container.segmentation_miss_rate.value = hypothesis_model.segmentation_miss_rate
 
     return container

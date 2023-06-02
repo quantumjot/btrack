@@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
 requires = [
     "setuptools",
     "setuptools-scm",
-    "wheel",
 ]
 
 [project]
@@ -60,29 +59,6 @@ urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
 urls.documentation = "https://btrack.readthedocs.io"
 urls.homepage = "https://github.com/quantumjot/btrack"
 urls.usersupport = "https://github.com/quantumjot/btrack/discussions"
-
-[tool.black]
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | build
-    | dist
-    | examples
-  )/
-)
-'''
-line-length = 79
-target-version = [
-    "py39",
-    "py310",
-]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}

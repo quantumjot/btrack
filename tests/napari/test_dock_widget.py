@@ -53,12 +53,8 @@ def test_config_to_widgets_round_trip(track_widget, config):
     expected_config = btrack.config.load_config(config).json()
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(config)
-    btrack.napari.sync.update_widgets_from_config(
-        unscaled_config, track_widget
-    )
-    btrack.napari.sync.update_config_from_widgets(
-        unscaled_config, track_widget
-    )
+    btrack.napari.sync.update_widgets_from_config(unscaled_config, track_widget)
+    btrack.napari.sync.update_config_from_widgets(unscaled_config, track_widget)
 
     actual_config = unscaled_config.scale_config().json()
 
@@ -72,9 +68,7 @@ def test_save_button(track_widget):
     """
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(cell_config())
-    unscaled_config.tracker_config.name = (
-        "cell"  # this is done in in the gui too
-    )
+    unscaled_config.tracker_config.name = "cell"  # this is done in in the gui too
     expected_config = unscaled_config.scale_config().json()
 
     with patch(

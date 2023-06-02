@@ -25,8 +25,7 @@ def create_input_widgets() -> list[Widget]:
     )
 
     config_tooltip = (
-        "Select a loaded configuration.\n"
-        "Note, this will update values set below."
+        "Select a loaded configuration.\nNote, this will update values set below."
     )
     config = magicgui.widgets.create_widget(
         value="cell",

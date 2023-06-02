@@ -166,8 +166,8 @@ isort.sections.napari = [
 mccabe.max-complexity = 18
 pep8-naming.classmethod-decorators = [
     "classmethod",
-    "pydantic.root_validator",
-    "pydantic.validator",
+    "pydantic.field_validator",
+    "pydantic.model_validator",
 ]
 
 [tool.setuptools]

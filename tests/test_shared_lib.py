@@ -16,7 +16,7 @@ def test_load_library():
 def test_fails_load_library_debug(tmp_path):
     """Test loading a fake shared library."""
     fake_lib_filename = Path(tmp_path) / "fakelib"
-    with pytest.raises(FileNotFoundError):
+    with pytest.raises(OSError):
         load_library(fake_lib_filename)
 
 

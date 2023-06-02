@@ -309,7 +309,7 @@ def log_debug_info(fn):
     def wrapped_func_to_debug(*args, **kwargs):
         try:
             return fn(*args, **kwargs)
-        except FileNotFoundError as err:
+        except Exception as err:
             debug_info = dataclasses.asdict(SystemInformation())
             exception_info = {
                 "function": fn,
@@ -325,6 +325,6 @@ def log_debug_info(fn):
 
             logger.error(f"Exception caught:\n{debug_str}")
 
-            raise FileNotFoundError from err
+            raise Exception from err
 
     return wrapped_func_to_debug

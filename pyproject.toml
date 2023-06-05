@@ -194,13 +194,13 @@ python =
     3.10: py310
 
 [testenv]
+commands = pytest --cov --cov-report=xml
 deps =
     napari
     pyqt5
     pytest-cov
     pytest-qt
     pytest-xvfb ; sys_platform == 'linux'
-commands = pytest --cov --cov-report=xml
 passenv =
     CI
     DISPLAY
@@ -209,6 +209,12 @@ passenv =
     PYVISTA_OFF_SCREEN
     XAUTHORITY
 
+[gh-actions:env]
+PLATFORM =
+    ubuntu-latest: linux
+    macos-latest: macos
+    windows-latest: windows
+
 [tox]
-envlist = py{39,310}
+envlist = py{39,310}-{linux,macos,windows}
 """

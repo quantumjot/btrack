@@ -280,7 +280,7 @@ class HDF5FileHandler:
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
 
-            filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
+            filtered_idx = [i for i, _ in enumerate(data) if eval(f_eval)]
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
@@ -614,7 +614,7 @@ class HDF5FileHandler:
         _h5_tree(self._hdf)
 
 
-def _h5_tree(hdf, *, pre: str = "") -> None:
+def _h5_tree(hdf, *, prefix: str = "") -> None:
     """Recursively iterate over an H5 file to reveal the tree structure and number
     of elements within. Writes the output to the default logger.
 
@@ -622,26 +622,20 @@ def _h5_tree(hdf, *, pre: str = "") -> None:
     ----------
     hdf : hdf object
         The hdf object to iterate over
-    pre : str
+    prefix : str
         A prepended string for layout
-
-    Returns
-    -------
-    None
     """
     n_items = len(hdf)
     for idx, (key, val) in enumerate(hdf.items()):
-        # items -= 1
-        # if items == 0:
         if idx == (n_items - 1):
             # the last item
             if isinstance(val, h5py._hl.group.Group):
-                logger.info(f"{pre}└── {key}")
-                _h5_tree(val, pre=f"{pre}    ")
+                logger.info(f"{prefix}└── {key}")
+                _h5_tree(val, prefix=f"{prefix}    ")
             else:
-                logger.info(f"{pre}└── {key} ({len(val)})")
+                logger.info(f"{prefix}└── {key} ({len(val)})")
         elif isinstance(val, h5py._hl.group.Group):
-            logger.info(f"{pre}├── {key}")
-            _h5_tree(val, pre=f"{pre}│   ")
+            logger.info(f"{prefix}├── {key}")
+            _h5_tree(val, prefix=f"{prefix}│   ")
         else:
-            logger.info(f"{pre}├── {key} ({len(val)})")
+            logger.info(f"{prefix}├── {key} ({len(val)})")

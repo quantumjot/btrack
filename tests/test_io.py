@@ -167,3 +167,20 @@ def test_write_hdf_segmentation(hdf5_file_path):
     with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         segmentation_from_file = h.segmentation
     np.testing.assert_equal(segmentation, segmentation_from_file)
+
+
+def test_hdf_tree(hdf5_file_path, caplog):
+    """Test that the tree function iterates over the files and writes the output
+    to the logger."""
+    n_log_entries = len(caplog.records)
+
+    # first test with an empty tree
+    btrack.io.hdf._h5_tree({})
+
+    assert len(caplog.records) == n_log_entries
+
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as hdf:
+        hdf.tree()
+
+    n_expected_entries = 8
+    assert len(caplog.records) == n_log_entries + n_expected_entries

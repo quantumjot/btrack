@@ -20,7 +20,7 @@ If you would rather install the latest development version, and/or compile direc
     ./build.sh
     pip install -e .
 
-If working on Apple Silicon then also run::
+If working on Apple Silicon then also run:
 
 .. code:: sh
 

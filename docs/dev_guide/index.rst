@@ -24,7 +24,7 @@ If working on Apple Silicon then also run:
 
 .. code:: sh
 
-    conda install -c conda-forge cvxopt  
+    conda install -c conda-forge cvxopt
 
 If developing the documentation then run the following
 

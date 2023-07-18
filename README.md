@@ -40,12 +40,14 @@ pip install btrack
 
 #### Installing on Apple Silicon
 
-Run the above command with `pip` and then also install the following with
-[conda](https://github.com/conda-forge/miniforge).
+Install the following with
+[conda](https://github.com/conda-forge/miniforge):
 
 ```sh
 conda install -c conda-forge cvxopt
 ```
+
+then run the above command with `pip`.
 
 ## Usage examples
 

@@ -47,7 +47,7 @@ Install the following with
 conda install -c conda-forge cvxopt
 ```
 
-then run the above command with `pip`.
+then run the above `pip` install command.
 
 ## Usage examples
 

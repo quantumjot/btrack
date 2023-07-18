@@ -280,7 +280,7 @@ class HDF5FileHandler:
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
 
-            filtered_idx = [i for i, _ in enumerate(data) if eval(f_eval)]
+            filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all

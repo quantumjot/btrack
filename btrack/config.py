@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Optional
+from typing import ClassVar, Optional
 
 import numpy as np
 from pydantic import BaseModel, conlist, validator
@@ -95,9 +95,7 @@ class TrackerConfig(BaseModel):
 
     @validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):
-        if isinstance(v, tuple):
-            return ImagingVolume(*v)
-        return v
+        return ImagingVolume(*v) if isinstance(v, tuple) else v
 
     @validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):
@@ -113,7 +111,7 @@ class TrackerConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         validate_assignment = True
-        json_encoders = {
+        json_encoders: ClassVar[dict] = {
             np.ndarray: lambda x: x.ravel().tolist(),
         }
 

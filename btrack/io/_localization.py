@@ -155,9 +155,7 @@ class NodeProcessor:
             for dim in range(len(centroids))
         }
 
-        nodes = {"t": [frame] * num_nodes}
-        nodes.update(coords)
-
+        nodes = {"t": [frame] * num_nodes} | coords
         for img_prop in self.img_props:
             nodes[img_prop] = [
                 getattr(props[idx], img_prop) for idx in range(num_nodes)
@@ -174,7 +172,7 @@ class NodeProcessor:
         return nodes
 
 
-def segmentation_to_objects(
+def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[np.ndarray, Generator],
     *,
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,

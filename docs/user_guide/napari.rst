@@ -11,7 +11,7 @@ dependencies needed to use these plugins, install the ``napari`` extra via.::
 
 If working on Apple Silicon then also run::
 
-    conda install -c conda-forge cvxopt pyqt
+    conda install -c conda-forge pyqt
 
 The Tracks layer
 ================

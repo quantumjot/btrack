@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, conlist, validator
+from pydantic import BaseModel, conlist, field_validator
 
 from btrack import _version
 
@@ -93,13 +93,13 @@ class TrackerConfig(BaseModel):
         constants.BayesianUpdateFeatures.MOTION,
     ]
 
-    @validator("volume", pre=True, always=True)
+    @field_validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):
         if isinstance(v, tuple):
             return ImagingVolume(*v)
         return v
 
-    @validator("tracking_updates", pre=True, always=True)
+    @field_validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):

@@ -524,7 +524,7 @@ class Tracklet:
         """
         trk_tuple = tuple((p, getattr(self, p)) for p in properties)
         data = OrderedDict(trk_tuple)
-        data.update(self.properties)
+        data |= self.properties
         return data
 
     def to_array(

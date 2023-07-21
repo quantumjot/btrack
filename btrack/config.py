@@ -176,5 +176,5 @@ def save_config(filename: os.PathLike, cfg: TrackerConfig) -> None:
     """
 
     with open(filename, "w") as json_file:
-        json_data = json.loads(cfg.json())
+        json_data = json.loads(cfg.model_dump_json())
         json.dump(json_data, json_file, indent=2, separators=(",", ": "))

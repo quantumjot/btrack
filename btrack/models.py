@@ -293,7 +293,7 @@ class HypothesisModel(BaseModel):
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 
-        for k, v in self.dict().items():
+        for k, v in self.model_dump().items():
             if k in fields:
                 setattr(h_params, k, v)
 

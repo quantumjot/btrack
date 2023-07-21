@@ -181,7 +181,7 @@ class BayesianTracker:
         self._config = configuration
 
         # set all configuration options using setattr
-        for attr in configuration.__fields__:
+        for attr in configuration.model_fields:
             setattr(self, attr, getattr(configuration, attr))
 
         self._initialised = True
@@ -199,7 +199,7 @@ class BayesianTracker:
         if not attr.startswith("_") and self.configuration.verbose:
             logger.info(f"Setting {attr} -> {value}")
 
-        if attr in config.TrackerConfig.__fields__:
+        if attr in config.TrackerConfig.model_fields:
             setattr(self.configuration, attr, value)
         else:
             object.__setattr__(self, attr, value)

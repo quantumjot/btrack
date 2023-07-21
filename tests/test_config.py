@@ -65,7 +65,7 @@ def test_import_config():
 def test_config_to_json():
     """Test that a config can be converted to json format without raising an error"""
     cfg = btrack.config.load_config(CONFIG_FILE)
-    cfg.json()
+    cfg.model_dump_json()
 
 
 def test_config_tracker_setters():
@@ -84,7 +84,7 @@ def test_config_tracker_setters():
 def _cfg_dict() -> tuple[dict, dict]:
     cfg_raw = btrack.config.load_config(CONFIG_FILE)
     cfg = _random_config()
-    cfg.update(cfg_raw.dict())
+    cfg.update(cfg_raw.model_dump())
     assert isinstance(cfg, dict)
     return cfg, cfg
 
@@ -93,7 +93,7 @@ def _cfg_file() -> tuple[Path, dict]:
     filename = CONFIG_FILE
     assert isinstance(filename, Path)
     cfg = btrack.config.load_config(filename)
-    return filename, cfg.dict()
+    return filename, cfg.model_dump()
 
 
 def _cfg_pydantic() -> tuple[btrack.config.TrackerConfig, dict]:
@@ -102,7 +102,7 @@ def _cfg_pydantic() -> tuple[btrack.config.TrackerConfig, dict]:
     for key, value in options.items():
         setattr(cfg, key, value)
     assert isinstance(cfg, btrack.config.TrackerConfig)
-    return cfg, cfg.dict()
+    return cfg, cfg.model_dump()
 
 
 @pytest.mark.parametrize("get_cfg", [_cfg_file, _cfg_dict, _cfg_pydantic])

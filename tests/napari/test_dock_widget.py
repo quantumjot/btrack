@@ -50,7 +50,7 @@ def test_config_to_widgets_round_trip(track_widget, config):
     config objects and widgets works as expected.
     """
 
-    expected_config = btrack.config.load_config(config).json()
+    expected_config = btrack.config.load_config(config).model_dump_json()
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(config)
     btrack.napari.sync.update_widgets_from_config(
@@ -60,7 +60,7 @@ def test_config_to_widgets_round_trip(track_widget, config):
         unscaled_config, track_widget
     )
 
-    actual_config = unscaled_config.scale_config().json()
+    actual_config = unscaled_config.scale_config().model_dump_json()
 
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(actual_config) == json.loads(expected_config)
@@ -75,7 +75,7 @@ def test_save_button(track_widget):
     unscaled_config.tracker_config.name = (
         "cell"  # this is done in in the gui too
     )
-    expected_config = unscaled_config.scale_config().json()
+    expected_config = unscaled_config.scale_config().model_dump_json()
 
     with patch(
         "btrack.napari.widgets.save_path_dialogue_box"
@@ -83,7 +83,9 @@ def test_save_button(track_widget):
         save_path_dialogue_box.return_value = "user_config.json"
         track_widget.save_config_button.clicked()
 
-    actual_config = btrack.config.load_config("user_config.json").json()
+    actual_config = btrack.config.load_config(
+        "user_config.json"
+    ).model_dump_json()
 
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(expected_config) == json.loads(actual_config)

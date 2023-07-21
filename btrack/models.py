@@ -92,7 +92,7 @@ class MotionModel(BaseModel):
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    @field_validator("A", "H", "P", "R", "G", "Q", pre=True)
+    @field_validator("A", "H", "P", "R", "G", "Q", mode="before")
     def parse_arrays(cls, v):
         if isinstance(v, dict):
             m = v.get("matrix", None)
@@ -180,16 +180,16 @@ class ObjectModel(BaseModel):
     start: np.ndarray
     name: str = "Default"
 
-    @field_validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def parse_array(cls, v, values):
         return np.asarray(v, dtype=float)
 
-    @field_validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def reshape_emission_transition(cls, v, values):
         shape = (values["states"], values["states"])
         return np.reshape(v, shape)
 
-    @field_validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def reshape_start(cls, v, values):
         shape = (1, values["states"])
         return np.reshape(v, shape)
@@ -275,7 +275,7 @@ class HypothesisModel(BaseModel):
     relax: bool
     name: str = "Default"
 
-    @field_validator("hypotheses", pre=True)
+    @field_validator("hypotheses", mode="before")
     def parse_hypotheses(cls, hypotheses):
         if not all(h in H_TYPES for h in hypotheses):
             raise ValueError("Unknown hypothesis type in `hypotheses`.")

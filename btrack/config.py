@@ -93,13 +93,13 @@ class TrackerConfig(BaseModel):
         constants.BayesianUpdateFeatures.MOTION,
     ]
 
-    @field_validator("volume", pre=True, always=True)
+    @field_validator("volume", mode="before", check_fields=True)
     def _parse_volume(cls, v):
         if isinstance(v, tuple):
             return ImagingVolume(*v)
         return v
 
-    @field_validator("tracking_updates", pre=True, always=True)
+    @field_validator("tracking_updates", mode="before", check_fields=True)
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):

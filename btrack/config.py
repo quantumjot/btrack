@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, conlist, field_validator
+from pydantic import BaseModel, ConfigDict, conlist, field_validator
 
 from btrack import _version
 
@@ -110,12 +110,13 @@ class TrackerConfig(BaseModel):
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
-        json_encoders = {
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True,
+        json_encoders={
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
+    )
 
 
 def load_config(filename: os.PathLike) -> TrackerConfig:

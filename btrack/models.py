@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
@@ -148,9 +148,9 @@ class MotionModel(BaseModel):
             values["Q"] = G.T @ G
         return values
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, validate_assignment=True
+    )
 
 
 class ObjectModel(BaseModel):
@@ -194,9 +194,9 @@ class ObjectModel(BaseModel):
         shape = (1, values["states"])
         return np.reshape(v, shape)
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True, validate_assignment=True
+    )
 
 
 class HypothesisModel(BaseModel):
@@ -301,5 +301,4 @@ class HypothesisModel(BaseModel):
         h_params.hypotheses_to_generate = self.hypotheses_to_generate()
         return h_params
 
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)

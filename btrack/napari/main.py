@@ -12,8 +12,6 @@ if TYPE_CHECKING:
 
 import logging
 
-from qtpy import QtWidgets
-
 import napari
 
 import btrack
@@ -80,9 +78,9 @@ def create_btrack_widget() -> Container:
     )
 
     # there are lots of widgets so make the container scrollable
-    scroll = QtWidgets.QScrollArea()
-    scroll.setWidget(btrack_widget._widget._qwidget)
-    btrack_widget._widget._qwidget = scroll
+    # scroll = QtWidgets.QScrollArea()
+    # scroll.setWidget(btrack_widget._widget._qwidget)
+    # btrack_widget._widget._qwidget = scroll
 
     return btrack_widget
 

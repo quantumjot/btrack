@@ -59,6 +59,11 @@ class BtrackWidget(QtWidgets.QWidget):
             **self._hypothesis_model_widgets,
             **self._control_buttons,
         }
+        for name, widget in self._widgets:
+            self.__setattr__(
+                name=name,
+                value=widget,
+            )
 
     def _add_input_widgets(self):
         """Create input widgets and add to main layout"""

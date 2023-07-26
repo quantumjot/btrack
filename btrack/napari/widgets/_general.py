@@ -1,15 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Widget
+from qtpy import QtWidgets
 
 import magicgui
 import napari
 
 
-def create_input_widgets() -> list[Widget]:
+def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
     segmentation_tooltip = (
@@ -42,43 +39,38 @@ def create_input_widgets() -> list[Widget]:
     return [segmentation, config]
 
 
-def create_update_method_widgets() -> list[Widget]:
+def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for selecting the update method"""
 
-    update_method_tooltip = (
+    update_method = QtWidgets.QComboBox()
+    update_method.addItems(
+        [
+            "EXACT",
+            "APPROXIMATE",
+        ]
+    )
+    update_method.setTooltip(
         "Select the update method.\n"
         "EXACT: exact calculation of Bayesian belief matrix.\n"
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
         "more than 1000 particles per frame."
     )
-    update_method = magicgui.widgets.create_widget(
-        value="EXACT",
-        name="update_method",
-        label="update method",
-        widget_type="ComboBox",
-        options={
-            "choices": ["EXACT", "APPROXIMATE"],
-            "tooltip": update_method_tooltip,
-        },
-    )
+    update_method_widgets = {"update method": update_method}
 
-    # TODO: this widget should be hidden when the update method is set to EXACT
-    max_search_radius_tooltip = (
+    max_search_radius = QtWidgets.QSPinBox()
+    max_search_radius.setRange(0, 1000)
+    max_search_radius.setSingleStep(1)
+    max_search_radius.setWrapping(True)  # noqa: FBT003
+    max_search_radius.setTooltip = (
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    max_search_radius = magicgui.widgets.create_widget(
-        value=100,
-        name="max_search_radius",
-        label="search radius",
-        widget_type="SpinBox",
-        options={"tooltip": max_search_radius_tooltip},
-    )
+    update_method_widgets["search radius"] = max_search_radius
 
-    return [update_method, max_search_radius]
+    return create_update_method_widgets()
 
 
-def create_control_widgets() -> list[Widget]:
+def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for running the analysis or handling I/O.
 
     This includes widgets for running the tracking, saving and loading
@@ -104,14 +96,10 @@ def create_control_widgets() -> list[Widget]:
         "Run the tracking analysis with the current configuration.",
     ]
 
-    control_buttons = []
+    control_buttons = {}
     for name, label, tooltip in zip(names, labels, tooltips):
-        widget = magicgui.widgets.create_widget(
-            name=name,
-            label=label,
-            widget_type="PushButton",
-            options={"tooltip": tooltip},
-        )
-        control_buttons.append(widget)
+        control_buttons[name] = QtWidgets.QPushButton()
+        control_buttons[name].setText(label)
+        control_buttons[name].setToolTip(tooltip)
 
     return control_buttons

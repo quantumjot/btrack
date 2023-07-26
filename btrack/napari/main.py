@@ -12,9 +12,8 @@ if TYPE_CHECKING:
 
 import logging
 
-import qtpy.QtWidgets
+from qtpy import QtWidgets
 
-import magicgui.widgets
 import napari
 
 import btrack
@@ -49,11 +48,9 @@ def create_btrack_widget() -> Container:
 
     # First create our UI along with some default configs for the widgets
     all_configs = btrack.napari.config.create_default_configs()
-    widgets = btrack.napari.widgets.create_widgets()
-    btrack_widget = magicgui.widgets.Container(
-        widgets=widgets, scrollable=True
+    btrack_widget = btrack.napari.BtrackWidget(
+        viewer=napari.current_viewer(),
     )
-    btrack_widget.viewer = napari.current_viewer()
 
     # Set the cell_config defaults in the gui
     btrack.napari.sync.update_widgets_from_config(
@@ -83,7 +80,7 @@ def create_btrack_widget() -> Container:
     )
 
     # there are lots of widgets so make the container scrollable
-    scroll = qtpy.QtWidgets.QScrollArea()
+    scroll = QtWidgets.QScrollArea()
     scroll.setWidget(btrack_widget._widget._qwidget)
     btrack_widget._widget._qwidget = scroll
 

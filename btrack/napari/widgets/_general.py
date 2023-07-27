@@ -52,10 +52,7 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
         "method is 'APPROXIMATE'"
     )
     max_search_radius.setWrapping(w=True)
-    widgets["max_search_radius"] = (
-        "search radius",
-        max_search_radius,
-    )
+    widgets["max_search_radius"] = ("search radius", max_search_radius)
 
     return widgets
 

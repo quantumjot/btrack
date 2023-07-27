@@ -58,12 +58,12 @@ def create_btrack_widget() -> QtWidgets.QWidget:
 
     # Add any existing Labels layers to the segmentation selector
     add_existing_labels(
-        viewer=btrack_widget._viewer,
+        viewer=btrack_widget.viewer,
         combobox=btrack_widget.segmentation,
     )
 
     # Now set the callbacks
-    btrack_widget._viewer.layers.events.inserted.connect(
+    btrack_widget.viewer.layers.events.inserted.connect(
         lambda event: select_inserted_labels(
             new_layer=event.value,
             combobox=btrack_widget.segmentation,
@@ -193,10 +193,10 @@ def run(btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs) -> None:
 
     config = unscaled_config.scale_config()
     segmentation_name = btrack_widget.segmentation.currentText()
-    segmentation = btrack_widget._viewer.layers[segmentation_name]
+    segmentation = btrack_widget.viewer.layers[segmentation_name]
     data, properties, graph = _run_tracker(segmentation, config)
 
-    btrack_widget._viewer.add_tracks(
+    btrack_widget.viewer.add_tracks(
         data=data,
         properties=properties,
         graph=graph,

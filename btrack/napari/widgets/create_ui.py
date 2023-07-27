@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from qtpy import QtWidgets
+from qtpy.QtCore import Qt
 
 from napari.viewer import Viewer
 
@@ -25,23 +26,30 @@ def create_widgets() -> dict[str, QtWidgets.QWidget]:
     )
 
 
-class BtrackWidget(QtWidgets.QWidget):
+class BtrackWidget(QtWidgets.QScrollArea):
     """Main btrack widget"""
 
     def __getitem__(self, key: str) -> QtWidgets.QWidgets:
         return self._widgets[key]
 
     def __init__(self, napari_viewer: Viewer) -> None:
-        """Instansiates the primary widget in napari.
+        """Instantiates the primary widget in napari.
 
         Args:
             napari_viewer: A napari viewer instance
         """
         super().__init__()
 
+        # We will need to viewer for various callbacks
         self._viewer = napari_viewer
-        self._layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self._layout)
+
+        # Let the scroll area automatically resize the widget
+        self.setWidgetResizable(True)
+
+        self._scroll_layout = QtWidgets.QVBoxLayout()
+        self._scroll_widget = QtWidgets.QWidget()
+        self._scroll_widget.setLayout(self._scroll_layout)
+        self.setWidget(self._scroll_widget)
 
         # Create widgets and add to layout
         self._widgets = {}
@@ -69,7 +77,7 @@ class BtrackWidget(QtWidgets.QWidget):
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._layout.addWidget(widget_holder)
+        self._scroll_layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self):
         """Create update method widgets and add to main layout"""
@@ -84,7 +92,7 @@ class BtrackWidget(QtWidgets.QWidget):
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._layout.addWidget(widget_holder)
+        self._scroll_layout.addWidget(widget_holder)
 
     def _add_motion_model_widgets(self):
         """Create motion model widgets and add to main layout"""
@@ -99,7 +107,7 @@ class BtrackWidget(QtWidgets.QWidget):
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._layout.addWidget(widget_holder)
+        self._scroll_layout.addWidget(widget_holder)
 
     def _add_hypothesis_model_widgets(self):
         """Create hypothesis model widgets and add to main layout"""
@@ -114,7 +122,7 @@ class BtrackWidget(QtWidgets.QWidget):
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._layout.addWidget(widget_holder)
+        self._scroll_layout.addWidget(widget_holder)
 
     def _add_control_buttons_widgets(self):
         """Create control buttons widgets and add to main layout"""
@@ -122,4 +130,4 @@ class BtrackWidget(QtWidgets.QWidget):
         self._widgets.update(self._control_buttons_widgets)
 
         for widget in self._control_buttons_widgets.values():
-            self._layout.addWidget(widget)
+            self._scroll_layout.addWidget(widget)

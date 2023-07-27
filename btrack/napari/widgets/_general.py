@@ -47,11 +47,11 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
     max_search_radius = QtWidgets.QSPinBox()
     max_search_radius.setRange(0, 1000)
     max_search_radius.setSingleStep(1)
-    max_search_radius.setWrapping(w=True)
     max_search_radius.setToolTip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
+    max_search_radius.setWrapping(w=True)
     update_method_widgets["max_search_radius"] = (
         "search radius",
         max_search_radius,

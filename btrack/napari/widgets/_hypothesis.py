@@ -22,8 +22,8 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
     hypotheses_widgets = {}
     for hypothesis, tooltip in zip(hypotheses, tooltips):
         widget = QtWidgets.QCheckBox()
-        widget.setToolTip(tooltip)
         widget.setCheckState(state=True)
+        widget.setToolTip(tooltip)
         hypotheses_widgets[hypothesis] = (hypothesis, widget)
 
     # P_FP is always required
@@ -148,12 +148,12 @@ def create_hypothesis_model_widgets() -> dict[str, QtWidgets.QWidget]:
     widgets["segmentation_miss_rate"] = ("miss rate", segmentation_miss_rate)
 
     relax = QtWidgets.QCheckBox()
+    relax.setCheckState(state=True)
     relax.setToolTip(
         "Disable the time and distance thresholds.\n"
         "This means that tracks can initialize or terminate anywhere and"
         "at any time in the dataset."
     )
-    relax.setCheckState(state=True)
     widgets["relax"] = ("relax thresholds", relax)
 
     return widgets

@@ -7,10 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from qtpy import QtWidgets
+
     from btrack.config import TrackerConfig
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
-
-from qtpy import QtWidgets
 
 import btrack.napari.constants
 

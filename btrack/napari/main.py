@@ -4,13 +4,12 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import numpy.typing as npt
+    from qtpy import QtWidgets
 
     from btrack.config import TrackerConfig
     from btrack.napari.config import TrackerConfigs
 
 import logging
-
-from qtpy import QtWidgets
 
 import napari
 

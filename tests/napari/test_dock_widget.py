@@ -89,7 +89,7 @@ def test_load_config(track_widget):
     """Tests that another TrackerConfig can be loaded and made the current config."""
 
     # this is set to be 'cell' rather than 'Default'
-    original_config_name = track_widget.config.current_choice
+    original_config_name = track_widget.config.currentText()
 
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
@@ -98,7 +98,7 @@ def test_load_config(track_widget):
         track_widget.load_config_button.clicked()
 
     # We didn't override the name, so it should be 'Default'
-    new_config_name = track_widget.config.current_choice
+    new_config_name = track_widget.config.currentText()
 
     assert track_widget.config.value == "Default"
     assert new_config_name != original_config_name
@@ -150,8 +150,12 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         track_widget.viewer.add_labels(segmentation)
 
         # we need to explicitly add the layer to the ComboBox
-        image_layer = track_widget.viewer.layers[0]
-        track_widget.segmentation.set_choice(image_layer.name, image_layer)
+        track_widget.segmentation.setCurrentIndex(0)
+        track_widget.segmentation.setCurrentText(
+            track_widget.viewer.layers[
+                track_widget.segmentation.currentIndex()
+            ].name
+        )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
         track_widget.call_button.clicked()

@@ -130,23 +130,39 @@ def select_inserted_labels(
     combobox.addItem(new_layer.name)
     combobox.setCurrentText(new_layer.name)
 
+    # Update layer name when it changes
+    viewer = napari.current_viewer()
+    new_layer.events.name.connect(
+        lambda event: update_labels_name(
+            layer=event.source,
+            labels_layers=[
+                layer
+                for layer in viewer.layers
+                if isinstance(layer, napari.layers.Labels)
+            ],
+            combobox=combobox,
+        ),
+    )
 
-# TODO: automatically update layer name in QComboBox when it is changed in the viewer
-def update_image_name(
+
+def update_labels_name(
     layer: napari.layers.Layer,
-    new_name: str,
-    widget: QtWidgets.QComboBox,
+    labels_layers: list[napari.layer.Layer],
+    combobox: QtWidgets.QComboBox,
 ):
     """Update the name of an Labels layer"""
 
     if not isinstance(layer, napari.layers.Labels):
         message = (
-            f"Not selecting new layer {layer.name} as input for the "
+            f"Not updating name of layer {layer.name} as input for the "
             f"segmentation widget as {layer.name} is {type(layer)} "
-            "layer not an Image layer."
+            "layer not a Labels layer."
         )
         logger.debug(message)
         return
+
+    layer_index = [layer.name for layer in labels_layers].index(layer.name)
+    combobox.setItemText(layer_index, layer.name)
 
 
 def select_config(

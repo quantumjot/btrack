@@ -21,7 +21,7 @@ def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
         "Select a loaded configuration.\n"
         "Note, this will update values set below."
     )
-    widgets["config"] = ("config", config)
+    widgets["config"] = ("config name", config)
 
     return widgets
 
@@ -42,7 +42,7 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
         "more than 1000 particles per frame."
     )
-    update_method_widgets = {"update method": update_method}
+    update_method_widgets = {"update_method": ("update method", update_method)}
 
     max_search_radius = QtWidgets.QSPinBox()
     max_search_radius.setRange(0, 1000)
@@ -52,7 +52,10 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    update_method_widgets["search radius"] = max_search_radius
+    update_method_widgets["max_search_radius"] = (
+        "search radius",
+        max_search_radius,
+    )
 
     return create_update_method_widgets()
 
@@ -85,8 +88,9 @@ def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
 
     control_buttons = {}
     for name, label, tooltip in zip(names, labels, tooltips):
-        control_buttons[name] = QtWidgets.QPushButton()
-        control_buttons[name].setText(label)
-        control_buttons[name].setToolTip(tooltip)
+        widget = QtWidgets.QPushButton()
+        widget.setText(label)
+        widget.setToolTip(tooltip)
+        control_buttons[name] = ("", widget)
 
     return control_buttons

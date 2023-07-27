@@ -42,7 +42,7 @@ def update_config_from_widgets(
     hypothesis_model = config.hypothesis_model
     hypothesis_model.hypotheses = [
         hypothesis
-        for hypothesis in btrack.napari.constants.HYPOTHESES
+        for hypothesis in btrack.optimise.hypothesis.H_TYPES
         if container[hypothesis].isChecked()
     ]
 
@@ -89,7 +89,7 @@ def update_widgets_from_config(
 
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
-    for hypothesis in btrack.napari.constants.HYPOTHESES:
+    for hypothesis in btrack.optimise.hypothesis.H_TYPES:
         is_checked = hypothesis in hypothesis_model.hypotheses
         container[hypothesis].value = is_checked
 

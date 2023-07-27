@@ -70,6 +70,13 @@ def create_btrack_widget() -> QtWidgets.QWidget:
         ),
     )
 
+    btrack_widget.viewer.layers.events.removed.connect(
+        lambda event: remove_deleted_labels(
+            deleted_layer=event.value,
+            combobox=btrack_widget.segmentation,
+        ),
+    )
+
     btrack_widget.config.currentTextChanged.connect(
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
@@ -163,6 +170,25 @@ def update_labels_name(
 
     layer_index = [layer.name for layer in labels_layers].index(layer.name)
     combobox.setItemText(layer_index, layer.name)
+
+
+def remove_deleted_labels(
+    deleted_layer: napari.layers.Layer,
+    combobox: QtWidgets.QComboBox,
+):
+    """Remove the deleted Labels layer name from the combobox"""
+
+    if not isinstance(deleted_layer, napari.layers.Labels):
+        message = (
+            f"Not deleting layer {deleted_layer.name} from the segmentation "
+            f"widget as {deleted_layer.name} is {type(deleted_layer)} "
+            "layer not an Labels layer."
+        )
+        logger.debug(message)
+        return
+
+    layer_index = combobox.findText(deleted_layer.name)
+    combobox.removeItem(layer_index)
 
 
 def select_config(

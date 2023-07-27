@@ -24,7 +24,7 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
         widget = QtWidgets.QCheckBox()
         widget.setCheckState(True)  # noqa: FBT003
         widget.setToolTip(tooltip)
-        widget.setTrisgtate(False)  # noqa: FBT003
+        widget.setTristate(False)  # noqa: FBT003
         hypotheses_widgets[hypothesis] = (hypothesis, widget)
 
     # P_FP is always required

@@ -56,11 +56,17 @@ def create_btrack_widget() -> QtWidgets.QWidget:
         container=btrack_widget,
     )
 
+    # Add any existing Labels layers to the segmentation selector
+    add_existing_labels(
+        viewer=btrack_widget._viewer,
+        combobox=btrack_widget.segmentation,
+    )
+
     # Now set the callbacks
     btrack_widget._viewer.layers.events.inserted.connect(
         lambda event: select_inserted_labels(
             new_layer=event.value,
-            widget=btrack_widget.segmentation,
+            combobox=btrack_widget.segmentation,
         ),
     )
 
@@ -92,9 +98,23 @@ def create_btrack_widget() -> QtWidgets.QWidget:
     return btrack_widget
 
 
+def add_existing_labels(
+    viewer: napari.Viewer,
+    combobox: QtWidgets.QComboBox,
+):
+    """Add all existing Labels layers in the viewer to a combobox"""
+
+    labels_layers = [
+        layer.name
+        for layer in viewer.layers
+        if isinstance(layer, napari.layers.Labels)
+    ]
+    combobox.addItems(labels_layers)
+
+
 def select_inserted_labels(
     new_layer: napari.layers.Layer,
-    widget: QtWidgets.QComboBox,
+    combobox: QtWidgets.QComboBox,
 ):
     """Update the selected Labels when a labels layer is added"""
 
@@ -107,8 +127,8 @@ def select_inserted_labels(
         logger.debug(message)
         return
 
-    widget.addItem(new_layer.name)
-    widget.setCurrentText(new_layer.name)
+    combobox.addItem(new_layer.name)
+    combobox.setCurrentText(new_layer.name)
 
 
 # TODO: automatically update layer name in QComboBox when it is changed in the viewer

@@ -2,41 +2,30 @@ from __future__ import annotations
 
 from qtpy import QtWidgets
 
-import magicgui
-import napari
-
 
 def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
-    segmentation_tooltip = (
+    # TODO: annotation=napari.layers.Labels,
+    segmentation = QtWidgets.QComboBox()
+    segmentation.setName("segmentation")
+    segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"
         "To use an 'Image' layer, first convert 'Labels' by right-clicking "
         "on it in the layers list, and clicking on 'Convert to Labels'"
     )
-    segmentation = magicgui.widgets.create_widget(
-        annotation=napari.layers.Labels,
-        name="segmentation",
-        label="segmentation",
-        options={"tooltip": segmentation_tooltip},
-    )
+    widgets = {"segmentation": segmentation}
 
-    config_tooltip = (
+    config = QtWidgets.QComboBox()
+    config.addItems(["cell", "particle"])
+    config.setName("config")
+    config.setTooltip(
         "Select a loaded configuration.\n"
         "Note, this will update values set below."
     )
-    config = magicgui.widgets.create_widget(
-        value="cell",
-        name="config",
-        label="config name",
-        widget_type="ComboBox",
-        options={
-            "choices": ["cell", "particle"],
-            "tooltip": config_tooltip,
-        },
-    )
+    widgets["config"] = config
 
-    return [segmentation, config]
+    return widgets
 
 
 def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:

@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from qtpy import QtWidgets
 
-import magicgui
-
 
 def _make_label_bold(label: str) -> str:
     """Generate html for a bold label"""
@@ -14,81 +12,55 @@ def _make_label_bold(label: str) -> str:
 def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for setting the magnitudes of the MotionModel matrices"""
 
-    P_sigma_tooltip = (
+    P_sigma = QtWidgets.QDoubleSpinBox()
+    P_sigma.setName(f"max({_make_label_bold('P')})")
+    P_sigma.setToolTip(
         "Magnitude of error in initial estimates.\n"
         "Used to scale the matrix P."
     )
-    P_sigma = magicgui.widgets.create_widget(
-        value=150.0,
-        name="P_sigma",
-        label=f"max({_make_label_bold('P')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": P_sigma_tooltip},
-    )
+    P_sigma.setValue(150.0)
+    widgets = {"P_sigma": P_sigma}
 
-    G_sigma_tooltip = (
+    G_sigma = QtWidgets.QDoubleSpinBox()
+    G_sigma.setName(f"max({_make_label_bold('G')})")
+    G_sigma.setToolTip(
         "Magnitude of error in process.\n Used to scale the matrix G."
     )
-    G_sigma = magicgui.widgets.create_widget(
-        value=15.0,
-        name="G_sigma",
-        label=f"max({_make_label_bold('G')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": G_sigma_tooltip},
-    )
+    G_sigma.setValue(15.0)
+    widgets["G_sigma"] = G_sigma
 
-    R_sigma_tooltip = (
+    R_sigma = QtWidgets.QDoubleSpinBox()
+    R_sigma.setName(f"max({_make_label_bold('R')})")
+    R_sigma.setToolTip(
         "Magnitude of error in measurements.\n Used to scale the matrix R."
     )
-    R_sigma = magicgui.widgets.create_widget(
-        value=5.0,
-        name="R_sigma",
-        label=f"max({_make_label_bold('R')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": R_sigma_tooltip},
-    )
+    R_sigma.setValue(5.0)
+    widgets["R_sigma"] = R_sigma
 
-    return [
-        P_sigma,
-        G_sigma,
-        R_sigma,
-    ]
+    return widgets
 
 
 def create_motion_model_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for setting parameters of the MotionModel"""
 
-    motion_model_label = magicgui.widgets.create_widget(
-        label=_make_label_bold("Motion model"),
-        widget_type="Label",
-        gui_only=True,
-    )
+    motion_model_label = QtWidgets.QLabel()
+    motion_model_label.setName(_make_label_bold("Motion model"))
+    widgets = {"motion_model": motion_model_label}
 
-    sigma_widgets = _create_sigma_widgets()
+    widgets |= _create_sigma_widgets()
 
-    accuracy_tooltip = "Integration limits for calculating probabilities"
-    accuracy = magicgui.widgets.create_widget(
-        value=7.5,
-        name="accuracy",
-        label="accuracy",
-        widget_type="FloatSpinBox",
-        options={"tooltip": accuracy_tooltip},
-    )
+    accuracy = QtWidgets.QDoubleSpinBox()
+    accuracy.setName("accuracy")
+    accuracy.setToolTip("Integration limits for calculating probabilities")
+    accuracy.setValue(7.5)
+    widgets["accuracy"] = accuracy
 
-    max_lost_frames_tooltip = (
+    max_lost_frames = QtWidgets.QSpinBox()
+    max_lost_frames.setName("max lost")
+    max_lost_frames.setToolTip(
         "Number of frames without observation before marking as lost"
     )
-    max_lost_frames = magicgui.widgets.create_widget(
-        value=5,
-        name="max_lost",
-        label="max lost",
-        widget_type="SpinBox",
-        options={"tooltip": max_lost_frames_tooltip},
-    )
+    max_lost_frames.setValue(5)
+    widgets["max_lost"] = max_lost_frames
 
-    return [
-        motion_model_label,
-        *sigma_widgets,
-        accuracy,
-        max_lost_frames,
-    ]
+    return widgets

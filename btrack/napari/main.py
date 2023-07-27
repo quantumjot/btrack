@@ -58,7 +58,7 @@ def create_btrack_widget() -> QtWidgets.QWidget:
 
     # Now set the callbacks
     btrack_widget._viewer.layers.events.inserted.connect(
-        lambda event: select_inserted_image(
+        lambda event: select_inserted_labels(
             new_layer=event.value,
             widget=btrack_widget.segmentation,
         ),
@@ -92,17 +92,17 @@ def create_btrack_widget() -> QtWidgets.QWidget:
     return btrack_widget
 
 
-def select_inserted_image(
+def select_inserted_labels(
     new_layer: napari.layers.Layer,
     widget: QtWidgets.QComboBox,
 ):
-    """Update the selected Image when a image layer is added"""
+    """Update the selected Labels when a labels layer is added"""
 
-    if not isinstance(new_layer, napari.layers.Image):
+    if not isinstance(new_layer, napari.layers.Labels):
         message = (
             f"Not selecting new layer {new_layer.name} as input for the "
             f"segmentation widget as {new_layer.name} is {type(new_layer)} "
-            "layer not an Image layer."
+            "layer not an Labels layer."
         )
         logger.debug(message)
         return
@@ -117,9 +117,9 @@ def update_image_name(
     new_name: str,
     widget: QtWidgets.QComboBox,
 ):
-    """Update the name of an Image layer"""
+    """Update the name of an Labels layer"""
 
-    if not isinstance(layer, napari.layers.Image):
+    if not isinstance(layer, napari.layers.Labels):
         message = (
             f"Not selecting new layer {layer.name} as input for the "
             f"segmentation widget as {layer.name} is {type(layer)} "

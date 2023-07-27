@@ -7,17 +7,17 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from magicgui.widgets import Container
-
     from btrack.config import TrackerConfig
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
+
+from qtpy import QtWidgets
 
 import btrack.napari.constants
 
 
 def update_config_from_widgets(
     unscaled_config: UnscaledTrackerConfig,
-    container: Container,
+    container: QtWidgets.QWidget,
 ) -> TrackerConfig:
     """Update an UnscaledTrackerConfig with the current widget values."""
 
@@ -67,8 +67,8 @@ def update_config_from_widgets(
 
 def update_widgets_from_config(
     unscaled_config: UnscaledTrackerConfig,
-    container: Container,
-) -> Container:
+    container: QtWidgets.QWidget,
+) -> QtWidgets.QWidget:
     """
     Update the widgets in a container with the values in an
     UnscaledTrackerConfig.

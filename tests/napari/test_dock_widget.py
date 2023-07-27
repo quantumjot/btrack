@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Container
-
 import json
 from unittest.mock import patch
 
 import numpy as np
 import numpy.typing as npt
 import pytest
+from qtpy import QtWidgets
 
 import napari
 
@@ -38,7 +34,7 @@ def test_add_widget(make_napari_viewer):
 
 
 @pytest.fixture
-def track_widget(make_napari_viewer) -> Container:
+def track_widget(make_napari_viewer) -> QtWidgets.QWidget:
     """Provides an instance of the track widget to test"""
     make_napari_viewer()  # make sure there is a viewer available
     return btrack.napari.main.create_btrack_widget()

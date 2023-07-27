@@ -28,6 +28,9 @@ def create_widgets() -> dict[str, QtWidgets.QWidget]:
 class BtrackWidget(QtWidgets.QWidget):
     """Main btrack widget"""
 
+    def __getitem__(self, key: str) -> QtWidgets.QWidgets:
+        return self._widgets[key]
+
     def __init__(self, napari_viewer: Viewer) -> None:
         """Instansiates the primary widget in napari.
 
@@ -49,8 +52,8 @@ class BtrackWidget(QtWidgets.QWidget):
         self._add_control_buttons_widgets()
         for name, widget in self._widgets.items():
             self.__setattr__(
-                name=name,
-                value=widget,
+                name,
+                widget,
             )
 
     def _add_input_widgets(self):
@@ -61,12 +64,12 @@ class BtrackWidget(QtWidgets.QWidget):
         }
         self._widgets.update(self._input_widgets)
 
-        widget = QtWidgets.QWidget()
+        widget_holder = QtWidgets.QGroupBox("Input")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(label, widget)
-        widget.setLayout(layout)
-        self._layout.addWidget(widget)
+            layout.addRow(QtWidgets.QLabel(label), widget)
+        widget_holder.setLayout(layout)
+        self._layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self):
         """Create update method widgets and add to main layout"""
@@ -76,12 +79,12 @@ class BtrackWidget(QtWidgets.QWidget):
         }
         self._widgets.update(self._update_method_widgets)
 
-        widget = QtWidgets.QWidget()
+        widget_holder = QtWidgets.QGroupBox("Method")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(label, widget)
-        widget.setLayout(layout)
-        self._layout.addWidget(widget)
+            layout.addRow(QtWidgets.QLabel(label), widget)
+        widget_holder.setLayout(layout)
+        self._layout.addWidget(widget_holder)
 
     def _add_motion_model_widgets(self):
         """Create motion model widgets and add to main layout"""
@@ -91,12 +94,12 @@ class BtrackWidget(QtWidgets.QWidget):
         }
         self._widgets.update(self._motion_model_widgets)
 
-        widget = QtWidgets.QWidget()
+        widget_holder = QtWidgets.QGroupBox("Motion")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(label, widget)
-        widget.setLayout(layout)
-        self._layout.addWidget(widget)
+            layout.addRow(QtWidgets.QLabel(label), widget)
+        widget_holder.setLayout(layout)
+        self._layout.addWidget(widget_holder)
 
     def _add_hypothesis_model_widgets(self):
         """Create hypothesis model widgets and add to main layout"""
@@ -106,12 +109,12 @@ class BtrackWidget(QtWidgets.QWidget):
         }
         self._widgets.update(self._hypothesis_model_widgets)
 
-        widget = QtWidgets.QWidget()
+        widget_holder = QtWidgets.QGroupBox("Hypothesis")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(label, widget)
-        widget.setLayout(layout)
-        self._layout.addWidget(widget)
+            layout.addRow(QtWidgets.QLabel(label), widget)
+        widget_holder.setLayout(layout)
+        self._layout.addWidget(widget_holder)
 
     def _add_control_buttons_widgets(self):
         """Create control buttons widgets and add to main layout"""

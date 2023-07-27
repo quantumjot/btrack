@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import numpy.typing as npt
 
-    from magicgui.widgets import Container
-
     from btrack.config import TrackerConfig
     from btrack.napari.config import TrackerConfigs
 
@@ -59,23 +57,23 @@ def create_btrack_widget() -> QtWidgets.QWidget:
     )
 
     # Now set the callbacks
-    btrack_widget.config.changed.connect(
+    btrack_widget.config.currentTextChanged.connect(
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
-    btrack_widget.call_button.changed.connect(
+    btrack_widget.call_button.clicked.connect(
         lambda: run(btrack_widget, all_configs),
     )
 
-    btrack_widget.reset_button.changed.connect(
+    btrack_widget.reset_button.clicked.connect(
         lambda: restore_defaults(btrack_widget, all_configs),
     )
 
-    btrack_widget.save_config_button.changed.connect(
+    btrack_widget.save_config_button.clicked.connect(
         lambda: save_config_to_json(btrack_widget, all_configs)
     )
 
-    btrack_widget.load_config_button.changed.connect(
+    btrack_widget.load_config_button.clicked.connect(
         lambda: load_config_from_json(btrack_widget, all_configs)
     )
 
@@ -88,7 +86,7 @@ def create_btrack_widget() -> QtWidgets.QWidget:
 
 
 def select_config(
-    btrack_widget: Container,
+    btrack_widget: QtWidgets.QWidget,
     configs: TrackerConfigs,
     new_config_name: str,
 ) -> None:
@@ -111,7 +109,7 @@ def select_config(
     )
 
 
-def run(btrack_widget: Container, configs: TrackerConfigs) -> None:
+def run(btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs) -> None:
     """
     Update the TrackerConfig from widget values, run tracking,
     and add tracks to the viewer.
@@ -172,7 +170,7 @@ def _run_tracker(
 
 
 def restore_defaults(
-    btrack_widget: Container, configs: TrackerConfigs
+    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
 ) -> None:
     """Reload the config file then set widgets to the config's default values."""
 
@@ -192,7 +190,7 @@ def restore_defaults(
 
 
 def save_config_to_json(
-    btrack_widget: Container, configs: TrackerConfigs
+    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
 ) -> None:
     """Save widget values to file"""
 
@@ -216,7 +214,7 @@ def save_config_to_json(
 
 
 def load_config_from_json(
-    btrack_widget: Container, configs: TrackerConfigs
+    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
 ) -> None:
     """Load a config from file and set it as the selected base config"""
 

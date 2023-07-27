@@ -44,14 +44,14 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
     )
     widgets = {"update_method": ("update method", update_method)}
 
-    max_search_radius = QtWidgets.QSPinBox()
+    max_search_radius = QtWidgets.QSpinBox()
     max_search_radius.setRange(0, 1000)
     max_search_radius.setSingleStep(1)
     max_search_radius.setToolTip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    max_search_radius.setWrapping(w=True)
+    max_search_radius.setWrapping(True)  # noqa: FBT003
     widgets["max_search_radius"] = ("search radius", max_search_radius)
 
     return widgets
@@ -88,6 +88,6 @@ def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
         widget = QtWidgets.QPushButton()
         widget.setText(label)
         widget.setToolTip(tooltip)
-        control_buttons[name] = ("", widget)
+        control_buttons[name] = widget
 
     return control_buttons

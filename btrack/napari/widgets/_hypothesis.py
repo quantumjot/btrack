@@ -22,16 +22,16 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
     hypotheses_widgets = {}
     for hypothesis, tooltip in zip(hypotheses, tooltips):
         widget = QtWidgets.QCheckBox()
-        widget.setCheckState(state=True)
+        widget.setCheckState(True)  # noqa: FBT003
         widget.setToolTip(tooltip)
         hypotheses_widgets[hypothesis] = (hypothesis, widget)
 
     # P_FP is always required
-    P_FP_hypothesis = hypotheses_widgets[0]
+    P_FP_hypothesis = hypotheses_widgets["P_FP"][1]
     P_FP_hypothesis.enabled = False
 
     # P_merge should be disabled by default
-    P_merge_hypothesis = hypotheses_widgets[-1]
+    P_merge_hypothesis = hypotheses_widgets["P_merge"][1]
     P_merge_hypothesis.value = False
 
     return hypotheses_widgets
@@ -60,7 +60,7 @@ def _create_scaling_factor_widgets() -> dict[str, QtWidgets.QWidget]:
         "Scaling factor for the influence of cell state and position on division (mitosis/branching) probability.",  # noqa: E501
     ]
 
-    scaling_factor_widgets = []
+    scaling_factor_widgets = {}
     for value, name, label, tooltip in zip(
         widget_values, names, labels, tooltips
     ):
@@ -148,7 +148,7 @@ def create_hypothesis_model_widgets() -> dict[str, QtWidgets.QWidget]:
     widgets["segmentation_miss_rate"] = ("miss rate", segmentation_miss_rate)
 
     relax = QtWidgets.QCheckBox()
-    relax.setCheckState(state=True)
+    relax.setCheckState(True)  # noqa: FBT003
     relax.setToolTip(
         "Disable the time and distance thresholds.\n"
         "This means that tracks can initialize or terminate anywhere and"

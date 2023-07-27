@@ -28,10 +28,8 @@ def update_config_from_widgets(
 
     # Update TrackerConfig values
     config = unscaled_config.tracker_config
-    update_method_name = container.update_method.current_choice
-    update_method_index = container.update_method.choices.index(
-        update_method_name
-    )
+    update_method_index = container.update_method.currentIndex()
+
     config.update_method = update_method_index
     config.max_search_radius = container.max_search_radius.value
 
@@ -45,7 +43,7 @@ def update_config_from_widgets(
     hypothesis_model.hypotheses = [
         hypothesis
         for hypothesis in btrack.napari.constants.HYPOTHESES
-        if container[hypothesis].value
+        if container[hypothesis].isChecked()
     ]
 
     # Update HypothesisModel scaling factors

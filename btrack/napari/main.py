@@ -57,6 +57,13 @@ def create_btrack_widget() -> QtWidgets.QWidget:
     )
 
     # Now set the callbacks
+    btrack_widget._viewer.layers.events.inserted.connect(
+        lambda event: select_inserted_image(
+            new_layer=event.value,
+            widget=btrack_widget.segmentation,
+        ),
+    )
+
     btrack_widget.config.currentTextChanged.connect(
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
@@ -83,6 +90,25 @@ def create_btrack_widget() -> QtWidgets.QWidget:
     # btrack_widget._widget._qwidget = scroll
 
     return btrack_widget
+
+
+def select_inserted_image(
+    new_layer: napari.layers.Layer,
+    widget: QtWidgets.QComboBox,
+):
+    """Update the selected Image when a image layer is added"""
+
+    if not isinstance(new_layer, napari.layers.Image):
+        message = (
+            f"Not selecting new layer {new_layer.name} as input for the "
+            f"segmentation widget as {new_layer.name} is {type(new_layer)} "
+            "layer not an Image layer."
+        )
+        logger.debug(message)
+        return
+
+    widget.addItem(new_layer.name)
+    widget.setCurrentText(new_layer.name)
 
 
 def select_config(
@@ -115,17 +141,24 @@ def run(btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs) -> None:
     and add tracks to the viewer.
     """
 
-    unscaled_config = configs[btrack_widget.config.current_choice]
+    if btrack_widget.segmentation.currentIndex() < 0:
+        napari.utils.notifications.show_error(
+            "No segmentation (Image layer) selected - cannot run tracking."
+        )
+        return
+
+    unscaled_config = configs[btrack_widget.config.currentText()]
     unscaled_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         container=btrack_widget,
     )
 
     config = unscaled_config.scale_config()
-    segmentation = btrack_widget.segmentation.value
+    segmentation_name = btrack_widget.segmentation.currentText()
+    segmentation = btrack_widget._viewer.layers[segmentation_name]
     data, properties, graph = _run_tracker(segmentation, config)
 
-    btrack_widget.viewer.add_tracks(
+    btrack_widget._viewer.add_tracks(
         data=data,
         properties=properties,
         graph=graph,

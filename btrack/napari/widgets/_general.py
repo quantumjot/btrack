@@ -42,7 +42,7 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
         "more than 1000 particles per frame."
     )
-    update_method_widgets = {"update_method": ("update method", update_method)}
+    widgets = {"update_method": ("update method", update_method)}
 
     max_search_radius = QtWidgets.QSPinBox()
     max_search_radius.setRange(0, 1000)
@@ -52,12 +52,12 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
         "method is 'APPROXIMATE'"
     )
     max_search_radius.setWrapping(w=True)
-    update_method_widgets["max_search_radius"] = (
+    widgets["max_search_radius"] = (
         "search radius",
         max_search_radius,
     )
 
-    return create_update_method_widgets()
+    return widgets
 
 
 def create_control_widgets() -> dict[str, QtWidgets.QWidget]:

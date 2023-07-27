@@ -12,6 +12,8 @@ if TYPE_CHECKING:
 
 import logging
 
+from qtpy import QtWidgets
+
 import napari
 
 import btrack
@@ -41,7 +43,7 @@ if not logger.handlers:
     logger.setLevel(logging.DEBUG)
 
 
-def create_btrack_widget() -> Container:
+def create_btrack_widget() -> QtWidgets.QWidget:
     """Create widgets for the btrack plugin."""
 
     # First create our UI along with some default configs for the widgets

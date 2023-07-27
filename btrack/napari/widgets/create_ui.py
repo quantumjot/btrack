@@ -47,19 +47,13 @@ class BtrackWidget(QtWidgets.QWidget):
         self.setLayout(self._layout)
 
         # Create widgets and add to layout
+        self._widgets = {}
         self._add_input_widgets()
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
         self._add_control_buttons_widgets()
-        self._widgets = {
-            **self._input_widgets,
-            **self._update_method_widgets,
-            **self._motion_model_widgets,
-            **self._hypothesis_model_widgets,
-            **self._control_buttons,
-        }
-        for name, widget in self._widgets:
+        for name, widget in self._widgets.items():
             self.__setattr__(
                 name=name,
                 value=widget,
@@ -69,7 +63,7 @@ class BtrackWidget(QtWidgets.QWidget):
         """Create input widgets and add to main layout"""
         labels_and_widgets = create_input_widgets()
         self._input_widgets = {
-            key: value.widget for key, value in labels_and_widgets.items()
+            key: value[1] for key, value in labels_and_widgets.items()
         }
         self._widgets.update(self._input_widgets)
 
@@ -84,7 +78,7 @@ class BtrackWidget(QtWidgets.QWidget):
         """Create update method widgets and add to main layout"""
         labels_and_widgets = create_update_method_widgets()
         self._update_method_widgets = {
-            key: value.widget for key, value in labels_and_widgets.items()
+            key: value[1] for key, value in labels_and_widgets.items()
         }
         self._widgets.update(self._update_method_widgets)
 
@@ -99,7 +93,7 @@ class BtrackWidget(QtWidgets.QWidget):
         """Create motion model widgets and add to main layout"""
         labels_and_widgets = create_motion_model_widgets()
         self._motion_model_widgets = {
-            key: value.widget for key, value in labels_and_widgets.items()
+            key: value[1] for key, value in labels_and_widgets.items()
         }
         self._widgets.update(self._motion_model_widgets)
 
@@ -114,7 +108,7 @@ class BtrackWidget(QtWidgets.QWidget):
         """Create hypothesis model widgets and add to main layout"""
         labels_and_widgets = create_hypothesis_model_widgets()
         self._hypothesis_model_widgets = {
-            key: value.widget for key, value in labels_and_widgets.items()
+            key: value[1] for key, value in labels_and_widgets.items()
         }
         self._widgets.update(self._hypothesis_model_widgets)
 

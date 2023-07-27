@@ -17,7 +17,7 @@ def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
 
     config = QtWidgets.QComboBox()
     config.addItems(["cell", "particle"])
-    config.setTooltip(
+    config.setToolTip(
         "Select a loaded configuration.\n"
         "Note, this will update values set below."
     )
@@ -36,7 +36,7 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
             "APPROXIMATE",
         ]
     )
-    update_method.setTooltip(
+    update_method.setToolTip(
         "Select the update method.\n"
         "EXACT: exact calculation of Bayesian belief matrix.\n"
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
@@ -48,7 +48,7 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
     max_search_radius.setRange(0, 1000)
     max_search_radius.setSingleStep(1)
     max_search_radius.setWrapping(w=True)
-    max_search_radius.setTooltip(
+    max_search_radius.setToolTip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )

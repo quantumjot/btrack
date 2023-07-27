@@ -28,10 +28,10 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
         hypotheses_widgets[hypothesis] = (hypothesis, widget)
 
     # P_FP is always required
-    hypotheses_widgets["P_FP"][1].enabled = False
+    hypotheses_widgets["P_FP"][1].setEnabled(False)  # noqa: FBT003
 
     # P_merge should be disabled by default
-    hypotheses_widgets["P_merge"][1].value = False
+    hypotheses_widgets["P_merge"][1].setCheckState(False)  # noqa: FBT003
 
     return hypotheses_widgets
 

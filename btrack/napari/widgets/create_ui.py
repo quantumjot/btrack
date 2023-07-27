@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from qtpy import QtWidgets
-from qtpy.QtCore import Qt
 
 from napari.viewer import Viewer
 
@@ -40,7 +39,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         """
         super().__init__()
 
-        # We will need to viewer for various callbacks
+        # We will need to viewer for various callbacks
         self._viewer = napari_viewer
 
         # Let the scroll area automatically resize the widget

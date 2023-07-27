@@ -118,7 +118,7 @@ def update_image_name(
     widget: QtWidgets.QComboBox,
 ):
     """Update the name of an Image layer"""
-    
+
     if not isinstance(layer, napari.layers.Image):
         message = (
             f"Not selecting new layer {layer.name} as input for the "
@@ -126,7 +126,7 @@ def update_image_name(
             "layer not an Image layer."
         )
         logger.debug(message)
-        return    
+        return
 
 
 def select_config(

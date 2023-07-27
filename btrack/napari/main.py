@@ -111,6 +111,24 @@ def select_inserted_image(
     widget.setCurrentText(new_layer.name)
 
 
+# TODO: automatically update layer name in QComboBox when it is changed in the viewer
+def update_image_name(
+    layer: napari.layers.Layer,
+    new_name: str,
+    widget: QtWidgets.QComboBox,
+):
+    """Update the name of an Image layer"""
+    
+    if not isinstance(layer, napari.layers.Image):
+        message = (
+            f"Not selecting new layer {layer.name} as input for the "
+            f"segmentation widget as {layer.name} is {type(layer)} "
+            "layer not an Image layer."
+        )
+        logger.debug(message)
+        return    
+
+
 def select_config(
     btrack_widget: QtWidgets.QWidget,
     configs: TrackerConfigs,

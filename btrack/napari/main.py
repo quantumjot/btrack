@@ -46,8 +46,8 @@ def create_btrack_widget() -> Container:
 
     # First create our UI along with some default configs for the widgets
     all_configs = btrack.napari.config.create_default_configs()
-    btrack_widget = btrack.napari.BtrackWidget(
-        viewer=napari.current_viewer(),
+    btrack_widget = btrack.napari.widgets.BtrackWidget(
+        napari_viewer=napari.current_viewer(),
     )
 
     # Set the cell_config defaults in the gui

@@ -8,22 +8,20 @@ def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
 
     # TODO: annotation=napari.layers.Labels,
     segmentation = QtWidgets.QComboBox()
-    segmentation.setName("segmentation")
     segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"
         "To use an 'Image' layer, first convert 'Labels' by right-clicking "
         "on it in the layers list, and clicking on 'Convert to Labels'"
     )
-    widgets = {"segmentation": segmentation}
+    widgets = {"segmentation": ("segmentation", segmentation)}
 
     config = QtWidgets.QComboBox()
     config.addItems(["cell", "particle"])
-    config.setName("config")
     config.setTooltip(
         "Select a loaded configuration.\n"
         "Note, this will update values set below."
     )
-    widgets["config"] = config
+    widgets["config"] = ("config", config)
 
     return widgets
 
@@ -49,8 +47,8 @@ def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
     max_search_radius = QtWidgets.QSPinBox()
     max_search_radius.setRange(0, 1000)
     max_search_radius.setSingleStep(1)
-    max_search_radius.setWrapping(True)  # noqa: FBT003
-    max_search_radius.setTooltip = (
+    max_search_radius.setWrapping(w=True)
+    max_search_radius.setTooltip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )

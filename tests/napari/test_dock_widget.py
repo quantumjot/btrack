@@ -68,16 +68,15 @@ def test_save_button(track_widget):
     """
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(cell_config())
-    unscaled_config.tracker_config.name = (
-        "cell"  # this is done in in the gui too
-    )
+    # this is done in in the gui too
+    unscaled_config.tracker_config.name = "cell"
     expected_config = unscaled_config.scale_config().json()
 
     with patch(
         "btrack.napari.widgets.save_path_dialogue_box"
     ) as save_path_dialogue_box:
         save_path_dialogue_box.return_value = "user_config.json"
-        track_widget.save_config_button.clicked()
+        track_widget.save_config_button.click()
 
     actual_config = btrack.config.load_config("user_config.json").json()
 
@@ -95,12 +94,12 @@ def test_load_config(track_widget):
         "btrack.napari.widgets.load_path_dialogue_box"
     ) as load_path_dialogue_box:
         load_path_dialogue_box.return_value = cell_config()
-        track_widget.load_config_button.clicked()
+        track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
     new_config_name = track_widget.config.currentText()
 
-    assert track_widget.config.value == "Default"
+    assert track_widget.config.currentText() == "Default"
     assert new_config_name != original_config_name
 
 
@@ -115,7 +114,7 @@ def test_reset_button(track_widget):
     track_widget.relax.value = not track_widget.relax
 
     # click reset button - restores defaults of the currently-selected base config
-    track_widget.reset_button.clicked()
+    track_widget.reset_button.click()
 
     new_max_search_radius = track_widget.max_search_radius.value
     new_relax = track_widget.relax.value
@@ -158,7 +157,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
-        track_widget.call_button.clicked()
+        track_widget.call_button.click()
 
     assert run_tracker.called
     assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS

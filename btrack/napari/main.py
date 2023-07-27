@@ -315,7 +315,7 @@ def save_config_to_json(
         logger.info(_msg)
         return
 
-    unscaled_config = configs[btrack_widget.config.current_choice]
+    unscaled_config = configs[btrack_widget.config.currentText()]
     btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         container=btrack_widget,
@@ -337,6 +337,6 @@ def load_config_from_json(
         return
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
-    btrack_widget.config.options["choices"].append(config_name)
-    btrack_widget.config.reset_choices()
-    btrack_widget.config.value = config_name
+    btrack_widget.config.addItem(config_name)
+    # btrack_widget.config.reset_choices() TODO: I think we don't need this?
+    btrack_widget.config.setCurrentText(config_name)

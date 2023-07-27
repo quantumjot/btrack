@@ -24,6 +24,7 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
         widget = QtWidgets.QCheckBox()
         widget.setCheckState(True)  # noqa: FBT003
         widget.setToolTip(tooltip)
+        widget.setTrisgtate(False)  # noqa: FBT003
         hypotheses_widgets[hypothesis] = (hypothesis, widget)
 
     # P_FP is always required
@@ -154,6 +155,7 @@ def create_hypothesis_model_widgets() -> dict[str, QtWidgets.QWidget]:
         "This means that tracks can initialize or terminate anywhere and"
         "at any time in the dataset."
     )
+    relax.setTristate(False)  # noqa: FBT003
     widgets["relax"] = ("relax thresholds", relax)
 
     return widgets

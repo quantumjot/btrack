@@ -31,12 +31,12 @@ def update_config_from_widgets(
     update_method_index = container.update_method.currentIndex()
 
     config.update_method = update_method_index
-    config.max_search_radius = container.max_search_radius.value
+    config.max_search_radius = container.max_search_radius.value()
 
     # Update MotionModel values
     motion_model = config.motion_model
-    motion_model.accuracy = container.accuracy.value
-    motion_model.max_lost = container.max_lost.value
+    motion_model.accuracy = container.accuracy.value()
+    motion_model.max_lost = container.max_lost.value()
 
     # Update HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
@@ -75,23 +75,23 @@ def update_widgets_from_config(
     # Update widgets from MotionModel matrix scaling factors
     sigmas: Sigmas = unscaled_config.sigmas
     for matrix_name in sigmas:
-        container[f"{matrix_name}_sigma"].value = sigmas[matrix_name]
+        container[f"{matrix_name}_sigma"].setValue(sigmas[matrix_name])
 
     # Update widgets from TrackerConfig values
     config = unscaled_config.tracker_config
-    container.update_method.value = config.update_method.name
-    container.max_search_radius.value = config.max_search_radius
+    container.update_method.setCurrentText(config.update_method.name)
+    container.max_search_radius.setValue(config.max_search_radius)
 
     # Update widgets from MotionModel values
     motion_model = config.motion_model
-    container.accuracy.value = motion_model.accuracy
-    container.max_lost.value = motion_model.max_lost
+    container.accuracy.setValue(motion_model.accuracy)
+    container.max_lost.setValue(motion_model.max_lost)
 
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
     for hypothesis in btrack.optimise.hypothesis.H_TYPES:
         is_checked = hypothesis in hypothesis_model.hypotheses
-        container[hypothesis].value = is_checked
+        container[hypothesis].setCheckState(is_checked)
 
     # Update widgets from HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:

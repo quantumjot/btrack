@@ -107,9 +107,9 @@ class UnscaledTrackerConfig:
 
         # Create a copy so that config values stay in sync with widget values
         scaled_config = copy.deepcopy(self.tracker_config)
-        scaled_config.motion_model.P *= self.sigmas.P
-        scaled_config.motion_model.R *= self.sigmas.R
-        scaled_config.motion_model.G *= self.sigmas.G
+        scaled_config.motion_model.P *= self.sigmas.P()
+        scaled_config.motion_model.R *= self.sigmas.R()
+        scaled_config.motion_model.G *= self.sigmas.G()
         scaled_config.motion_model.Q = (
             scaled_config.motion_model.G.T @ scaled_config.motion_model.G
         )

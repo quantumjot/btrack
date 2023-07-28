@@ -106,18 +106,20 @@ def test_load_config(track_widget):
 def test_reset_button(track_widget):
     """Tests that clicking the reset button restores the default config values"""
 
-    original_max_search_radius = track_widget.max_search_radius.value
-    original_relax = track_widget.relax.value
+    original_max_search_radius = track_widget.max_search_radius.value()
+    original_relax = track_widget.relax.checkState()
 
     # change some widget values
-    track_widget.max_search_radius.value += 10
-    track_widget.relax.value = not track_widget.relax
+    track_widget.max_search_radius.setValue(
+        track_widget.max_search_radius.value() + 10
+    )
+    track_widget.relax.setCheckState(not track_widget.relax.checkState())
 
     # click reset button - restores defaults of the currently-selected base config
     track_widget.reset_button.click()
 
-    new_max_search_radius = track_widget.max_search_radius.value
-    new_relax = track_widget.relax.value
+    new_max_search_radius = track_widget.max_search_radius.value()
+    new_relax = track_widget.relax.checkState()
 
     assert new_max_search_radius == original_max_search_radius
     assert new_relax == original_relax

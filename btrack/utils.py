@@ -271,6 +271,15 @@ def update_segmentation(
 
     keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
+    keys.update(
+        {
+            key: idx
+            for idx, key in enumerate(
+                tracks[0].properties.keys(), start=max(keys.values()) + 1
+            )
+        }
+    )
+
     coords_arr = np.concatenate(
         [
             track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)

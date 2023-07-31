@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
-from typing import Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from skimage.util import map_array
@@ -96,13 +96,13 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
+def _lbep_table(tracks: List[btypes.Tracklet]) -> np.array:
     """Create an LBEP table from a track."""
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
 def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: list[str]
+    tracks: list[btypes.Tracklet], properties: List[str]
 ) -> dict:
     """Concatenate all tracks as dictionary."""
     assert all(isinstance(t, btypes.Tracklet) for t in tracks)
@@ -232,6 +232,7 @@ def update_segmentation(
     segmentation: np.ndarray,
     tracks: list[btypes.Tracklet],
     *,
+    scale: Optional[Tuple[float]] = None,
     color_by: str = "ID",
 ) -> np.ndarray:
     """Map tracks back into a masked array.
@@ -243,6 +244,9 @@ def update_segmentation(
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
         A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+    scale : tuple, optional
+        A scale for each spatial dimension of the input tracks. Defaults
+        to one for all axes, and allows scaling for anisotropic imaging data.
     color_by : str, default = "ID"
         A value to recolor the segmentation by.
 
@@ -274,6 +278,8 @@ def update_segmentation(
         ]
     )
 
+    scale = tuple([1.0] * segmentation.ndim) if scale is None else scale
+
     if color_by not in keys:
         raise ValueError(f"Property ``{color_by}`` not found in track.")
 
@@ -283,6 +289,9 @@ def update_segmentation(
 
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
+
+        xc = (xc * scale[0]).astype(int)
+        yc = (yc * scale[1]).astype(int)
 
         if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]

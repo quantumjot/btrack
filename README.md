@@ -32,21 +32,22 @@ Note that `btrack<=0.5.0` was built against earlier version of
 [Eigen](https://eigen.tuxfamily.org) which used `C++=11`, as of `btrack==0.5.1`
 it is now built against `C++=17`.
 
-#### Installing the latest stable version
+### Installing the latest stable version
 
 ```sh
 pip install btrack
 ```
 
-## Installing on M1 Mac/Apple Silicon/osx-arm64
+#### Installing on Apple Silicon
 
-Best done with [conda](https://github.com/conda-forge/miniforge)
+Install the following with
+[conda](https://github.com/conda-forge/miniforge):
 
 ```sh
-conda env create -f environment.yml
-conda activate btrack
-pip install btrack
+conda install -c conda-forge cvxopt
 ```
+
+then run the above `pip` install command.
 
 ## Usage examples
 

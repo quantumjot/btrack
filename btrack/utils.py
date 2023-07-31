@@ -3,7 +3,7 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
-from typing import Optional, list
+from typing import Optional
 
 import numpy as np
 from skimage.util import map_array

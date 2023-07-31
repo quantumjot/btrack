@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import csv
 import os
-from typing import List
 
 from btrack import btypes
 
 
-def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:
+def import_CSV(filename: os.PathLike) -> list[btypes.PyTrackObject]:
     """Import localizations from a CSV file.
 
     Parameters
@@ -17,7 +16,7 @@ def import_CSV(filename: os.PathLike) -> List[btypes.PyTrackObject]:
 
     Returns
     -------
-    objects : List[btypes.PyTrackObject]
+    objects : list[btypes.PyTrackObject]
         A list of objects in the CSV file.
 
     Notes

@@ -5,7 +5,7 @@ import logging
 import os
 import re
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import h5py
 import numpy as np
@@ -140,7 +140,7 @@ class HDF5FileHandler:
         self._states = list(constants.States)
 
     @property
-    def object_types(self) -> List[str]:
+    def object_types(self) -> list[str]:
         return list(self._hdf["objects"].keys())
 
     def __enter__(self):
@@ -191,7 +191,7 @@ class HDF5FileHandler:
         )
 
     @property
-    def objects(self) -> List[btypes.PyTrackObject]:
+    def objects(self) -> list[btypes.PyTrackObject]:
         """Return the objects in the file."""
         return self.filtered_objects()
 
@@ -201,8 +201,8 @@ class HDF5FileHandler:
         f_expr: Optional[str] = None,
         *,
         lazy_load_properties: bool = True,
-        exclude_properties: Optional[List[str]] = None,
-    ) -> List[btypes.PyTrackObject]:
+        exclude_properties: Optional[list[str]] = None,
+    ) -> list[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata.
 
         Parameters
@@ -263,11 +263,24 @@ class HDF5FileHandler:
 
             f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
+            data = None
+
             if m["name"] in properties:
                 data = properties[m["name"]]
-                filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
+            elif m["name"] in grp:
+                logger.warning(
+                    f"While trying to filter objects by `{f_expr}` encountered "
+                    "a legacy HDF file."
+                )
+                logger.warning(
+                    "Properties do not persist to objects. Use `hdf.tree()` to "
+                    "inspect the file structure."
+                )
+                data = grp[m["name"]]
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
+
+            filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
@@ -298,7 +311,7 @@ class HDF5FileHandler:
         return objects_from_dict(objects_dict)
 
     def write_objects(
-        self, data: Union[List[btypes.PyTrackObject], BayesianTracker]
+        self, data: Union[list[btypes.PyTrackObject], BayesianTracker]
     ) -> None:
         """Write objects to HDF file.
 
@@ -358,7 +371,7 @@ class HDF5FileHandler:
 
     @h5check_property_exists("objects")
     def write_properties(
-        self, data: Dict[str, Any], *, allow_overwrite: bool = False
+        self, data: dict[str, Any], *, allow_overwrite: bool = False
     ) -> None:
         """Write object properties to HDF file.
 
@@ -419,7 +432,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def tracks(self) -> List[btypes.Tracklet]:
+    def tracks(self) -> list[btypes.Tracklet]:
         """Return the tracks in the file."""
 
         logger.info(f"Loading tracks/{self.object_type}")
@@ -490,7 +503,7 @@ class HDF5FileHandler:
 
     def write_tracks(  # noqa: PLR0912
         self,
-        data: Union[List[btypes.Tracklet], BayesianTracker],
+        data: Union[list[btypes.Tracklet], BayesianTracker],
         *,
         f_expr: Optional[str] = None,
     ) -> None:
@@ -594,3 +607,35 @@ class HDF5FileHandler:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
         return self._hdf["tracks"][self.object_type]["LBEPR"][:]
+
+    def tree(self) -> None:
+        """Recursively iterate over the H5 file to reveal the tree structure and number
+        of elements within."""
+        _h5_tree(self._hdf)
+
+
+def _h5_tree(hdf, *, prefix: str = "") -> None:
+    """Recursively iterate over an H5 file to reveal the tree structure and number
+    of elements within. Writes the output to the default logger.
+
+    Parameters
+    ----------
+    hdf : hdf object
+        The hdf object to iterate over
+    prefix : str
+        A prepended string for layout
+    """
+    n_items = len(hdf)
+    for idx, (key, val) in enumerate(hdf.items()):
+        if idx == (n_items - 1):
+            # the last item
+            if isinstance(val, h5py._hl.group.Group):
+                logger.info(f"{prefix}└── {key}")
+                _h5_tree(val, prefix=f"{prefix}    ")
+            else:
+                logger.info(f"{prefix}└── {key} ({len(val)})")
+        elif isinstance(val, h5py._hl.group.Group):
+            logger.info(f"{prefix}├── {key}")
+            _h5_tree(val, prefix=f"{prefix}│   ")
+        else:
+            logger.info(f"{prefix}├── {key} ({len(val)})")

@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from pydantic import BaseModel, root_validator, validator
@@ -259,7 +259,7 @@ class HypothesisModel(BaseModel):
     .. math:: e^{(-d / \lambda)}
     """
 
-    hypotheses: List[str]
+    hypotheses: list[str]
     lambda_time: float
     lambda_dist: float
     lambda_link: float

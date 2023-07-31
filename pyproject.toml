@@ -18,16 +18,24 @@ classifiers = [
     "Programming Language :: C++",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering :: Visualization",
 ]
+dependencies = [
+    "cvxopt>=1.2.0",
+    "h5py>=2.10.0",
+    "numpy>=1.17.3",
+    "pooch>=1.0.0",
+    "pydantic~=1.9",
+    "scikit-image>=0.16.2",
+    "scipy>=1.3.1",
+    "tqdm>=4.65.0",
+]
 description = "A framework for Bayesian multi-object tracking"
 dynamic = [
-    "dependencies",
     "version",
 ]
 name = "btrack"
@@ -43,18 +51,9 @@ optional-dependencies = {docs = [
     "napari-plugin-engine>=0.1.4",
     "napari>=0.4.16",
     "qtpy",
-], pyqt = [
-    "PyQt5 >= 5.12.3, != 5.15.0",
-    "btrack[napari]",
-], pyside = [
-    "PySide2 >= 5.13.2, != 5.15.0 ; python_version != '3.8'",
-    "PySide2 >= 5.14.2, != 5.15.0 ; python_version == '3.8'",
-    "btrack[napari]",
-], qt = [
-    "btrack[pyside]",
 ]}
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 entry-points."napari.manifest".btrack = "btrack:napari.yaml"
 license.file = "LICENSE.md"
 urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
@@ -81,7 +80,6 @@ exclude = '''
 '''
 line-length = 79
 target-version = [
-    "py38",
     "py39",
     "py310",
 ]
@@ -149,7 +147,7 @@ select = [
     "W",
     "YTT",
 ]
-target-version = "py38"
+target-version = "py39"
 isort.known-first-party = [
     "black",
 ]
@@ -173,7 +171,6 @@ pep8-naming.classmethod-decorators = [
 ]
 
 [tool.setuptools]
-dynamic.dependencies.file = "requirements.txt"
 packages.find = {}
 
 [tool.setuptools_scm]
@@ -193,26 +190,17 @@ overrides."tool.ruff.isort.section-order".inline_arrays = false
 legacy_tox_ini = """
 [gh-actions]
 python =
-    3.8: py38
     3.9: py39
     3.10: py310
 
 [testenv]
+commands = pytest --cov --cov-report=xml
 deps =
-    dask
-    magicgui
     napari
     pyqt5
-    pytest
     pytest-cov
     pytest-qt
     pytest-xvfb ; sys_platform == 'linux'
-    qtpy
-conda_deps =
-    # Use conda to install cvxopt so tests work on macOS
-    cvxopt
-conda_channels = conda-forge
-commands = pytest --cov --cov-report=xml
 passenv =
     CI
     DISPLAY
@@ -221,8 +209,12 @@ passenv =
     PYVISTA_OFF_SCREEN
     XAUTHORITY
 
+[gh-actions:env]
+PLATFORM =
+    ubuntu-latest: linux
+    macos-latest: macos
+    windows-latest: windows
+
 [tox]
-envlist = py{38,39,310}
-isolated_build = True
-requires = tox-conda
+envlist = py{39,310}-{linux,macos,windows}
 """

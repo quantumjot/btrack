@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from pydantic import BaseModel, conlist, validator
@@ -84,7 +84,7 @@ class TrackerConfig(BaseModel):
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: List[str] = []
+    features: list[str] = []
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,

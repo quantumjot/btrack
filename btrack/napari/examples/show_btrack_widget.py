@@ -15,7 +15,7 @@ viewer = napari.Viewer()
 napari.current_viewer()
 
 _, btrack_widget = viewer.window.add_plugin_dock_widget(
-    plugin_name="napari-btrack", widget_name="Track"
+    plugin_name="btrack", widget_name="Track"
 )
 
 

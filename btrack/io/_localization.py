@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+from collections.abc import Generator
 from multiprocessing.pool import Pool
-from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -25,8 +26,8 @@ def _is_unique(x: npt.NDArray) -> bool:
 
 
 def _concat_nodes(
-    nodes: Dict[str, npt.NDArray], new_nodes: Dict[str, npt.NDArray]
-) -> Dict[str, npt.NDArray]:
+    nodes: dict[str, npt.NDArray], new_nodes: dict[str, npt.NDArray]
+) -> dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
         nodes[key] = (
@@ -48,7 +49,7 @@ class SegmentationContainer:
             self._next_generator if self._is_generator else self._next_array
         )
 
-    def _next_generator(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_generator(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
         """__next__ method for a generator input."""
         seg = next(self.segmentation)
         intens = (
@@ -58,7 +59,7 @@ class SegmentationContainer:
         )
         return seg, intens
 
-    def _next_array(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_array(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
         """__next__ method for an array-like input."""
         if self._iter >= len(self):
             raise StopIteration
@@ -74,7 +75,7 @@ class SegmentationContainer:
         self._iter = 0
         return self
 
-    def __next__(self) -> Tuple[int, npt.NDArray, Optional[npt.NDArray]]:
+    def __next__(self) -> tuple[int, npt.NDArray, Optional[npt.NDArray]]:
         seg, intens = self._next()
         data = (self._iter, seg, intens)
         self._iter += 1
@@ -88,15 +89,15 @@ class SegmentationContainer:
 class NodeProcessor:
     """Processor to extract nodes from a segmentation image."""
 
-    properties: Tuple[str]
+    properties: tuple[str]
     centroid_type: str = "centroid"
     intensity_image: Optional[npt.NDArray] = None
-    scale: Optional[Tuple[float]] = None
+    scale: Optional[tuple[float]] = None
     assign_class_ID: bool = False  # noqa: N815
-    extra_properties: Optional[Tuple[Callable]] = None
+    extra_properties: Optional[tuple[Callable]] = None
 
     @property
-    def img_props(self) -> List[str]:
+    def img_props(self) -> list[str]:
         # need to infer the name of the function provided
         extra_img_props = tuple(
             [str(fn.__name__) for fn in self.extra_properties]
@@ -106,8 +107,8 @@ class NodeProcessor:
         return self.properties + extra_img_props
 
     def __call__(
-        self, data: Tuple[int, npt.NDAarray, Optional[npt.NDArray]]
-    ) -> Dict[str, npt.NDArray]:
+        self, data: tuple[int, npt.NDAarray, Optional[npt.NDArray]]
+    ) -> dict[str, npt.NDArray]:
         """Return the object centroids from a numpy array representing the
         image data."""
 
@@ -177,13 +178,13 @@ def segmentation_to_objects(
     segmentation: Union[np.ndarray, Generator],
     *,
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,
-    properties: Optional[Tuple[str]] = (),
-    extra_properties: Optional[Tuple[Callable]] = None,
-    scale: Optional[Tuple[float]] = None,
+    properties: Optional[tuple[str]] = (),
+    extra_properties: Optional[tuple[Callable]] = None,
+    scale: Optional[tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
     num_workers: int = 1,
-) -> List[btypes.PyTrackObject]:
+) -> list[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 
     Parameters

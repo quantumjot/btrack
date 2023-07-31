@@ -282,7 +282,7 @@ def update_segmentation(
 
     coords_arr = np.concatenate(
         [
-            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
+            track.to_array()[~np.array(track.dummy), :].astype(int)
             for track in tracks
         ]
     )

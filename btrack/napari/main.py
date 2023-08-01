@@ -96,11 +96,6 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda: load_config_from_json(btrack_widget, all_configs)
     )
 
-    # there are lots of widgets so make the container scrollable
-    # scroll = QtWidgets.QScrollArea()
-    # scroll.setWidget(btrack_widget._widget._qwidget)
-    # btrack_widget._widget._qwidget = scroll
-
     return btrack_widget
 
 

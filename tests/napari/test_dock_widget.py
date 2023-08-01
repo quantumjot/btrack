@@ -113,7 +113,7 @@ def test_reset_button(track_widget):
     track_widget.max_search_radius.setValue(
         track_widget.max_search_radius.value() + 10
     )
-    track_widget.relax.setCheckState(not track_widget.relax.checkState())
+    track_widget.relax.setChecked(not track_widget.relax.checkState())
 
     # click reset button - restores defaults of the currently-selected base config
     track_widget.reset_button.click()

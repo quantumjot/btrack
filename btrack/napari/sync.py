@@ -91,7 +91,7 @@ def update_widgets_from_config(
     hypothesis_model = config.hypothesis_model
     for hypothesis in btrack.optimise.hypothesis.H_TYPES:
         is_checked = hypothesis in hypothesis_model.hypotheses
-        container[hypothesis].setCheckState(is_checked)
+        container[hypothesis].setChecked(is_checked)
 
     # Update widgets from HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:

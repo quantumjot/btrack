@@ -46,12 +46,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
 def create_motion_model_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for setting parameters of the MotionModel"""
 
-    motion_model_label = QtWidgets.QLabel()
-    widgets = {
-        "motion_model": (_make_label_bold("Motion model"), motion_model_label)
-    }
-
-    widgets |= _create_sigma_widgets()
+    widgets = _create_sigma_widgets()
 
     accuracy = QtWidgets.QDoubleSpinBox()
     accuracy.setToolTip("Integration limits for calculating probabilities")

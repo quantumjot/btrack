@@ -142,17 +142,12 @@ def _create_bin_size_widgets() -> dict[str, QtWidgets.QWidget]:
 def create_hypothesis_model_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for setting parameters of the MotionModel"""
 
-    hypothesis_model_label = QtWidgets.QLabel()
     widgets = {
-        "hypothesis": ("<b>Hypothesis model</b>", hypothesis_model_label)
+        **_create_hypotheses_widgets(),
+        **_create_scaling_factor_widgets(),
+        **_create_threshold_widgets(),
+        **_create_bin_size_widgets(),
     }
-
-    widgets |= (
-        _create_hypotheses_widgets()
-        | _create_scaling_factor_widgets()
-        | _create_threshold_widgets()
-        | _create_bin_size_widgets()
-    )
 
     segmentation_miss_rate = QtWidgets.QDoubleSpinBox()
     segmentation_miss_rate.setToolTip(

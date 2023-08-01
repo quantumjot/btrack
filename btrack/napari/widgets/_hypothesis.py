@@ -66,6 +66,7 @@ def _create_scaling_factor_widgets() -> dict[str, QtWidgets.QWidget]:
         widget = QtWidgets.QDoubleSpinBox()
         widget.setToolTip(tooltip)
         widget.setValue(value)
+        widget.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
         scaling_factor_widgets[name] = (label, widget)
 
     return scaling_factor_widgets
@@ -80,6 +81,9 @@ def _create_threshold_widgets() -> dict[str, QtWidgets.QWidget]:
         "initialization or termination hypothesis."
     )
     distance_threshold.setValue(20.0)
+    distance_threshold.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets = {"theta_dist": ("distance threshold", distance_threshold)}
 
     time_threshold = QtWidgets.QDoubleSpinBox()
@@ -88,6 +92,9 @@ def _create_threshold_widgets() -> dict[str, QtWidgets.QWidget]:
         "an initialization or termination hypothesis."
     )
     time_threshold.setValue(5.0)
+    time_threshold.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets["theta_time"] = ("time threshold", time_threshold)
 
     apoptosis_threshold = QtWidgets.QSpinBox()
@@ -96,6 +103,9 @@ def _create_threshold_widgets() -> dict[str, QtWidgets.QWidget]:
         "Detections are counted consecutively from the back of the track"
     )
     apoptosis_threshold.setValue(5)
+    apoptosis_threshold.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets["apop_thresh"] = ("apoptosis threshold", apoptosis_threshold)
 
     return widgets
@@ -110,6 +120,9 @@ def _create_bin_size_widgets() -> dict[str, QtWidgets.QWidget]:
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
     distance_bin_size.setValue(40.0)
+    distance_bin_size.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets = {"dist_thresh": ("distance bin size", distance_bin_size)}
 
     time_bin_size = QtWidgets.QDoubleSpinBox()
@@ -118,6 +131,9 @@ def _create_bin_size_widgets() -> dict[str, QtWidgets.QWidget]:
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
     time_bin_size.setValue(2.0)
+    time_bin_size.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets["time_thresh"] = ("time bin size", time_bin_size)
 
     return widgets
@@ -144,6 +160,9 @@ def create_hypothesis_model_widgets() -> dict[str, QtWidgets.QWidget]:
         "e.g. 1/100 segmentations incorrect gives a segmentation miss rate of 0.01."
     )
     segmentation_miss_rate.setValue(0.1)
+    segmentation_miss_rate.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets["segmentation_miss_rate"] = ("miss rate", segmentation_miss_rate)
 
     relax = QtWidgets.QCheckBox()

@@ -19,6 +19,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     )
     P_sigma.setMaximum(250)
     P_sigma.setValue(150.0)
+    P_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets = {"P_sigma": (f"max({_make_label_bold('P')})", P_sigma)}
 
     G_sigma = QtWidgets.QDoubleSpinBox()
@@ -27,6 +28,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     )
     G_sigma.setMaximum(250)
     G_sigma.setValue(15.0)
+    G_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["G_sigma"] = (f"max({_make_label_bold('G')})", G_sigma)
 
     R_sigma = QtWidgets.QDoubleSpinBox()
@@ -35,6 +37,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     )
     R_sigma.setMaximum(250)
     R_sigma.setValue(5.0)
+    R_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["R_sigma"] = (f"max({_make_label_bold('R')})", R_sigma)
 
     return widgets
@@ -53,6 +56,7 @@ def create_motion_model_widgets() -> dict[str, QtWidgets.QWidget]:
     accuracy = QtWidgets.QDoubleSpinBox()
     accuracy.setToolTip("Integration limits for calculating probabilities")
     accuracy.setValue(7.5)
+    accuracy.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["accuracy"] = ("accuracy", accuracy)
 
     max_lost_frames = QtWidgets.QSpinBox()
@@ -60,6 +64,9 @@ def create_motion_model_widgets() -> dict[str, QtWidgets.QWidget]:
         "Number of frames without observation before marking as lost"
     )
     max_lost_frames.setValue(5)
+    max_lost_frames.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
     widgets["max_lost"] = ("max lost", max_lost_frames)
 
     return widgets

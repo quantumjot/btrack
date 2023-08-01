@@ -25,7 +25,7 @@ def _create_hypotheses_widgets() -> dict[str, QtWidgets.QWidget]:
         widget.setChecked(True)  # noqa: FBT003
         widget.setToolTip(tooltip)
         widget.setTristate(False)  # noqa: FBT003
-        hypotheses_widgets[hypothesis] = (hypothesis, widget)
+        hypotheses_widgets[hypothesis] = (hypothesis.replace("_", " "), widget)
 
     # P_FP is always required
     hypotheses_widgets["P_FP"][1].setEnabled(False)  # noqa: FBT003

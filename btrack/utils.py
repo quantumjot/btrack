@@ -306,6 +306,7 @@ def update_segmentation(
             old_id = single_segmentation[yc, xc]
         elif single_segmentation.ndim == constants.Dimensionality.THREE:
             zc = frame_coords[:, keys["z"]]
+            zc = (zc * scale[2]).astype(int)
             old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (

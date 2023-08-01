@@ -7,9 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from qtpy import QtWidgets
-
-    from btrack.config import TrackerConfig
+    import btrack.napari.widgets
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
 import btrack.napari.constants
@@ -17,8 +15,8 @@ import btrack.napari.constants
 
 def update_config_from_widgets(
     unscaled_config: UnscaledTrackerConfig,
-    container: QtWidgets.QWidget,
-) -> TrackerConfig:
+    container: btrack.napari.widgets.BtrackWidget,
+) -> UnscaledTrackerConfig:
     """Update an UnscaledTrackerConfig with the current widget values."""
 
     # Update MotionModel matrix scaling factors
@@ -65,8 +63,8 @@ def update_config_from_widgets(
 
 def update_widgets_from_config(
     unscaled_config: UnscaledTrackerConfig,
-    container: QtWidgets.QWidget,
-) -> QtWidgets.QWidget:
+    container: btrack.napari.widgets.BtrackWidget,
+) -> btrack.napari.widgets.BtrackWidget:
     """
     Update the widgets in a container with the values in an
     UnscaledTrackerConfig.

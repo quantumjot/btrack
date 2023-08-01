@@ -13,7 +13,9 @@ from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
 from btrack.napari.widgets._motion import create_motion_model_widgets
 
 
-def create_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_widgets() -> (
+    dict[str, QtWidgets.QWidget | tuple(str, QtWidgets.QWidget)]
+):
     """Create all the widgets for the plugin"""
 
     return (
@@ -28,7 +30,7 @@ def create_widgets() -> dict[str, QtWidgets.QWidget]:
 class BtrackWidget(QtWidgets.QScrollArea):
     """Main btrack widget"""
 
-    def __getitem__(self, key: str) -> QtWidgets.QWidgets:
+    def __getitem__(self, key: str) -> QtWidgets.QWidget:
         return self._widgets[key]
 
     def __init__(self, napari_viewer: Viewer) -> None:
@@ -63,7 +65,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
                 widget,
             )
 
-    def _add_input_widgets(self):
+    def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""
         labels_and_widgets = create_input_widgets()
         self._input_widgets = {
@@ -78,7 +80,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder.setLayout(layout)
         self._scroll_layout.addWidget(widget_holder)
 
-    def _add_update_method_widgets(self):
+    def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
         labels_and_widgets = create_update_method_widgets()
         self._update_method_widgets = {
@@ -93,7 +95,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder.setLayout(layout)
         self._scroll_layout.addWidget(widget_holder)
 
-    def _add_motion_model_widgets(self):
+    def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
         labels_and_widgets = create_motion_model_widgets()
         self._motion_model_widgets = {
@@ -108,7 +110,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder.setLayout(layout)
         self._scroll_layout.addWidget(widget_holder)
 
-    def _add_hypothesis_model_widgets(self):
+    def _add_hypothesis_model_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
         labels_and_widgets = create_hypothesis_model_widgets()
         self._hypothesis_model_widgets = {
@@ -123,7 +125,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder.setLayout(layout)
         self._scroll_layout.addWidget(widget_holder)
 
-    def _add_control_buttons_widgets(self):
+    def _add_control_buttons_widgets(self) -> None:
         """Create control buttons widgets and add to main layout"""
         self._control_buttons_widgets = create_control_widgets()
         self._widgets.update(self._control_buttons_widgets)

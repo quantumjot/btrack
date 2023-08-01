@@ -9,7 +9,7 @@ def _make_label_bold(label: str) -> str:
     return f"<b>{label}</b>"
 
 
-def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
+def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for setting the magnitudes of the MotionModel matrices"""
 
     P_sigma = QtWidgets.QDoubleSpinBox()
@@ -43,7 +43,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     return widgets
 
 
-def create_motion_model_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_motion_model_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for setting parameters of the MotionModel"""
 
     widgets = _create_sigma_widgets()

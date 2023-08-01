@@ -40,7 +40,7 @@ if not logger.handlers:
     logger.setLevel(logging.DEBUG)
 
 
-def create_btrack_widget() -> QtWidgets.QWidget:
+def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
     """Create widgets for the btrack plugin."""
 
     # First create our UI along with some default configs for the widgets
@@ -191,7 +191,7 @@ def remove_deleted_labels(
 
 
 def select_config(
-    btrack_widget: QtWidgets.QWidget,
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
     configs: TrackerConfigs,
     new_config_name: str,
 ) -> None:
@@ -214,7 +214,10 @@ def select_config(
     )
 
 
-def run(btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs) -> None:
+def run(
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+    configs: TrackerConfigs,
+) -> None:
     """
     Update the TrackerConfig from widget values, run tracking,
     and add tracks to the viewer.
@@ -282,7 +285,8 @@ def _run_tracker(
 
 
 def restore_defaults(
-    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+    configs: TrackerConfigs,
 ) -> None:
     """Reload the config file then set widgets to the config's default values."""
 
@@ -302,7 +306,8 @@ def restore_defaults(
 
 
 def save_config_to_json(
-    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+    configs: TrackerConfigs,
 ) -> None:
     """Save widget values to file"""
 
@@ -326,7 +331,8 @@ def save_config_to_json(
 
 
 def load_config_from_json(
-    btrack_widget: QtWidgets.QWidget, configs: TrackerConfigs
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+    configs: TrackerConfigs,
 ) -> None:
     """Load a config from file and set it as the selected base config"""
 
@@ -338,5 +344,4 @@ def load_config_from_json(
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
     btrack_widget.config.addItem(config_name)
-    # btrack_widget.config.reset_choices() TODO: I think we don't need this?
     btrack_widget.config.setCurrentText(config_name)

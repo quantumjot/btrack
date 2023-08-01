@@ -3,7 +3,7 @@ from __future__ import annotations
 from qtpy import QtWidgets
 
 
-def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_input_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
     # TODO: annotation=napari.layers.Labels,
@@ -26,7 +26,7 @@ def create_input_widgets() -> dict[str, QtWidgets.QWidget]:
     return widgets
 
 
-def create_update_method_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_update_method_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for selecting the update method"""
 
     update_method = QtWidgets.QComboBox()

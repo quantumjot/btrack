@@ -52,7 +52,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
     # Set the cell_config defaults in the gui
     btrack.napari.sync.update_widgets_from_config(
         unscaled_config=all_configs["cell"],
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
 
     # Add any existing Labels layers to the segmentation selector
@@ -197,7 +197,7 @@ def select_config(
     previous_config = configs[previous_config_name]
     previous_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=previous_config,
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
 
     # now load the newly-selected config and set widget values
@@ -205,7 +205,7 @@ def select_config(
     new_config = configs[new_config_name]
     new_config = btrack.napari.sync.update_widgets_from_config(
         unscaled_config=new_config,
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
 
 
@@ -227,7 +227,7 @@ def run(
     unscaled_config = configs[btrack_widget.config.currentText()]
     unscaled_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
 
     config = unscaled_config.scale_config()
@@ -296,7 +296,7 @@ def restore_defaults(
     config = configs[config_name]
     config = btrack.napari.sync.update_widgets_from_config(
         unscaled_config=config,
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
 
 
@@ -318,7 +318,7 @@ def save_config_to_json(
     unscaled_config = configs[btrack_widget.config.currentText()]
     btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
-        container=btrack_widget,
+        btrack_widget=btrack_widget,
     )
     config = unscaled_config.scale_config()
 

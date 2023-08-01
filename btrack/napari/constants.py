@@ -16,5 +16,4 @@ HYPOTHESIS_THRESHOLDS = [
     "dist_thresh",
     "time_thresh",
     "apop_thresh",
-    "relax",
 ]

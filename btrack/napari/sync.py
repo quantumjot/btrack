@@ -24,7 +24,7 @@ def update_config_from_widgets(
     # Update MotionModel matrix scaling factors
     sigmas: Sigmas = unscaled_config.sigmas
     for matrix_name in sigmas:
-        sigmas[matrix_name] = container[f"{matrix_name}_sigma"].value
+        sigmas[matrix_name] = container[f"{matrix_name}_sigma"].value()
 
     # Update TrackerConfig values
     config = unscaled_config.tracker_config
@@ -49,15 +49,15 @@ def update_config_from_widgets(
     # Update HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
         setattr(
-            hypothesis_model, scaling_factor, container[scaling_factor].value
+            hypothesis_model, scaling_factor, container[scaling_factor].value()
         )
 
     # Update HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
-        setattr(hypothesis_model, threshold, container[threshold].value)
+        setattr(hypothesis_model, threshold, container[threshold].value())
 
     hypothesis_model.segmentation_miss_rate = (
-        container.segmentation_miss_rate.value
+        container.segmentation_miss_rate.value()
     )
 
     return unscaled_config
@@ -95,15 +95,16 @@ def update_widgets_from_config(
 
     # Update widgets from HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
-        container[scaling_factor].value = getattr(
-            hypothesis_model, scaling_factor
-        )
+        new_value = getattr(hypothesis_model, scaling_factor)
+        container[scaling_factor].setValue(new_value)
 
     # Update widgets from HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
-        container[threshold].value = getattr(hypothesis_model, threshold)
+        new_value = getattr(hypothesis_model, threshold)
+        container[threshold].setValue(new_value)
 
-    container.segmentation_miss_rate.value = (
+    container.relax.setChecked(hypothesis_model.relax)
+    container.segmentation_miss_rate.setValue(
         hypothesis_model.segmentation_miss_rate
     )
 

@@ -17,6 +17,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
         "Magnitude of error in initial estimates.\n"
         "Used to scale the matrix P."
     )
+    P_sigma.setMaximum(250)
     P_sigma.setValue(150.0)
     widgets = {"P_sigma": (f"max({_make_label_bold('P')})", P_sigma)}
 
@@ -24,6 +25,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     G_sigma.setToolTip(
         "Magnitude of error in process.\n Used to scale the matrix G."
     )
+    G_sigma.setMaximum(250)
     G_sigma.setValue(15.0)
     widgets["G_sigma"] = (f"max({_make_label_bold('G')})", G_sigma)
 
@@ -31,6 +33,7 @@ def _create_sigma_widgets() -> dict[str, QtWidgets.QWidget]:
     R_sigma.setToolTip(
         "Magnitude of error in measurements.\n Used to scale the matrix R."
     )
+    R_sigma.setMaximum(250)
     R_sigma.setValue(5.0)
     widgets["R_sigma"] = (f"max({_make_label_bold('R')})", R_sigma)
 

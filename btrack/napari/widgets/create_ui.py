@@ -83,7 +83,7 @@ class BtrackWidget(QtWidgets.QWidget):
         )
 
         tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Basic")
+        self._tabs.addTab(tab, "Method")
         widget_holder = QtWidgets.QWidget()
         tab.setWidget(widget_holder)
         # Let the scroll area automatically resize the widget

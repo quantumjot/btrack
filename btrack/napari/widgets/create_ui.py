@@ -44,7 +44,7 @@ class BtrackWidget(QtWidgets.QWidget):
         # We will need to viewer for various callbacks
         self.viewer = napari_viewer
 
-        self._layout = QtWidgets.QVBoxLayout()
+        self._layout = QtWidgets.QVBoxLayout(self)
         self._tabs = QtWidgets.QTabWidget()
 
         # Create widgets and add to layout

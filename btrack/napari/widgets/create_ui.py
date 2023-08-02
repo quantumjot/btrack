@@ -27,7 +27,7 @@ def create_widgets() -> (
     )
 
 
-class BtrackWidget(QtWidgets.QScrollArea):
+class BtrackWidget(QtWidgets.QWidget):
     """Main btrack widget"""
 
     def __getitem__(self, key: str) -> QtWidgets.QWidget:
@@ -44,13 +44,8 @@ class BtrackWidget(QtWidgets.QScrollArea):
         # We will need to viewer for various callbacks
         self.viewer = napari_viewer
 
-        # Let the scroll area automatically resize the widget
-        self.setWidgetResizable(True)  # noqa: FBT003
-
-        self._scroll_layout = QtWidgets.QVBoxLayout()
-        _scroll_widget = QtWidgets.QWidget()
-        _scroll_widget.setLayout(self._scroll_layout)
-        self.setWidget(_scroll_widget)
+        self._layout = QtWidgets.QVBoxLayout()
+        self._tabs = QtWidgets.QTabWidget()
 
         # Create widgets and add to layout
         self._widgets = {}
@@ -64,6 +59,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
                 name,
                 widget,
             )
+        self._layout.addWidget(self._tabs)
 
     def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""
@@ -72,12 +68,17 @@ class BtrackWidget(QtWidgets.QScrollArea):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        widget_holder = QtWidgets.QGroupBox("Input")
+        tab = QtWidgets.QScrollArea()
+        self._tabs.addTab(tab, "Input")
+        widget_holder = QtWidgets.QWidget()
+        tab.setWidget(widget_holder)
+        # Let the scroll area automatically resize the widget
+        tab.setWidgetResizable(True)  # noqa: FBT003
+
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
@@ -86,12 +87,17 @@ class BtrackWidget(QtWidgets.QScrollArea):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        widget_holder = QtWidgets.QGroupBox("Method")
+        tab = QtWidgets.QScrollArea()
+        self._tabs.addTab(tab, "Method")
+        widget_holder = QtWidgets.QWidget()
+        tab.setWidget(widget_holder)
+        # Let the scroll area automatically resize the widget
+        tab.setWidgetResizable(True)  # noqa: FBT003
+
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
 
     def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
@@ -100,12 +106,17 @@ class BtrackWidget(QtWidgets.QScrollArea):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        widget_holder = QtWidgets.QGroupBox("Motion")
+        tab = QtWidgets.QScrollArea()
+        self._tabs.addTab(tab, "Motion")
+        widget_holder = QtWidgets.QWidget()
+        tab.setWidget(widget_holder)
+        # Let the scroll area automatically resize the widget
+        tab.setWidgetResizable(True)  # noqa: FBT003
+
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
 
     def _add_hypothesis_model_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
@@ -114,12 +125,17 @@ class BtrackWidget(QtWidgets.QScrollArea):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        widget_holder = QtWidgets.QGroupBox("Hypothesis")
+        tab = QtWidgets.QScrollArea()
+        self._tabs.addTab(tab, "Hypothesis")
+        widget_holder = QtWidgets.QWidget()
+        tab.setWidget(widget_holder)
+        # Let the scroll area automatically resize the widget
+        tab.setWidgetResizable(True)  # noqa: FBT003
+
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
 
     def _add_control_buttons_widgets(self) -> None:
         """Create control buttons widgets and add to main layout"""
@@ -127,4 +143,4 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self._widgets.update(control_buttons_widgets)
 
         for widget in control_buttons_widgets.values():
-            self._scroll_layout.addWidget(widget)
+            self._layout.addWidget(widget)

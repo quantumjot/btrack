@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Container
-
 import json
 from unittest.mock import patch
 
 import numpy as np
 import numpy.typing as npt
 import pytest
+from qtpy import QtWidgets
 
 import napari
 
@@ -38,7 +34,7 @@ def test_add_widget(make_napari_viewer):
 
 
 @pytest.fixture
-def track_widget(make_napari_viewer) -> Container:
+def track_widget(make_napari_viewer) -> QtWidgets.QWidget:
     """Provides an instance of the track widget to test"""
     make_napari_viewer()  # make sure there is a viewer available
     return btrack.napari.main.create_btrack_widget()
@@ -72,16 +68,15 @@ def test_save_button(track_widget):
     """
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(cell_config())
-    unscaled_config.tracker_config.name = (
-        "cell"  # this is done in in the gui too
-    )
+    # this is done in in the gui too
+    unscaled_config.tracker_config.name = "cell"
     expected_config = unscaled_config.scale_config().json()
 
     with patch(
         "btrack.napari.widgets.save_path_dialogue_box"
     ) as save_path_dialogue_box:
         save_path_dialogue_box.return_value = "user_config.json"
-        track_widget.save_config_button.clicked()
+        track_widget.save_config_button.click()
 
     actual_config = btrack.config.load_config("user_config.json").json()
 
@@ -93,36 +88,38 @@ def test_load_config(track_widget):
     """Tests that another TrackerConfig can be loaded and made the current config."""
 
     # this is set to be 'cell' rather than 'Default'
-    original_config_name = track_widget.config.current_choice
+    original_config_name = track_widget.config.currentText()
 
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
     ) as load_path_dialogue_box:
         load_path_dialogue_box.return_value = cell_config()
-        track_widget.load_config_button.clicked()
+        track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
-    new_config_name = track_widget.config.current_choice
+    new_config_name = track_widget.config.currentText()
 
-    assert track_widget.config.value == "Default"
+    assert track_widget.config.currentText() == "Default"
     assert new_config_name != original_config_name
 
 
 def test_reset_button(track_widget):
     """Tests that clicking the reset button restores the default config values"""
 
-    original_max_search_radius = track_widget.max_search_radius.value
-    original_relax = track_widget.relax.value
+    original_max_search_radius = track_widget.max_search_radius.value()
+    original_relax = track_widget.relax.isChecked()
 
     # change some widget values
-    track_widget.max_search_radius.value += 10
-    track_widget.relax.value = not track_widget.relax
+    track_widget.max_search_radius.setValue(
+        track_widget.max_search_radius.value() + 10
+    )
+    track_widget.relax.setChecked(not track_widget.relax.isChecked())
 
     # click reset button - restores defaults of the currently-selected base config
-    track_widget.reset_button.clicked()
+    track_widget.reset_button.click()
 
-    new_max_search_radius = track_widget.max_search_radius.value
-    new_relax = track_widget.relax.value
+    new_max_search_radius = track_widget.max_search_radius.value()
+    new_relax = track_widget.relax.isChecked()
 
     assert new_max_search_radius == original_max_search_radius
     assert new_relax == original_relax
@@ -154,11 +151,15 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         track_widget.viewer.add_labels(segmentation)
 
         # we need to explicitly add the layer to the ComboBox
-        image_layer = track_widget.viewer.layers[0]
-        track_widget.segmentation.set_choice(image_layer.name, image_layer)
+        track_widget.segmentation.setCurrentIndex(0)
+        track_widget.segmentation.setCurrentText(
+            track_widget.viewer.layers[
+                track_widget.segmentation.currentIndex()
+            ].name
+        )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
-        track_widget.call_button.clicked()
+        track_widget.call_button.click()
 
     assert run_tracker.called
     assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS

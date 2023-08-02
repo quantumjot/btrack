@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Widget
-
-import magicgui
+from qtpy import QtWidgets
 
 
 def _make_label_bold(label: str) -> str:
@@ -14,84 +9,59 @@ def _make_label_bold(label: str) -> str:
     return f"<b>{label}</b>"
 
 
-def _create_sigma_widgets() -> list[Widget]:
+def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for setting the magnitudes of the MotionModel matrices"""
 
-    P_sigma_tooltip = (
+    P_sigma = QtWidgets.QDoubleSpinBox()
+    P_sigma.setToolTip(
         "Magnitude of error in initial estimates.\n"
         "Used to scale the matrix P."
     )
-    P_sigma = magicgui.widgets.create_widget(
-        value=150.0,
-        name="P_sigma",
-        label=f"max({_make_label_bold('P')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": P_sigma_tooltip},
-    )
+    P_sigma.setMaximum(250)
+    P_sigma.setValue(150.0)
+    P_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    widgets = {"P_sigma": (f"max({_make_label_bold('P')})", P_sigma)}
 
-    G_sigma_tooltip = (
+    G_sigma = QtWidgets.QDoubleSpinBox()
+    G_sigma.setToolTip(
         "Magnitude of error in process.\n Used to scale the matrix G."
     )
-    G_sigma = magicgui.widgets.create_widget(
-        value=15.0,
-        name="G_sigma",
-        label=f"max({_make_label_bold('G')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": G_sigma_tooltip},
-    )
+    G_sigma.setMaximum(250)
+    G_sigma.setValue(15.0)
+    G_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    widgets["G_sigma"] = (f"max({_make_label_bold('G')})", G_sigma)
 
-    R_sigma_tooltip = (
+    R_sigma = QtWidgets.QDoubleSpinBox()
+    R_sigma.setToolTip(
         "Magnitude of error in measurements.\n Used to scale the matrix R."
     )
-    R_sigma = magicgui.widgets.create_widget(
-        value=5.0,
-        name="R_sigma",
-        label=f"max({_make_label_bold('R')})",
-        widget_type="FloatSpinBox",
-        options={"tooltip": R_sigma_tooltip},
-    )
+    R_sigma.setMaximum(250)
+    R_sigma.setValue(5.0)
+    R_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    widgets["R_sigma"] = (f"max({_make_label_bold('R')})", R_sigma)
 
-    return [
-        P_sigma,
-        G_sigma,
-        R_sigma,
-    ]
+    return widgets
 
 
-def create_motion_model_widgets() -> list[Widget]:
+def create_motion_model_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for setting parameters of the MotionModel"""
 
-    motion_model_label = magicgui.widgets.create_widget(
-        label=_make_label_bold("Motion model"),
-        widget_type="Label",
-        gui_only=True,
-    )
+    widgets = _create_sigma_widgets()
 
-    sigma_widgets = _create_sigma_widgets()
+    accuracy = QtWidgets.QDoubleSpinBox()
+    accuracy.setToolTip("Integration limits for calculating probabilities")
+    accuracy.setValue(7.5)
+    accuracy.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    widgets["accuracy"] = ("accuracy", accuracy)
 
-    accuracy_tooltip = "Integration limits for calculating probabilities"
-    accuracy = magicgui.widgets.create_widget(
-        value=7.5,
-        name="accuracy",
-        label="accuracy",
-        widget_type="FloatSpinBox",
-        options={"tooltip": accuracy_tooltip},
-    )
-
-    max_lost_frames_tooltip = (
+    max_lost_frames = QtWidgets.QSpinBox()
+    max_lost_frames.setToolTip(
         "Number of frames without observation before marking as lost"
     )
-    max_lost_frames = magicgui.widgets.create_widget(
-        value=5,
-        name="max_lost",
-        label="max lost",
-        widget_type="SpinBox",
-        options={"tooltip": max_lost_frames_tooltip},
+    max_lost_frames.setValue(5)
+    max_lost_frames.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
     )
+    widgets["max_lost"] = ("max lost", max_lost_frames)
 
-    return [
-        motion_model_label,
-        *sigma_widgets,
-        accuracy,
-        max_lost_frames,
-    ]
+    return widgets

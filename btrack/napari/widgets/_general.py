@@ -1,84 +1,65 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from magicgui.widgets import Widget
-
-import magicgui
-import napari
+from qtpy import QtWidgets
 
 
-def create_input_widgets() -> list[Widget]:
+def create_input_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
-    segmentation_tooltip = (
+    # TODO: annotation=napari.layers.Labels,
+    segmentation = QtWidgets.QComboBox()
+    segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"
         "To use an 'Image' layer, first convert 'Labels' by right-clicking "
         "on it in the layers list, and clicking on 'Convert to Labels'"
     )
-    segmentation = magicgui.widgets.create_widget(
-        annotation=napari.layers.Labels,
-        name="segmentation",
-        label="segmentation",
-        options={"tooltip": segmentation_tooltip},
-    )
+    widgets = {"segmentation": ("segmentation", segmentation)}
 
-    config_tooltip = (
+    config = QtWidgets.QComboBox()
+    config.addItems(["cell", "particle"])
+    config.setToolTip(
         "Select a loaded configuration.\n"
         "Note, this will update values set below."
     )
-    config = magicgui.widgets.create_widget(
-        value="cell",
-        name="config",
-        label="config name",
-        widget_type="ComboBox",
-        options={
-            "choices": ["cell", "particle"],
-            "tooltip": config_tooltip,
-        },
-    )
+    widgets["config"] = ("config name", config)
 
-    return [segmentation, config]
+    return widgets
 
 
-def create_update_method_widgets() -> list[Widget]:
+def create_update_method_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for selecting the update method"""
 
-    update_method_tooltip = (
+    update_method = QtWidgets.QComboBox()
+    update_method.addItems(
+        [
+            "EXACT",
+            "APPROXIMATE",
+        ]
+    )
+    update_method.setToolTip(
         "Select the update method.\n"
         "EXACT: exact calculation of Bayesian belief matrix.\n"
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
         "more than 1000 particles per frame."
     )
-    update_method = magicgui.widgets.create_widget(
-        value="EXACT",
-        name="update_method",
-        label="update method",
-        widget_type="ComboBox",
-        options={
-            "choices": ["EXACT", "APPROXIMATE"],
-            "tooltip": update_method_tooltip,
-        },
-    )
+    widgets = {"update_method": ("update method", update_method)}
 
-    # TODO: this widget should be hidden when the update method is set to EXACT
-    max_search_radius_tooltip = (
+    max_search_radius = QtWidgets.QDoubleSpinBox()
+    max_search_radius.setRange(0, 1000)
+    max_search_radius.setToolTip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    max_search_radius = magicgui.widgets.create_widget(
-        value=100,
-        name="max_search_radius",
-        label="search radius",
-        widget_type="SpinBox",
-        options={"tooltip": max_search_radius_tooltip},
+    max_search_radius.setWrapping(True)  # noqa: FBT003
+    max_search_radius.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
     )
+    widgets["max_search_radius"] = ("search radius", max_search_radius)
 
-    return [update_method, max_search_radius]
+    return widgets
 
 
-def create_control_widgets() -> list[Widget]:
+def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for running the analysis or handling I/O.
 
     This includes widgets for running the tracking, saving and loading
@@ -104,14 +85,11 @@ def create_control_widgets() -> list[Widget]:
         "Run the tracking analysis with the current configuration.",
     ]
 
-    control_buttons = []
+    control_buttons = {}
     for name, label, tooltip in zip(names, labels, tooltips):
-        widget = magicgui.widgets.create_widget(
-            name=name,
-            label=label,
-            widget_type="PushButton",
-            options={"tooltip": tooltip},
-        )
-        control_buttons.append(widget)
+        widget = QtWidgets.QPushButton()
+        widget.setText(label)
+        widget.setToolTip(tooltip)
+        control_buttons[name] = widget
 
     return control_buttons

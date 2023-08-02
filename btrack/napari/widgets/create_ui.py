@@ -5,8 +5,8 @@ from qtpy import QtWidgets
 from napari.viewer import Viewer
 
 from btrack.napari.widgets._general import (
-    create_control_widgets,
     create_input_widgets,
+    create_io_widgets,
     create_update_method_widgets,
 )
 from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
@@ -23,7 +23,7 @@ def create_widgets() -> (
         | create_update_method_widgets()
         | create_motion_model_widgets()
         | create_hypothesis_model_widgets()
-        | create_control_widgets()
+        | create_io_widgets()
     )
 
 
@@ -53,7 +53,7 @@ class BtrackWidget(QtWidgets.QWidget):
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
-        self._add_control_buttons_widgets()
+        self._add_io_widgets()
         for name, widget in self._widgets.items():
             self.__setattr__(
                 name,
@@ -68,17 +68,12 @@ class BtrackWidget(QtWidgets.QWidget):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Input")
-        widget_holder = QtWidgets.QWidget()
-        tab.setWidget(widget_holder)
-        # Let the scroll area automatically resize the widget
-        tab.setWidgetResizable(True)  # noqa: FBT003
-
+        widget_holder = QtWidgets.QGroupBox("Input")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
+        self._layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
@@ -88,7 +83,7 @@ class BtrackWidget(QtWidgets.QWidget):
         )
 
         tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Method")
+        self._tabs.addTab(tab, "Basic")
         widget_holder = QtWidgets.QWidget()
         tab.setWidget(widget_holder)
         # Let the scroll area automatically resize the widget
@@ -137,10 +132,19 @@ class BtrackWidget(QtWidgets.QWidget):
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
 
-    def _add_control_buttons_widgets(self) -> None:
-        """Create control buttons widgets and add to main layout"""
-        control_buttons_widgets = create_control_widgets()
-        self._widgets.update(control_buttons_widgets)
+    def _add_io_widgets(self) -> None:
+        """Creates the IO widgets related to the user config"""
+        io_widgets = create_io_widgets()
+        self._widgets.update(io_widgets)
 
-        for widget in control_buttons_widgets.values():
-            self._layout.addWidget(widget)
+        tab = QtWidgets.QScrollArea()
+        self._tabs.addTab(tab, "I/O")
+        widget_holder = QtWidgets.QWidget()
+        tab.setWidget(widget_holder)
+        # Let the scroll area automatically resize the widget
+        tab.setWidgetResizable(True)  # noqa: FBT003
+
+        layout = QtWidgets.QFormLayout()
+        for widget in io_widgets.values():
+            layout.addRow(widget)
+        widget_holder.setLayout(layout)

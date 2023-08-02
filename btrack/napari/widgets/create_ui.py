@@ -48,9 +48,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self.setWidgetResizable(True)  # noqa: FBT003
 
         self._scroll_layout = QtWidgets.QVBoxLayout()
-        self._scroll_widget = QtWidgets.QWidget()
-        self._scroll_widget.setLayout(self._scroll_layout)
-        self.setWidget(self._scroll_widget)
+        _scroll_widget = QtWidgets.QWidget()
+        _scroll_widget.setLayout(self._scroll_layout)
+        self.setWidget(_scroll_widget)
 
         # Create widgets and add to layout
         self._widgets = {}
@@ -68,10 +68,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
     def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""
         labels_and_widgets = create_input_widgets()
-        self._input_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._input_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
         widget_holder = QtWidgets.QGroupBox("Input")
         layout = QtWidgets.QFormLayout()
@@ -83,10 +82,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
         labels_and_widgets = create_update_method_widgets()
-        self._update_method_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._update_method_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
         widget_holder = QtWidgets.QGroupBox("Method")
         layout = QtWidgets.QFormLayout()
@@ -98,10 +96,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
     def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
         labels_and_widgets = create_motion_model_widgets()
-        self._motion_model_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._motion_model_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
         widget_holder = QtWidgets.QGroupBox("Motion")
         layout = QtWidgets.QFormLayout()
@@ -113,10 +110,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
     def _add_hypothesis_model_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
         labels_and_widgets = create_hypothesis_model_widgets()
-        self._hypothesis_model_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._hypothesis_model_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
         widget_holder = QtWidgets.QGroupBox("Hypothesis")
         layout = QtWidgets.QFormLayout()
@@ -127,8 +123,8 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
     def _add_control_buttons_widgets(self) -> None:
         """Create control buttons widgets and add to main layout"""
-        self._control_buttons_widgets = create_control_widgets()
-        self._widgets.update(self._control_buttons_widgets)
+        control_buttons_widgets = create_control_widgets()
+        self._widgets.update(control_buttons_widgets)
 
-        for widget in self._control_buttons_widgets.values():
+        for widget in control_buttons_widgets.values():
             self._scroll_layout.addWidget(widget)

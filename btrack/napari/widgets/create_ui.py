@@ -80,7 +80,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder = QtWidgets.QGroupBox("Input")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(QtWidgets.QLabel(label), widget)
+            label_widget = QtWidgets.QLabel(label)
+            label_widget.setToolTip(widget.toolTip())
+            layout.addRow(label_widget, widget)
         widget_holder.setLayout(layout)
         self._main_layout.addWidget(widget_holder)
 
@@ -93,7 +95,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(QtWidgets.QLabel(label), widget)
+            label_widget = QtWidgets.QLabel(label)
+            label_widget.setToolTip(widget.toolTip())
+            layout.addRow(label_widget, widget)
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
@@ -108,7 +112,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(QtWidgets.QLabel(label), widget)
+            label_widget = QtWidgets.QLabel(label)
+            label_widget.setToolTip(widget.toolTip())
+            layout.addRow(label_widget, widget)
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
@@ -123,7 +129,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
-            layout.addRow(QtWidgets.QLabel(label), widget)
+            label_widget = QtWidgets.QLabel(label)
+            label_widget.setToolTip(widget.toolTip())
+            layout.addRow(label_widget, widget)
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)

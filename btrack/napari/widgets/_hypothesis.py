@@ -19,21 +19,22 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Hypothesis that two tracklets merge into one tracklet.",
     ]
 
-    hypotheses_widgets = {}
-    for hypothesis, tooltip in zip(hypotheses, tooltips):
-        widget = QtWidgets.QCheckBox()
-        widget.setChecked(True)  # noqa: FBT003
-        widget.setToolTip(tooltip)
-        widget.setTristate(False)  # noqa: FBT003
-        hypotheses_widgets[hypothesis] = (hypothesis.replace("_", " "), widget)
+    widget = QtWidgets.QListWidget()
+    widget.addItems(hypotheses)
+    for i, tooltip in enumerate(tooltips):
+        widget.item(i).setCheckState(True)  # noqa: FBT003
+        widget.item(i).setToolTip(tooltip)
 
+    # TODO: Can this be done for QListWidgetItem?
     # P_FP is always required
-    hypotheses_widgets["P_FP"][1].setEnabled(False)  # noqa: FBT003
+    # widget.item(hypotheses.index("P_FP")).setEnabled(True)
 
-    # P_merge should be disabled by default
-    hypotheses_widgets["P_merge"][1].setChecked(False)  # noqa: FBT003
+    # # P_merge should be disabled by default
+    widget.item(hypotheses.index("P_merge")).setCheckState(
+        False  # noqa: FBT003
+    )
 
-    return hypotheses_widgets
+    return {"hypotheses": ("", widget)}
 
 
 def _create_scaling_factor_widgets() -> (

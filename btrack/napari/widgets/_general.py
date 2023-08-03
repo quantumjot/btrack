@@ -59,7 +59,7 @@ def create_update_method_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     return widgets
 
 
-def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_io_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for running the analysis or handling I/O.
 
     This includes widgets for running the tracking, saving and loading
@@ -70,26 +70,32 @@ def create_control_widgets() -> dict[str, QtWidgets.QWidget]:
         "load_config_button",
         "save_config_button",
         "reset_button",
-        "call_button",
     ]
     labels = [
         "Load configuration",
         "Save configuration",
         "Reset defaults",
-        "Run",
     ]
     tooltips = [
         "Load a TrackerConfig json file.",
         "Export the current configuration to a TrackerConfig json file.",
         "Reset the current configuration to the defaults stored in the corresponding json file.",  # noqa: E501
-        "Run the tracking analysis with the current configuration.",
     ]
 
-    control_buttons = {}
+    widgets = {}
     for name, label, tooltip in zip(names, labels, tooltips):
         widget = QtWidgets.QPushButton()
         widget.setText(label)
         widget.setToolTip(tooltip)
-        control_buttons[name] = widget
+        widgets[name] = widget
 
-    return control_buttons
+    return widgets
+
+
+def create_track_widgets() -> dict[str, QtWidgets.QWidget]:
+    call_button = QtWidgets.QPushButton("Track")
+    call_button.setToolTip(
+        "Run the tracking analysis with the current configuration.",
+    )
+
+    return {"call_button": call_button}

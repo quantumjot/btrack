@@ -5,8 +5,9 @@ from qtpy import QtWidgets
 from napari.viewer import Viewer
 
 from btrack.napari.widgets._general import (
-    create_control_widgets,
     create_input_widgets,
+    create_io_widgets,
+    create_track_widgets,
     create_update_method_widgets,
 )
 from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
@@ -14,7 +15,7 @@ from btrack.napari.widgets._motion import create_motion_model_widgets
 
 
 def create_widgets() -> (
-    dict[str, QtWidgets.QWidget | tuple(str, QtWidgets.QWidget)]
+    dict[str, QtWidgets.QWidget | tuple[str, QtWidgets.QWidget]]
 ):
     """Create all the widgets for the plugin"""
 
@@ -23,7 +24,7 @@ def create_widgets() -> (
         | create_update_method_widgets()
         | create_motion_model_widgets()
         | create_hypothesis_model_widgets()
-        | create_control_widgets()
+        | create_io_widgets()
     )
 
 
@@ -47,18 +48,22 @@ class BtrackWidget(QtWidgets.QScrollArea):
         # Let the scroll area automatically resize the widget
         self.setWidgetResizable(True)  # noqa: FBT003
 
-        self._scroll_layout = QtWidgets.QVBoxLayout()
-        self._scroll_widget = QtWidgets.QWidget()
-        self._scroll_widget.setLayout(self._scroll_layout)
-        self.setWidget(self._scroll_widget)
+        self._main_layout = QtWidgets.QVBoxLayout()
+        self._main_widget = QtWidgets.QWidget()
+        self._main_widget.setLayout(self._main_layout)
+        self.setWidget(self._main_widget)
+        self._tabs = QtWidgets.QTabWidget()
 
         # Create widgets and add to layout
         self._widgets = {}
         self._add_input_widgets()
+        # This must be added after the input widgets
+        self._main_layout.addWidget(self._tabs)
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
-        self._add_control_buttons_widgets()
+        self._add_io_widgets()
+        self._add_track_widgets()
         for name, widget in self._widgets.items():
             self.__setattr__(
                 name,
@@ -68,67 +73,78 @@ class BtrackWidget(QtWidgets.QScrollArea):
     def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""
         labels_and_widgets = create_input_widgets()
-        self._input_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._input_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
         widget_holder = QtWidgets.QGroupBox("Input")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
+        self._main_layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
         labels_and_widgets = create_update_method_widgets()
-        self._update_method_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._update_method_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
-        widget_holder = QtWidgets.QGroupBox("Method")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Method")
 
     def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
         labels_and_widgets = create_motion_model_widgets()
-        self._motion_model_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._motion_model_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
-        widget_holder = QtWidgets.QGroupBox("Motion")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Motion")
 
     def _add_hypothesis_model_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
         labels_and_widgets = create_hypothesis_model_widgets()
-        self._hypothesis_model_widgets = {
-            key: value[1] for key, value in labels_and_widgets.items()
-        }
-        self._widgets.update(self._hypothesis_model_widgets)
+        self._widgets.update(
+            {key: value[1] for key, value in labels_and_widgets.items()}
+        )
 
-        widget_holder = QtWidgets.QGroupBox("Hypothesis")
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
-        self._scroll_layout.addWidget(widget_holder)
 
-    def _add_control_buttons_widgets(self) -> None:
-        """Create control buttons widgets and add to main layout"""
-        self._control_buttons_widgets = create_control_widgets()
-        self._widgets.update(self._control_buttons_widgets)
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Hypothesis")
 
-        for widget in self._control_buttons_widgets.values():
-            self._scroll_layout.addWidget(widget)
+    def _add_io_widgets(self) -> None:
+        """Creates the IO widgets related to the user config"""
+        io_widgets = create_io_widgets()
+        self._widgets.update(io_widgets)
+
+        layout = QtWidgets.QFormLayout()
+        for widget in io_widgets.values():
+            layout.addRow(widget)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "I/O")
+
+    def _add_track_widgets(self) -> None:
+        """Create widgets for running the tracking"""
+        track_widgets = create_track_widgets()
+        self._widgets.update(track_widgets)
+        for widget in track_widgets.values():
+            self._main_layout.addWidget(widget)

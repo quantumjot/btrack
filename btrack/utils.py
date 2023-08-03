@@ -288,9 +288,9 @@ def update_segmentation(
         ]
     )
 
-    scale = tuple([1.0] * segmentation.ndim - 1) if scale is None else scale
+    scale = tuple([1.0] * (segmentation.ndim - 1)) if scale is None else scale
 
-    if segmentation.ndim - 1 != len(scale):
+    if (segmentation.ndim - 1) != len(scale):
         raise ValueError(
             "Scale should have the same number of spatial dimensions as `segmentation`."
         )

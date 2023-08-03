@@ -247,6 +247,7 @@ def update_segmentation(
     scale : tuple, optional
         A scale for each spatial dimension of the input tracks. Defaults
         to one for all axes, and allows scaling for anisotropic imaging data.
+        Dimensions should be ordered XY(Z).
     color_by : str, default = "ID"
         A value to recolor the segmentation by.
 
@@ -287,7 +288,12 @@ def update_segmentation(
         ]
     )
 
-    scale = tuple([1.0] * segmentation.ndim) if scale is None else scale
+    scale = tuple([1.0] * segmentation.ndim - 1) if scale is None else scale
+
+    if segmentation.ndim - 1 != len(scale):
+        raise ValueError(
+            "Scale should have the same number of spatial dimensions as `segmentation`."
+        )
 
     if color_by not in keys:
         raise ValueError(f"Property ``{color_by}`` not found in track.")

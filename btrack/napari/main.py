@@ -257,6 +257,9 @@ def run(
         activity_dock_visible
     )
 
+    message = f"Finished tracking for '{segmentation_name}'"
+    napari.utils.notifications.show_info(message)
+
 
 def _run_tracker(
     segmentation: napari.layers.Image | napari.layers.Labels,

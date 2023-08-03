@@ -57,9 +57,8 @@ class BtrackWidget(QtWidgets.QScrollArea):
         # Create widgets and add to layout
         self._widgets = {}
         self._add_input_widgets()
-        self._main_layout.addWidget(
-            self._tabs
-        )  # This must be added after the input widgets
+        # This must be added after the input widgets
+        self._main_layout.addWidget(self._tabs)
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()

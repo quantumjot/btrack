@@ -144,7 +144,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 def create_hypothesis_model_widgets() -> (
     dict[str, tuple[str, QtWidgets.QWidget]]
 ):
-    """Create widgets for setting parameters of the MotionModel"""
+    """Create widgets for setting parameters of the HypothesisModel"""
 
     widgets = {
         **_create_hypotheses_widgets(),

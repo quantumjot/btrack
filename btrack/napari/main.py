@@ -292,7 +292,7 @@ def _run_tracker(
 
         # track them (in interactive mode)
         pbr.set_description("Run tracking")
-        tracker.track_interactive(step_size=100)
+        tracker.track(step_size=100)
         pbr.update(1)
 
         # generate hypotheses and run the global optimizer

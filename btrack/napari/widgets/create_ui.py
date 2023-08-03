@@ -51,11 +51,11 @@ class BtrackWidget(QtWidgets.QWidget):
         # Create widgets and add to layout
         self._widgets = {}
         self._add_input_widgets()
+        self._layout.addWidget(self._tabs)
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
         self._add_io_widgets()
-        self._layout.addWidget(self._tabs)
         self._add_track_widgets()
         for name, widget in self._widgets.items():
             self.__setattr__(
@@ -84,17 +84,13 @@ class BtrackWidget(QtWidgets.QWidget):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Method")
-        widget_holder = QtWidgets.QWidget()
-        tab.setWidget(widget_holder)
-        # Let the scroll area automatically resize the widget
-        tab.setWidgetResizable(True)  # noqa: FBT003
-
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Method")
 
     def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
@@ -103,17 +99,13 @@ class BtrackWidget(QtWidgets.QWidget):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Motion")
-        widget_holder = QtWidgets.QWidget()
-        tab.setWidget(widget_holder)
-        # Let the scroll area automatically resize the widget
-        tab.setWidgetResizable(True)  # noqa: FBT003
-
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Motion")
 
     def _add_hypothesis_model_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
@@ -122,34 +114,26 @@ class BtrackWidget(QtWidgets.QWidget):
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
 
-        tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "Hypothesis")
-        widget_holder = QtWidgets.QWidget()
-        tab.setWidget(widget_holder)
-        # Let the scroll area automatically resize the widget
-        tab.setWidgetResizable(True)  # noqa: FBT003
-
         layout = QtWidgets.QFormLayout()
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
-        widget_holder.setLayout(layout)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "Hypothesis")
 
     def _add_io_widgets(self) -> None:
         """Creates the IO widgets related to the user config"""
         io_widgets = create_io_widgets()
         self._widgets.update(io_widgets)
 
-        tab = QtWidgets.QScrollArea()
-        self._tabs.addTab(tab, "I/O")
-        widget_holder = QtWidgets.QWidget()
-        tab.setWidget(widget_holder)
-        # Let the scroll area automatically resize the widget
-        tab.setWidgetResizable(True)  # noqa: FBT003
-
         layout = QtWidgets.QFormLayout()
         for widget in io_widgets.values():
             layout.addRow(widget)
-        widget_holder.setLayout(layout)
+
+        tab = QtWidgets.QWidget()
+        tab.setLayout(layout)
+        self._tabs.addTab(tab, "I/O")
 
     def _add_track_widgets(self) -> None:
         """Create widgets for running the tracking"""

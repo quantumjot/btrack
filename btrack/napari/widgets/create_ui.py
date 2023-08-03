@@ -58,12 +58,17 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self._widgets = {}
         self._add_input_widgets()
         # This must be added after the input widgets
-        self._main_layout.addWidget(self._tabs)
+        self._main_layout.addWidget(self._tabs, stretch=0)
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
         self._add_io_widgets()
         self._add_track_widgets()
+
+        # Expand the main widget
+        self._main_layout.addStretch(stretch=1)
+
+        # Add attribute access for each widget
         for name, widget in self._widgets.items():
             self.__setattr__(
                 name,
@@ -84,7 +89,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
             label_widget.setToolTip(widget.toolTip())
             layout.addRow(label_widget, widget)
         widget_holder.setLayout(layout)
-        self._main_layout.addWidget(widget_holder)
+        self._main_layout.addWidget(widget_holder, stretch=0)
 
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
@@ -155,4 +160,4 @@ class BtrackWidget(QtWidgets.QScrollArea):
         track_widgets = create_track_widgets()
         self._widgets.update(track_widgets)
         for widget in track_widgets.values():
-            self._main_layout.addWidget(widget)
+            self._main_layout.addWidget(widget, stretch=0)

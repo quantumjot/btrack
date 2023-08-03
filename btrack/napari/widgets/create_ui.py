@@ -48,7 +48,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         # Let the scroll area automatically resize the widget
         self.setWidgetResizable(True)  # noqa: FBT003
 
-        self._main_layout = QtWidgets.QVBoxLayout(self)
+        self._main_layout = QtWidgets.QVBoxLayout()
         self._main_widget = QtWidgets.QWidget()
         self._main_widget.setLayout(self._main_layout)
         self.setWidget(self._main_widget)

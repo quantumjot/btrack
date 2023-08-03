@@ -15,7 +15,7 @@ from btrack.napari.widgets._motion import create_motion_model_widgets
 
 
 def create_widgets() -> (
-    dict[str, QtWidgets.QWidget | tuple(str, QtWidgets.QWidget)]
+    dict[str, QtWidgets.QWidget | tuple[str, QtWidgets.QWidget]]
 ):
     """Create all the widgets for the plugin"""
 

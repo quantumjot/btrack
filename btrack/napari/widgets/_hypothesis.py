@@ -5,7 +5,7 @@ from qtpy import QtWidgets
 import btrack.napari.constants
 
 
-def _create_hypotheses_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting which hypotheses to generate."""
 
     hypotheses = btrack.optimise.hypothesis.H_TYPES
@@ -37,7 +37,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
 
 
 def _create_scaling_factor_widgets() -> (
-    dict[str, tuple(str, QtWidgets.QWidget)]
+    dict[str, tuple[str, QtWidgets.QWidget]]
 ):
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
@@ -74,7 +74,7 @@ def _create_scaling_factor_widgets() -> (
     return scaling_factor_widgets
 
 
-def _create_threshold_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting thresholds for the HypothesisModel"""
 
     distance_threshold = QtWidgets.QDoubleSpinBox()
@@ -113,7 +113,7 @@ def _create_threshold_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     return widgets
 
 
-def _create_bin_size_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widget for setting bin sizes for the HypothesisModel"""
 
     distance_bin_size = QtWidgets.QDoubleSpinBox()
@@ -142,7 +142,7 @@ def _create_bin_size_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
 
 
 def create_hypothesis_model_widgets() -> (
-    dict[str, tuple(str, QtWidgets.QWidget)]
+    dict[str, tuple[str, QtWidgets.QWidget]]
 ):
     """Create widgets for setting parameters of the MotionModel"""
 

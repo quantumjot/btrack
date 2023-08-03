@@ -28,7 +28,7 @@ def create_widgets() -> (
     )
 
 
-class BtrackWidget(QtWidgets.QWidget):
+class BtrackWidget(QtWidgets.QScrollArea):
     """Main btrack widget"""
 
     def __getitem__(self, key: str) -> QtWidgets.QWidget:
@@ -45,13 +45,21 @@ class BtrackWidget(QtWidgets.QWidget):
         # We will need to viewer for various callbacks
         self.viewer = napari_viewer
 
-        self._layout = QtWidgets.QVBoxLayout(self)
+        # Let the scroll area automatically resize the widget                    │    │
+        self.setWidgetResizable(True)  # noqa: FBT003
+
+        self._main_layout = QtWidgets.QVBoxLayout(self)
+        self._main_widget = QtWidgets.QWidget()
+        self._main_widget.setLayout(self._main_layout)
+        self.setWidget(self._main_widget)
         self._tabs = QtWidgets.QTabWidget()
 
         # Create widgets and add to layout
         self._widgets = {}
         self._add_input_widgets()
-        self._layout.addWidget(self._tabs)
+        self._main_layout.addWidget(
+            self._tabs
+        )  # This must be added after the input widgets
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
@@ -75,7 +83,7 @@ class BtrackWidget(QtWidgets.QWidget):
         for label, widget in labels_and_widgets.values():
             layout.addRow(QtWidgets.QLabel(label), widget)
         widget_holder.setLayout(layout)
-        self._layout.addWidget(widget_holder)
+        self._main_layout.addWidget(widget_holder)
 
     def _add_update_method_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
@@ -140,4 +148,4 @@ class BtrackWidget(QtWidgets.QWidget):
         track_widgets = create_track_widgets()
         self._widgets.update(track_widgets)
         for widget in track_widgets.values():
-            self._layout.addWidget(widget)
+            self._main_layout.addWidget(widget)

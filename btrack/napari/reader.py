@@ -2,10 +2,9 @@
 This module is a reader plugin btrack files for napari.
 """
 import os
+import pathlib
 from collections.abc import Sequence
 from typing import Callable, Optional, Union
-
-from napari_plugin_engine import napari_hook_implementation
 
 from napari.types import LayerDataTuple
 
@@ -17,7 +16,6 @@ PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
 ReaderFunction = Callable[[PathOrPaths], list[LayerDataTuple]]
 
 
-@napari_hook_implementation
 def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
     """A basic implementation of the napari_get_reader hook specification.
 
@@ -32,7 +30,23 @@ def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
         If the path is a recognized format, return a function that accepts the
         same path or list of paths, and returns a list of layer data tuples.
     """
-    return reader_function
+    if isinstance(path, list):
+        # reader plugins may be handed single path, or a list of paths.
+        # if it is a list, it is assumed to be an image stack...
+        # so we are only going to look at the first file.
+        path = path[0]
+
+    # if we know we cannot read the file, we immediately return None.
+    supported_extensions = [
+        ".h5",
+        ".hdf",
+        ".hdf5",
+    ]
+    return (
+        reader_function
+        if pathlib.Path(path).suffix in supported_extensions
+        else None
+    )
 
 
 def reader_function(path: PathOrPaths) -> list[LayerDataTuple]:

@@ -7,6 +7,7 @@ from napari.viewer import Viewer
 from btrack.napari.widgets._general import (
     create_input_widgets,
     create_io_widgets,
+    create_track_widgets,
     create_update_method_widgets,
 )
 from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
@@ -54,12 +55,13 @@ class BtrackWidget(QtWidgets.QWidget):
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
         self._add_io_widgets()
+        self._layout.addWidget(self._tabs)
+        self._add_track_widgets()
         for name, widget in self._widgets.items():
             self.__setattr__(
                 name,
                 widget,
             )
-        self._layout.addWidget(self._tabs)
 
     def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""
@@ -148,3 +150,10 @@ class BtrackWidget(QtWidgets.QWidget):
         for widget in io_widgets.values():
             layout.addRow(widget)
         widget_holder.setLayout(layout)
+
+    def _add_track_widgets(self) -> None:
+        """Create widgets for running the tracking"""
+        track_widgets = create_track_widgets()
+        self._widgets.update(track_widgets)
+        for widget in track_widgets.values():
+            self._layout.addWidget(widget)

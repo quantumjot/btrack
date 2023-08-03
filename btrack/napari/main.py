@@ -80,9 +80,9 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
-    # btrack_widget.call_button.clicked.connect(
-    #     lambda: run(btrack_widget, all_configs),
-    # )
+    btrack_widget.call_button.clicked.connect(
+        lambda: run(btrack_widget, all_configs),
+    )
 
     btrack_widget.reset_button.clicked.connect(
         lambda: restore_defaults(btrack_widget, all_configs),

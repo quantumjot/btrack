@@ -90,3 +90,12 @@ def create_io_widgets() -> dict[str, QtWidgets.QWidget]:
         widgets[name] = widget
 
     return widgets
+
+
+def create_track_widgets() -> dict[str, QtWidgets.QWidget]:
+    call_button = QtWidgets.QPushButton("Track")
+    call_button.setToolTip(
+        "Run the tracking analysis with the current configuration.",
+    )
+
+    return {"call_button": call_button}

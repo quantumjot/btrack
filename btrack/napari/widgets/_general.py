@@ -56,6 +56,27 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     )
     widgets["max_search_radius"] = ("search radius", max_search_radius)
 
+    max_lost_frames = QtWidgets.QSpinBox()
+    max_lost_frames.setToolTip(
+        "Number of frames without observation before marking as lost"
+    )
+    max_lost_frames.setValue(5)
+    max_lost_frames.setStepType(
+        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
+    )
+    widgets["max_lost"] = ("max lost", max_lost_frames)
+
+    not_assign = QtWidgets.QDoubleSpinBox()
+    not_assign.setToolTip("Default probability to not assign a track")
+    not_assign.setDecimals(3)
+    not_assign.setValue(0.001)
+    not_assign.setRange(0, 1)
+    not_assign.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    widgets["prob_not_assign"] = (
+        "<b>P</b>(not track)",
+        not_assign,
+    )
+
     return widgets
 
 

@@ -8,9 +8,7 @@ import btrack.napari.constants
 def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting which hypotheses to generate."""
 
-    hypotheses = [
-        h.replace("_", " ") for h in btrack.optimise.hypothesis.H_TYPES
-    ]
+    hypotheses = btrack.optimise.hypothesis.H_TYPES
     tooltips = [
         "Hypothesis that a tracklet is a false positive detection. Always required.",
         "Hypothesis that a tracklet starts at the beginning of the movie or edge of the field of view.",  # noqa: E501
@@ -22,7 +20,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     ]
 
     widget = QtWidgets.QListWidget()
-    widget.addItems(hypotheses)
+    widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
     flags = QtCore.Qt.ItemFlags(
         QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled
     )
@@ -32,12 +30,12 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         widget.item(i).setToolTip(tooltip)
 
     # P_FP is always required
-    widget.item(hypotheses.index("P FP")).setFlags(
+    widget.item(hypotheses.index("P_FP")).setFlags(
         QtCore.Qt.ItemIsUserCheckable,
     )
 
     # # P_merge should be disabled by default
-    widget.item(hypotheses.index("P merge")).setCheckState(
+    widget.item(hypotheses.index("P_merge")).setCheckState(
         QtCore.Qt.CheckState.Unchecked
     )
 

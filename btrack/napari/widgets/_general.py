@@ -16,9 +16,8 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
     logo.setPixmap(
         QtGui.QPixmap(
             str(
-                Path(__file__).resolve().parents[3]
-                / "docs"
-                / "_static"
+                Path(__file__).resolve().parents[1]
+                / "assets"
                 / "btrack_logo.png"
             )
         )

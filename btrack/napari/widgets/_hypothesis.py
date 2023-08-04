@@ -36,7 +36,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     # # P_merge should be disabled by default
     widget.item(hypotheses.index("P_merge")).setCheckState(
-        False  # noqa: FBT003
+        QtCore.Qt.CheckState.Unchecked
     )
 
     return {"hypotheses": ("", widget)}

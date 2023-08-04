@@ -175,7 +175,7 @@ class PyTrackObject(ctypes.Structure):
 
         # we can add any extra details to the properties dictionary
         obj.properties = {
-            k: v for k, v in properties.items() if k not in fields.keys()
+            k: v for k, v in properties.items() if k not in fields
         }
         return obj
 
@@ -353,7 +353,7 @@ class Tracklet:
     x values.
     """
 
-    def __init__(
+    def __init__(  # noqa: PLR0913
         self,
         ID: int,
         data: list[PyTrackObject],

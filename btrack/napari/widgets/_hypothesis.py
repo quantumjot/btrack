@@ -1,14 +1,16 @@
 from __future__ import annotations
 
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
 import btrack.napari.constants
 
 
-def _create_hypotheses_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting which hypotheses to generate."""
 
-    hypotheses = btrack.optimise.hypothesis.H_TYPES
+    hypotheses = [
+        h.replace("_", " ") for h in btrack.optimise.hypothesis.H_TYPES
+    ]
     tooltips = [
         "Hypothesis that a tracklet is a false positive detection. Always required.",
         "Hypothesis that a tracklet starts at the beginning of the movie or edge of the field of view.",  # noqa: E501
@@ -19,25 +21,31 @@ def _create_hypotheses_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
         "Hypothesis that two tracklets merge into one tracklet.",
     ]
 
-    hypotheses_widgets = {}
-    for hypothesis, tooltip in zip(hypotheses, tooltips):
-        widget = QtWidgets.QCheckBox()
-        widget.setChecked(True)  # noqa: FBT003
-        widget.setToolTip(tooltip)
-        widget.setTristate(False)  # noqa: FBT003
-        hypotheses_widgets[hypothesis] = (hypothesis.replace("_", " "), widget)
+    widget = QtWidgets.QListWidget()
+    widget.addItems(hypotheses)
+    flags = QtCore.Qt.ItemFlags(
+        QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled
+    )
+    for i, tooltip in enumerate(tooltips):
+        widget.item(i).setCheckState(QtCore.Qt.CheckState.Checked)
+        widget.item(i).setFlags(flags)
+        widget.item(i).setToolTip(tooltip)
 
     # P_FP is always required
-    hypotheses_widgets["P_FP"][1].setEnabled(False)  # noqa: FBT003
+    widget.item(hypotheses.index("P FP")).setFlags(
+        QtCore.Qt.ItemIsUserCheckable,
+    )
 
-    # P_merge should be disabled by default
-    hypotheses_widgets["P_merge"][1].setChecked(False)  # noqa: FBT003
+    # # P_merge should be disabled by default
+    widget.item(hypotheses.index("P merge")).setCheckState(
+        QtCore.Qt.CheckState.Unchecked
+    )
 
-    return hypotheses_widgets
+    return {"hypotheses": ("hypotheses", widget)}
 
 
 def _create_scaling_factor_widgets() -> (
-    dict[str, tuple(str, QtWidgets.QWidget)]
+    dict[str, tuple[str, QtWidgets.QWidget]]
 ):
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
@@ -74,7 +82,7 @@ def _create_scaling_factor_widgets() -> (
     return scaling_factor_widgets
 
 
-def _create_threshold_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting thresholds for the HypothesisModel"""
 
     distance_threshold = QtWidgets.QDoubleSpinBox()
@@ -113,7 +121,7 @@ def _create_threshold_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     return widgets
 
 
-def _create_bin_size_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
+def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widget for setting bin sizes for the HypothesisModel"""
 
     distance_bin_size = QtWidgets.QDoubleSpinBox()
@@ -142,9 +150,9 @@ def _create_bin_size_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
 
 
 def create_hypothesis_model_widgets() -> (
-    dict[str, tuple(str, QtWidgets.QWidget)]
+    dict[str, tuple[str, QtWidgets.QWidget]]
 ):
-    """Create widgets for setting parameters of the MotionModel"""
+    """Create widgets for setting parameters of the HypothesisModel"""
 
     widgets = {
         **_create_hypotheses_widgets(),

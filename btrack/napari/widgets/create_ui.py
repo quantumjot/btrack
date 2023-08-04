@@ -14,20 +14,6 @@ from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
 from btrack.napari.widgets._motion import create_motion_model_widgets
 
 
-def create_widgets() -> (
-    dict[str, QtWidgets.QWidget | tuple[str, QtWidgets.QWidget]]
-):
-    """Create all the widgets for the plugin"""
-
-    return (
-        create_input_widgets()
-        | create_update_method_widgets()
-        | create_motion_model_widgets()
-        | create_hypothesis_model_widgets()
-        | create_config_widgets()
-    )
-
-
 class BtrackWidget(QtWidgets.QScrollArea):
     """Main btrack widget"""
 

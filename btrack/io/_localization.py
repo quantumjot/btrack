@@ -178,7 +178,7 @@ class NodeProcessor:
         return nodes
 
 
-def segmentation_to_objects(
+def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[np.ndarray, Generator],
     *,
     intensity_image: Optional[Union[np.ndarray, Generator]] = None,

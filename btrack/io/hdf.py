@@ -391,7 +391,7 @@ class HDF5FileHandler:
 
         grp = self._hdf[f"objects/{self.object_type}"]
 
-        if "properties" not in grp.keys():
+        if "properties" not in grp:
             props_grp = grp.create_group("properties")
         else:
             props_grp = self._hdf[f"objects/{self.object_type}/properties"]

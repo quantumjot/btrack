@@ -96,3 +96,4 @@ class Dimensionality(enum.IntEnum):
     TWO: int = 2
     THREE: int = 3
     FOUR: int = 4
+    FIVE: int = 5

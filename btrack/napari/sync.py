@@ -43,7 +43,8 @@ def update_config_from_widgets(
     hypothesis_model.hypotheses = [
         hypothesis
         for i, hypothesis in enumerate(btrack.optimise.hypothesis.H_TYPES)
-        if btrack_widget["hypotheses"].item(i).isSelected()
+        if btrack_widget["hypotheses"].item(i).checkState()
+        == QtCore.Qt.CheckState.Checked
     ]
 
     # Update HypothesisModel scaling factors

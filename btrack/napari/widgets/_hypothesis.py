@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from qtpy import QtWidgets
+from qtpy import QtCore, QtWidgets
 
 import btrack.napari.constants
 
@@ -21,13 +21,18 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     widget = QtWidgets.QListWidget()
     widget.addItems(hypotheses)
+    flags = QtCore.Qt.ItemFlags(
+        QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled
+    )
     for i, tooltip in enumerate(tooltips):
-        widget.item(i).setCheckState(True)  # noqa: FBT003
+        widget.item(i).setCheckState(QtCore.Qt.CheckState.Checked)
+        widget.item(i).setFlags(flags)
         widget.item(i).setToolTip(tooltip)
 
-    # TODO: Can this be done for QListWidgetItem?
     # P_FP is always required
-    # widget.item(hypotheses.index("P_FP")).setEnabled(True)
+    widget.item(hypotheses.index("P_FP")).setFlags(
+        QtCore.Qt.ItemIsUserCheckable,
+    )
 
     # # P_merge should be disabled by default
     widget.item(hypotheses.index("P_merge")).setCheckState(

@@ -17,5 +17,3 @@ HYPOTHESIS_THRESHOLDS = [
     "time_thresh",
     "apop_thresh",
 ]
-
-QWIDGETLISTITEM_TRISTATE = {True: 2, False: 0}

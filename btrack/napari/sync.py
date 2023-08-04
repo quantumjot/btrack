@@ -10,6 +10,8 @@ if TYPE_CHECKING:
     import btrack.napari.widgets
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
+from qtpy import QtCore
+
 import btrack.napari.constants
 
 
@@ -90,9 +92,11 @@ def update_widgets_from_config(
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
     for i, hypothesis in enumerate(btrack.optimise.hypothesis.H_TYPES):
-        is_checked = btrack.napari.constants.QWIDGETLISTITEM_TRISTATE[
-            hypothesis in hypothesis_model.hypotheses
-        ]
+        is_checked = (
+            QtCore.Qt.CheckState.Checked
+            if hypothesis in hypothesis_model.hypotheses
+            else QtCore.Qt.CheckState.Unchecked
+        )
         btrack_widget["hypotheses"].item(i).setCheckState(is_checked)
 
     # Update widgets from HypothesisModel scaling factors

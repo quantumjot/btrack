@@ -1,6 +1,39 @@
 from __future__ import annotations
 
-from qtpy import QtWidgets
+from pathlib import Path
+
+from qtpy import QtCore, QtGui, QtWidgets
+
+
+def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
+    """Creates the widgets for the title, logo and documentation"""
+
+    title = QtWidgets.QLabel("<h3>Bayesian Tracker</h3>")
+    title.setAlignment(QtCore.Qt.AlignHCenter)
+    widgets = {"title": title}
+
+    logo = QtWidgets.QLabel()
+    logo.setPixmap(
+        QtGui.QPixmap(
+            str(
+                Path(__file__).resolve().parents[1]
+                / "assets"
+                / "btrack_logo.png"
+            )
+        )
+    )
+    widgets["logo"] = logo
+
+    docs = QtWidgets.QLabel(
+        '<a href="https://btrack.readthedocs.io">Documentation</a>'
+    )
+    docs.setAlignment(QtCore.Qt.AlignHCenter)
+    docs.setOpenExternalLinks(True)  # noqa: FBT003
+    docs.setTextFormat(QtCore.Qt.RichText)
+    docs.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+    widgets["documentation"] = docs
+
+    return widgets
 
 
 def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:

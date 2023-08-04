@@ -48,14 +48,4 @@ def create_motion_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     accuracy.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["accuracy"] = ("accuracy", accuracy)
 
-    max_lost_frames = QtWidgets.QSpinBox()
-    max_lost_frames.setToolTip(
-        "Number of frames without observation before marking as lost"
-    )
-    max_lost_frames.setValue(5)
-    max_lost_frames.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
-    widgets["max_lost"] = ("max lost", max_lost_frames)
-
     return widgets

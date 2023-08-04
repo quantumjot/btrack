@@ -37,6 +37,7 @@ def update_config_from_widgets(
     motion_model = config.motion_model
     motion_model.accuracy = btrack_widget.accuracy.value()
     motion_model.max_lost = btrack_widget.max_lost.value()
+    motion_model.prob_not_assign = btrack_widget.prob_not_assign.value()
 
     # Update HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model
@@ -89,6 +90,7 @@ def update_widgets_from_config(
     motion_model = config.motion_model
     btrack_widget.accuracy.setValue(motion_model.accuracy)
     btrack_widget.max_lost.setValue(motion_model.max_lost)
+    btrack_widget.prob_not_assign.setValue(motion_model.prob_not_assign)
 
     # Update widgets from HypothesisModel.hypotheses values
     hypothesis_model = config.hypothesis_model

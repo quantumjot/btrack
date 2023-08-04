@@ -218,6 +218,15 @@ def run(
     and add tracks to the viewer.
     """
 
+    # TODO:
+    # This method of showing the activity dock will be removed
+    # and replaced with a public method in the api
+    # See: https://github.com/napari/napari/issues/4598
+    activity_dock_visible = (
+        btrack_widget.viewer.window._qt_window._activity_dialog.isVisible()
+    )
+    btrack_widget.viewer.window._status_bar._toggle_activity_dock(visible=True)
+
     if btrack_widget.segmentation.currentIndex() < 0:
         napari.utils.notifications.show_error(
             "No segmentation (Image layer) selected - cannot run tracking."
@@ -244,6 +253,13 @@ def run(
         translate=segmentation.translate,
     )
 
+    btrack_widget.viewer.window._status_bar._toggle_activity_dock(
+        activity_dock_visible
+    )
+
+    message = f"Finished tracking for '{segmentation_name}'"
+    napari.utils.notifications.show_info(message)
+
 
 def _run_tracker(
     segmentation: napari.layers.Image | napari.layers.Labels,
@@ -252,11 +268,17 @@ def _run_tracker(
     """
     Runs BayesianTracker with given segmentation and configuration.
     """
-    with btrack.BayesianTracker() as tracker:
+    with btrack.BayesianTracker() as tracker, napari.utils.progress(
+        total=5
+    ) as pbr:
+        pbr.set_description("Initialising the tracker")
         tracker.configure(tracker_config)
+        pbr.update(1)
 
         # append the objects to be tracked
+        pbr.set_description("Convert segmentation to trackable objects")
         segmented_objects = segmentation_to_objects(segmentation.data)
+        pbr.update(1)
         tracker.append(segmented_objects)
 
         # set the volume
@@ -269,13 +291,20 @@ def _run_tracker(
         )
 
         # track them (in interactive mode)
-        tracker.track_interactive(step_size=100)
+        pbr.set_description("Run tracking")
+        tracker.track(step_size=100)
+        pbr.update(1)
 
         # generate hypotheses and run the global optimizer
+        pbr.set_description("Run optimisation")
         tracker.optimize()
+        pbr.update(1)
 
         # get the tracks in a format for napari visualization
+        pbr.set_description("Convert to napari tracks layer")
         data, properties, graph = tracker.to_napari()
+        pbr.update(1)
+
         return data, properties, graph
 
 

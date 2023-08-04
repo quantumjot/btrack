@@ -7,6 +7,7 @@ from napari.viewer import Viewer
 from btrack.napari.widgets._general import (
     create_input_widgets,
     create_io_widgets,
+    create_logo_widgets,
     create_track_widgets,
     create_update_method_widgets,
 )
@@ -42,6 +43,8 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         # Create widgets and add to layout
         self._widgets = {}
+
+        self._add_logo_widgets()
         self._add_input_widgets()
         # This must be added after the input widgets
         self._main_layout.addWidget(self._tabs, stretch=0)
@@ -60,6 +63,13 @@ class BtrackWidget(QtWidgets.QScrollArea):
                 name,
                 widget,
             )
+
+    def _add_logo_widgets(self) -> None:
+        """Adds the btrack logo with a link to the documentation"""
+        logo_widgets = create_logo_widgets()
+        self._widgets.update(logo_widgets)
+        for widget in logo_widgets.values():
+            self._main_layout.addWidget(widget, stretch=0)
 
     def _add_input_widgets(self) -> None:
         """Create input widgets and add to main layout"""

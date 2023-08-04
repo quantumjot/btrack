@@ -188,10 +188,12 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # guess the dimensionality from the data by checking whether the z values
+    # guess the dimensionality from the data by checking whether the non-dummy z values
     # are all zero. If all z are zero then the data are planar, i.e. 2D
     if ndim is None:
-        z = np.concatenate([track.z for track in tracks])
+        z = np.concatenate(
+            [np.asarray(track.z)[~np.asarray(track.dummy)] for track in tracks]
+        )
         ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
 
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):

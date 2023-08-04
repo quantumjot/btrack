@@ -3,12 +3,6 @@ from __future__ import annotations
 from qtpy import QtWidgets
 
 
-def _make_label_bold(label: str) -> str:
-    """Generate html for a bold label"""
-
-    return f"<b>{label}</b>"
-
-
 def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     """Create widgets for setting the magnitudes of the MotionModel matrices"""
 
@@ -20,7 +14,7 @@ def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     P_sigma.setMaximum(250)
     P_sigma.setValue(150.0)
     P_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-    widgets = {"P_sigma": (f"max({_make_label_bold('P')})", P_sigma)}
+    widgets = {"P_sigma": ("max(<b>P</b>)", P_sigma)}
 
     G_sigma = QtWidgets.QDoubleSpinBox()
     G_sigma.setToolTip(
@@ -29,7 +23,7 @@ def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     G_sigma.setMaximum(250)
     G_sigma.setValue(15.0)
     G_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-    widgets["G_sigma"] = (f"max({_make_label_bold('G')})", G_sigma)
+    widgets["G_sigma"] = ("max(<b>G</b>)", G_sigma)
 
     R_sigma = QtWidgets.QDoubleSpinBox()
     R_sigma.setToolTip(
@@ -38,7 +32,7 @@ def _create_sigma_widgets() -> dict[str, tuple(str, QtWidgets.QWidget)]:
     R_sigma.setMaximum(250)
     R_sigma.setValue(5.0)
     R_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-    widgets["R_sigma"] = (f"max({_make_label_bold('R')})", R_sigma)
+    widgets["R_sigma"] = ("max(<b>R</b>)", R_sigma)
 
     return widgets
 

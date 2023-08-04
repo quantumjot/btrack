@@ -39,7 +39,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         QtCore.Qt.CheckState.Unchecked
     )
 
-    return {"hypotheses": ("", widget)}
+    return {"hypotheses": ("hypotheses", widget)}
 
 
 def _create_scaling_factor_widgets() -> (

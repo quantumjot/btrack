@@ -59,7 +59,7 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return widgets
 
 
-def create_io_widgets() -> dict[str, QtWidgets.QWidget]:
+def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for running the analysis or handling I/O.
 
     This includes widgets for running the tracking, saving and loading

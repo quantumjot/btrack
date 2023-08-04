@@ -5,8 +5,8 @@ from qtpy import QtWidgets
 from napari.viewer import Viewer
 
 from btrack.napari.widgets._general import (
+    create_config_widgets,
     create_input_widgets,
-    create_io_widgets,
     create_track_widgets,
     create_update_method_widgets,
 )
@@ -48,7 +48,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
         self._add_hypothesis_model_widgets()
-        self._add_io_widgets()
+        self._add_config_widgets()
         self._add_track_widgets()
 
         # Expand the main widget
@@ -128,9 +128,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         tab.setLayout(layout)
         self._tabs.addTab(tab, "Hypothesis")
 
-    def _add_io_widgets(self) -> None:
+    def _add_config_widgets(self) -> None:
         """Creates the IO widgets related to the user config"""
-        io_widgets = create_io_widgets()
+        io_widgets = create_config_widgets()
         self._widgets.update(io_widgets)
 
         layout = QtWidgets.QFormLayout()
@@ -139,7 +139,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
-        self._tabs.addTab(tab, "I/O")
+        self._tabs.addTab(tab, "Config")
 
     def _add_track_widgets(self) -> None:
         """Create widgets for running the tracking"""

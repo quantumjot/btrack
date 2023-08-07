@@ -136,7 +136,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
-        self._tabs.addTab(tab, "Hypothesis")
+        self._tabs.addTab(tab, "Optimiser")
 
     def _add_config_widgets(self) -> None:
         """Creates the IO widgets related to the user config"""

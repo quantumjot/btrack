@@ -23,18 +23,12 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
     flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled)
     for i, tooltip in enumerate(tooltips):
-        widget.item(i).setCheckState(QtCore.Qt.CheckState.Checked)
         widget.item(i).setFlags(flags)
         widget.item(i).setToolTip(tooltip)
 
     # P_FP is always required
     widget.item(hypotheses.index("P_FP")).setFlags(
         QtCore.Qt.ItemIsUserCheckable,
-    )
-
-    # # P_merge should be disabled by default
-    widget.item(hypotheses.index("P_merge")).setCheckState(
-        QtCore.Qt.CheckState.Unchecked
     )
 
     return {"hypotheses": ("hypotheses", widget)}
@@ -145,7 +139,6 @@ def create_hypothesis_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]
     widgets["segmentation_miss_rate"] = ("miss rate", segmentation_miss_rate)
 
     relax = QtWidgets.QCheckBox()
-    relax.setChecked(True)  # noqa: FBT003
     relax.setToolTip(
         "Disable the time and distance thresholds.\n"
         "This means that tracks can initialize or terminate anywhere and"

@@ -106,9 +106,7 @@ def add_existing_labels(
     """Add all existing Labels layers in the viewer to a combobox"""
 
     labels_layers = [
-        layer.name
-        for layer in viewer.layers
-        if isinstance(layer, napari.layers.Labels)
+        layer.name for layer in viewer.layers if isinstance(layer, napari.layers.Labels)
     ]
     combobox.addItems(labels_layers)
 
@@ -253,9 +251,7 @@ def run(
         translate=segmentation.translate,
     )
 
-    btrack_widget.viewer.window._status_bar._toggle_activity_dock(
-        activity_dock_visible
-    )
+    btrack_widget.viewer.window._status_bar._toggle_activity_dock(activity_dock_visible)
 
     message = f"Finished tracking for '{segmentation_name}'"
     napari.utils.notifications.show_info(message)
@@ -268,9 +264,7 @@ def _run_tracker(
     """
     Runs BayesianTracker with given segmentation and configuration.
     """
-    with btrack.BayesianTracker() as tracker, napari.utils.progress(
-        total=5
-    ) as pbr:
+    with btrack.BayesianTracker() as tracker, napari.utils.progress(total=5) as pbr:
         pbr.set_description("Initialising the tracker")
         tracker.configure(tracker_config)
         pbr.update(1)
@@ -286,9 +280,7 @@ def _run_tracker(
         # napari order of dimensions is T(Z)XY
         # so we ignore the first dimension (time) and reverse the others
         dimensions = segmentation.level_shapes[0, 1:]
-        tracker.volume = tuple(
-            (0, dimension) for dimension in reversed(dimensions)
-        )
+        tracker.volume = tuple((0, dimension) for dimension in reversed(dimensions))
 
         # track them (in interactive mode)
         pbr.set_description("Run tracking")

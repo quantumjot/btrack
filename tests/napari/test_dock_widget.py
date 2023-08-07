@@ -51,12 +51,8 @@ def test_config_to_widgets_round_trip(track_widget, config):
     expected_config = btrack.config.load_config(config).json()
 
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(config)
-    btrack.napari.sync.update_widgets_from_config(
-        unscaled_config, track_widget
-    )
-    btrack.napari.sync.update_config_from_widgets(
-        unscaled_config, track_widget
-    )
+    btrack.napari.sync.update_widgets_from_config(unscaled_config, track_widget)
+    btrack.napari.sync.update_config_from_widgets(unscaled_config, track_widget)
 
     actual_config = unscaled_config.scale_config().json()
 
@@ -114,9 +110,7 @@ def test_reset_button(track_widget):
     original_relax = track_widget.relax.isChecked()
 
     # change some widget values
-    track_widget.max_search_radius.setValue(
-        track_widget.max_search_radius.value() + 10
-    )
+    track_widget.max_search_radius.setValue(track_widget.max_search_radius.value() + 10)
     track_widget.relax.setChecked(not track_widget.relax.isChecked())
 
     # click reset button - restores defaults of the currently-selected base config
@@ -157,9 +151,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         # we need to explicitly add the layer to the ComboBox
         track_widget.segmentation.setCurrentIndex(0)
         track_widget.segmentation.setCurrentText(
-            track_widget.viewer.layers[
-                track_widget.segmentation.currentIndex()
-            ].name
+            track_widget.viewer.layers[track_widget.segmentation.currentIndex()].name
         )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS

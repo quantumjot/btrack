@@ -73,9 +73,7 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    properties = (
-        {} if not props else {k: [p[k] for p in props] for k in props[0]}
-    )
+    properties = {} if not props else {k: [p[k] for p in props] for k in props[0]}
 
     return tracklet, data, properties, track_id
 
@@ -94,9 +92,7 @@ def create_realistic_tracklet(  # noqa: PLR0913
         "x": np.array([start_x + dx * t for t in range(track_len)]),
         "y": np.array([start_y + dy * t for t in range(track_len)]),
         "t": np.arange(track_len),
-        "ID": np.array(
-            [(track_ID - 1) * track_len + t for t in range(track_len)]
-        ),
+        "ID": np.array([(track_ID - 1) * track_len + t for t in range(track_len)]),
     }
 
     objects = btrack.io.objects_from_dict(data)
@@ -136,9 +132,7 @@ def create_test_image(
         return _img, _coord
 
     # now we update nobj grid positions with a sample
-    grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(
-        -1, ndim
-    )
+    grid = np.stack(np.meshgrid(*[np.arange(bins)] * ndim), -1).reshape(-1, ndim)
 
     rbins = rng.choice(grid, size=(nobj,), replace=False)
 
@@ -146,9 +140,7 @@ def create_test_image(
     centroids = []
     for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
-        slices = tuple(
-            [slice(b * binsize, b * binsize + binsize, 1) for b in bin]
-        )
+        slices = tuple([slice(b * binsize, b * binsize + binsize, 1) for b in bin])
         val = 1 if binary else v + 1
         img[slices] = sample * val
 
@@ -167,9 +159,7 @@ def create_test_image(
     ), "Number of created centroids != requested in test image."
 
     vals = np.unique(img)
-    assert (
-        np.max(vals) == 1 if binary else nobj
-    ), "Test image labels are incorrect."
+    assert np.max(vals) == 1 if binary else nobj, "Test image labels are incorrect."
     return img, centroids_sorted
 
 
@@ -199,20 +189,14 @@ def create_test_segmentation_and_tracks(
     track_B = create_realistic_tracklet(
         boxsize - padding, boxsize - padding, -dxy, 0, nframes, 2
     )
-    track_C = create_realistic_tracklet(
-        padding, boxsize - padding, 0, -dxy, nframes, 3
-    )
-    track_D = create_realistic_tracklet(
-        boxsize - padding, padding, 0, dxy, nframes, 4
-    )
+    track_C = create_realistic_tracklet(padding, boxsize - padding, 0, -dxy, nframes, 3)
+    track_D = create_realistic_tracklet(boxsize - padding, padding, 0, dxy, nframes, 4)
 
     tracks = [track_A, track_B, track_C, track_D]
 
     # set the segmentation values
     for track in tracks:
-        t, y, x = np.split(
-            track.to_array(properties=["t", "y", "x"]).astype(int), 3, 1
-        )
+        t, y, x = np.split(track.to_array(properties=["t", "y", "x"]).astype(int), 3, 1)
         segmentation[t, y, x] = 1
         ground_truth[t, y, x] = track.ID
 

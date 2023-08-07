@@ -15,18 +15,12 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
     logo = QtWidgets.QLabel()
     logo.setPixmap(
         QtGui.QPixmap(
-            str(
-                Path(__file__).resolve().parents[1]
-                / "assets"
-                / "btrack_logo.png"
-            )
+            str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
         )
     )
     widgets["logo"] = logo
 
-    docs = QtWidgets.QLabel(
-        '<a href="https://btrack.readthedocs.io">Documentation</a>'
-    )
+    docs = QtWidgets.QLabel('<a href="https://btrack.readthedocs.io">Documentation</a>')
     docs.setAlignment(QtCore.Qt.AlignHCenter)
     docs.setOpenExternalLinks(True)  # noqa: FBT003
     docs.setTextFormat(QtCore.Qt.RichText)
@@ -51,8 +45,7 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     config = QtWidgets.QComboBox()
     config.addItems(["cell", "particle"])
     config.setToolTip(
-        "Select a loaded configuration.\n"
-        "Note, this will update values set below."
+        "Select a loaded configuration.\nNote, this will update values set below."
     )
     widgets["config"] = ("config name", config)
 
@@ -84,9 +77,7 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "method is 'APPROXIMATE'"
     )
     max_search_radius.setWrapping(True)  # noqa: FBT003
-    max_search_radius.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    max_search_radius.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["max_search_radius"] = ("search radius", max_search_radius)
 
     max_lost_frames = QtWidgets.QSpinBox()
@@ -94,9 +85,7 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Number of frames without observation before marking as lost"
     )
     max_lost_frames.setValue(5)
-    max_lost_frames.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    max_lost_frames.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["max_lost"] = ("max lost", max_lost_frames)
 
     not_assign = QtWidgets.QDoubleSpinBox()

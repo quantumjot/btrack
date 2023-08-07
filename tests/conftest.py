@@ -68,9 +68,7 @@ def hdf5_file_path_or_paths(
             write_h5_file(tmp_path / "test2.h5", test_objects),
         ]
     else:
-        raise ValueError(
-            "Invalid requests.param, must be one of 'single' or 'list'"
-        )
+        raise ValueError("Invalid requests.param, must be one of 'single' or 'list'")
 
 
 @pytest.fixture

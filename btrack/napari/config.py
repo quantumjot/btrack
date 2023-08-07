@@ -74,9 +74,7 @@ class UnscaledTrackerConfig:
         config = btrack.config.load_config(self.filename)
         self.tracker_config, self.sigmas = self._unscale_config(config)
 
-    def _unscale_config(
-        self, config: TrackerConfig
-    ) -> tuple[TrackerConfig, Sigmas]:
+    def _unscale_config(self, config: TrackerConfig) -> tuple[TrackerConfig, Sigmas]:
         """Convert the matrices of a scaled TrackerConfig MotionModel to unscaled."""
 
         P_sigma = np.max(config.motion_model.P)

@@ -38,17 +38,6 @@ it is now built against `C++=17`.
 pip install btrack
 ```
 
-#### Installing on Apple Silicon
-
-Install the following with
-[conda](https://github.com/conda-forge/miniforge):
-
-```sh
-conda install -c conda-forge cvxopt
-```
-
-then run the above `pip` install command.
-
 ## Usage examples
 
 Visit [btrack documentation](https://btrack.readthedocs.io) to learn how to use it and see other examples.

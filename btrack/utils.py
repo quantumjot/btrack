@@ -285,7 +285,7 @@ def napari_to_tracks(
         # Create tracklet
         track_indices = np.argwhere(track_id == track).ravel()
         track_data = [track_objects[i] for i in track_indices]
-        parent = graph.get(track, [track])
+        parent = graph.get(track, [track])[0]
         children = [child for (child, parents) in graph.items() if track in parents]
         tracklet = Tracklet(
             ID=track,
@@ -295,9 +295,11 @@ def napari_to_tracks(
         )
 
         # Determine root tracklet
-        tracklet.root = parent[0]
+        tracklet.root = parent
+        tracklet.generation = 0 if tracklet.root == track else 1
         while tracklet.root in graph:
             tracklet.root = graph[tracklet.root][0]
+            tracklet.generation += 1
 
         tracklets.append(tracklet)
 

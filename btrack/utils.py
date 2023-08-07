@@ -27,10 +27,7 @@ logger = logging.getLogger(__name__)
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
-    if (
-        error != constants.Errors.SUCCESS
-        and error != constants.Errors.NO_ERROR
-    ):
+    if error != constants.Errors.SUCCESS and error != constants.Errors.NO_ERROR:
         logger.error(f"ERROR: {error}")
         return True
     return False
@@ -89,9 +86,7 @@ def crop_volume(objects, volume=constants.VOLUME):
     axes = zip(["x", "y", "z", "t"], volume)
 
     def within(o):
-        return all(
-            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
-        )
+        return all(getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes)
 
     return [o for o in objects if within(o)]
 
@@ -101,9 +96,7 @@ def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
-def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: list[str]
-) -> dict:
+def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) -> dict:
     """Concatenate all tracks as dictionary."""
     assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
@@ -188,10 +181,12 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # guess the dimensionality from the data by checking whether the z values
+    # guess the dimensionality from the data by checking whether the non-dummy z values
     # are all zero. If all z are zero then the data are planar, i.e. 2D
     if ndim is None:
-        z = np.concatenate([track.z for track in tracks])
+        z = np.concatenate(
+            [np.asarray(track.z)[~np.asarray(track.dummy)] for track in tracks]
+        )
         ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
 
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
@@ -209,9 +204,7 @@ def tracks_to_napari(
     prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
-    data = np.stack(
-        [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
-    )
+    data = np.stack([v for k, v in tracks_as_dict.items() if k in t_header], axis=1)
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
@@ -232,6 +225,7 @@ def update_segmentation(
     segmentation: np.ndarray,
     tracks: list[btypes.Tracklet],
     *,
+    scale: Optional[tuple(float)] = None,
     color_by: str = "ID",
 ) -> np.ndarray:
     """Map tracks back into a masked array.
@@ -243,6 +237,10 @@ def update_segmentation(
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
         A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+    scale : tuple, optional
+        A scale for each spatial dimension of the input tracks. Defaults
+        to one for all axes, and allows scaling for anisotropic imaging data.
+        Dimensions should be ordered XY(Z).
     color_by : str, default = "ID"
         A value to recolor the segmentation by.
 
@@ -267,12 +265,25 @@ def update_segmentation(
 
     keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
-    coords_arr = np.concatenate(
-        [
-            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
-            for track in tracks
-        ]
+    keys.update(
+        {
+            key: idx
+            for idx, key in enumerate(
+                tracks[0].properties.keys(), start=max(keys.values()) + 1
+            )
+        }
     )
+
+    coords_arr = np.concatenate(
+        [track.to_array()[~np.array(track.dummy), :].astype(int) for track in tracks]
+    )
+
+    scale = tuple([1.0] * (segmentation.ndim - 1)) if scale is None else scale
+
+    if (segmentation.ndim - 1) != len(scale):
+        raise ValueError(
+            "Scale should have the same number of spatial dimensions as `segmentation`."
+        )
 
     if color_by not in keys:
         raise ValueError(f"Property ``{color_by}`` not found in track.")
@@ -284,10 +295,14 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
+        xc = (xc * scale[0]).astype(int)
+        yc = (yc * scale[1]).astype(int)
+
         if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
         elif single_segmentation.ndim == constants.Dimensionality.THREE:
             zc = frame_coords[:, keys["z"]]
+            zc = (zc * scale[2]).astype(int)
             old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
@@ -306,10 +321,7 @@ class SystemInformation:
     def __repr__(self) -> str:
         # override to have slightly nicer formatting
         return "\n".join(
-            [
-                f"{key}: {value}"
-                for key, value in dataclasses.asdict(self).items()
-            ]
+            [f"{key}: {value}" for key, value in dataclasses.asdict(self).items()]
         )
 
 

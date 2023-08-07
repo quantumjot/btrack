@@ -3,7 +3,6 @@ build-backend = "setuptools.build_meta"
 requires = [
     "setuptools",
     "setuptools-scm",
-    "wheel",
 ]
 
 [project]
@@ -20,6 +19,7 @@ classifiers = [
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
     "Topic :: Scientific/Engineering :: Image Recognition",
     "Topic :: Scientific/Engineering :: Visualization",
@@ -63,29 +63,6 @@ urls.bugtracker = "https://github.com/quantumjot/btrack/issues"
 urls.documentation = "https://btrack.readthedocs.io"
 urls.homepage = "https://github.com/quantumjot/btrack"
 urls.usersupport = "https://github.com/quantumjot/btrack/discussions"
-
-[tool.black]
-exclude = '''
-(
-  /(
-      \.eggs
-    | \.git
-    | \.hg
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | _build
-    | build
-    | dist
-    | examples
-  )/
-)
-'''
-line-length = 79
-target-version = [
-    "py39",
-    "py310",
-]
 
 [tool.coverage]
 report = {skip_covered = true, sort = "cover"}
@@ -191,33 +168,34 @@ overrides."tool.ruff.isort.section-order".inline_arrays = false
 
 [tool.tox]
 legacy_tox_ini = """
-[gh-actions]
-python =
-    3.9: py39
-    3.10: py310
+    [gh-actions]
+    python =
+        3.9: py39
+        3.10: py310
+        3.11: py311
 
-[testenv]
-commands = pytest --cov --cov-report=xml
-deps =
-    napari
-    pyqt5
-    pytest-cov
-    pytest-qt
-    pytest-xvfb ; sys_platform == 'linux'
-passenv =
-    CI
-    DISPLAY
-    GITHUB_ACTIONS
-    NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
-    PYVISTA_OFF_SCREEN
-    XAUTHORITY
+    [gh-actions:env]
+    OS =
+        ubuntu-latest: linux
+        macos-latest: macos
+        windows-latest: windows
 
-[gh-actions:env]
-PLATFORM =
-    ubuntu-latest: linux
-    macos-latest: macos
-    windows-latest: windows
+    [testenv]
+    commands = pytest --cov --cov-report=xml
+    deps =
+        napari
+        pyqt5
+        pytest-cov
+        pytest-qt
+        pytest-xvfb ; sys_platform == 'linux'
+    passenv =
+        CI
+        DISPLAY
+        GITHUB_ACTIONS
+        NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
+        PYVISTA_OFF_SCREEN
+        XAUTHORITY
 
-[tox]
-envlist = py{39,310}-{linux,macos,windows}
+    [tox]
+    envlist = py{39,310,311}-{linux,macos,windows}
 """

@@ -37,9 +37,7 @@ def h5check_property_exists(property):  # noqa: A002
             self = args[0]
             assert isinstance(self, HDF5FileHandler)
             if property not in self._hdf:
-                logger.error(
-                    f"{property.capitalize()} not found in {self.filename}"
-                )
+                logger.error(f"{property.capitalize()} not found in {self.filename}")
                 return None
             return fn(*args, **kwargs)
 
@@ -245,9 +243,7 @@ class HDF5FileHandler:
         properties = {}
         if "properties" in grp:
             p_keys = list(
-                set(grp["properties"].keys()).difference(
-                    set(exclude_properties)
-                )
+                set(grp["properties"].keys()).difference(set(exclude_properties))
             )
             properties = {k: grp["properties"][k][:] for k in p_keys}
             assert all(len(p) == len(txyz) for p in properties.values())
@@ -281,9 +277,7 @@ class HDF5FileHandler:
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
 
-            filtered_idx = [
-                i for i, x in enumerate(data) if literal_eval(f_eval)
-            ]
+            filtered_idx = [i for i, x in enumerate(data) if literal_eval(f_eval)]
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
@@ -394,7 +388,7 @@ class HDF5FileHandler:
 
         grp = self._hdf[f"objects/{self.object_type}"]
 
-        if "properties" not in grp.keys():
+        if "properties" not in grp:
             props_grp = grp.create_group("properties")
         else:
             props_grp = self._hdf[f"objects/{self.object_type}/properties"]
@@ -412,25 +406,17 @@ class HDF5FileHandler:
             # Check if the property is already in the props_grp:
             if key in props_grp:
                 if allow_overwrite:
-                    del self._hdf[f"objects/{self.object_type}/properties"][
-                        key
-                    ]
-                    logger.info(
-                        f"Property '{key}' erased to be overwritten..."
-                    )
+                    del self._hdf[f"objects/{self.object_type}/properties"][key]
+                    logger.info(f"Property '{key}' erased to be overwritten...")
 
                 else:
-                    logger.info(
-                        f"Property '{key}' already written in the file"
-                    )
+                    logger.info(f"Property '{key}' already written in the file")
                     raise KeyError(
                         f"Property '{key}' already in file -> switch on "
                         "'overwrite' param to replace existing property "
                     )
             # Now that you handled overwriting, write the values:
-            logger.info(
-                f"Writing properties/{self.object_type}/{key} {values.shape}"
-            )
+            logger.info(f"Writing properties/{self.object_type}/{key} {values.shape}")
             props_grp.create_dataset(key, data=data[key], dtype="float32")
 
     @property  # type: ignore
@@ -493,9 +479,7 @@ class HDF5FileHandler:
 
         # sanity check, can be removed at a later date
         MAX_N_CHILDREN = 2
-        assert all(
-            len(children) <= MAX_N_CHILDREN for children in to_update.values()
-        )
+        assert all(len(children) <= MAX_N_CHILDREN for children in to_update.values())
 
         # add the children to the parent
         for track, children in to_update.items():

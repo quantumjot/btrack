@@ -102,8 +102,7 @@ class TrackerConfig(BaseModel):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
             _tracking_updates = [
-                constants.BayesianUpdateFeatures[k.upper()]
-                for k in _tracking_updates
+                constants.BayesianUpdateFeatures[k.upper()] for k in _tracking_updates
             ]
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates

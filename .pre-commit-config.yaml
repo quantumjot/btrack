@@ -4,7 +4,7 @@ repos:
       hooks:
         - id: ruff
     - repo: https://github.com/Lucas-C/pre-commit-hooks
-      rev: v1.5.1
+      rev: v1.5.3
       hooks:
         - id: remove-tabs
           exclude: Makefile|docs/Makefile|\.bat$

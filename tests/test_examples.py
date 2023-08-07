@@ -1,4 +1,4 @@
-from btrack import datasets
+import btrack.datasets
 
 
 def test_pooch_registry():
@@ -7,4 +7,4 @@ def test_pooch_registry():
     This will fail if the remote file does not match the hash hard-coded
     in btrack.datasets.
     """
-    registry_file = datasets._remote_registry()  # noqa: F841
+    registry_file = btrack.datasets._remote_registry()  # noqa: F841

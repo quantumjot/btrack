@@ -55,8 +55,7 @@ instance
 lib
 lib64
 local_settings.py
-models/MDCK_*
-models/test_config.json
+models
 nosetests.xml
 notebooks
 parts

@@ -130,9 +130,7 @@ class PyTrackObject(ctypes.Structure):
             return
 
         if not all(k in self.properties for k in keys):
-            missing_features = list(
-                set(keys).difference(set(self.properties.keys()))
-            )
+            missing_features = list(set(keys).difference(set(self.properties.keys())))
             raise KeyError(f"Feature(s) missing: {missing_features}.")
 
         # store a reference to the numpy array so that Python maintains
@@ -174,9 +172,7 @@ class PyTrackObject(ctypes.Structure):
                 setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
-        obj.properties = {
-            k: v for k, v in properties.items() if k not in fields
-        }
+        obj.properties = {k: v for k, v in properties.items() if k not in fields}
         return obj
 
     def __repr__(self):
@@ -397,11 +393,7 @@ class Tracklet:
         # this to fill the properties array with NaN for dummy objects
         property_shapes = {
             k: next(
-                (
-                    np.asarray(o.properties[k]).shape
-                    for o in self._data
-                    if not o.dummy
-                ),
+                (np.asarray(o.properties[k]).shape for o in self._data if not o.dummy),
                 None,
             )
             for k in keys
@@ -489,9 +481,7 @@ class Tracklet:
 
     @property
     def is_root(self) -> bool:
-        return (
-            self.parent == 0 or self.parent is None or self.parent == self.ID
-        )
+        return self.parent == 0 or self.parent is None or self.parent == self.ID
 
     @property
     def is_leaf(self) -> bool:
@@ -576,8 +566,7 @@ def _pandas_html_repr(obj):
         import pandas as pd
     except ImportError:
         return (
-            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-            + obj.__repr__()
+            "<b>Install pandas for nicer, tabular rendering.</b> <br>" + obj.__repr__()
         )
 
     obj_as_dict = obj.to_dict()

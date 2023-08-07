@@ -4,8 +4,7 @@ from typing import Union
 import numpy as np
 import numpy.typing as npt
 import pytest
-
-from magicgui.widgets import Container
+from qtpy import QtWidgets
 
 import btrack
 
@@ -91,7 +90,7 @@ def default_rng():
 
 
 @pytest.fixture
-def track_widget(make_napari_viewer) -> Container:
+def track_widget(make_napari_viewer) -> QtWidgets.QWidget:
     """Provides an instance of the track widget to test"""
     make_napari_viewer()  # make sure there is a viewer available
     return btrack.napari.main.create_btrack_widget()
@@ -102,7 +101,6 @@ def simplistic_tracker_outputs() -> (
     tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
 ):
     """Provides simplistic return values of a btrack run.
-
     They have the correct types and dimensions, but contain zeros.
     Useful for mocking the tracker.
     """

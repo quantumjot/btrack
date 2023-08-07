@@ -87,9 +87,9 @@ def _cfg_dict() -> tuple[dict, dict]:
     return cfg, cfg
 
 
-def _cfg_file() -> tuple[Path, dict]:
+def _cfg_file() -> tuple[str, dict]:
     filename = CONFIG_FILE
-    assert isinstance(filename, Path)
+    assert isinstance(filename, str)
     cfg = btrack.config.load_config(filename)
     return filename, cfg.dict()
 

@@ -5,8 +5,9 @@ import numpy as np
 from skimage.measure import label
 
 import btrack
+import btrack.datasets
 
-CONFIG_FILE = Path(__file__).resolve().parent.parent / "models" / "cell_config.json"
+CONFIG_FILE = btrack.datasets.cell_config()
 
 TEST_DATA_PATH = Path(__file__).resolve().parent / "_test_data"
 

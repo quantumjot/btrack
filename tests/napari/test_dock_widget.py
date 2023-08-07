@@ -11,10 +11,9 @@ from qtpy import QtWidgets
 import napari
 
 import btrack
+import btrack.datasets
 import btrack.napari
 import btrack.napari.main
-from btrack import datasets
-from btrack.datasets import cell_config, particle_config
 
 OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2
@@ -40,7 +39,10 @@ def track_widget(make_napari_viewer) -> QtWidgets.QWidget:
     return btrack.napari.main.create_btrack_widget()
 
 
-@pytest.mark.parametrize("config", [cell_config(), particle_config()])
+@pytest.mark.parametrize(
+    "config",
+    [btrack.datasets.cell_config(), btrack.datasets.particle_config()],
+)
 def test_config_to_widgets_round_trip(track_widget, config):
     """Tests that going back and forth between
     config objects and widgets works as expected.
@@ -63,7 +65,9 @@ def test_save_button(track_widget):
     triggers a call to btrack.config.save_config with expected arguments.
     """
 
-    unscaled_config = btrack.napari.config.UnscaledTrackerConfig(cell_config())
+    unscaled_config = btrack.napari.config.UnscaledTrackerConfig(
+        btrack.datasets.cell_config()
+    )
     # this is done in in the gui too
     unscaled_config.tracker_config.name = "cell"
     expected_config = unscaled_config.scale_config().json()
@@ -89,7 +93,7 @@ def test_load_config(track_widget):
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
     ) as load_path_dialogue_box:
-        load_path_dialogue_box.return_value = cell_config()
+        load_path_dialogue_box.return_value = btrack.datasets.cell_config()
         track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
@@ -141,7 +145,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
     """
     with patch("btrack.napari.main._run_tracker") as run_tracker:
         run_tracker.return_value = simplistic_tracker_outputs
-        segmentation = datasets.example_segmentation()
+        segmentation = btrack.datasets.example_segmentation()
         track_widget.viewer.add_labels(segmentation)
 
         # we need to explicitly add the layer to the ComboBox

@@ -79,7 +79,7 @@ exclude = '''
   )/
 )
 '''
-line-length = 79
+line-length = 88
 target-version = [
     "py39",
     "py310",

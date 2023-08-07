@@ -21,9 +21,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     widget = QtWidgets.QListWidget()
     widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
-    flags = QtCore.Qt.ItemFlags(
-        QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled
-    )
+    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled)
     for i, tooltip in enumerate(tooltips):
         widget.item(i).setCheckState(QtCore.Qt.CheckState.Checked)
         widget.item(i).setFlags(flags)
@@ -42,9 +40,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return {"hypotheses": ("hypotheses", widget)}
 
 
-def _create_scaling_factor_widgets() -> (
-    dict[str, tuple[str, QtWidgets.QWidget]]
-):
+def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
     widget_values = [5.0, 3.0, 10.0, 50.0]
@@ -68,9 +64,7 @@ def _create_scaling_factor_widgets() -> (
     ]
 
     scaling_factor_widgets = {}
-    for value, name, label, tooltip in zip(
-        widget_values, names, labels, tooltips
-    ):
+    for value, name, label, tooltip in zip(widget_values, names, labels, tooltips):
         widget = QtWidgets.QDoubleSpinBox()
         widget.setToolTip(tooltip)
         widget.setValue(value)
@@ -89,9 +83,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "initialization or termination hypothesis."
     )
     distance_threshold.setValue(20.0)
-    distance_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    distance_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets = {"theta_dist": ("distance threshold", distance_threshold)}
 
     time_threshold = QtWidgets.QDoubleSpinBox()
@@ -100,9 +92,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "an initialization or termination hypothesis."
     )
     time_threshold.setValue(5.0)
-    time_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    time_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["theta_time"] = ("time threshold", time_threshold)
 
     apoptosis_threshold = QtWidgets.QSpinBox()
@@ -111,9 +101,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Detections are counted consecutively from the back of the track"
     )
     apoptosis_threshold.setValue(5)
-    apoptosis_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    apoptosis_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["apop_thresh"] = ("apoptosis threshold", apoptosis_threshold)
 
     return widgets
@@ -128,9 +116,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
     distance_bin_size.setValue(40.0)
-    distance_bin_size.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    distance_bin_size.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets = {"dist_thresh": ("distance bin size", distance_bin_size)}
 
     time_bin_size = QtWidgets.QDoubleSpinBox()
@@ -139,17 +125,13 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
     time_bin_size.setValue(2.0)
-    time_bin_size.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    time_bin_size.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     widgets["time_thresh"] = ("time bin size", time_bin_size)
 
     return widgets
 
 
-def create_hypothesis_model_widgets() -> (
-    dict[str, tuple[str, QtWidgets.QWidget]]
-):
+def create_hypothesis_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting parameters of the HypothesisModel"""
 
     widgets = {

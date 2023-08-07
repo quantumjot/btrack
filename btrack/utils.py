@@ -27,10 +27,7 @@ logger = logging.getLogger(__name__)
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
-    if (
-        error != constants.Errors.SUCCESS
-        and error != constants.Errors.NO_ERROR
-    ):
+    if error != constants.Errors.SUCCESS and error != constants.Errors.NO_ERROR:
         logger.error(f"ERROR: {error}")
         return True
     return False
@@ -89,9 +86,7 @@ def crop_volume(objects, volume=constants.VOLUME):
     axes = zip(["x", "y", "z", "t"], volume)
 
     def within(o):
-        return all(
-            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
-        )
+        return all(getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes)
 
     return [o for o in objects if within(o)]
 
@@ -101,9 +96,7 @@ def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
-def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: list[str]
-) -> dict:
+def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) -> dict:
     """Concatenate all tracks as dictionary."""
     assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
@@ -211,9 +204,7 @@ def tracks_to_napari(
     prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
-    data = np.stack(
-        [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
-    )
+    data = np.stack([v for k, v in tracks_as_dict.items() if k in t_header], axis=1)
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
@@ -284,10 +275,7 @@ def update_segmentation(
     )
 
     coords_arr = np.concatenate(
-        [
-            track.to_array()[~np.array(track.dummy), :].astype(int)
-            for track in tracks
-        ]
+        [track.to_array()[~np.array(track.dummy), :].astype(int) for track in tracks]
     )
 
     scale = tuple([1.0] * (segmentation.ndim - 1)) if scale is None else scale
@@ -333,10 +321,7 @@ class SystemInformation:
     def __repr__(self) -> str:
         # override to have slightly nicer formatting
         return "\n".join(
-            [
-                f"{key}: {value}"
-                for key, value in dataclasses.asdict(self).items()
-            ]
+            [f"{key}: {value}" for key, value in dataclasses.asdict(self).items()]
         )
 
 

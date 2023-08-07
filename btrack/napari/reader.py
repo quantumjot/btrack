@@ -43,9 +43,7 @@ def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
         ".hdf5",
     ]
     return (
-        reader_function
-        if pathlib.Path(path).suffix in supported_extensions
-        else None
+        reader_function if pathlib.Path(path).suffix in supported_extensions else None
     )
 
 

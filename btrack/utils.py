@@ -274,9 +274,7 @@ def napari_to_tracks(
         "x": x,
         "y": y,
         "z": z,
-        "dummy": properties.get(
-            "dummy", np.full_like(track_id, fill_value=False)
-        ),
+        "dummy": properties.get("dummy", np.full_like(track_id, fill_value=False)),
         "label": properties.get("state", np.full_like(track_id, fill_value=5)),
     }
     track_objects = objects_from_dict(objects_dict)
@@ -288,9 +286,7 @@ def napari_to_tracks(
         track_indices = np.argwhere(track_id == track).ravel()
         track_data = [track_objects[i] for i in track_indices]
         parent = graph.get(track, [track])
-        children = [
-            child for (child, parents) in graph.items() if track in parents
-        ]
+        children = [child for (child, parents) in graph.items() if track in parents]
         tracklet = Tracklet(
             ID=track,
             data=track_data,

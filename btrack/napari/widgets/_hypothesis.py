@@ -43,7 +43,6 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
-    widget_values = [5.0, 3.0, 10.0, 50.0]
     names = [
         "lambda_time",
         "lambda_dist",
@@ -64,11 +63,10 @@ def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]
     ]
 
     scaling_factor_widgets = {}
-    for value, name, label, tooltip in zip(widget_values, names, labels, tooltips):
+    for name, label, tooltip in zip(names, labels, tooltips):
         widget = QtWidgets.QDoubleSpinBox()
         widget.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
         widget.setToolTip(tooltip)
-        widget.setValue(value)
         scaling_factor_widgets[name] = (label, widget)
 
     return scaling_factor_widgets
@@ -83,7 +81,6 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "A threshold distance from the edge of the field of view to add an "
         "initialization or termination hypothesis."
     )
-    distance_threshold.setValue(20.0)
     widgets = {"theta_dist": ("distance threshold", distance_threshold)}
 
     time_threshold = QtWidgets.QDoubleSpinBox()
@@ -92,7 +89,6 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "A threshold time from the beginning or end of movie to add "
         "an initialization or termination hypothesis."
     )
-    time_threshold.setValue(5.0)
     widgets["theta_time"] = ("time threshold", time_threshold)
 
     apoptosis_threshold = QtWidgets.QSpinBox()
@@ -101,7 +97,6 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Number of apoptotic detections to be considered a genuine event.\n"
         "Detections are counted consecutively from the back of the track"
     )
-    apoptosis_threshold.setValue(5)
     widgets["apop_thresh"] = ("apoptosis threshold", apoptosis_threshold)
 
     return widgets
@@ -116,7 +111,6 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Isotropic spatial bin size for considering hypotheses.\n"
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
-    distance_bin_size.setValue(40.0)
     widgets = {"dist_thresh": ("distance bin size", distance_bin_size)}
 
     time_bin_size = QtWidgets.QDoubleSpinBox()
@@ -125,7 +119,6 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "Temporal bin size for considering hypotheses.\n"
         "Larger bin sizes generate more hypothesese for each tracklet."
     )
-    time_bin_size.setValue(2.0)
     widgets["time_thresh"] = ("time bin size", time_bin_size)
 
     return widgets
@@ -149,7 +142,6 @@ def create_hypothesis_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]
         "Miss rate for the segmentation.\n"
         "e.g. 1/100 segmentations incorrect gives a segmentation miss rate of 0.01."
     )
-    segmentation_miss_rate.setValue(0.1)
     widgets["segmentation_miss_rate"] = ("miss rate", segmentation_miss_rate)
 
     relax = QtWidgets.QCheckBox()

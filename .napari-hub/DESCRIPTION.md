@@ -44,5 +44,5 @@ If working on Apple Silicon make sure to also install the following
 packages from `conda-forge`.
 
 ```sh
-conda install -c conda-forge cvxopt pyqt
+conda install -c conda-forge pyqt
 ```

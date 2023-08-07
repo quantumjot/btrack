@@ -52,7 +52,4 @@ After we've created and activated the virtual environment, on the same terminal,
 
     pip install btrack
 
-This will download and install ``btrack`` and all its dependencies. If working
-on Apple Silicon then also run::
-
-    conda install -c conda-forge cvxopt
+This will download and install ``btrack`` and all its dependencies.

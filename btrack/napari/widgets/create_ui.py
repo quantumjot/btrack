@@ -11,8 +11,8 @@ from btrack.napari.widgets._general import (
     create_track_widgets,
     create_update_method_widgets,
 )
-from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
 from btrack.napari.widgets._motion import create_motion_model_widgets
+from btrack.napari.widgets._optimiser import create_optimiser_widgets
 
 
 class BtrackWidget(QtWidgets.QScrollArea):
@@ -50,7 +50,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self._main_layout.addWidget(self._tabs, stretch=0)
         self._add_update_method_widgets()
         self._add_motion_model_widgets()
-        self._add_hypothesis_model_widgets()
+        self._add_optimiser_widgets()
         self._add_config_widgets()
         self._add_track_widgets()
 
@@ -121,9 +121,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         tab.setLayout(layout)
         self._tabs.addTab(tab, "Motion")
 
-    def _add_hypothesis_model_widgets(self) -> None:
+    def _add_optimiser_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
-        labels_and_widgets = create_hypothesis_model_widgets()
+        labels_and_widgets = create_optimiser_widgets()
         self._widgets.update(
             {key: value[1] for key, value in labels_and_widgets.items()}
         )

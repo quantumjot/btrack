@@ -205,7 +205,7 @@ def tracks_to_napari(
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
-    p_header = ["t", "state", "generation", "root", "parent", "dummy"]
+    p_header = ["t", "state", "generation", "root", "parent", "dummy", "refs"]
 
     # ensure lexicographic ordering of tracks
     ordered = sorted(tracks, key=lambda t: t.ID)
@@ -278,27 +278,40 @@ def napari_to_tracks(
 
     # Create all PyTrackObjects
     objects_dict = {
-        "ID": track_id,
+        "ID": properties.get("refs", np.arange(track_id.size)),
         "t": t,
         "x": x,
         "y": y,
         "z": z,
-        "dummy": properties["dummy"],
-        "label": properties["state"],
+        "dummy": properties.get(
+            "dummy", np.full_like(track_id, fill_value=False)
+        ),
+        "label": properties.get("state", np.full_like(track_id, fill_value=5)),
     }
     track_objects = objects_from_dict(objects_dict)
 
     # Create all Tracklets
     tracklets = []
     for track in np.unique(track_id).astype(int):
+        # Create tracklet
         track_indices = np.argwhere(track_id == track).ravel()
         track_data = [track_objects[i] for i in track_indices]
+        parent = graph.get(track, [track])
+        children = [
+            child for (child, parents) in graph.items() if track in parents
+        ]
         tracklet = Tracklet(
             ID=track,
             data=track_data,
+            parent=parent,
+            children=children,
         )
-        tracklet.root = properties["root"][track_indices][0]
-        tracklet.parent = properties["parent"][track_indices][0]
+
+        # Determine root tracklet
+        tracklet.root = parent[0]
+        while tracklet.root in graph:
+            tracklet.root = graph[tracklet.root][0]
+
         tracklets.append(tracklet)
 
     return tracklets

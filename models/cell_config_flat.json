@@ -43,7 +43,7 @@
     "dt": 1.0,
     "accuracy": 7.5,
     "max_lost": 5,
-    "prob_not_assign": 0.001,
+    "prob_not_assign": 0.1,
     "name": "cell_motion"
   },
   "object_model": null,

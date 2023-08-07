@@ -69,7 +69,7 @@ class Fates(enum.Enum):
 
 
 @enum.unique
-class States(enum.Enum):
+class States(enum.IntEnum):
     INTERPHASE = 0
     PROMETAPHASE = 1
     METAPHASE = 2

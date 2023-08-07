@@ -275,7 +275,9 @@ def napari_to_tracks(
         "y": y,
         "z": z,
         "dummy": properties.get("dummy", np.full_like(track_id, fill_value=False)),
-        "label": properties.get("state", np.full_like(track_id, fill_value=5)),
+        "label": properties.get(
+            "state", np.full_like(track_id, fill_value=constants.States.NULL)
+        ),
     }
     track_objects = objects_from_dict(objects_dict)
 

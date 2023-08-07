@@ -16,8 +16,8 @@ def export_to_hdf(
 ) -> Optional[str]:
     tracks = napari_to_tracks(
         data=data,
-        properties=meta.get("properties"),
-        graph=meta.get("graph"),
+        properties=meta.get("properties", {}),
+        graph=meta.get("graph", {}),
     )
 
     with HDF5FileHandler(

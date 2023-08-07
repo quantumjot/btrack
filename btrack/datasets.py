@@ -7,9 +7,7 @@ from skimage.io import imread
 from .btypes import PyTrackObject
 from .io import import_CSV
 
-BASE_URL = (
-    "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
-)
+BASE_URL = "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
 
 CACHE_PATH = pooch.os_cache("btrack-examples")
 

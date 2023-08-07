@@ -22,9 +22,7 @@ def _random_config() -> dict:
     }
 
 
-def _validate_config(
-    cfg: Union[btrack.BayesianTracker, BaseModel], options: dict
-):
+def _validate_config(cfg: Union[btrack.BayesianTracker, BaseModel], options: dict):
     for key, value in options.items():
         cfg_value = getattr(cfg, key)
         # takes care of recursive model definintions (i.e. MotionModel inside

@@ -21,9 +21,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     widget = QtWidgets.QListWidget()
     widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
-    flags = QtCore.Qt.ItemFlags(
-        QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled
-    )
+    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled)
     for i, tooltip in enumerate(tooltips):
         widget.item(i).setCheckState(QtCore.Qt.CheckState.Checked)
         widget.item(i).setFlags(flags)
@@ -42,9 +40,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return {"hypotheses": ("hypotheses", widget)}
 
 
-def _create_scaling_factor_widgets() -> (
-    dict[str, tuple[str, QtWidgets.QWidget]]
-):
+def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
     widget_values = [5.0, 3.0, 10.0, 50.0]
@@ -68,9 +64,7 @@ def _create_scaling_factor_widgets() -> (
     ]
 
     scaling_factor_widgets = {}
-    for value, name, label, tooltip in zip(
-        widget_values, names, labels, tooltips
-    ):
+    for value, name, label, tooltip in zip(widget_values, names, labels, tooltips):
         widget = QtWidgets.QDoubleSpinBox()
         widget.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
         widget.setToolTip(tooltip)
@@ -84,9 +78,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting thresholds for the HypothesisModel"""
 
     distance_threshold = QtWidgets.QDoubleSpinBox()
-    distance_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    distance_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     distance_threshold.setToolTip(
         "A threshold distance from the edge of the field of view to add an "
         "initialization or termination hypothesis."
@@ -95,9 +87,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     widgets = {"theta_dist": ("distance threshold", distance_threshold)}
 
     time_threshold = QtWidgets.QDoubleSpinBox()
-    time_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    time_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     time_threshold.setToolTip(
         "A threshold time from the beginning or end of movie to add "
         "an initialization or termination hypothesis."
@@ -106,9 +96,7 @@ def _create_threshold_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     widgets["theta_time"] = ("time threshold", time_threshold)
 
     apoptosis_threshold = QtWidgets.QSpinBox()
-    apoptosis_threshold.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    apoptosis_threshold.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     apoptosis_threshold.setToolTip(
         "Number of apoptotic detections to be considered a genuine event.\n"
         "Detections are counted consecutively from the back of the track"
@@ -123,9 +111,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widget for setting bin sizes for the HypothesisModel"""
 
     distance_bin_size = QtWidgets.QDoubleSpinBox()
-    distance_bin_size.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    distance_bin_size.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     distance_bin_size.setToolTip(
         "Isotropic spatial bin size for considering hypotheses.\n"
         "Larger bin sizes generate more hypothesese for each tracklet."
@@ -134,9 +120,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     widgets = {"dist_thresh": ("distance bin size", distance_bin_size)}
 
     time_bin_size = QtWidgets.QDoubleSpinBox()
-    time_bin_size.setStepType(
-        QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
-    )
+    time_bin_size.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     time_bin_size.setToolTip(
         "Temporal bin size for considering hypotheses.\n"
         "Larger bin sizes generate more hypothesese for each tracklet."
@@ -147,9 +131,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return widgets
 
 
-def create_hypothesis_model_widgets() -> (
-    dict[str, tuple[str, QtWidgets.QWidget]]
-):
+def create_hypothesis_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting parameters of the HypothesisModel"""
 
     widgets = {

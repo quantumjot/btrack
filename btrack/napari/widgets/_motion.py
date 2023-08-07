@@ -10,8 +10,7 @@ def _create_sigma_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     P_sigma.setRange(0, 500)
     P_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     P_sigma.setToolTip(
-        "Magnitude of error in initial estimates.\n"
-        "Used to scale the matrix P."
+        "Magnitude of error in initial estimates.\nUsed to scale the matrix P."
     )
     P_sigma.setValue(150.0)
     widgets = {"P_sigma": ("max(<b>P</b>)", P_sigma)}
@@ -19,9 +18,7 @@ def _create_sigma_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     G_sigma = QtWidgets.QDoubleSpinBox()
     G_sigma.setRange(0, 500)
     G_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-    G_sigma.setToolTip(
-        "Magnitude of error in process.\n Used to scale the matrix G."
-    )
+    G_sigma.setToolTip("Magnitude of error in process\nUsed to scale the matrix G.")
     G_sigma.setValue(15.0)
     widgets["G_sigma"] = ("max(<b>G</b>)", G_sigma)
 
@@ -29,7 +26,7 @@ def _create_sigma_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     R_sigma.setRange(0, 500)
     R_sigma.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     R_sigma.setToolTip(
-        "Magnitude of error in measurements.\n Used to scale the matrix R."
+        "Magnitude of error in measurements.\nUsed to scale the matrix R."
     )
     R_sigma.setValue(5.0)
     widgets["R_sigma"] = ("max(<b>R</b>)", R_sigma)

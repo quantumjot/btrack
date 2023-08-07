@@ -172,7 +172,7 @@ class PyTrackObject(ctypes.Structure):
                 setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
-        obj.properties = {k: v for k, v in properties.items() if k not in fields.keys()}
+        obj.properties = {k: v for k, v in properties.items() if k not in fields}
         return obj
 
     def __repr__(self):

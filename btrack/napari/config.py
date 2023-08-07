@@ -38,7 +38,7 @@ class Sigmas:
         return self.__dict__[matrix_name]
 
     def __setitem__(self, matrix_name, sigma):
-        if matrix_name not in self.__dict__.keys():
+        if matrix_name not in self.__dict__:
             _msg = f"Unknown matrix name '{matrix_name}'"
             raise ValueError(_msg)
         self.__dict__[matrix_name] = sigma

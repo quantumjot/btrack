@@ -1,1 +1,5 @@
 graft btrack/libs
+prune docs
+prune tests
+prune models
+prune examples

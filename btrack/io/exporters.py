@@ -111,7 +111,12 @@ def export_LBEP(filename: os.PathLike, tracks: list):
             lbep_file.write(f"{lbep}\n")
 
 
-def _export_HDF(filename: os.PathLike, tracker, obj_type=None, filter_by: str = None):
+def _export_HDF(
+    filename: os.PathLike,
+    tracker,
+    obj_type=None,
+    filter_by: Optional[str] = None,
+):
     """Export to HDF."""
 
     filename_noext, ext = os.path.splitext(filename)

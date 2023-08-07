@@ -259,11 +259,24 @@ class HDF5FileHandler:
 
             f_eval = f"x{m['op']}{m['cmp']}"  # e.g. x > 10
 
+            data = None
+
             if m["name"] in properties:
                 data = properties[m["name"]]
-                filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
+            elif m["name"] in grp:
+                logger.warning(
+                    f"While trying to filter objects by `{f_expr}` encountered "
+                    "a legacy HDF file."
+                )
+                logger.warning(
+                    "Properties do not persist to objects. Use `hdf.tree()` to "
+                    "inspect the file structure."
+                )
+                data = grp[m["name"]]
             else:
                 raise ValueError(f"Cannot filter objects by {f_expr}")
+
+            filtered_idx = [i for i, x in enumerate(data) if eval(f_eval)]
 
         else:
             filtered_idx = range(txyz.shape[0])  # default filtering uses all
@@ -374,7 +387,7 @@ class HDF5FileHandler:
 
         grp = self._hdf[f"objects/{self.object_type}"]
 
-        if "properties" not in grp.keys():
+        if "properties" not in grp:
             props_grp = grp.create_group("properties")
         else:
             props_grp = self._hdf[f"objects/{self.object_type}/properties"]
@@ -580,3 +593,35 @@ class HDF5FileHandler:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
         return self._hdf["tracks"][self.object_type]["LBEPR"][:]
+
+    def tree(self) -> None:
+        """Recursively iterate over the H5 file to reveal the tree structure and number
+        of elements within."""
+        _h5_tree(self._hdf)
+
+
+def _h5_tree(hdf, *, prefix: str = "") -> None:
+    """Recursively iterate over an H5 file to reveal the tree structure and number
+    of elements within. Writes the output to the default logger.
+
+    Parameters
+    ----------
+    hdf : hdf object
+        The hdf object to iterate over
+    prefix : str
+        A prepended string for layout
+    """
+    n_items = len(hdf)
+    for idx, (key, val) in enumerate(hdf.items()):
+        if idx == (n_items - 1):
+            # the last item
+            if isinstance(val, h5py._hl.group.Group):
+                logger.info(f"{prefix}└── {key}")
+                _h5_tree(val, prefix=f"{prefix}    ")
+            else:
+                logger.info(f"{prefix}└── {key} ({len(val)})")
+        elif isinstance(val, h5py._hl.group.Group):
+            logger.info(f"{prefix}├── {key}")
+            _h5_tree(val, prefix=f"{prefix}│   ")
+        else:
+            logger.info(f"{prefix}├── {key} ({len(val)})")

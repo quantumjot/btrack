@@ -7,7 +7,7 @@ mkdir ./btrack/obj
 # clone Eigen
 if [ ! -e ./btrack/include/eigen/signature_of_eigen3_matrix_library ]
 then
-  git clone https://gitlab.com/libeigen/eigen.git ./btrack/include/eigen
+  git clone --depth 1 --branch 3.3.9 https://gitlab.com/libeigen/eigen.git ./btrack/include/eigen
 fi
 
 # build the tracker

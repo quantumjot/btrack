@@ -9,7 +9,11 @@ from typing import Callable, Optional, Union
 import numpy as np
 import numpy.typing as npt
 from skimage.measure import label, regionprops, regionprops_table
-from tqdm import tqdm
+
+try:
+    from napari.utils import progress as tqdm
+except ImportError:
+    from tqdm import tqdm
 
 from btrack import btypes
 from btrack.constants import Dimensionality

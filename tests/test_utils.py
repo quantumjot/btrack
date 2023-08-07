@@ -250,6 +250,42 @@ def test_tracks_to_napari_ndim_inference(ndim: int):
     assert data.shape[-1] == ndim + 2
 
 
+def test_napari_to_tracks(sample_tracks):
+    """Test that a napari Tracks layer can be converted to a list of Tracklets.
+
+    First convert tracks to a napari layer, then convert back and compare.
+    """
+
+    data, properties, graph = utils.tracks_to_napari(sample_tracks)
+    tracks = utils.napari_to_tracks(data, properties, graph)
+
+    properties_to_compare = [
+        "ID",
+        "t",
+        "x",
+        "y",
+        # "z",  # z-coordinates are different
+        "parent",
+        "refs",
+        "label",
+        "state",
+        "root",
+        "is_root",
+        "is_leaf",
+        "start",
+        "stop",
+        "generation",
+        "dummy",
+        "properties",
+    ]
+
+    sample_tracks_dicts = [
+        sample.to_dict(properties_to_compare) for sample in sample_tracks
+    ]
+    tracks_dicts = [track.to_dict(properties_to_compare) for track in tracks]
+    assert sample_tracks_dicts == tracks_dicts
+
+
 def test_objects_from_array(test_objects):
     """Test creation of a list of objects from a numpy array."""
 

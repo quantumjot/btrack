@@ -90,6 +90,7 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     widgets["max_search_radius"] = ("search radius", max_search_radius)
 
     max_lost_frames = QtWidgets.QSpinBox()
+    max_lost_frames.setRange(0, 10)
     max_lost_frames.setStepType(
         QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType
     )

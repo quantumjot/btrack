@@ -86,7 +86,6 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     max_lost_frames.setToolTip(
         "Number of frames without observation before marking as lost"
     )
-    max_lost_frames.setValue(5)
     widgets["max_lost"] = ("max lost", max_lost_frames)
 
     not_assign = QtWidgets.QDoubleSpinBox()
@@ -94,7 +93,6 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     not_assign.setRange(0, 1)
     not_assign.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
     not_assign.setToolTip("Default probability to not assign a track")
-    not_assign.setValue(0.1)
     widgets["prob_not_assign"] = (
         "<b>P</b>(not track)",
         not_assign,

@@ -100,6 +100,16 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         not_assign,
     )
 
+    optimise = QtWidgets.QCheckBox()
+    optimise.setChecked(True)  # noqa: FBT003
+    optimise.setToolTip(
+        "Disable the time and distance thresholds.\n"
+        "This means that tracks can initialize or terminate anywhere and"
+        "at any time in the dataset."
+    )
+    optimise.setTristate(False)  # noqa: FBT003
+    widgets["optimise"] = ("enable optimisation", optimise)
+
     return widgets
 
 

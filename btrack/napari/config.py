@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 import btrack
-from btrack import datasets
+import btrack.datasets
 
 __all__ = [
     "create_default_configs",
@@ -138,12 +138,12 @@ class TrackerConfigs:
         """Add the default cell and particle configs."""
 
         self.add_config(
-            filename=datasets.cell_config(),
+            filename=btrack.datasets.cell_config(),
             name="cell",
             overwrite=False,
         )
         self.add_config(
-            filename=datasets.particle_config(),
+            filename=btrack.datasets.particle_config(),
             name="particle",
             overwrite=False,
         )

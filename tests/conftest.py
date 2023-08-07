@@ -17,6 +17,16 @@ from ._utils import (
 )
 
 
+def _write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:
+    """
+    Write a h5 file with test objects and return path.
+    """
+    with btrack.io.HDF5FileHandler(file_path, "w") as h:
+        h.write_objects(test_objects)
+
+    return file_path
+
+
 @pytest.fixture
 def test_objects():
     """
@@ -34,16 +44,6 @@ def test_real_objects():
     return btrack.io.import_CSV(TEST_DATA_PATH / "test_data.csv")
 
 
-def write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:
-    """
-    Write a h5 file with test objects and return path.
-    """
-    with btrack.io.HDF5FileHandler(file_path, "w") as h:
-        h.write_objects(test_objects)
-
-    return file_path
-
-
 @pytest.fixture
 def hdf5_file_path(tmp_path, test_objects) -> os.PathLike:
     """
@@ -51,7 +51,7 @@ def hdf5_file_path(tmp_path, test_objects) -> os.PathLike:
 
     Note that this only saves segmentation results, not tracking results.
     """
-    return write_h5_file(tmp_path / "test.h5", test_objects)
+    return _write_h5_file(tmp_path / "test.h5", test_objects)
 
 
 @pytest.fixture(params=["single", "list"])
@@ -64,11 +64,11 @@ def hdf5_file_path_or_paths(
     Note that this only saves segmentation results, not tracking results.
     """
     if request.param == "single":
-        return write_h5_file(tmp_path / "test.h5", test_objects)
+        return _write_h5_file(tmp_path / "test.h5", test_objects)
     elif request.param == "list":
         return [
-            write_h5_file(tmp_path / "test1.h5", test_objects),
-            write_h5_file(tmp_path / "test2.h5", test_objects),
+            _write_h5_file(tmp_path / "test1.h5", test_objects),
+            _write_h5_file(tmp_path / "test2.h5", test_objects),
         ]
     else:
         raise ValueError("Invalid requests.param, must be one of 'single' or 'list'")

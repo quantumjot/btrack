@@ -27,6 +27,12 @@ def _write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:
 
 
 @pytest.fixture
+def sample_tracks():
+    """An example tracks dataset"""
+    return btrack.datasets.example_tracks()
+
+
+@pytest.fixture
 def test_objects():
     """
     Create a list of 10 test objects.

@@ -4,8 +4,8 @@ import numpy as np
 import pooch
 from skimage.io import imread
 
-from .btypes import PyTrackObject
-from .io import import_CSV
+from .btypes import PyTrackObject, Tracklet
+from .io import HDF5FileHandler, import_CSV
 
 BASE_URL = "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
 
@@ -69,3 +69,12 @@ def example_track_objects() -> list[PyTrackObject]:
     file_path = example_track_objects_file()
     objects = import_CSV(file_path)
     return objects
+
+
+def example_tracks() -> list[Tracklet]:
+    """Return the example example localized and classified objected stored in an
+    HDF5 file as a list of `Tracklet`s."""
+    file_path = POOCH.fetch("examples/tracks.h5")
+    with HDF5FileHandler(file_path, "r", obj_type="obj_type_1") as reader:
+        tracks = reader.tracks
+    return tracks

@@ -17,7 +17,7 @@ def _remote_registry() -> os.PathLike:
         # URL to one of Pooch's test files
         path=CACHE_PATH,
         url=BASE_URL + "registry.txt",
-        known_hash="673de62c62eeb6f356fb1bff968748566d23936f567201cf61493d031d42d480",
+        known_hash="20d8c44289f421ab52d109e6af2c76610e740230479fe5c46a4e94463c9b5d50",
     )
     return file_path
 

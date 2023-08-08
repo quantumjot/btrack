@@ -37,12 +37,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
-    names = [
-        "lambda_time",
-        "lambda_dist",
-        "lambda_link",
-        "lambda_branch",
-    ]
+    names = btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS
     labels = [
         "λ time",
         "λ distance",

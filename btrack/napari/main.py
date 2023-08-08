@@ -260,13 +260,11 @@ def run(
 def _run_tracker(
     segmentation: napari.layers.Image | napari.layers.Labels,
     tracker_config: TrackerConfig,
-    *,
-    enable_optimisation: bool = True,
 ) -> tuple[npt.NDArray, dict, dict]:
     """
     Runs BayesianTracker with given segmentation and configuration.
     """
-    num_steps = 5 if enable_optimisation else 4
+    num_steps = 5 if tracker_config.enable_optimisation else 4
 
     with btrack.BayesianTracker() as tracker, napari.utils.progress(
         total=num_steps
@@ -293,7 +291,7 @@ def _run_tracker(
         tracker.track(step_size=100)
         pbr.update(1)
 
-        if enable_optimisation:
+        if tracker.enable_optimisation:
             # generate hypotheses and run the global optimizer
             pbr.set_description("Run optimisation")
             tracker.optimize()

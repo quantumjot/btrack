@@ -66,6 +66,8 @@ class TrackerConfig(BaseModel):
     tracking_updates : list
         A list of features to be used for tracking, such as MOTION or VISUAL.
         Must have at least one entry.
+    enable_optimisation
+        A flag which determines whether or not to run the optimisation step
 
     Notes
     -----
@@ -92,6 +94,7 @@ class TrackerConfig(BaseModel):
     ) = [
         constants.BayesianUpdateFeatures.MOTION,
     ]
+    enable_optimisation = True
 
     @validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):

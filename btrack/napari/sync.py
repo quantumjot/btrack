@@ -30,6 +30,7 @@ def update_config_from_widgets(
     config.max_search_radius = btrack_widget.max_search_radius.value()
     motion_model.max_lost = btrack_widget.max_lost.value()
     motion_model.prob_not_assign = btrack_widget.prob_not_assign.value()
+    config.enable_optimisation = btrack_widget.enable_optimisation.value()
 
     ## Update widgets from the Motion tab
     sigmas: Sigmas = unscaled_config.sigmas
@@ -84,6 +85,7 @@ def update_widgets_from_config(
     btrack_widget.max_search_radius.setValue(config.max_search_radius)
     btrack_widget.max_lost.setValue(motion_model.max_lost)
     btrack_widget.prob_not_assign.setValue(motion_model.prob_not_assign)
+    btrack_widget.enable_optimisation.setChecked(config.enable_optimisation)
 
     ## Update widgets from the Motion tab
     sigmas: Sigmas = unscaled_config.sigmas

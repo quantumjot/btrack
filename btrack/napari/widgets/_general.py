@@ -106,7 +106,7 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "at any time in the dataset."
     )
     optimise.setTristate(False)  # noqa: FBT003
-    widgets["optimise"] = ("enable optimisation", optimise)
+    widgets["enable_optimisation"] = ("enable optimisation", optimise)
 
     return widgets
 

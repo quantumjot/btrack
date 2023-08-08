@@ -529,6 +529,9 @@ class BayesianTracker:
         optimiser and then performs track merging, removal of track fragments,
         renumbering and assignment of branches.
         """
+        if not self.configuration.enable_optimisation:
+            logger.warning("The `enable_optimisation` flag is set to False")
+
         logger.info(f"Loading hypothesis model: {self.hypothesis_model.name}")
 
         logger.info(f"Calculating hypotheses (relax: {self.hypothesis_model.relax})...")

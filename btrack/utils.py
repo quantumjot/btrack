@@ -252,7 +252,7 @@ def napari_to_tracks(
     Returns
     -------
     tracks : list[btypes.Tracklet]
-        A list of tracklet objects from BayesianTracker.
+        A list of tracklet objects created from the napari Tracks layer data.
 
     """
 

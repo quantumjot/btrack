@@ -217,7 +217,7 @@ def full_tracker_example(
     for cfg_key, cfg_value in kwargs.items():
         setattr(tracker, cfg_key, cfg_value)
     tracker.append(objects)
-    tracker.configuration.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
+    tracker.volume = ((0, 1600), (0, 1200), (-1e5, 1e5))
     tracker.configuration.motion_model.prob_not_assign = 0.001
     tracker.track(step_size=100)
     tracker.optimize()

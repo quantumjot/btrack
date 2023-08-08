@@ -266,7 +266,6 @@ def test_napari_to_tracks(sample_tracks):
         "y",
         # "z",  # z-coordinates are different
         "parent",
-        "refs",
         "label",
         "state",
         "root",

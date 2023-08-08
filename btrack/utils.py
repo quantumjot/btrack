@@ -198,7 +198,7 @@ def tracks_to_napari(
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
-    p_header = ["t", "state", "generation", "root", "parent", "dummy", "refs"]
+    p_header = ["t", "state", "generation", "root", "parent", "dummy"]
 
     # ensure lexicographic ordering of tracks
     ordered = sorted(tracks, key=lambda t: t.ID)
@@ -269,7 +269,7 @@ def napari_to_tracks(
 
     # Create all PyTrackObjects
     objects_dict = {
-        "ID": properties.get("refs", np.arange(track_id.size)),
+        "ID": np.arange(track_id.size),
         "t": t,
         "x": x,
         "y": y,

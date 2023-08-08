@@ -21,7 +21,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     widget = QtWidgets.QListWidget()
     widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
-    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled)
+    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
     for i, tooltip in enumerate(tooltips):
         widget.item(i).setFlags(flags)
         widget.item(i).setToolTip(tooltip)

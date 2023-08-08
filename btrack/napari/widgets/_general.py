@@ -52,7 +52,7 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return widgets
 
 
-def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
+def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting the update method"""
 
     update_method = QtWidgets.QComboBox()

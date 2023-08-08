@@ -30,7 +30,7 @@ def update_config_from_widgets(
     config.max_search_radius = btrack_widget.max_search_radius.value()
     motion_model.max_lost = btrack_widget.max_lost.value()
     motion_model.prob_not_assign = btrack_widget.prob_not_assign.value()
-    config.enable_optimisation = btrack_widget.enable_optimisation.value()
+    config.enable_optimisation = btrack_widget.enable_optimisation.isChecked()
 
     ## Update widgets from the Motion tab
     sigmas: Sigmas = unscaled_config.sigmas
@@ -63,6 +63,7 @@ def update_config_from_widgets(
     hypothesis_model.segmentation_miss_rate = (
         btrack_widget.segmentation_miss_rate.value()
     )
+    hypothesis_model.relax.isChecked()
 
     return unscaled_config
 

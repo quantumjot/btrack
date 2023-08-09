@@ -119,22 +119,6 @@ def test_reset_button(track_widget):
     assert new_optimise == original_optimise
 
 
-def _click_call_button(simplistic_tracker_outputs, run_tracker, track_widget):
-    """Helper method which loads a segmentation, add labels
-    and ultimate click the call button.
-    """
-    run_tracker.return_value = simplistic_tracker_outputs
-    segmentation = btrack.datasets.example_segmentation()
-    track_widget.viewer.add_labels(segmentation)
-
-    # we need to explicitly add the layer to the ComboBox
-    image_layer = track_widget.viewer.layers[0]
-    track_widget.segmentation.set_choice(image_layer.name, image_layer)
-
-    assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
-    track_widget.call_button.clicked()
-
-
 def test_run_button(track_widget, simplistic_tracker_outputs):
     """Tests that clicking the run button calls run_tracker,
     and that the napari viewer has an additional tracks layer after running.

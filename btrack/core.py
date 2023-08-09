@@ -138,9 +138,7 @@ class BayesianTracker:
         self._config = config.TrackerConfig(verbose=verbose)
 
         # silently set the update method to EXACT
-        self._lib.set_update_mode(
-            self._engine, self.configuration.update_method.value
-        )
+        self._lib.set_update_mode(self._engine, self.configuration.update_method.value)
 
         # default parameters and space for stored objects
         self._objects: list[btypes.PyTrackObject] = []
@@ -244,9 +242,7 @@ class BayesianTracker:
     @property
     def n_dummies(self) -> int:
         """Return the number of dummy objects (negative ID)."""
-        return len(
-            [d for d in itertools.chain.from_iterable(self.refs) if d < 0]
-        )
+        return len([d for d in itertools.chain.from_iterable(self.refs) if d < 0])
 
     @property
     def tracks(self) -> list[btypes.Tracklet]:
@@ -274,8 +270,7 @@ class BayesianTracker:
     def dummies(self):
         """Return a list of dummy objects."""
         return [
-            self._lib.get_dummy(self._engine, -(i + 1))
-            for i in range(self.n_dummies)
+            self._lib.get_dummy(self._engine, -(i + 1)) for i in range(self.n_dummies)
         ]
 
     @property
@@ -384,9 +379,7 @@ class BayesianTracker:
         """Return the list of objects added through the append method."""
         return self._objects
 
-    def append(
-        self, objects: Union[list[btypes.PyTrackObject], npt.NDArray]
-    ) -> None:
+    def append(self, objects: Union[list[btypes.PyTrackObject], npt.NDArray]) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
@@ -425,9 +418,7 @@ class BayesianTracker:
         return info_ptr.contents
 
     def track_interactive(self, *args, **kwargs) -> None:
-        logger.warning(
-            "`track_interactive` will be deprecated. Use `track` instead."
-        )
+        logger.warning("`track_interactive` will be deprecated. Use `track` instead.")
         return self.track(*args, **kwargs)
 
     def track(
@@ -489,8 +480,7 @@ class BayesianTracker:
                 f"(in {stats.t_total_time}s)"
             )
             logger.info(
-                f" - Inserted {self.n_dummies} dummy objects to fill "
-                "tracking gaps"
+                f" - Inserted {self.n_dummies} dummy objects to fill tracking gaps"
             )
 
     def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
@@ -514,18 +504,13 @@ class BayesianTracker:
         )
 
         # now get all of the hypotheses
-        return [
-            self._lib.get_hypothesis(self._engine, h)
-            for h in range(n_hypotheses)
-        ]
+        return [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""
         return self.optimise(**kwargs)
 
-    def optimise(
-        self, options: Optional[dict] = None
-    ) -> list[hypothesis.Hypothesis]:
+    def optimise(self, options: Optional[dict] = None) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.
 
         Parameters
@@ -544,19 +529,18 @@ class BayesianTracker:
         optimiser and then performs track merging, removal of track fragments,
         renumbering and assignment of branches.
         """
+        if not self.configuration.enable_optimisation:
+            logger.warning("The `enable_optimisation` flag is set to False")
+
         logger.info(f"Loading hypothesis model: {self.hypothesis_model.name}")
 
-        logger.info(
-            f"Calculating hypotheses (relax: {self.hypothesis_model.relax})..."
-        )
+        logger.info(f"Calculating hypotheses (relax: {self.hypothesis_model.relax})...")
         hypotheses = self.hypotheses()
 
         # if we have not been provided with optimizer options, use the default
         # from the configuration.
         options = (
-            options
-            if options is not None
-            else self.configuration.optimizer_options
+            options if options is not None else self.configuration.optimizer_options
         )
 
         # if we don't have any hypotheses return
@@ -673,9 +657,7 @@ class BayesianTracker:
             A string that represents how the data has been filtered prior to
             tracking, e.g. using the object property `area>100`
         """
-        export_delegator(
-            filename, self, obj_type=obj_type, filter_by=filter_by
-        )
+        export_delegator(filename, self, obj_type=obj_type, filter_by=filter_by)
 
     def to_napari(
         self,
@@ -688,9 +670,7 @@ class BayesianTracker:
         assert self.configuration.volume is not None
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
-        return utils.tracks_to_napari(
-            self.tracks, ndim=ndim, replace_nan=replace_nan
-        )
+        return utils.tracks_to_napari(self.tracks, ndim=ndim, replace_nan=replace_nan)
 
     def candidate_graph_edges(self) -> list[btypes.PyGraphEdge]:
         """Return the edges from the full candidate graph."""
@@ -701,7 +681,4 @@ class BayesianTracker:
                 "``config.store_candidate_graph`` is set to "
                 f"{self.configuration.store_candidate_graph}"
             )
-        return [
-            self._lib.get_graph_edge(self._engine, idx)
-            for idx in range(num_edges)
-        ]
+        return [self._lib.get_graph_edge(self._engine, idx) for idx in range(num_edges)]

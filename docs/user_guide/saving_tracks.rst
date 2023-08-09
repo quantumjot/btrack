@@ -19,7 +19,7 @@ Or, if you have a list of :py:class:`btrack.btypes.Tracklet`, you can write them
 
 .. code:: python
 
-  with btrack.dataio.HDF5FileHandler(
+  with btrack.io.HDF5FileHandler(
     '/path/to/tracks.h5', 'w', obj_type='obj_type_1'
   ) as writer:
     writer.write_tracks(tracks)

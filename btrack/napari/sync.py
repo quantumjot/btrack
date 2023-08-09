@@ -7,60 +7,66 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from magicgui.widgets import Container
-
+    import btrack.napari.widgets
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
+
+from qtpy import QtCore
 
 import btrack.napari.constants
 
 
 def update_config_from_widgets(
     unscaled_config: UnscaledTrackerConfig,
-    container: Container,
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
 ) -> UnscaledTrackerConfig:
     """Update an UnscaledTrackerConfig with the current widget values."""
+    ## Retrieve model configs
+    config = unscaled_config.tracker_config
+    motion_model = config.motion_model
+    hypothesis_model = config.hypothesis_model
 
-    # Update MotionModel matrix scaling factors
+    ## Update widgets from the Method tab
+    config.update_method = btrack_widget.update_method.currentIndex()
+    config.max_search_radius = btrack_widget.max_search_radius.value()
+    motion_model.max_lost = btrack_widget.max_lost.value()
+    motion_model.prob_not_assign = btrack_widget.prob_not_assign.value()
+    config.enable_optimisation = (
+        btrack_widget.enable_optimisation.checkState() == QtCore.Qt.CheckState.Checked
+    )
+
+    ## Update widgets from the Motion tab
     sigmas: Sigmas = unscaled_config.sigmas
     for matrix_name in sigmas:
-        sigmas[matrix_name] = container[f"{matrix_name}_sigma"].value
+        sigmas[matrix_name] = btrack_widget[f"{matrix_name}_sigma"].value()
+    motion_model.accuracy = btrack_widget.accuracy.value()
 
-    # Update TrackerConfig values
-    config = unscaled_config.tracker_config
-    update_method_name = container.update_method.current_choice
-    update_method_index = container.update_method.choices.index(
-        update_method_name
-    )
-    config.update_method = update_method_index
-    config.max_search_radius = container.max_search_radius.value
-
-    # Update MotionModel values
-    motion_model = config.motion_model
-    assert motion_model is not None
-    motion_model.accuracy = container.accuracy.value
-    motion_model.max_lost = container.max_lost.value
-
-    # Update HypothesisModel.hypotheses values
-    hypothesis_model = config.hypothesis_model
-    assert hypothesis_model is not None
+    ## Update widgets from the Optimiser tab
+    # HypothesisModel.hypotheses values
     hypothesis_model.hypotheses = [
         hypothesis
-        for hypothesis in btrack.napari.constants.HYPOTHESES
-        if container[hypothesis].value
+        for i, hypothesis in enumerate(btrack.optimise.hypothesis.H_TYPES)
+        if btrack_widget["hypotheses"].item(i).checkState()
+        == QtCore.Qt.CheckState.Checked
     ]
 
-    # Update HypothesisModel scaling factors
+    # HypothesisModel scaling factors
     for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
         setattr(
-            hypothesis_model, scaling_factor, container[scaling_factor].value
+            hypothesis_model,
+            scaling_factor,
+            btrack_widget[scaling_factor].value(),
         )
 
-    # Update HypothesisModel thresholds
+    # HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
-        setattr(hypothesis_model, threshold, container[threshold].value)
+        setattr(hypothesis_model, threshold, btrack_widget[threshold].value())
 
+    # other
     hypothesis_model.segmentation_miss_rate = (
-        container.segmentation_miss_rate.value
+        btrack_widget.segmentation_miss_rate.value()
+    )
+    hypothesis_model.relax = (
+        btrack_widget.relax.checkState() == QtCore.Qt.CheckState.Checked
     )
 
     return unscaled_config
@@ -68,48 +74,54 @@ def update_config_from_widgets(
 
 def update_widgets_from_config(
     unscaled_config: UnscaledTrackerConfig,
-    container: Container,
-) -> Container:
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+) -> btrack.napari.widgets.BtrackWidget:
     """
-    Update the widgets in a container with the values in an
+    Update the widgets in a btrack_widget with the values in an
     UnscaledTrackerConfig.
     """
+    ## Retrieve model configs
+    config = unscaled_config.tracker_config
+    motion_model = config.motion_model
+    hypothesis_model = config.hypothesis_model
 
-    # Update widgets from MotionModel matrix scaling factors
+    ## Update widgets from the Method tab
+    btrack_widget.update_method.setCurrentText(config.update_method.name)
+    btrack_widget.max_search_radius.setValue(config.max_search_radius)
+    btrack_widget.max_lost.setValue(motion_model.max_lost)
+    btrack_widget.prob_not_assign.setValue(motion_model.prob_not_assign)
+    btrack_widget.enable_optimisation.setChecked(config.enable_optimisation)
+
+    ## Update widgets from the Motion tab
     sigmas: Sigmas = unscaled_config.sigmas
     for matrix_name in sigmas:
-        container[f"{matrix_name}_sigma"].value = sigmas[matrix_name]
+        btrack_widget[f"{matrix_name}_sigma"].setValue(sigmas[matrix_name])
+    btrack_widget.accuracy.setValue(motion_model.accuracy)
 
-    # Update widgets from TrackerConfig values
-    config = unscaled_config.tracker_config
-    container.update_method.value = config.update_method.name
-    container.max_search_radius.value = config.max_search_radius
-
-    # Update widgets from MotionModel values
-    motion_model = config.motion_model
-    assert motion_model is not None
-    container.accuracy.value = motion_model.accuracy
-    container.max_lost.value = motion_model.max_lost
-
-    # Update widgets from HypothesisModel.hypotheses values
-    hypothesis_model = config.hypothesis_model
-    assert hypothesis_model is not None
-    for hypothesis in btrack.napari.constants.HYPOTHESES:
-        is_checked = hypothesis in hypothesis_model.hypotheses
-        container[hypothesis].value = is_checked
-
-    # Update widgets from HypothesisModel scaling factors
-    for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
-        container[scaling_factor].value = getattr(
-            hypothesis_model, scaling_factor
+    ## Update widgets from the Optimiser tab
+    # HypothesisModel.hypotheses values
+    for i, hypothesis in enumerate(btrack.optimise.hypothesis.H_TYPES):
+        is_checked = (
+            QtCore.Qt.CheckState.Checked
+            if hypothesis in hypothesis_model.hypotheses
+            else QtCore.Qt.CheckState.Unchecked
         )
+        btrack_widget["hypotheses"].item(i).setCheckState(is_checked)
 
-    # Update widgets from HypothesisModel thresholds
+    # HypothesisModel scaling factors
+    for scaling_factor in btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS:
+        new_value = getattr(hypothesis_model, scaling_factor)
+        btrack_widget[scaling_factor].setValue(new_value)
+
+    # HypothesisModel thresholds
     for threshold in btrack.napari.constants.HYPOTHESIS_THRESHOLDS:
-        container[threshold].value = getattr(hypothesis_model, threshold)
+        new_value = getattr(hypothesis_model, threshold)
+        btrack_widget[threshold].setValue(new_value)
 
-    container.segmentation_miss_rate.value = (
+    # other
+    btrack_widget.segmentation_miss_rate.setValue(
         hypothesis_model.segmentation_miss_rate
     )
+    btrack_widget.relax.setChecked(hypothesis_model.relax)
 
-    return container
+    return btrack_widget

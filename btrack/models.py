@@ -10,9 +10,7 @@ from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 __all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
-def _check_symmetric(
-    x: npt.NDArray, rtol: float = 1e-5, atol: float = 1e-8
-) -> bool:
+def _check_symmetric(x: npt.NDArray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
@@ -284,9 +282,7 @@ class HypothesisModel(BaseModel):
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
-        h_bin = "".join(
-            [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
-        )
+        h_bin = "".join([str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]])
         return int(h_bin[::-1], 2)
 
     def as_ctype(self) -> PyHypothesisParams:

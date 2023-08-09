@@ -3,15 +3,19 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    import numpy.typing as npt
 
 import numpy as np
-from numpy import typing as npt
 from skimage.util import map_array
 
 # import core
 from . import _version, btypes, constants
+from .btypes import Tracklet
 from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
+from .io import objects_from_dict
 from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
 
@@ -81,9 +85,7 @@ def crop_volume(objects, volume=constants.VOLUME):
     axes = zip(["x", "y", "z", "t"], volume)
 
     def within(o):
-        return all(
-            getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes
-        )
+        return all(getattr(o, a) >= v[0] and getattr(o, a) <= v[1] for a, v in axes)
 
     return [o for o in objects if within(o)]
 
@@ -93,9 +95,7 @@ def _lbep_table(tracks: list[btypes.Tracklet]) -> npt.NDArray:
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
 
-def _cat_tracks_as_dict(
-    tracks: list[btypes.Tracklet], properties: list[str]
-) -> dict:
+def _cat_tracks_as_dict(tracks: list[btypes.Tracklet], properties: list[str]) -> dict:
     """Concatenate all tracks as dictionary."""
     assert all(isinstance(t, btypes.Tracklet) for t in tracks)
 
@@ -180,17 +180,19 @@ def tracks_to_napari(
     with dimensions (5,) would be split into `softmax-0` ... `softmax-4` for
     representation in napari.
     """
-    # guess the dimensionality from the data by checking whether the z values
+    # guess the dimensionality from the data by checking whether the non-dummy z values
     # are all zero. If all z are zero then the data are planar, i.e. 2D
     if ndim is None:
-        z = np.concatenate([track.z for track in tracks])
+        z = np.concatenate(
+            [np.asarray(track.z)[~np.asarray(track.dummy)] for track in tracks]
+        )
         ndim = Dimensionality.THREE if np.any(z) else Dimensionality.TWO
 
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
     t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
-    p_header = ["t", "state", "generation", "root", "parent"]
+    p_header = ["t", "state", "generation", "root", "parent", "dummy"]
 
     # ensure lexicographic ordering of tracks
     ordered = sorted(tracks, key=lambda t: t.ID)
@@ -201,9 +203,7 @@ def tracks_to_napari(
     prop_keys = p_header + [k for k in tracks_as_dict if k not in t_header]
 
     # get the data for napari
-    data = np.stack(
-        [v for k, v in tracks_as_dict.items() if k in t_header], axis=1
-    )
+    data = np.stack([v for k, v in tracks_as_dict.items() if k in t_header], axis=1)
     properties = {k: v for k, v in tracks_as_dict.items() if k in prop_keys}
 
     # replace any NaNs in the properties with an interpolated value
@@ -220,10 +220,93 @@ def tracks_to_napari(
     return data, properties, graph
 
 
+def napari_to_tracks(
+    data: npt.NDArray,
+    properties: Optional[dict[str, npt.ArrayLike]],
+    graph: Optional[dict[int, list[int]]],
+) -> list[btypes.Tracklet]:
+    """Convert napari Tracks to a list of Tracklets.
+
+    Parameters
+    ----------
+    data : array (N, D+1)
+        Coordinates for N points in D+1 dimensions. ID,T,(Z),Y,X. The first
+        axis is the integer ID of the track. D is either 3 or 4 for planar
+        or volumetric timeseries respectively.
+    properties : dict {str: array (N,)}
+        Properties for each point. Each property should be an array of length N,
+        where N is the number of points.
+    graph : dict {int: list}
+        Graph representing associations between tracks. Dictionary defines the
+        mapping between a track ID and the parents of the track. This can be
+        one (the track has one parent, and the parent has >=1 child) in the
+        case of track splitting, or more than one (the track has multiple
+        parents, but only one child) in the case of track merging.
+
+    Returns
+    -------
+    tracks : list[btypes.Tracklet]
+        A list of tracklet objects created from the napari Tracks layer data.
+
+    """
+
+    if data.shape[1] == Dimensionality.FIVE:
+        track_id, t, z, y, x = data.T
+    elif data.shape[1] == Dimensionality.FOUR:
+        track_id, t, y, x = data.T
+        z = np.zeros_like(x)
+    else:
+        raise ValueError(
+            "Data must have either 4 (ID, t, y, x) or 5 (ID, t, z, y, x) columns, "
+            f"not {data.shape[1]}"
+        )
+
+    # Create all PyTrackObjects
+    objects_dict = {
+        "ID": np.arange(track_id.size),
+        "t": t,
+        "x": x,
+        "y": y,
+        "z": z,
+        "dummy": properties.get("dummy", np.full_like(track_id, fill_value=False)),
+        "label": properties.get(
+            "state", np.full_like(track_id, fill_value=constants.States.NULL)
+        ),
+    }
+    track_objects = objects_from_dict(objects_dict)
+
+    # Create all Tracklets
+    tracklets = []
+    for track in np.unique(track_id).astype(int):
+        # Create tracklet
+        track_indices = np.argwhere(track_id == track).ravel()
+        track_data = [track_objects[i] for i in track_indices]
+        parent = graph.get(track, [track])[0]
+        children = [child for (child, parents) in graph.items() if track in parents]
+        tracklet = Tracklet(
+            ID=track,
+            data=track_data,
+            parent=parent,
+            children=children,
+        )
+
+        # Determine root tracklet
+        tracklet.root = parent
+        tracklet.generation = 0 if tracklet.root == track else 1
+        while tracklet.root in graph:
+            tracklet.root = graph[tracklet.root][0]
+            tracklet.generation += 1
+
+        tracklets.append(tracklet)
+
+    return tracklets
+
+
 def update_segmentation(
     segmentation: npt.NDArray,
     tracks: list[btypes.Tracklet],
     *,
+    scale: Optional[tuple(float)] = None,
     color_by: str = "ID",
 ) -> npt.NDArray:
     """Map tracks back into a masked array.
@@ -235,6 +318,10 @@ def update_segmentation(
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
         A list of :py:class:`btrack.btypes.Tracklet` objects from BayesianTracker.
+    scale : tuple, optional
+        A scale for each spatial dimension of the input tracks. Defaults
+        to one for all axes, and allows scaling for anisotropic imaging data.
+        Dimensions should be ordered XY(Z).
     color_by : str, default = "ID"
         A value to recolor the segmentation by.
 
@@ -259,12 +346,25 @@ def update_segmentation(
 
     keys = {k: i for i, k in enumerate(DEFAULT_EXPORT_PROPERTIES)}
 
-    coords_arr = np.concatenate(
-        [
-            track.to_array()[~np.array(track.dummy), : len(keys)].astype(int)
-            for track in tracks
-        ]
+    keys.update(
+        {
+            key: idx
+            for idx, key in enumerate(
+                tracks[0].properties.keys(), start=max(keys.values()) + 1
+            )
+        }
     )
+
+    coords_arr = np.concatenate(
+        [track.to_array()[~np.array(track.dummy), :].astype(int) for track in tracks]
+    )
+
+    scale = tuple([1.0] * (segmentation.ndim - 1)) if scale is None else scale
+
+    if (segmentation.ndim - 1) != len(scale):
+        raise ValueError(
+            "Scale should have the same number of spatial dimensions as `segmentation`."
+        )
 
     if color_by not in keys:
         raise ValueError(f"Property ``{color_by}`` not found in track.")
@@ -276,10 +376,14 @@ def update_segmentation(
         xc, yc = frame_coords[:, keys["x"]], frame_coords[:, keys["y"]]
         new_id = frame_coords[:, keys[color_by]]
 
+        xc = (xc * scale[0]).astype(int)
+        yc = (yc * scale[1]).astype(int)
+
         if single_segmentation.ndim == constants.Dimensionality.TWO:
             old_id = single_segmentation[yc, xc]
         elif single_segmentation.ndim == constants.Dimensionality.THREE:
             zc = frame_coords[:, keys["z"]]
+            zc = (zc * scale[2]).astype(int)
             old_id = single_segmentation[zc, yc, xc]
 
         relabeled[t] = map_array(single_segmentation, old_id, new_id) * (
@@ -298,10 +402,7 @@ class SystemInformation:
     def __repr__(self) -> str:
         # override to have slightly nicer formatting
         return "\n".join(
-            [
-                f"{key}: {value}"
-                for key, value in dataclasses.asdict(self).items()
-            ]
+            [f"{key}: {value}" for key, value in dataclasses.asdict(self).items()]
         )
 
 

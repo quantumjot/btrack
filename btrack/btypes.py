@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import ctypes
 from collections import OrderedDict
-from typing import Any, NamedTuple, Optional
+from typing import Any, ClassVar, NamedTuple, Optional
 
 import numpy as np
 from numpy import typing as npt
@@ -87,7 +87,7 @@ class PyTrackObject(ctypes.Structure):
 
     """
 
-    _fields_ = [
+    _fields_: ClassVar[list] = [
         ("ID", ctypes.c_long),
         ("x", ctypes.c_double),
         ("y", ctypes.c_double),
@@ -129,9 +129,7 @@ class PyTrackObject(ctypes.Structure):
             return
 
         if any(k not in self.properties for k in keys):
-            missing_features = list(
-                set(keys).difference(set(self.properties.keys()))
-            )
+            missing_features = list(set(keys).difference(set(self.properties.keys())))
             raise KeyError(f"Feature(s) missing: {missing_features}.")
 
         # store a reference to the numpy array so that Python maintains
@@ -173,9 +171,7 @@ class PyTrackObject(ctypes.Structure):
                 setattr(obj, key, float(new_data))
 
         # we can add any extra details to the properties dictionary
-        obj.properties = {
-            k: v for k, v in properties.items() if k not in fields.keys()
-        }
+        obj.properties = {k: v for k, v in properties.items() if k not in fields}
         return obj
 
     def __repr__(self):
@@ -220,7 +216,7 @@ class PyTrackingInfo(ctypes.Structure):
 
     """
 
-    _fields_ = [
+    _fields_: ClassVar[list] = [
         ("error", ctypes.c_uint),
         ("n_tracks", ctypes.c_uint),
         ("n_active", ctypes.c_uint),
@@ -236,6 +232,8 @@ class PyTrackingInfo(ctypes.Structure):
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the statistics"""
+        # TODO(arl): make this more readable by converting seconds, ms
+        # and interpreting error messages?
         return {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
 
     @property
@@ -265,7 +263,7 @@ class PyGraphEdge(ctypes.Structure):
     source timestamp, we just assume that the tracker has done it's job.
     """
 
-    _fields_ = [
+    _fields_: ClassVar[list] = [
         ("source", ctypes.c_long),
         ("target", ctypes.c_long),
         ("score", ctypes.c_double),
@@ -392,11 +390,7 @@ class Tracklet:
         # this to fill the properties array with NaN for dummy objects
         property_shapes = {
             k: next(
-                (
-                    np.asarray(o.properties[k]).shape
-                    for o in self._data
-                    if not o.dummy
-                ),
+                (np.asarray(o.properties[k]).shape for o in self._data if not o.dummy),
                 None,
             )
             for k in keys
@@ -484,9 +478,7 @@ class Tracklet:
 
     @property
     def is_root(self) -> bool:
-        return (
-            self.parent == 0 or self.parent is None or self.parent == self.ID
-        )
+        return self.parent == 0 or self.parent is None or self.parent == self.ID
 
     @property
     def is_leaf(self) -> bool:
@@ -523,7 +515,7 @@ class Tracklet:
         """
         trk_tuple = tuple((p, getattr(self, p)) for p in properties)
         data = OrderedDict(trk_tuple)
-        data.update(self.properties)
+        data |= self.properties
         return data
 
     def to_array(
@@ -571,8 +563,7 @@ def _pandas_html_repr(obj):
         import pandas as pd
     except ImportError:
         return (
-            "<b>Install pandas for nicer, tabular rendering.</b> <br>"
-            + obj.__repr__()
+            "<b>Install pandas for nicer, tabular rendering.</b> <br>" + obj.__repr__()
         )
 
     obj_as_dict = obj.to_dict()

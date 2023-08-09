@@ -61,6 +61,8 @@ def test_save_button(track_widget, filename):
     )
     # default config name matches the filename
     unscaled_config.tracker_config.name = filename
+    unscaled_config.tracker_config.hypothesis_model.name = filename
+    unscaled_config.tracker_config.motion_model.name = filename
     expected_config = unscaled_config.scale_config().json()
 
     with patch(

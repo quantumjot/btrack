@@ -356,6 +356,8 @@ def save_config_to_json(
 
     # set the config name to match the filename
     config.name = Path(save_path).stem
+    config.hypothesis_model.name = config.name
+    config.motion_model.name = config.name
 
     btrack.config.save_config(save_path, config)
 

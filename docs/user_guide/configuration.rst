@@ -20,7 +20,7 @@ The motion model is used to make forward predictions about the location of objec
      "measurements": 3,
      "states": 6,
      "accuracy": 7.5,
-     "prob_not_assign": 0.001,
+     "prob_not_assign": 0.1,
      "max_lost": 5,
      "A": {
        "matrix": [1,0,0,1,0,0,

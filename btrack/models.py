@@ -9,9 +9,7 @@ from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 __all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
-def _check_symmetric(
-    x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8
-) -> bool:
+def _check_symmetric(x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
@@ -148,9 +146,7 @@ class MotionModel(BaseModel):
             values["Q"] = G.T @ G
         return values
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True, validate_assignment=True
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
 
 class ObjectModel(BaseModel):
@@ -194,9 +190,7 @@ class ObjectModel(BaseModel):
         shape = (1, values["states"])
         return np.reshape(v, shape)
 
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True, validate_assignment=True
-    )
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
 
 class HypothesisModel(BaseModel):
@@ -283,9 +277,7 @@ class HypothesisModel(BaseModel):
 
     def hypotheses_to_generate(self) -> int:
         """Return an integer representation of the hypotheses to generate."""
-        h_bin = "".join(
-            [str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]]
-        )
+        h_bin = "".join([str(int(h)) for h in [h in self.hypotheses for h in H_TYPES]])
         return int(h_bin[::-1], 2)
 
     def as_ctype(self) -> PyHypothesisParams:

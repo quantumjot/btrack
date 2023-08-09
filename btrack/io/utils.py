@@ -13,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def localizations_to_objects(
-    localizations: Union[
-        np.ndarray, list[btypes.PyTrackObject], dict[str, Any]
-    ]
+    localizations: Union[np.ndarray, list[btypes.PyTrackObject], dict[str, Any]]
 ) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
@@ -41,9 +39,7 @@ def localizations_to_objects(
         return objects_from_array(localizations)
     else:
         try:
-            objects_dict = {
-                c: np.asarray(localizations[c]) for c in localizations
-            }
+            objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
         except ValueError as err:
             logger.error(f"Unknown localization type: {type(localizations)}")
             raise TypeError(

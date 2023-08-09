@@ -48,12 +48,12 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     )
     widgets = {"segmentation": ("segmentation", segmentation)}
 
-    config = QtWidgets.QComboBox()
-    config.addItems(["cell", "particle"])
-    config.setToolTip(
+    config_name = QtWidgets.QComboBox()
+    config_name.addItems(["cell", "particle"])
+    config_name.setToolTip(
         "Select a loaded configuration.\nNote, this will update values set below."
     )
-    widgets["config"] = ("config name", config)
+    widgets["config_name"] = ("config name", config_name)
 
     return widgets
 

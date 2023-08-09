@@ -76,7 +76,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         ),
     )
 
-    btrack_widget.config.currentTextChanged.connect(
+    btrack_widget.config_name.currentTextChanged.connect(
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
@@ -239,7 +239,7 @@ def run(
         )
         return
 
-    unscaled_config = configs[btrack_widget.config.currentText()]
+    unscaled_config = configs[btrack_widget.config_name.currentText()]
     unscaled_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         btrack_widget=btrack_widget,
@@ -349,7 +349,7 @@ def save_config_to_json(
         logger.info(_msg)
         return
 
-    unscaled_config = configs[btrack_widget.config.currentText()]
+    unscaled_config = configs[btrack_widget.config_name.currentText()]
     btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         btrack_widget=btrack_widget,
@@ -372,5 +372,5 @@ def load_config_from_json(
         return
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
-    btrack_widget.config.addItem(config_name)
-    btrack_widget.config.setCurrentText(config_name)
+    btrack_widget.config_name.addItem(config_name)
+    btrack_widget.config_name.setCurrentText(config_name)

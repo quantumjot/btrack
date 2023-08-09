@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from btrack.napari.config import TrackerConfigs
 
 import logging
+from pathlib import Path
 
 import napari
 
@@ -76,7 +77,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         ),
     )
 
-    btrack_widget.config.currentTextChanged.connect(
+    btrack_widget.config_name.currentTextChanged.connect(
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
@@ -88,7 +89,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda is_checked: btrack_widget._tabs.setTabEnabled(tab, is_checked)
     )
 
-    btrack_widget.call_button.clicked.connect(
+    btrack_widget.track_button.clicked.connect(
         lambda: run(btrack_widget, all_configs),
     )
 
@@ -199,18 +200,15 @@ def select_config(
     """Set widget values from a newly-selected base config"""
 
     # first update the previous config with the current widget values
-    previous_config_name = configs.current_config
-    previous_config = configs[previous_config_name]
-    previous_config = btrack.napari.sync.update_config_from_widgets(
-        unscaled_config=previous_config,
+    _ = btrack.napari.sync.update_config_from_widgets(
+        unscaled_config=configs[configs.current_config],
         btrack_widget=btrack_widget,
     )
 
     # now load the newly-selected config and set widget values
     configs.current_config = new_config_name
-    new_config = configs[new_config_name]
-    new_config = btrack.napari.sync.update_widgets_from_config(
-        unscaled_config=new_config,
+    _ = btrack.napari.sync.update_widgets_from_config(
+        unscaled_config=configs[new_config_name],
         btrack_widget=btrack_widget,
     )
 
@@ -239,7 +237,7 @@ def run(
         )
         return
 
-    unscaled_config = configs[btrack_widget.config.currentText()]
+    unscaled_config = configs[btrack_widget.config_name.currentText()]
     unscaled_config = btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         btrack_widget=btrack_widget,
@@ -349,12 +347,17 @@ def save_config_to_json(
         logger.info(_msg)
         return
 
-    unscaled_config = configs[btrack_widget.config.currentText()]
+    unscaled_config = configs[btrack_widget.config_name.currentText()]
     btrack.napari.sync.update_config_from_widgets(
         unscaled_config=unscaled_config,
         btrack_widget=btrack_widget,
     )
     config = unscaled_config.scale_config()
+
+    # set the config name to match the filename
+    config.name = Path(save_path).stem
+    config.hypothesis_model.name = config.name
+    config.motion_model.name = config.name
 
     btrack.config.save_config(save_path, config)
 
@@ -372,5 +375,5 @@ def load_config_from_json(
         return
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
-    btrack_widget.config.addItem(config_name)
-    btrack_widget.config.setCurrentText(config_name)
+    btrack_widget.config_name.addItem(config_name)
+    btrack_widget.config_name.setCurrentText(config_name)

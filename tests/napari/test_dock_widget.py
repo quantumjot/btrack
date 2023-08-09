@@ -50,7 +50,8 @@ def test_config_to_widgets_round_trip(track_widget, config):
     assert json.loads(actual_config) == json.loads(expected_config)
 
 
-def test_save_button(track_widget):
+@pytest.mark.parametrize("filename", ["user_config"])
+def test_save_button(track_widget, filename):
     """Tests that clicking the save configuration button
     triggers a call to btrack.config.save_config with expected arguments.
     """
@@ -58,17 +59,19 @@ def test_save_button(track_widget):
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(
         btrack.datasets.cell_config()
     )
-    # this is done in in the gui too
-    unscaled_config.tracker_config.name = "cell"
+    # default config name matches the filename
+    unscaled_config.tracker_config.name = filename
+    unscaled_config.tracker_config.hypothesis_model.name = filename
+    unscaled_config.tracker_config.motion_model.name = filename
     expected_config = unscaled_config.scale_config().json()
 
     with patch(
         "btrack.napari.widgets.save_path_dialogue_box"
     ) as save_path_dialogue_box:
-        save_path_dialogue_box.return_value = "user_config.json"
+        save_path_dialogue_box.return_value = f"{filename}.json"
         track_widget.save_config_button.click()
 
-    actual_config = btrack.config.load_config("user_config.json").json()
+    actual_config = btrack.config.load_config(f"{filename}.json").json()
 
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(expected_config) == json.loads(actual_config)
@@ -78,7 +81,7 @@ def test_load_config(track_widget):
     """Tests that another TrackerConfig can be loaded and made the current config."""
 
     # this is set to be 'cell' rather than 'Default'
-    original_config_name = track_widget.config.currentText()
+    original_config_name = track_widget.config_name.currentText()
 
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
@@ -87,9 +90,9 @@ def test_load_config(track_widget):
         track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
-    new_config_name = track_widget.config.currentText()
+    new_config_name = track_widget.config_name.currentText()
 
-    assert track_widget.config.currentText() == "Default"
+    assert track_widget.config_name.currentText() == "Default"
     assert new_config_name != original_config_name
 
 
@@ -135,7 +138,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
-        track_widget.call_button.click()
+        track_widget.track_button.click()
 
     assert run_tracker.called
     assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS

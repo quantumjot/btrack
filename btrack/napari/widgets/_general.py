@@ -40,7 +40,6 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
 def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
-    # TODO: annotation=napari.layers.Labels,
     segmentation = QtWidgets.QComboBox()
     segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"
@@ -49,12 +48,12 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     )
     widgets = {"segmentation": ("segmentation", segmentation)}
 
-    config = QtWidgets.QComboBox()
-    config.addItems(["cell", "particle"])
-    config.setToolTip(
+    config_name = QtWidgets.QComboBox()
+    config_name.addItems(["cell", "particle"])
+    config_name.setToolTip(
         "Select a loaded configuration.\nNote, this will update values set below."
     )
-    widgets["config"] = ("config name", config)
+    widgets["config_name"] = ("config name", config_name)
 
     return widgets
 
@@ -152,9 +151,9 @@ def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
 
 
 def create_track_widgets() -> dict[str, QtWidgets.QWidget]:
-    call_button = QtWidgets.QPushButton("Track")
-    call_button.setToolTip(
+    track_button = QtWidgets.QPushButton("Track")
+    track_button.setToolTip(
         "Run the tracking analysis with the current configuration.",
     )
 
-    return {"call_button": call_button}
+    return {"track_button": track_button}

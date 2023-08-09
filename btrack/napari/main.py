@@ -199,18 +199,15 @@ def select_config(
     """Set widget values from a newly-selected base config"""
 
     # first update the previous config with the current widget values
-    previous_config_name = configs.current_config
-    previous_config = configs[previous_config_name]
-    previous_config = btrack.napari.sync.update_config_from_widgets(
-        unscaled_config=previous_config,
+    _ = btrack.napari.sync.update_config_from_widgets(
+        unscaled_config=configs[configs.current_config],
         btrack_widget=btrack_widget,
     )
 
     # now load the newly-selected config and set widget values
     configs.current_config = new_config_name
-    new_config = configs[new_config_name]
-    new_config = btrack.napari.sync.update_widgets_from_config(
-        unscaled_config=new_config,
+    _ = btrack.napari.sync.update_widgets_from_config(
+        unscaled_config=configs[new_config_name],
         btrack_widget=btrack_widget,
     )
 

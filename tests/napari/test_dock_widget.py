@@ -78,7 +78,7 @@ def test_load_config(track_widget):
     """Tests that another TrackerConfig can be loaded and made the current config."""
 
     # this is set to be 'cell' rather than 'Default'
-    original_config_name = track_widget.config.currentText()
+    original_config_name = track_widget.config_name.currentText()
 
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
@@ -87,9 +87,9 @@ def test_load_config(track_widget):
         track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
-    new_config_name = track_widget.config.currentText()
+    new_config_name = track_widget.config_name.currentText()
 
-    assert track_widget.config.currentText() == "Default"
+    assert track_widget.config_name.currentText() == "Default"
     assert new_config_name != original_config_name
 
 

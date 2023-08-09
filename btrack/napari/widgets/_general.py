@@ -13,9 +13,16 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
     widgets = {"title": title}
 
     logo = QtWidgets.QLabel()
+    pixmap = QtGui.QPixmap(
+        str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
+    )
+    logo.setAlignment(QtCore.Qt.AlignHCenter)
+    scale = 0.8
     logo.setPixmap(
-        QtGui.QPixmap(
-            str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
+        pixmap.scaled(
+            int(pixmap.width() * scale),
+            int(pixmap.height() * scale),
+            QtCore.Qt.KeepAspectRatio,
         )
     )
     widgets["logo"] = logo
@@ -52,7 +59,7 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return widgets
 
 
-def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
+def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting the update method"""
 
     update_method = QtWidgets.QComboBox()
@@ -98,6 +105,16 @@ def create_update_method_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         not_assign,
     )
 
+    optimise = QtWidgets.QCheckBox()
+    optimise.setChecked(True)  # noqa: FBT003
+    optimise.setToolTip(
+        "Enable the track optimisation.\n"
+        "This means that tracks will be optimised using the hypotheses"
+        "specified in the optimiser tab."
+    )
+    optimise.setTristate(False)  # noqa: FBT003
+    widgets["enable_optimisation"] = ("enable optimisation", optimise)
+
     return widgets
 
 
@@ -114,9 +131,9 @@ def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
         "reset_button",
     ]
     labels = [
-        "Load configuration",
-        "Save configuration",
-        "Reset defaults",
+        "Load Configuration",
+        "Save Configuration",
+        "Reset Defaults",
     ]
     tooltips = [
         "Load a TrackerConfig json file.",

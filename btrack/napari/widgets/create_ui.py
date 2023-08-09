@@ -5,14 +5,14 @@ from qtpy import QtWidgets
 from napari.viewer import Viewer
 
 from btrack.napari.widgets._general import (
+    create_basic_widgets,
     create_config_widgets,
     create_input_widgets,
     create_logo_widgets,
     create_track_widgets,
-    create_update_method_widgets,
 )
-from btrack.napari.widgets._hypothesis import create_hypothesis_model_widgets
 from btrack.napari.widgets._motion import create_motion_model_widgets
+from btrack.napari.widgets._optimiser import create_optimiser_widgets
 
 
 class BtrackWidget(QtWidgets.QScrollArea):
@@ -46,13 +46,13 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         self._add_logo_widgets()
         self._add_input_widgets()
-        # This must be added after the input widgets
-        self._main_layout.addWidget(self._tabs, stretch=0)
-        self._add_update_method_widgets()
-        self._add_motion_model_widgets()
-        self._add_hypothesis_model_widgets()
-        self._add_config_widgets()
         self._add_track_widgets()
+        # This must be added after the track widget
+        self._main_layout.addWidget(self._tabs, stretch=0)
+        self._add_basic_widgets()
+        self._add_motion_model_widgets()
+        self._add_optimiser_widgets()
+        self._add_config_widgets()
 
         # Expand the main widget
         self._main_layout.addStretch(stretch=1)
@@ -87,9 +87,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         widget_holder.setLayout(layout)
         self._main_layout.addWidget(widget_holder, stretch=0)
 
-    def _add_update_method_widgets(self) -> None:
+    def _add_basic_widgets(self) -> None:
         """Create update method widgets and add to main layout"""
-        labels_and_widgets = create_update_method_widgets()
+        labels_and_widgets = create_basic_widgets()
         self._widgets.update(
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
@@ -102,7 +102,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
-        self._tabs.addTab(tab, "Method")
+        self._tabs.addTab(tab, "Basic")
 
     def _add_motion_model_widgets(self) -> None:
         """Create motion model widgets and add to main layout"""
@@ -121,9 +121,9 @@ class BtrackWidget(QtWidgets.QScrollArea):
         tab.setLayout(layout)
         self._tabs.addTab(tab, "Motion")
 
-    def _add_hypothesis_model_widgets(self) -> None:
+    def _add_optimiser_widgets(self) -> None:
         """Create hypothesis model widgets and add to main layout"""
-        labels_and_widgets = create_hypothesis_model_widgets()
+        labels_and_widgets = create_optimiser_widgets()
         self._widgets.update(
             {key: value[1] for key, value in labels_and_widgets.items()}
         )
@@ -136,7 +136,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
 
         tab = QtWidgets.QWidget()
         tab.setLayout(layout)
-        self._tabs.addTab(tab, "Hypothesis")
+        self._tabs.addTab(tab, "Optimiser")
 
     def _add_config_widgets(self) -> None:
         """Creates the IO widgets related to the user config"""

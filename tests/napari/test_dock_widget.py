@@ -98,19 +98,25 @@ def test_reset_button(track_widget):
 
     original_max_search_radius = track_widget.max_search_radius.value()
     original_relax = track_widget.relax.isChecked()
+    original_optimise = track_widget.enable_optimisation.isChecked()
 
     # change some widget values
     track_widget.max_search_radius.setValue(track_widget.max_search_radius.value() + 10)
     track_widget.relax.setChecked(not track_widget.relax.isChecked())
+    track_widget.enable_optimisation.setChecked(
+        not track_widget.enable_optimisation.isChecked()
+    )
 
     # click reset button - restores defaults of the currently-selected base config
     track_widget.reset_button.click()
 
     new_max_search_radius = track_widget.max_search_radius.value()
     new_relax = track_widget.relax.isChecked()
+    new_optimise = track_widget.enable_optimisation.isChecked()
 
     assert new_max_search_radius == original_max_search_radius
     assert new_relax == original_relax
+    assert new_optimise == original_optimise
 
 
 def test_run_button(track_widget, simplistic_tracker_outputs):

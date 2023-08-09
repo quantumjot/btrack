@@ -21,7 +21,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     widget = QtWidgets.QListWidget()
     widget.addItems([f"{h.replace('_', '(')})" for h in hypotheses])
-    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable + QtCore.Qt.ItemIsEnabled)
+    flags = QtCore.Qt.ItemFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
     for i, tooltip in enumerate(tooltips):
         widget.item(i).setFlags(flags)
         widget.item(i).setToolTip(tooltip)
@@ -37,12 +37,7 @@ def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 def _create_scaling_factor_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting the scaling factors of the HypothesisModel"""
 
-    names = [
-        "lambda_time",
-        "lambda_dist",
-        "lambda_link",
-        "lambda_branch",
-    ]
+    names = btrack.napari.constants.HYPOTHESIS_SCALING_FACTORS
     labels = [
         "λ time",
         "λ distance",
@@ -118,7 +113,7 @@ def _create_bin_size_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     return widgets
 
 
-def create_hypothesis_model_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
+def create_optimiser_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for setting parameters of the HypothesisModel"""
 
     widgets = {

@@ -80,6 +80,14 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
+    # Disable the Optimiser tab if unchecked
+    for tab in range(btrack_widget._tabs.count()):
+        if btrack_widget._tabs.tabText(tab) == "Optimiser":
+            break
+    btrack_widget.enable_optimisation.toggled.connect(
+        lambda is_checked: btrack_widget._tabs.setTabEnabled(tab, is_checked)
+    )
+
     btrack_widget.call_button.clicked.connect(
         lambda: run(btrack_widget, all_configs),
     )
@@ -264,7 +272,11 @@ def _run_tracker(
     """
     Runs BayesianTracker with given segmentation and configuration.
     """
-    with btrack.BayesianTracker() as tracker, napari.utils.progress(total=5) as pbr:
+    num_steps = 5 if tracker_config.enable_optimisation else 4
+
+    with btrack.BayesianTracker() as tracker, napari.utils.progress(
+        total=num_steps
+    ) as pbr:
         pbr.set_description("Initialising the tracker")
         tracker.configure(tracker_config)
         pbr.update(1)
@@ -287,10 +299,11 @@ def _run_tracker(
         tracker.track(step_size=100)
         pbr.update(1)
 
-        # generate hypotheses and run the global optimizer
-        pbr.set_description("Run optimisation")
-        tracker.optimize()
-        pbr.update(1)
+        if tracker.enable_optimisation:
+            # generate hypotheses and run the global optimizer
+            pbr.set_description("Run optimisation")
+            tracker.optimize()
+            pbr.update(1)
 
         # get the tracks in a format for napari visualization
         pbr.set_description("Convert to napari tracks layer")

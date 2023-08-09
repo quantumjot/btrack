@@ -213,7 +213,9 @@ def full_tracker_example(
     """Set up a full tracker example. kwargs can supply configuration options."""
     # run the tracking
     tracker = btrack.BayesianTracker()
-    tracker.configure(CONFIG_FILE)
+    cfg = btrack.config.load_config(CONFIG_FILE)
+    cfg.motion_model.prob_not_assign = 0.001
+    tracker.configure(cfg)
     for cfg_key, cfg_value in kwargs.items():
         setattr(tracker, cfg_key, cfg_value)
     tracker.append(objects)

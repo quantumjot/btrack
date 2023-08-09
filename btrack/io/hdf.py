@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Any, Optional, Union
 
 import h5py
 import numpy as np
+from numpy import typing as npt
 
 # import core
 from btrack import _version, btypes, constants, utils
@@ -62,15 +63,15 @@ class HDF5FileHandler:
 
     Attributes
     ----------
-    segmentation : np.ndarray
+    segmentation : npt.NDArray
         A numpy array representing the segmentation data. TZYX
     objects : list [PyTrackObject]
         A list of PyTrackObjects localised from the segmentation data.
-    filtered_objects  : np.ndarray
+    filtered_objects  : npt.NDArray
         Similar to objects, but filtered by property.
     tracks : list [Tracklet]
         A list of Tracklet objects.
-    lbep : np.ndarray
+    lbep : npt.NDArray
         The LBEP table representing the track graph.
 
     Notes
@@ -166,17 +167,17 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("segmentation")
-    def segmentation(self) -> np.ndarray:
+    def segmentation(self) -> npt.NDArray:
         segmentation = self._hdf["segmentation"]["images"][:].astype(np.uint16)
         logger.info(f"Loading segmentation {segmentation.shape}")
         return segmentation
 
-    def write_segmentation(self, segmentation: np.ndarray) -> None:
+    def write_segmentation(self, segmentation: npt.NDArray) -> None:
         """Write out the segmentation to an HDF file.
 
         Parameters
         ----------
-        segmentation : np.ndarray
+        segmentation : npt.NDArray
             A numpy array representing the segmentation data. T(Z)YX, uint16
         """
         # write the segmentation out
@@ -280,7 +281,8 @@ class HDF5FileHandler:
             filtered_idx = [i for i, x in enumerate(data) if literal_eval(f_eval)]
 
         else:
-            filtered_idx = range(txyz.shape[0])  # default filtering uses all
+            # default filtering uses all
+            filtered_idx = list(range(txyz.shape[0]))
 
         # sanity check that coordinates matches labels
         assert txyz.shape[0] == labels.shape[0]
@@ -334,7 +336,7 @@ class HDF5FileHandler:
         if "objects" not in self._hdf:
             self._hdf.create_group("objects")
         grp = self._hdf["objects"].create_group(self.object_type)
-        props = {k: [] for k in objects[0].properties}
+        props: dict = {k: [] for k in objects[0].properties}
 
         n_objects = len(objects)
         n_frames = np.max([o.t for o in objects]) + 1
@@ -451,7 +453,7 @@ class HDF5FileHandler:
 
         obj = self.filtered_objects(f_expr=f_expr)
 
-        def _get_txyz(_ref: int) -> int:
+        def _get_txyz(_ref: int) -> btypes.PyTrackObject:
             # references are -ve for dummies
             return obj[_ref] if _ref >= 0 else dummy_obj[abs(_ref) - 1]
 
@@ -468,7 +470,7 @@ class HDF5FileHandler:
             tracks.append(track)
 
         # once we have all of the tracks, populate the children
-        to_update = {}
+        to_update: dict = {}
         for track in tracks:
             if not track.is_root:
                 parents = filter(lambda t: track.parent == t.ID, tracks)
@@ -589,7 +591,7 @@ class HDF5FileHandler:
 
     @property  # type: ignore
     @h5check_property_exists("tracks")
-    def lbep(self) -> np.ndarray:
+    def lbep(self) -> npt.NDArray:
         """Return the LBEP data."""
         logger.info(f"Loading LBEP/{self.object_type}")
         return self._hdf["tracks"][self.object_type]["LBEPR"][:]

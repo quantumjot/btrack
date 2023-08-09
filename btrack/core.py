@@ -6,6 +6,7 @@ import warnings
 from typing import Optional, Union
 
 import numpy as np
+from numpy import typing as npt
 
 from btrack import _version
 
@@ -222,7 +223,7 @@ class BayesianTracker:
         """Set the maximum search radius for fast cost updates."""
         self._lib.max_search_radius(self._engine, max_search_radius)
 
-    def _update_method(self, method: Union[str, constants.BayesianUpdates]):
+    def _update_method(self, method: constants.BayesianUpdates):
         """Set the method for updates, EXACT, APPROXIMATE, CUDA etc..."""
         self._lib.set_update_mode(self._engine, method.value)
 
@@ -369,7 +370,7 @@ class BayesianTracker:
         )
 
     @property
-    def frame_range(self) -> tuple[int, int]:
+    def frame_range(self) -> tuple:
         """Return the frame range."""
         return tuple(self.configuration.frame_range)
 
@@ -378,7 +379,7 @@ class BayesianTracker:
         """Return the list of objects added through the append method."""
         return self._objects
 
-    def append(self, objects: Union[list[btypes.PyTrackObject], np.ndarray]) -> None:
+    def append(self, objects: Union[list[btypes.PyTrackObject], npt.NDArray]) -> None:
         """Append a single track object, or list of objects to the stack. Note
         that the tracker will automatically order these by frame number, so the
         order here does not matter. This means several datasets can be
@@ -386,7 +387,7 @@ class BayesianTracker:
 
         Parameters
         ----------
-        objects : list, np.ndarray
+        objects : list, npt.NDArray
             A list of objects to track.
         """
 
@@ -453,7 +454,7 @@ class BayesianTracker:
         # bitwise OR is equivalent to int sum here
         self._lib.set_update_features(
             self._engine,
-            sum([int(f.value) for f in self.configuration.tracking_updates]),
+            sum(int(f.value) for f in self.configuration.tracking_updates),
         )
 
         stats = self.step()
@@ -503,8 +504,7 @@ class BayesianTracker:
         )
 
         # now get all of the hypotheses
-        h = [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
-        return h
+        return [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""
@@ -663,10 +663,11 @@ class BayesianTracker:
         self,
         replace_nan: bool = True,  # noqa: FBT001,FBT002
         ndim: Optional[int] = None,
-    ) -> tuple[np.ndarray, dict, dict]:
+    ) -> tuple[npt.NDArray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""
 
+        assert self.configuration.volume is not None
         ndim = self.configuration.volume.ndim if ndim is None else ndim
 
         return utils.tracks_to_napari(self.tracks, ndim=ndim, replace_nan=replace_nan)

@@ -70,7 +70,7 @@ def reader_function(path: PathOrPaths) -> list[LayerDataTuple]:
         to layer_type=="image" if not provided
     """
     # handle both a string and a list of strings
-    paths = [path] if not isinstance(path, list) else path
+    paths = path if isinstance(path, list) else [path]
 
     # store the layers to be generated
     layers: list[tuple] = []

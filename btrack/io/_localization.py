@@ -87,7 +87,7 @@ class SegmentationContainer:
 class NodeProcessor:
     """Processor to extract nodes from a segmentation image."""
 
-    properties: tuple[str]
+    properties: tuple[str, ...]
     centroid_type: str = "centroid"
     intensity_image: Optional[npt.NDArray] = None
     scale: Optional[tuple[float]] = None
@@ -95,18 +95,15 @@ class NodeProcessor:
     extra_properties: Optional[tuple[Callable]] = None
 
     @property
-    def img_props(self) -> list[str]:
+    def img_props(self) -> tuple[str, ...]:
         # need to infer the name of the function provided
-        extra_img_props = tuple(
-            [str(fn.__name__) for fn in self.extra_properties]
+        return self.properties + (
+            tuple(str(fn.__name__) for fn in self.extra_properties)
             if self.extra_properties
-            else []
+            else ()
         )
-        return self.properties + extra_img_props
 
-    def __call__(
-        self, data: tuple[int, npt.NDAarray, Optional[npt.NDArray]]
-    ) -> dict[str, npt.NDArray]:
+    def __call__(self, data: tuple[int, npt.NDArray, Optional[npt.NDArray]]) -> dict:
         """Return the object centroids from a numpy array representing the
         image data."""
 
@@ -158,10 +155,10 @@ class NodeProcessor:
 
 
 def segmentation_to_objects(  # noqa: PLR0913
-    segmentation: Union[np.ndarray, Generator],
+    segmentation: Union[npt.NDArray, Generator],
     *,
-    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
-    properties: Optional[tuple[str]] = (),
+    intensity_image: Optional[Union[npt.NDArray, Generator]] = None,
+    properties: tuple[str, ...] = (),
     extra_properties: Optional[tuple[Callable]] = None,
     scale: Optional[tuple[float]] = None,
     use_weighted_centroid: bool = True,
@@ -172,10 +169,10 @@ def segmentation_to_objects(  # noqa: PLR0913
 
     Parameters
     ----------
-    segmentation : np.ndarray, dask.array.core.Array or Generator
+    segmentation : npt.NDArray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
+    intensity_image : npt.NDArray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional
@@ -245,11 +242,11 @@ def segmentation_to_objects(  # noqa: PLR0913
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
-    if isinstance(properties, tuple) and "label" in properties:
+    if "label" in properties:
         logger.warning("Cannot use `scikit-image` `label` as a property.")
-        properties = set(properties)
-        properties.remove("label")
-        properties = tuple(properties)
+        properties_set = set(properties)
+        properties_set.remove("label")
+        properties = tuple(properties_set)
 
     processor = NodeProcessor(
         properties=properties,

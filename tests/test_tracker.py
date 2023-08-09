@@ -30,8 +30,7 @@ def _load_ground_truth_graph() -> dict:
 
 def _get_tracklet(tracks: dict, idx: int) -> list:
     """Get a tracklet by the first object ID"""
-    target = [t for t in tracks.values() if t[0] == idx]
-    if target:
+    if target := [t for t in tracks.values() if t[0] == idx]:
         return target[0]
     else:
         raise ValueError("Object ID not found.")

@@ -3,6 +3,7 @@ from __future__ import annotations
 import csv
 import logging
 import os
+from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 import numpy as np
@@ -121,7 +122,7 @@ def _export_HDF(
 
     filename_noext, ext = os.path.splitext(filename)
     if ext != ".h5":
-        filename = filename_noext + ".h5"
+        filename = Path(f"{filename_noext}.h5")
         logger.warning(f"Changing HDF filename to {filename}")
 
     with HDF5FileHandler(filename, read_write="a", obj_type=obj_type) as hdf:

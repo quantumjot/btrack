@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 import numpy as np
+from numpy import typing as npt
 from skimage.measure import label
 
 import btrack
@@ -38,28 +39,22 @@ def create_test_object(
     return obj, data
 
 
-def create_test_properties() -> dict[str, float]:
+def create_test_properties() -> dict:
     """Create test properties for an object."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
-    properties = {
+    return {
         "speed": rng.uniform(0.0, 1.0),
         "circularity": rng.uniform(0.0, 1.0),
         "reporter": rng.uniform(0.0, 1.0),
         "nD": rng.uniform(0.0, 1.0, size=(5,)),
     }
-    return properties
 
 
 def create_test_tracklet(
     track_len: int,
     track_id: Optional[int] = None,
     ndim: int = 3,
-) -> tuple[
-    btrack.btypes.Tracklet,
-    list[btrack.btypes.PyTrackObject],
-    list[dict[str, Any]],
-    int,
-]:
+) -> tuple[btrack.btypes.Tracklet, list[btrack.btypes.PyTrackObject], dict, int]:
     """Create a test track."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
 
@@ -73,7 +68,7 @@ def create_test_tracklet(
     tracklet.root = track_id
 
     # convert to dictionary {key: [p0,...,pn]}
-    properties = {} if not props else {k: [p[k] for p in props] for k in props[0]}
+    properties = {k: [p[k] for p in props] for k in props[0]} if props else {}
 
     return tracklet, data, properties, track_id
 
@@ -83,7 +78,7 @@ def create_realistic_tracklet(  # noqa: PLR0913
     start_y: float,
     dx: float,
     dy: float,
-    track_len: float,
+    track_len: int,
     track_ID: int,
 ) -> btrack.btypes.Tracklet:
     """Create a realistic moving track."""
@@ -96,8 +91,7 @@ def create_realistic_tracklet(  # noqa: PLR0913
     }
 
     objects = btrack.io.objects_from_dict(data)
-    track = btrack.btypes.Tracklet(track_ID, objects)
-    return track
+    return btrack.btypes.Tracklet(track_ID, objects)
 
 
 def create_test_image(
@@ -107,7 +101,7 @@ def create_test_image(
     binsize: int = 5,
     *,
     binary: bool = True,
-) -> tuple[np.ndarray, Optional[np.ndarray]]:
+) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
     """Make a test image that ensures that no two pixels are in contact."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
@@ -122,7 +116,7 @@ def create_test_image(
     # split this into voxels
     bins = boxsize // binsize
 
-    def _sample() -> tuple[np.ndarray, tuple[int]]:
+    def _sample() -> tuple[npt.NDArray, tuple]:
         _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
         _coord = tuple(rng.integers(1, binsize - 1, size=(ndim,)).tolist())
         _img[_coord] = 1
@@ -140,7 +134,7 @@ def create_test_image(
     centroids = []
     for v, bin in enumerate(rbins):  # noqa: A001
         sample, point = _sample()
-        slices = tuple([slice(b * binsize, b * binsize + binsize, 1) for b in bin])
+        slices = tuple(slice(b * binsize, b * binsize + binsize, 1) for b in bin)
         val = 1 if binary else v + 1
         img[slices] = sample * val
 
@@ -170,7 +164,7 @@ def create_test_segmentation_and_tracks(
     ndim: int = 2,
     *,
     binary: bool = False,
-) -> tuple[np.ndarray, np.ndarray, list[btrack.btypes.Tracklet]]:
+) -> tuple[npt.NDArray, npt.NDArray, list[btrack.btypes.Tracklet]]:
     """Create a test segmentation with four tracks."""
 
     if ndim not in (btrack.constants.Dimensionality.TWO,):

@@ -1,7 +1,7 @@
 from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
 from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
@@ -90,7 +90,7 @@ class MotionModel(BaseModel):
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    @validator("A", "H", "P", "R", "G", "Q", pre=True)
+    @field_validator("A", "H", "P", "R", "G", "Q", mode="before")
     def parse_arrays(cls, v):
         if isinstance(v, dict):
             m = v.get("matrix", None)
@@ -98,17 +98,17 @@ class MotionModel(BaseModel):
             return np.asarray(m, dtype=float) * s
         return np.asarray(v, dtype=float)
 
-    @validator("A")
+    @field_validator("A")
     def reshape_A(cls, a, values):
         shape = (values["states"], values["states"])
         return np.reshape(a, shape)
 
-    @validator("H")
+    @field_validator("H")
     def reshape_H(cls, h, values):
         shape = (values["measurements"], values["states"])
         return np.reshape(h, shape)
 
-    @validator("P")
+    @field_validator("P")
     def reshape_P(cls, p, values):
         shape = (values["states"], values["states"])
         p = np.reshape(p, shape)
@@ -116,7 +116,7 @@ class MotionModel(BaseModel):
             raise ValueError("Matrix `P` is not symmetric.")
         return p
 
-    @validator("R")
+    @field_validator("R")
     def reshape_R(cls, r, values):
         shape = (values["measurements"], values["measurements"])
         r = np.reshape(r, shape)
@@ -124,12 +124,12 @@ class MotionModel(BaseModel):
             raise ValueError("Matrix `R` is not symmetric.")
         return r
 
-    @validator("G")
+    @field_validator("G")
     def reshape_G(cls, g, values):
         shape = (1, values["states"])
         return np.reshape(g, shape)
 
-    @validator("Q")
+    @field_validator("Q")
     def reshape_Q(cls, q, values):
         shape = (values["states"], values["states"])
         q = np.reshape(q, shape)
@@ -137,7 +137,7 @@ class MotionModel(BaseModel):
             raise ValueError("Matrix `Q` is not symmetric.")
         return q
 
-    @root_validator
+    @model_validator
     def validate_motion_model(cls, values):
         if values["Q"] is None:
             G = values.get("G", None)
@@ -146,9 +146,7 @@ class MotionModel(BaseModel):
             values["Q"] = G.T @ G
         return values
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
 
 class ObjectModel(BaseModel):
@@ -178,23 +176,21 @@ class ObjectModel(BaseModel):
     start: np.ndarray
     name: str = "Default"
 
-    @validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def parse_array(cls, v, values):
         return np.asarray(v, dtype=float)
 
-    @validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def reshape_emission_transition(cls, v, values):
         shape = (values["states"], values["states"])
         return np.reshape(v, shape)
 
-    @validator("emission", "transition", "start", pre=True)
+    @field_validator("emission", "transition", "start", mode="before")
     def reshape_start(cls, v, values):
         shape = (1, values["states"])
         return np.reshape(v, shape)
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = ConfigDict(arbitrary_types_allowed=True, validate_assignment=True)
 
 
 class HypothesisModel(BaseModel):
@@ -273,7 +269,7 @@ class HypothesisModel(BaseModel):
     relax: bool
     name: str = "Default"
 
-    @validator("hypotheses", pre=True)
+    @field_validator("hypotheses", mode="before")
     def parse_hypotheses(cls, hypotheses):
         if not all(h in H_TYPES for h in hypotheses):
             raise ValueError("Unknown hypothesis type in `hypotheses`.")
@@ -289,7 +285,7 @@ class HypothesisModel(BaseModel):
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 
-        for k, v in self.dict().items():
+        for k, v in self.model_dump().items():
             if k in fields:
                 setattr(h_params, k, v)
 
@@ -297,5 +293,4 @@ class HypothesisModel(BaseModel):
         h_params.hypotheses_to_generate = self.hypotheses_to_generate()
         return h_params
 
-    class Config:
-        validate_assignment = True
+    model_config = ConfigDict(validate_assignment=True)

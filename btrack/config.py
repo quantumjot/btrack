@@ -2,10 +2,10 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, conlist, validator
+from pydantic import BaseModel, ConfigDict, conlist, field_validator
 
 from btrack import _version
 
@@ -97,11 +97,11 @@ class TrackerConfig(BaseModel):
     ]
     enable_optimisation = True
 
-    @validator("volume", pre=True, always=True)
+    @field_validator("volume", mode="before", check_fields=True)
     def _parse_volume(cls, v):
         return ImagingVolume(*v) if isinstance(v, tuple) else v
 
-    @validator("tracking_updates", pre=True, always=True)
+    @field_validator("tracking_updates", mode="before", check_fields=True)
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
@@ -111,12 +111,13 @@ class TrackerConfig(BaseModel):
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
-        json_encoders: ClassVar[dict] = {
+    model_config = ConfigDict(
+        arbitrary_types_allowed=True,
+        validate_assignment=True,
+        json_encoders={
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
+    )
 
 
 def load_config(filename: os.PathLike) -> TrackerConfig:
@@ -177,5 +178,5 @@ def save_config(filename: os.PathLike, cfg: TrackerConfig) -> None:
     """
 
     with open(filename, "w") as json_file:
-        json_data = json.loads(cfg.json())
+        json_data = json.loads(cfg.model_dump_json())
         json.dump(json_data, json_file, indent=2, separators=(",", ": "))

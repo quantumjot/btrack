@@ -13,9 +13,16 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
     widgets = {"title": title}
 
     logo = QtWidgets.QLabel()
+    pixmap = QtGui.QPixmap(
+        str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
+    )
+    scale = 0.8
+    logo.setAlignment(QtCore.Qt.AlignHCenter)
     logo.setPixmap(
-        QtGui.QPixmap(
-            str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
+        pixmap.scaled(
+            int(pixmap.width() * scale),
+            int(pixmap.height() * scale),
+            QtCore.Qt.KeepAspectRatio,
         )
     )
     widgets["logo"] = logo

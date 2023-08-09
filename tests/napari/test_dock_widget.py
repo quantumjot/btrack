@@ -77,23 +77,47 @@ def test_save_button(track_widget, filename):
     assert json.loads(expected_config) == json.loads(actual_config)
 
 
-def test_load_config(track_widget):
+@pytest.mark.parametrize("sample_name", ["sample"])
+def test_load_config(track_widget, sample_name):
     """Tests that another TrackerConfig can be loaded and made the current config."""
 
     # this is set to be 'cell' rather than 'Default'
-    original_config_name = track_widget.config_name.currentText()
+    track_widget.config_name.currentText()
+
+    # load sample data and change the config name to be unique
+    with open(btrack.datasets.cell_config()) as dataset:
+        dataset = json.load(f)
+    dataset.name = sample_name
 
     with patch(
         "btrack.napari.widgets.load_path_dialogue_box"
     ) as load_path_dialogue_box:
-        load_path_dialogue_box.return_value = btrack.datasets.cell_config()
+        load_path_dialogue_box.return_value = dataset
         track_widget.load_config_button.click()
 
     # We didn't override the name, so it should be 'Default'
     new_config_name = track_widget.config_name.currentText()
 
     assert track_widget.config_name.currentText() == "Default"
-    assert new_config_name != original_config_name
+    assert new_config_name != sample_name
+
+
+@pytest.mark.parametrize("duplicate_name", ["cell"])
+def test_load_config_duplicate_config(track_widget, duplicate_name):
+    """Tests that an `AttributeError` is raised when a duplicate config name
+    exists."""
+
+    with pytest.raises(AttributeError) as exc_info, patch(
+        "btrack.napari.widgets.load_path_dialogue_box"
+    ) as load_path_dialogue_box:
+        load_path_dialogue_box.return_value = btrack.datasets.cell_config()
+        track_widget.config_name.name = duplicate_name
+        track_widget.load_config_button.click()
+
+    assert (
+        exc_info.value
+        == "The `config name` matches one already present in the current napari window, i.e. cell, particle"
+    )
 
 
 def test_reset_button(track_widget):

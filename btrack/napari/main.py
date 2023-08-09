@@ -375,5 +375,15 @@ def load_config_from_json(
         return
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
+    existing_names = [
+        btrack_widget.config_name.itemText(i)
+        for i in range(btrack_widget.config_name.count())
+    ]
+    if config_name in existing_names:
+        _msg = (
+            "The `config name` matches one already present in the current "
+            f"napari window, i.e. {', '.join(existing_names)}"
+        )
+        raise AttributeError(_msg)
     btrack_widget.config_name.addItem(config_name)
     btrack_widget.config_name.setCurrentText(config_name)

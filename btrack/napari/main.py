@@ -80,6 +80,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
+    # Disable the Optimiser tab if unchecked
     for tab in range(btrack_widget._tabs.count()):
         if btrack_widget._tabs.tabText(tab) == "Optimiser":
             break

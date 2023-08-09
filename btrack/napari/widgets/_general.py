@@ -131,9 +131,9 @@ def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
         "reset_button",
     ]
     labels = [
-        "Load configuration",
-        "Save configuration",
-        "Reset defaults",
+        "Load Configuration",
+        "Save Configuration",
+        "Reset Defaults",
     ]
     tooltips = [
         "Load a TrackerConfig json file.",

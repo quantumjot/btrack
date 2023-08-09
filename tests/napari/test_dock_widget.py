@@ -135,7 +135,7 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
         )
 
         assert len(track_widget.viewer.layers) == OLD_WIDGET_LAYERS
-        track_widget.call_button.click()
+        track_widget.track_button.click()
 
     assert run_tracker.called
     assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS

@@ -151,9 +151,9 @@ def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
 
 
 def create_track_widgets() -> dict[str, QtWidgets.QWidget]:
-    call_button = QtWidgets.QPushButton("Track")
-    call_button.setToolTip(
+    track_button = QtWidgets.QPushButton("Track")
+    track_button.setToolTip(
         "Run the tracking analysis with the current configuration.",
     )
 
-    return {"call_button": call_button}
+    return {"track_button": track_button}

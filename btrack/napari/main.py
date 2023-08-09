@@ -88,7 +88,7 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda is_checked: btrack_widget._tabs.setTabEnabled(tab, is_checked)
     )
 
-    btrack_widget.call_button.clicked.connect(
+    btrack_widget.track_button.clicked.connect(
         lambda: run(btrack_widget, all_configs),
     )
 

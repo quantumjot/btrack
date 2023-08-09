@@ -4,6 +4,7 @@ import logging
 from typing import Any, Union
 
 import numpy as np
+from numpy import typing as npt
 
 # import core
 from btrack import btypes, constants
@@ -13,13 +14,13 @@ logger = logging.getLogger(__name__)
 
 
 def localizations_to_objects(
-    localizations: Union[np.ndarray, list[btypes.PyTrackObject], dict[str, Any]]
+    localizations: Union[npt.NDArray, list[btypes.PyTrackObject], dict[str, Any]]
 ) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 
     Parameters
     ----------
-    localizations : list[PyTrackObject], np.ndarray, pandas.DataFrame
+    localizations : list[PyTrackObject], npt.NDArray, pandas.DataFrame
         A list or array of localizations.
 
     Returns
@@ -37,14 +38,11 @@ def localizations_to_objects(
     # do we have a numpy array or pandas dataframe?
     if isinstance(localizations, np.ndarray):
         return objects_from_array(localizations)
-    else:
-        try:
-            objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
-        except ValueError as err:
-            logger.error(f"Unknown localization type: {type(localizations)}")
-            raise TypeError(
-                f"Unknown localization type: {type(localizations)}"
-            ) from err
+    try:
+        objects_dict = {c: np.asarray(localizations[c]) for c in localizations}
+    except ValueError as err:
+        logger.error(f"Unknown localization type: {type(localizations)}")
+        raise TypeError(f"Unknown localization type: {type(localizations)}") from err
 
     # how many objects are there
     n_objects = objects_dict["t"].shape[0]
@@ -69,7 +67,7 @@ def objects_from_dict(objects_dict: dict) -> list[btypes.PyTrackObject]:
 
 
 def objects_from_array(
-    objects_arr: np.ndarray,
+    objects_arr: npt.NDArray,
     *,
     default_keys: list[str] = constants.DEFAULT_OBJECT_KEYS,
 ) -> list[btypes.PyTrackObject]:

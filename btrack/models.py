@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+from numpy import typing as npt
 from pydantic import BaseModel, root_validator, validator
 
 from . import constants
@@ -9,7 +10,7 @@ from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 __all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
 
 
-def _check_symmetric(x: np.ndarray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
+def _check_symmetric(x: npt.NDArray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
     """Check that a matrix is symmetric by comparing with it's own transpose."""
     return np.allclose(x, x.T, rtol=rtol, atol=atol)
 
@@ -78,12 +79,12 @@ class MotionModel(BaseModel):
 
     measurements: int
     states: int
-    A: np.ndarray
-    H: np.ndarray
-    P: np.ndarray
-    R: np.ndarray
-    G: Optional[np.ndarray] = None
-    Q: Optional[np.ndarray] = None
+    A: npt.NDArray
+    H: npt.NDArray
+    P: npt.NDArray
+    R: npt.NDArray
+    G: Optional[npt.NDArray] = None
+    Q: Optional[npt.NDArray] = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST
@@ -173,9 +174,9 @@ class ObjectModel(BaseModel):
     """
 
     states: int
-    emission: np.ndarray
-    transition: np.ndarray
-    start: np.ndarray
+    emission: npt.NDArray
+    transition: npt.NDArray
+    start: npt.NDArray
     name: str = "Default"
 
     @validator("emission", "transition", "start", pre=True)
@@ -275,7 +276,7 @@ class HypothesisModel(BaseModel):
 
     @validator("hypotheses", pre=True)
     def parse_hypotheses(cls, hypotheses):
-        if not all(h in H_TYPES for h in hypotheses):
+        if any(h not in H_TYPES for h in hypotheses):
             raise ValueError("Unknown hypothesis type in `hypotheses`.")
         return hypotheses
 

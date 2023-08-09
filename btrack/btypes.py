@@ -20,6 +20,7 @@ from collections import OrderedDict
 from typing import Any, ClassVar, NamedTuple, Optional
 
 import numpy as np
+from numpy import typing as npt
 
 from . import constants
 
@@ -315,7 +316,7 @@ class Tracklet:
     softmax : list[float]
         If defined, return the softmax score for the label of each object in the
         track.
-    properties : dict[str, np.ndarray]
+    properties : dict[str, npt.NDArray]
         Return a dictionary of track properties derived from
         :py:class:`btrack.btypes.PyTrackObject` properties.
     root : int,
@@ -328,7 +329,7 @@ class Tracklet:
         First time stamp of track.
     stop : int, float
         Last time stamp of track.
-    kalman : np.ndarray
+    kalman : npt.NDArray
         Return the complete output of the kalman filter for this track. Note,
         that this may not have been returned while from the tracker. See
         :py:attr:`btrack.BayesianTracker.return_kalman` for more details.
@@ -358,7 +359,7 @@ class Tracklet:
 
         self.ID = ID
         self._data = data
-        self._kalman = None
+        self._kalman = np.empty(0)
 
         self.root = None
         self.parent = parent
@@ -377,10 +378,10 @@ class Tracklet:
         return _pandas_html_repr(self)
 
     @property
-    def properties(self) -> dict[str, np.ndarray]:
+    def properties(self) -> dict:
         """Return the properties of the objects."""
         # find the set of keys, then grab the properties
-        keys = set()
+        keys: set = set()
         for obj in self._data:
             keys.update(obj.properties.keys())
 
@@ -419,7 +420,7 @@ class Tracklet:
         return properties
 
     @properties.setter
-    def properties(self, properties: dict[str, np.ndarray]):
+    def properties(self, properties: dict[str, npt.NDArray]):
         """Store properties associated with this Tracklet."""
         # TODO(arl): this will need to set the object properties
         pass
@@ -484,25 +485,25 @@ class Tracklet:
         return not self.children
 
     @property
-    def kalman(self) -> np.ndarray:
+    def kalman(self) -> npt.NDArray:
         return self._kalman
 
     @kalman.setter
-    def kalman(self, data: np.ndarray) -> None:
+    def kalman(self, data: npt.NDArray) -> None:
         assert isinstance(data, np.ndarray)
         self._kalman = data
 
-    def mu(self, index: int) -> np.ndarray:
+    def mu(self, index: int) -> npt.NDArray:
         """Return the Kalman filter mu. Note that we are only returning the mu
         for the positions (e.g. 3x1)."""
         return self.kalman[index, 1:4].reshape(3, 1)
 
-    def covar(self, index: int) -> np.ndarray:
+    def covar(self, index: int) -> npt.NDArray:
         """Return the Kalman filter covariance matrix. Note that we are
         only returning the covariance matrix for the positions (e.g. 3x3)."""
         return self.kalman[index, 4:13].reshape(3, 3)
 
-    def predicted(self, index: int) -> np.ndarray:
+    def predicted(self, index: int) -> npt.NDArray:
         """Return the motion model prediction for the given timestep."""
         return self.kalman[index, 13:].reshape(3, 1)
 
@@ -519,7 +520,7 @@ class Tracklet:
 
     def to_array(
         self, properties: list = constants.DEFAULT_EXPORT_PROPERTIES
-    ) -> np.ndarray:
+    ) -> npt.NDArray:
         """Return a representation of the trackled as a numpy array."""
         data = self.to_dict(properties)
         tmp_track = []
@@ -530,10 +531,10 @@ class Tracklet:
             np_values = np.reshape(np_values, (len(self), -1))
             tmp_track.append(np_values)
 
-        tmp_track = np.concatenate(tmp_track, axis=-1)
-        assert tmp_track.shape[0] == len(self)
-        assert tmp_track.ndim == constants.Dimensionality.TWO
-        return tmp_track.astype(np.float32)
+        tmp_track_arr = np.concatenate(tmp_track, axis=-1)
+        assert tmp_track_arr.shape[0] == len(self)
+        assert tmp_track_arr.ndim == constants.Dimensionality.TWO
+        return tmp_track_arr.astype(np.float32)
 
     def in_frame(self, frame: int) -> bool:
         """Return true or false as to whether the track is in the frame."""
@@ -544,7 +545,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> tuple[int]:
+    def LBEP(self) -> tuple[int, list, list, Optional[int], None, int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,

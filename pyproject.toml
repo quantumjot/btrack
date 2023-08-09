@@ -40,7 +40,11 @@ dynamic = [
     "version",
 ]
 name = "btrack"
-optional-dependencies = {docs = [
+optional-dependencies = {"dev" = [
+    "black",
+    "pre-commit",
+    "ruff",
+], docs = [
     "numpydoc",
     "pytz",
     "sphinx",

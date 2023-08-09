@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 def log_error(err_code) -> bool:
     """Take an error code from the tracker and log an error for the user."""
     error = constants.Errors(err_code)
-    if error != constants.Errors.SUCCESS and error != constants.Errors.NO_ERROR:
+    if error not in [constants.Errors.SUCCESS, constants.Errors.NO_ERROR]:
         logger.error(f"ERROR: {error}")
         return True
     return False
@@ -67,23 +67,17 @@ def log_stats(stats: dict) -> None:
 
 def read_motion_model(cfg: dict) -> Optional[MotionModel]:
     cfg = cfg.get("MotionModel", {})
-    if not cfg:
-        return None
-    return MotionModel(**cfg)
+    return MotionModel(**cfg) if cfg else None
 
 
 def read_object_model(cfg: dict) -> Optional[ObjectModel]:
     cfg = cfg.get("ObjectModel", {})
-    if not cfg:
-        return None
-    return ObjectModel(**cfg)
+    return ObjectModel(**cfg) if cfg else None
 
 
 def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
     cfg = cfg.get("HypothesisModel", {})
-    if not cfg:
-        return None
-    return HypothesisModel(**cfg)
+    return HypothesisModel(**cfg) if cfg else None
 
 
 def crop_volume(objects, volume=constants.VOLUME):
@@ -96,7 +90,7 @@ def crop_volume(objects, volume=constants.VOLUME):
     return [o for o in objects if within(o)]
 
 
-def _lbep_table(tracks: list[btypes.Tracklet]) -> np.array:
+def _lbep_table(tracks: list[btypes.Tracklet]) -> npt.NDArray:
     """Create an LBEP table from a track."""
     return np.asarray([trk.LBEP() for trk in tracks], dtype=np.int32)
 
@@ -309,17 +303,17 @@ def napari_to_tracks(
 
 
 def update_segmentation(
-    segmentation: np.ndarray,
+    segmentation: npt.NDArray,
     tracks: list[btypes.Tracklet],
     *,
     scale: Optional[tuple(float)] = None,
     color_by: str = "ID",
-) -> np.ndarray:
+) -> npt.NDArray:
     """Map tracks back into a masked array.
 
     Parameters
     ----------
-    segmentation : np.array
+    segmentation : npt.NDArray
         Array containing a timeseries of single cell masks. Dimensions should be
         ordered T(Z)YX. Assumes that this is not binary and each object has a unique ID.
     tracks : list[btypes.Tracklet]
@@ -333,7 +327,7 @@ def update_segmentation(
 
     Returns
     -------
-    relabeled : np.array
+    relabeled : npt.NDArray
         Array containing the same masks as segmentation but relabeled to
         maintain single cell identity over time.
 

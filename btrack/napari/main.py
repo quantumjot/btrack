@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from btrack.napari.config import TrackerConfigs
 
 import logging
+from pathlib import Path
 
 import napari
 
@@ -352,6 +353,9 @@ def save_config_to_json(
         btrack_widget=btrack_widget,
     )
     config = unscaled_config.scale_config()
+
+    # set the config name to match the filename
+    config.name = Path(save_path).stem
 
     btrack.config.save_config(save_path, config)
 

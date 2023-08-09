@@ -50,7 +50,8 @@ def test_config_to_widgets_round_trip(track_widget, config):
     assert json.loads(actual_config) == json.loads(expected_config)
 
 
-def test_save_button(track_widget):
+@pytest.mark.parametrize("filename", ["user_config"])
+def test_save_button(track_widget, filename):
     """Tests that clicking the save configuration button
     triggers a call to btrack.config.save_config with expected arguments.
     """
@@ -58,17 +59,17 @@ def test_save_button(track_widget):
     unscaled_config = btrack.napari.config.UnscaledTrackerConfig(
         btrack.datasets.cell_config()
     )
-    # this is done in in the gui too
-    unscaled_config.tracker_config.name = "cell"
+    # default config name matches the filename
+    unscaled_config.tracker_config.name = filename
     expected_config = unscaled_config.scale_config().json()
 
     with patch(
         "btrack.napari.widgets.save_path_dialogue_box"
     ) as save_path_dialogue_box:
-        save_path_dialogue_box.return_value = "user_config.json"
+        save_path_dialogue_box.return_value = f"{filename}.json"
         track_widget.save_config_button.click()
 
-    actual_config = btrack.config.load_config("user_config.json").json()
+    actual_config = btrack.config.load_config(f"{filename}.json").json()
 
     # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
     assert json.loads(expected_config) == json.loads(actual_config)

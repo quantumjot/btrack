@@ -80,6 +80,13 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
         lambda selected: select_config(btrack_widget, all_configs, selected),
     )
 
+    for tab in range(btrack_widget._tabs.count()):
+        if btrack_widget._tabs.tabText(tab) == "Optimiser":
+            break
+    btrack_widget.enable_optimisation.toggled.connect(
+        lambda is_checked: btrack_widget._tabs.setTabEnabled(tab, is_checked)
+    )
+
     btrack_widget.call_button.clicked.connect(
         lambda: run(btrack_widget, all_configs),
     )

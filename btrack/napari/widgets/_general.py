@@ -101,9 +101,9 @@ def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     optimise = QtWidgets.QCheckBox()
     optimise.setChecked(True)  # noqa: FBT003
     optimise.setToolTip(
-        "Disable the time and distance thresholds.\n"
-        "This means that tracks can initialize or terminate anywhere and"
-        "at any time in the dataset."
+        "Enable the track optimisation.\n"
+        "This means that tracks will be optimised using the hypotheses"
+        "specified in the optimiser tab."
     )
     optimise.setTristate(False)  # noqa: FBT003
     widgets["enable_optimisation"] = ("enable optimisation", optimise)

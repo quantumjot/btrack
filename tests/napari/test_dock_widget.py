@@ -141,3 +141,28 @@ def test_run_button(track_widget, simplistic_tracker_outputs):
     assert run_tracker.called
     assert len(track_widget.viewer.layers) == NEW_WIDGET_LAYERS
     assert isinstance(track_widget.viewer.layers[-1], napari.layers.Tracks)
+
+
+@pytest.mark.parametrize("config_name", ["sample"])
+def test_change_name_current_config(track_widget, config_name) -> None:
+    """Tests that when manually changing the config name that the name gets
+    added to the list of configs and is save in the output file"""
+    track_widget.config_name.lineEdit().setText(config_name)
+
+    unscaled_config = btrack.napari.config.UnscaledTrackerConfig(
+        btrack.datasets.cell_config()
+    )
+    # this is done in in the gui too
+    unscaled_config.tracker_config.name = "cell"
+    expected_config = unscaled_config.scale_config().json()
+
+    with patch(
+        "btrack.napari.widgets.save_path_dialogue_box"
+    ) as save_path_dialogue_box:
+        save_path_dialogue_box.return_value = "user_config.json"
+        track_widget.save_config_button.click()
+
+    actual_config = btrack.config.load_config("user_config.json").json()
+
+    # use json.loads to avoid failure in string comparison because e.g "100.0" != "100"
+    assert json.loads(expected_config) == json.loads(actual_config)

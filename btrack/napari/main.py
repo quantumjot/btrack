@@ -78,7 +78,11 @@ def create_btrack_widget() -> btrack.napari.widgets.BtrackWidget:
     )
 
     btrack_widget.config_name.currentTextChanged.connect(
-        lambda selected: select_config(btrack_widget, all_configs, selected),
+        lambda selected: select_config(btrack_widget, all_configs, selected)
+    )
+
+    btrack_widget.config_name.lineEdit().editingFinished.connect(
+        lambda new_text: x(btrack_widget, all_configs, new_text)
     )
 
     # Disable the Optimiser tab if unchecked
@@ -198,17 +202,20 @@ def select_config(
     new_config_name: str,
 ) -> None:
     """Set widget values from a newly-selected base config"""
+    current_config = configs[configs.current_config]
 
     # first update the previous config with the current widget values
     _ = btrack.napari.sync.update_config_from_widgets(
-        unscaled_config=configs[configs.current_config],
+        unscaled_config=current_config,
         btrack_widget=btrack_widget,
     )
 
     # now load the newly-selected config and set widget values
     configs.current_config = new_config_name
     _ = btrack.napari.sync.update_widgets_from_config(
-        unscaled_config=configs[new_config_name],
+        unscaled_config=configs[new_config_name]
+        if new_config_name in configs.configs
+        else current_config,
         btrack_widget=btrack_widget,
     )
 
@@ -373,5 +380,17 @@ def load_config_from_json(
         return
 
     config_name = configs.add_config(filename=load_path, overwrite=False)
+    btrack_widget.config_name.addItem(config_name)
+    btrack_widget.config_name.setCurrentText(config_name)
+
+
+def x(
+    btrack_widget: btrack.napari.widgets.BtrackWidget,
+    configs: TrackerConfigs,
+    name: str,
+) -> None:
+    """Load a config from file and set it as the selected base config"""
+
+    config_name = configs.add_config(filename=f"{name}.json", overwrite=False)
     btrack_widget.config_name.addItem(config_name)
     btrack_widget.config_name.setCurrentText(config_name)

@@ -50,6 +50,8 @@ def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
 
     config_name = QtWidgets.QComboBox()
     config_name.addItems(["cell", "particle"])
+    config_name.setEditable(True)  # noqa: FBT003
+    config_name.setInsertPolicy(QtWidgets.QComboBox.InsertAtTop)
     config_name.setToolTip(
         "Select a loaded configuration.\nNote, this will update values set below."
     )

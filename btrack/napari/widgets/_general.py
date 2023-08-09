@@ -16,8 +16,8 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
     pixmap = QtGui.QPixmap(
         str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
     )
-    scale = 0.8
     logo.setAlignment(QtCore.Qt.AlignHCenter)
+    scale = 0.8
     logo.setPixmap(
         pixmap.scaled(
             int(pixmap.width() * scale),

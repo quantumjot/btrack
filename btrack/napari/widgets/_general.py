@@ -40,7 +40,6 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
 def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
-    # TODO: annotation=napari.layers.Labels,
     segmentation = QtWidgets.QComboBox()
     segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"

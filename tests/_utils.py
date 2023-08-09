@@ -54,7 +54,7 @@ def create_test_tracklet(
     track_len: int,
     track_id: Optional[int] = None,
     ndim: int = 3,
-) -> tuple[btrack.btypes.Tracklet, list[btrack.btypes.PyTrackObject], dict, int,]:
+) -> tuple[btrack.btypes.Tracklet, list[btrack.btypes.PyTrackObject], dict, int]:
     """Create a test track."""
     rng = np.random.default_rng(seed=RANDOM_SEED)
 

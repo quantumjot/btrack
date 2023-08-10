@@ -305,6 +305,8 @@ class Tracklet:
         A list specifying which objects are dummy objects inserted by the tracker.
     parent : int, list
         The identifiers of the parent track(s).
+    generation : int
+        If specified, the generational depth of the tracklet releative to the root.
     refs : list[int]
         Returns a list of :py:class:`btrack.btypes.PyTrackObject` identifiers
         used to build the track. Useful for indexing back into the original

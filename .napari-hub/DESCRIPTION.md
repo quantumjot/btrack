@@ -19,18 +19,13 @@ linkages.
 
 We developed `btrack` for cell tracking in time-lapse microscopy data.
 
-![](https://raw.githubusercontent.com/lowe-lab-ucl/arboretum/master/examples/arboretum.gif)
+![tracking2](https://github.com/quantumjot/btrack/assets/8217795/7b16381a-b7e5-4750-98c6-bcdfbe95b908)
 
 <!--
 ## tutorials
 
 * https://napari.org/tutorials/tracking/cell_tracking.html
 -->
-
-
-## associated plugins
-
-* [napari-arboretum](https://www.napari-hub.org/plugins/napari-arboretum) - Napari plugin to enable track graph and lineage tree visualization.
 
 ## Installation
 
@@ -40,9 +35,22 @@ To install the `napari` plugin associated with `btrack` run the command.
 pip install btrack[napari]
 ```
 
-If working on Apple Silicon make sure to also install the following
-packages from `conda-forge`.
+## Example data
+
+You can try out the btrack plugin using sample data:
 
 ```sh
-conda install -c conda-forge pyqt
+python btrack/napari/examples/show_btrack_widget.py
 ```
+
+which will launch `napari` and the `btrack` widget, along with some sample data.
+
+
+## Setting parameters
+
+There are detailed tips and instructions on parameter settings over at the [documentation](https://btrack.readthedocs.io/en/latest/user_guide/index.html).
+
+
+## Associated plugins
+
+* [napari-arboretum](https://www.napari-hub.org/plugins/napari-arboretum) - Napari plugin to enable track graph and lineage tree visualization.

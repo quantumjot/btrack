@@ -1,5 +1,5 @@
 [![PyPI](https://img.shields.io/pypi/v/btrack)](https://pypi.org/project/btrack)
-[![Downloads](https://pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
+[![Downloads](https://static.pepy.tech/badge/btrack/month)](https://pepy.tech/project/btrack)
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Tests](https://github.com/quantumjot/btrack/actions/workflows/test.yml/badge.svg)](https://github.com/quantumjot/btrack/actions/workflows/test.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)

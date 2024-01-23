@@ -208,6 +208,9 @@ def segmentation_to_objects(
     use_weighted_centroid : bool, default True
         If an intensity image has been provided, default to calculating the
         weighted centroid. See `skimage.measure.regionprops` for more info.
+        Note: if measuring additional properties from a multichannel image
+        then use_weighted_centroid needs to be set to False, otherwise the
+        _props_to_dict function fails to write the output.
     assign_class_ID : bool, default False
         If specified, assign a class label for each individual object based on
         the pixel intensity found in the mask. Requires semantic segmentation,
@@ -253,11 +256,21 @@ def segmentation_to_objects(
     nodes: dict = {}
     logger.info("Localizing objects from segmentation...")
 
-    centroid_type = (
-        "centroid_weighted"
-        if (use_weighted_centroid and intensity_image is not None)
-        else "centroid"
-    )
+    # Check if intensity image has more dimensions than segmentation
+    if (
+        intensity_image is not None
+        and intensity_image.ndim > segmentation.ndim
+    ):
+        logger.warning(
+            "Multichannel intensity image detected, using unweighted centroid."
+        )
+        centroid_type = "centroid"
+    else:
+        centroid_type = (
+            "centroid_weighted"
+            if (use_weighted_centroid and intensity_image is not None)
+            else "centroid"
+        )
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects

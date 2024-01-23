@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional
+from typing import ClassVar, Optional
 
 import numpy as np
 from pydantic import BaseModel, conlist, validator
@@ -66,6 +66,9 @@ class TrackerConfig(BaseModel):
     tracking_updates : list
         A list of features to be used for tracking, such as MOTION or VISUAL.
         Must have at least one entry.
+    enable_optimisation
+        A flag which, if `False`, will report a warning to the user if they then
+        subsequently run the `BayesianTracker.optimise()` step.
 
     Notes
     -----
@@ -84,7 +87,7 @@ class TrackerConfig(BaseModel):
     volume: Optional[ImagingVolume] = None
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
-    features: List[str] = []
+    features: list[str] = []
     tracking_updates: conlist(
         constants.BayesianUpdateFeatures,
         min_items=1,
@@ -92,20 +95,18 @@ class TrackerConfig(BaseModel):
     ) = [
         constants.BayesianUpdateFeatures.MOTION,
     ]
+    enable_optimisation = True
 
     @validator("volume", pre=True, always=True)
     def _parse_volume(cls, v):
-        if isinstance(v, tuple):
-            return ImagingVolume(*v)
-        return v
+        return ImagingVolume(*v) if isinstance(v, tuple) else v
 
     @validator("tracking_updates", pre=True, always=True)
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
             _tracking_updates = [
-                constants.BayesianUpdateFeatures[k.upper()]
-                for k in _tracking_updates
+                constants.BayesianUpdateFeatures[k.upper()] for k in _tracking_updates
             ]
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
@@ -113,7 +114,7 @@ class TrackerConfig(BaseModel):
     class Config:
         arbitrary_types_allowed = True
         validate_assignment = True
-        json_encoders = {
+        json_encoders: ClassVar[dict] = {
             np.ndarray: lambda x: x.ravel().tolist(),
         }
 

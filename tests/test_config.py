@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
 import numpy as np
 import pytest
@@ -14,17 +14,15 @@ def _random_config() -> dict:
     rng = np.random.default_rng(seed=RANDOM_SEED)
     return {
         "max_search_radius": rng.uniform(1, 100),
-        "update_method": rng.choice(btrack.constants.BayesianUpdates),
+        "update_method": rng.choice(list(btrack.constants.BayesianUpdates)),
         "return_kalman": bool(rng.uniform(0, 2)),
         "store_candidate_graph": bool(rng.uniform(0, 2)),
         "verbose": bool(rng.uniform(0, 2)),
-        "volume": tuple([(0, rng.uniform(1, 100)) for _ in range(3)]),
+        "volume": tuple((0, rng.uniform(1, 100)) for _ in range(3)),
     }
 
 
-def _validate_config(
-    cfg: Union[btrack.BayesianTracker, BaseModel], options: dict
-):
+def _validate_config(cfg: Union[btrack.BayesianTracker, BaseModel], options: dict):
     for key, value in options.items():
         cfg_value = getattr(cfg, key)
         # takes care of recursive model definintions (i.e. MotionModel inside
@@ -81,7 +79,7 @@ def test_config_tracker_setters():
         _validate_config(tracker.configuration, options)
 
 
-def _cfg_dict() -> Tuple[dict, dict]:
+def _cfg_dict() -> tuple[dict, dict]:
     cfg_raw = btrack.config.load_config(CONFIG_FILE)
     cfg = _random_config()
     cfg.update(cfg_raw.dict())
@@ -89,14 +87,14 @@ def _cfg_dict() -> Tuple[dict, dict]:
     return cfg, cfg
 
 
-def _cfg_file() -> Tuple[Path, dict]:
+def _cfg_file() -> tuple[str, dict]:
     filename = CONFIG_FILE
-    assert isinstance(filename, Path)
+    assert isinstance(filename, str)
     cfg = btrack.config.load_config(filename)
     return filename, cfg.dict()
 
 
-def _cfg_pydantic() -> Tuple[btrack.config.TrackerConfig, dict]:
+def _cfg_pydantic() -> tuple[btrack.config.TrackerConfig, dict]:
     cfg = btrack.config.load_config(CONFIG_FILE)
     options = _random_config()
     for key, value in options.items():

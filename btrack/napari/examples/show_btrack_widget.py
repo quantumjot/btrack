@@ -15,15 +15,14 @@ viewer = napari.Viewer()
 napari.current_viewer()
 
 _, btrack_widget = viewer.window.add_plugin_dock_widget(
-    plugin_name="napari-btrack", widget_name="Track"
+    plugin_name="btrack", widget_name="Track"
 )
 
 
 segmentation = datasets.example_segmentation()
 viewer.add_labels(segmentation)
 # napari takes the first image layer as default anyway here, but better to be explicit
-btrack_widget.segmentation.choices = viewer.layers
-btrack_widget.segmentation.value = viewer.layers["segmentation"]
+btrack_widget.segmentation.setCurrentText(viewer.layers["segmentation"].name)
 
 if __name__ == "__main__":
     # The napari event loop needs to be run under here to allow the window

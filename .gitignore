@@ -1,4 +1,5 @@
 __pycache__
+_version.py
 .cache
 .coverage
 .coverage.*
@@ -54,8 +55,7 @@ instance
 lib
 lib64
 local_settings.py
-models/MDCK_*
-models/test_config.json
+models
 nosetests.xml
 notebooks
 parts
@@ -63,5 +63,5 @@ pip-delete-this-directory.txt
 pip-log.txt
 sdist
 target
+user_config.json
 var
-_version.py

@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 import numpy as np
 
 import btrack
-from btrack import datasets
+import btrack.datasets
 
 __all__ = [
     "create_default_configs",
@@ -38,7 +38,7 @@ class Sigmas:
         return self.__dict__[matrix_name]
 
     def __setitem__(self, matrix_name, sigma):
-        if matrix_name not in self.__dict__.keys():
+        if matrix_name not in self.__dict__:
             _msg = f"Unknown matrix name '{matrix_name}'"
             raise ValueError(_msg)
         self.__dict__[matrix_name] = sigma
@@ -74,11 +74,10 @@ class UnscaledTrackerConfig:
         config = btrack.config.load_config(self.filename)
         self.tracker_config, self.sigmas = self._unscale_config(config)
 
-    def _unscale_config(
-        self, config: TrackerConfig
-    ) -> tuple[TrackerConfig, Sigmas]:
+    def _unscale_config(self, config: TrackerConfig) -> tuple[TrackerConfig, Sigmas]:
         """Convert the matrices of a scaled TrackerConfig MotionModel to unscaled."""
 
+        assert config.motion_model is not None
         P_sigma = np.max(config.motion_model.P)
         config.motion_model.P /= P_sigma
 
@@ -90,6 +89,7 @@ class UnscaledTrackerConfig:
         # Instead, use G if it exists. If not, determine G from Q, which we can
         # do because Q = G.T @ G
         if config.motion_model.G is None:
+            assert config.motion_model.Q is not None
             config.motion_model.G = config.motion_model.Q.diagonal() ** 0.5
         G_sigma = np.max(config.motion_model.G)
         config.motion_model.G /= G_sigma
@@ -107,8 +107,10 @@ class UnscaledTrackerConfig:
 
         # Create a copy so that config values stay in sync with widget values
         scaled_config = copy.deepcopy(self.tracker_config)
+        assert scaled_config.motion_model is not None
         scaled_config.motion_model.P *= self.sigmas.P
         scaled_config.motion_model.R *= self.sigmas.R
+        assert scaled_config.motion_model.G is not None
         scaled_config.motion_model.G *= self.sigmas.G
         scaled_config.motion_model.Q = (
             scaled_config.motion_model.G.T @ scaled_config.motion_model.G
@@ -138,12 +140,12 @@ class TrackerConfigs:
         """Add the default cell and particle configs."""
 
         self.add_config(
-            filename=datasets.cell_config(),
+            filename=btrack.datasets.cell_config(),
             name="cell",
             overwrite=False,
         )
         self.add_config(
-            filename=datasets.particle_config(),
+            filename=btrack.datasets.particle_config(),
             name="particle",
             overwrite=False,
         )

@@ -15,18 +15,16 @@ If you would rather install the latest development version, and/or compile direc
 
 .. code:: sh
 
-   git clone https://github.com/quantumjot/btrack.git
-   conda env create -f ./btrack/environment.yml
-   conda activate btrack
-   cd btrack
-   ./build.sh
-   pip install -e .
+    git clone https://github.com/quantumjot/btrack.git
+    cd btrack
+    ./build.sh
+    pip install -e .
 
 If developing the documentation then run the following
 
 .. code:: sh
 
-   pip install -e .[docs]
+    pip install -e .[docs]
 
 Releasing
 ---------
@@ -35,12 +33,12 @@ Releases are published to PyPI automatically when a tag is pushed to GitHub.
 
 .. code-block:: sh
 
-   # Set next version number
-   export RELEASE=x.x.x
+    # Set next version number
+    export RELEASE=x.x.x
 
-   # Create tags
-   git commit --allow-empty -m "Release $RELEASE"
-   git tag -a v$RELEASE -m "v$RELEASE"
+    # Create tags
+    git commit --allow-empty -m "Release $RELEASE"
+    git tag -a v$RELEASE -m "v$RELEASE"
 
-   # Push
-   git push upstream --tags
+    # Push
+    git push upstream --tags

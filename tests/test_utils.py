@@ -33,9 +33,7 @@ def _validate_centroids(centroids, objects, scale=None):
         obj_as_array = obj_as_array[:, 1:]
 
     # sort the centroids by axis
-    centroids = centroids[
-        np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])
-    ]
+    centroids = centroids[np.lexsort([centroids[:, dim] for dim in range(ndim)][::-1])]
 
     # sort the objects
     obj_as_array = obj_as_array[
@@ -96,9 +94,7 @@ def test_segmentation_to_objects_scale(scale):
 def test_assign_class_ID(ndim, nobj):
     """Test mask class_id assignment."""
     img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=False)
-    objects = utils.segmentation_to_objects(
-        img[np.newaxis, ...], assign_class_ID=True
-    )
+    objects = utils.segmentation_to_objects(img[np.newaxis, ...], assign_class_ID=True)
     # check that the values match
     for obj in objects:
         centroid = (int(obj.z), int(obj.y), int(obj.x))[-ndim:]
@@ -112,9 +108,7 @@ def test_regionprops():
         "area",
         "axis_major_length",
     )
-    objects = utils.segmentation_to_objects(
-        img[np.newaxis, ...], properties=properties
-    )
+    objects = utils.segmentation_to_objects(img[np.newaxis, ...], properties=properties)
 
     # check that the properties keys match
     for obj in objects:
@@ -167,16 +161,12 @@ def test_update_segmentation_2d(test_segmentation_and_tracks):
 
 
 @pytest.mark.parametrize("color_by", ["ID", "root", "generation", "fake"])
-def test_update_segmentation_2d_colorby(
-    test_segmentation_and_tracks, color_by
-):
+def test_update_segmentation_2d_colorby(test_segmentation_and_tracks, color_by):
     """Test relabeling a 2D-segmentation with track ID."""
     in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
 
     with pytest.raises(ValueError) if color_by == "fake" else nullcontext():
-        _ = utils.update_segmentation(
-            in_segmentation, tracks, color_by=color_by
-        )
+        _ = utils.update_segmentation(in_segmentation, tracks, color_by=color_by)
 
 
 def test_update_segmentation_3d(test_segmentation_and_tracks):
@@ -260,14 +250,46 @@ def test_tracks_to_napari_ndim_inference(ndim: int):
     assert data.shape[-1] == ndim + 2
 
 
+def test_napari_to_tracks(sample_tracks):
+    """Test that a napari Tracks layer can be converted to a list of Tracklets.
+
+    First convert tracks to a napari layer, then convert back and compare.
+    """
+
+    data, properties, graph = utils.tracks_to_napari(sample_tracks)
+    tracks = utils.napari_to_tracks(data, properties, graph)
+
+    properties_to_compare = [
+        "ID",
+        "t",
+        "x",
+        "y",
+        # "z",  # z-coordinates are different
+        "parent",
+        "label",
+        "state",
+        "root",
+        "is_root",
+        "is_leaf",
+        "start",
+        "stop",
+        "generation",
+        "dummy",
+        "properties",
+    ]
+
+    sample_tracks_dicts = [
+        sample.to_dict(properties_to_compare) for sample in sample_tracks
+    ]
+    tracks_dicts = [track.to_dict(properties_to_compare) for track in tracks]
+    assert sample_tracks_dicts == tracks_dicts
+
+
 def test_objects_from_array(test_objects):
     """Test creation of a list of objects from a numpy array."""
 
     obj_arr = np.stack(
-        [
-            [getattr(obj, k) for k in DEFAULT_OBJECT_KEYS]
-            for obj in test_objects
-        ],
+        [[getattr(obj, k) for k in DEFAULT_OBJECT_KEYS] for obj in test_objects],
         axis=0,
     )
 

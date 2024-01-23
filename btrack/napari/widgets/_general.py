@@ -1,84 +1,123 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from pathlib import Path
 
-if TYPE_CHECKING:
-    from magicgui.widgets import Widget
-
-import magicgui
-import napari
+from qtpy import QtCore, QtGui, QtWidgets
 
 
-def create_input_widgets() -> list[Widget]:
+def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
+    """Creates the widgets for the title, logo and documentation"""
+
+    title = QtWidgets.QLabel("<h3>Bayesian Tracker</h3>")
+    title.setAlignment(QtCore.Qt.AlignHCenter)
+    widgets = {"title": title}
+
+    logo = QtWidgets.QLabel()
+    pixmap = QtGui.QPixmap(
+        str(Path(__file__).resolve().parents[1] / "assets" / "btrack_logo.png")
+    )
+    logo.setAlignment(QtCore.Qt.AlignHCenter)
+    scale = 0.8
+    logo.setPixmap(
+        pixmap.scaled(
+            int(pixmap.width() * scale),
+            int(pixmap.height() * scale),
+            QtCore.Qt.KeepAspectRatio,
+        )
+    )
+    widgets["logo"] = logo
+
+    docs = QtWidgets.QLabel('<a href="https://btrack.readthedocs.io">Documentation</a>')
+    docs.setAlignment(QtCore.Qt.AlignHCenter)
+    docs.setOpenExternalLinks(True)  # noqa: FBT003
+    docs.setTextFormat(QtCore.Qt.RichText)
+    docs.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
+    widgets["documentation"] = docs
+
+    return widgets
+
+
+def create_input_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting labels layer and TrackerConfig"""
 
-    segmentation_tooltip = (
+    segmentation = QtWidgets.QComboBox()
+    segmentation.setToolTip(
         "Select a 'Labels' layer to use for tracking.\n"
         "To use an 'Image' layer, first convert 'Labels' by right-clicking "
         "on it in the layers list, and clicking on 'Convert to Labels'"
     )
-    segmentation = magicgui.widgets.create_widget(
-        annotation=napari.layers.Labels,
-        name="segmentation",
-        label="segmentation",
-        options={"tooltip": segmentation_tooltip},
+    widgets = {"segmentation": ("segmentation", segmentation)}
+
+    config_name = QtWidgets.QComboBox()
+    config_name.addItems(["cell", "particle"])
+    config_name.setToolTip(
+        "Select a loaded configuration.\nNote, this will update values set below."
     )
+    widgets["config_name"] = ("config name", config_name)
 
-    config_tooltip = (
-        "Select a loaded configuration.\n"
-        "Note, this will update values set below."
-    )
-    config = magicgui.widgets.create_widget(
-        value="cell",
-        name="config",
-        label="config name",
-        widget_type="ComboBox",
-        options={
-            "choices": ["cell", "particle"],
-            "tooltip": config_tooltip,
-        },
-    )
-
-    return [segmentation, config]
+    return widgets
 
 
-def create_update_method_widgets() -> list[Widget]:
+def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     """Create widgets for selecting the update method"""
 
-    update_method_tooltip = (
+    update_method = QtWidgets.QComboBox()
+    update_method.addItems(
+        [
+            "EXACT",
+            "APPROXIMATE",
+        ]
+    )
+    update_method.setToolTip(
         "Select the update method.\n"
         "EXACT: exact calculation of Bayesian belief matrix.\n"
         "APPROXIMATE: approximate the Bayesian belief matrix. Useful for datasets with "
         "more than 1000 particles per frame."
     )
-    update_method = magicgui.widgets.create_widget(
-        value="EXACT",
-        name="update_method",
-        label="update method",
-        widget_type="ComboBox",
-        options={
-            "choices": ["EXACT", "APPROXIMATE"],
-            "tooltip": update_method_tooltip,
-        },
-    )
+    widgets = {"update_method": ("update method", update_method)}
 
-    # TODO: this widget should be hidden when the update method is set to EXACT
-    max_search_radius_tooltip = (
+    max_search_radius = QtWidgets.QDoubleSpinBox()
+    max_search_radius.setRange(0, 1000)
+    max_search_radius.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    max_search_radius.setToolTip(
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    max_search_radius = magicgui.widgets.create_widget(
-        value=100,
-        name="max_search_radius",
-        label="search radius",
-        widget_type="SpinBox",
-        options={"tooltip": max_search_radius_tooltip},
+    max_search_radius.setWrapping(True)  # noqa: FBT003
+    widgets["max_search_radius"] = ("search radius", max_search_radius)
+
+    max_lost_frames = QtWidgets.QSpinBox()
+    max_lost_frames.setRange(0, 10)
+    max_lost_frames.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    max_lost_frames.setToolTip(
+        "Number of frames without observation before marking as lost"
+    )
+    widgets["max_lost"] = ("max lost", max_lost_frames)
+
+    not_assign = QtWidgets.QDoubleSpinBox()
+    not_assign.setDecimals(3)
+    not_assign.setRange(0, 1)
+    not_assign.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
+    not_assign.setToolTip("Default probability to not assign a track")
+    widgets["prob_not_assign"] = (
+        "<b>P</b>(not track)",
+        not_assign,
     )
 
-    return [update_method, max_search_radius]
+    optimise = QtWidgets.QCheckBox()
+    optimise.setChecked(True)  # noqa: FBT003
+    optimise.setToolTip(
+        "Enable the track optimisation.\n"
+        "This means that tracks will be optimised using the hypotheses"
+        "specified in the optimiser tab."
+    )
+    optimise.setTristate(False)  # noqa: FBT003
+    widgets["enable_optimisation"] = ("enable optimisation", optimise)
+
+    return widgets
 
 
-def create_control_widgets() -> list[Widget]:
+def create_config_widgets() -> dict[str, QtWidgets.QWidget]:
     """Create widgets for running the analysis or handling I/O.
 
     This includes widgets for running the tracking, saving and loading
@@ -89,29 +128,32 @@ def create_control_widgets() -> list[Widget]:
         "load_config_button",
         "save_config_button",
         "reset_button",
-        "call_button",
     ]
     labels = [
-        "Load configuration",
-        "Save configuration",
-        "Reset defaults",
-        "Run",
+        "Load Configuration",
+        "Save Configuration",
+        "Reset Defaults",
     ]
     tooltips = [
         "Load a TrackerConfig json file.",
         "Export the current configuration to a TrackerConfig json file.",
         "Reset the current configuration to the defaults stored in the corresponding json file.",  # noqa: E501
-        "Run the tracking analysis with the current configuration.",
     ]
 
-    control_buttons = []
+    widgets = {}
     for name, label, tooltip in zip(names, labels, tooltips):
-        widget = magicgui.widgets.create_widget(
-            name=name,
-            label=label,
-            widget_type="PushButton",
-            options={"tooltip": tooltip},
-        )
-        control_buttons.append(widget)
+        widget = QtWidgets.QPushButton()
+        widget.setText(label)
+        widget.setToolTip(tooltip)
+        widgets[name] = widget
 
-    return control_buttons
+    return widgets
+
+
+def create_track_widgets() -> dict[str, QtWidgets.QWidget]:
+    track_button = QtWidgets.QPushButton("Track")
+    track_button.setToolTip(
+        "Run the tracking analysis with the current configuration.",
+    )
+
+    return {"track_button": track_button}

@@ -2,13 +2,18 @@ from __future__ import annotations
 
 import dataclasses
 import logging
+from collections.abc import Generator
 from multiprocessing.pool import Pool
-from typing import Callable, Dict, Generator, List, Optional, Tuple, Union
+from typing import Callable, Optional, Union
 
 import numpy as np
 import numpy.typing as npt
 from skimage.measure import label, regionprops, regionprops_table
-from tqdm import tqdm
+
+try:
+    from napari.utils import progress as tqdm
+except ImportError:
+    from tqdm import tqdm
 
 from btrack import btypes
 from btrack.constants import Dimensionality
@@ -25,13 +30,11 @@ def _is_unique(x: npt.NDArray) -> bool:
 
 
 def _concat_nodes(
-    nodes: Dict[str, npt.NDArray], new_nodes: Dict[str, npt.NDArray]
-) -> Dict[str, npt.NDArray]:
+    nodes: dict[str, npt.NDArray], new_nodes: dict[str, npt.NDArray]
+) -> dict[str, npt.NDArray]:
     """Concatentate centroid dictionaries."""
     for key, values in new_nodes.items():
-        nodes[key] = (
-            np.concatenate([nodes[key], values]) if key in nodes else values
-        )
+        nodes[key] = np.concatenate([nodes[key], values]) if key in nodes else values
     return nodes
 
 
@@ -44,21 +47,17 @@ class SegmentationContainer:
 
     def __post_init__(self) -> None:
         self._is_generator = isinstance(self.segmentation, Generator)
-        self._next = (
-            self._next_generator if self._is_generator else self._next_array
-        )
+        self._next = self._next_generator if self._is_generator else self._next_array
 
-    def _next_generator(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_generator(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
         """__next__ method for a generator input."""
         seg = next(self.segmentation)
         intens = (
-            next(self.intensity_image)
-            if self.intensity_image is not None
-            else None
+            next(self.intensity_image) if self.intensity_image is not None else None
         )
         return seg, intens
 
-    def _next_array(self) -> Tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_array(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
         """__next__ method for an array-like input."""
         if self._iter >= len(self):
             raise StopIteration
@@ -74,7 +73,7 @@ class SegmentationContainer:
         self._iter = 0
         return self
 
-    def __next__(self) -> Tuple[int, npt.NDArray, Optional[npt.NDArray]]:
+    def __next__(self) -> tuple[int, npt.NDArray, Optional[npt.NDArray]]:
         seg, intens = self._next()
         data = (self._iter, seg, intens)
         self._iter += 1
@@ -88,26 +87,23 @@ class SegmentationContainer:
 class NodeProcessor:
     """Processor to extract nodes from a segmentation image."""
 
-    properties: Tuple[str]
+    properties: tuple[str, ...]
     centroid_type: str = "centroid"
     intensity_image: Optional[npt.NDArray] = None
-    scale: Optional[Tuple[float]] = None
+    scale: Optional[tuple[float]] = None
     assign_class_ID: bool = False  # noqa: N815
-    extra_properties: Optional[Tuple[Callable]] = None
+    extra_properties: Optional[tuple[Callable]] = None
 
     @property
-    def img_props(self) -> List[str]:
+    def img_props(self) -> tuple[str, ...]:
         # need to infer the name of the function provided
-        extra_img_props = tuple(
-            [str(fn.__name__) for fn in self.extra_properties]
+        return self.properties + (
+            tuple(str(fn.__name__) for fn in self.extra_properties)
             if self.extra_properties
-            else []
+            else ()
         )
-        return self.properties + extra_img_props
 
-    def __call__(
-        self, data: Tuple[int, npt.NDAarray, Optional[npt.NDArray]]
-    ) -> Dict[str, npt.NDArray]:
+    def __call__(self, data: tuple[int, npt.NDArray, Optional[npt.NDArray]]) -> dict:
         """Return the object centroids from a numpy array representing the
         image data."""
 
@@ -119,33 +115,20 @@ class NodeProcessor:
         if segmentation.ndim not in (Dimensionality.TWO, Dimensionality.THREE):
             raise ValueError("Segmentation array must have 3 or 4 dims.")
 
-        labeled = (
-            segmentation if _is_unique(segmentation) else label(segmentation)
-        )
+        labeled = segmentation if _is_unique(segmentation) else label(segmentation)
         props = regionprops(
             labeled,
             intensity_image=intensity_image,
             extra_properties=self.extra_properties,
         )
         num_nodes = len(props)
-        scale = (
-            tuple([1.0] * segmentation.ndim)
-            if self.scale is None
-            else self.scale
-        )
+        scale = tuple([1.0] * segmentation.ndim) if self.scale is None else self.scale
 
         if len(scale) != segmentation.ndim:
-            raise ValueError(
-                f"Scale dimensions do not match segmentation: {scale}."
-            )
+            raise ValueError(f"Scale dimensions do not match segmentation: {scale}.")
 
         centroids = list(
-            zip(
-                *[
-                    getattr(props[idx], self.centroid_type)
-                    for idx in range(num_nodes)
-                ]
-            )
+            zip(*[getattr(props[idx], self.centroid_type) for idx in range(num_nodes)])
         )[::-1]
         centroid_dims = ["x", "y", "z"][: segmentation.ndim]
 
@@ -154,9 +137,7 @@ class NodeProcessor:
             for dim in range(len(centroids))
         }
 
-        nodes = {"t": [frame] * num_nodes}
-        nodes.update(coords)
-
+        nodes = {"t": [frame] * num_nodes} | coords
         for img_prop in self.img_props:
             nodes[img_prop] = [
                 getattr(props[idx], img_prop) for idx in range(num_nodes)
@@ -173,25 +154,25 @@ class NodeProcessor:
         return nodes
 
 
-def segmentation_to_objects(
-    segmentation: Union[np.ndarray, Generator],
+def segmentation_to_objects(  # noqa: PLR0913
+    segmentation: Union[npt.NDArray, Generator],
     *,
-    intensity_image: Optional[Union[np.ndarray, Generator]] = None,
-    properties: Optional[Tuple[str]] = (),
-    extra_properties: Optional[Tuple[Callable]] = None,
-    scale: Optional[Tuple[float]] = None,
+    intensity_image: Optional[Union[npt.NDArray, Generator]] = None,
+    properties: tuple[str, ...] = (),
+    extra_properties: Optional[tuple[Callable]] = None,
+    scale: Optional[tuple[float]] = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
     num_workers: int = 1,
-) -> List[btypes.PyTrackObject]:
+) -> list[btypes.PyTrackObject]:
     """Convert segmentation to a set of trackable objects.
 
     Parameters
     ----------
-    segmentation : np.ndarray, dask.array.core.Array or Generator
+    segmentation : npt.NDArray, dask.array.core.Array or Generator
         Segmentation can be provided in several different formats. Arrays should
         be ordered as T(Z)YX.
-    intensity_image : np.ndarray, dask.array.core.Array or Generator, optional
+    intensity_image : npt.NDArray, dask.array.core.Array or Generator, optional
         Intensity image with same size as segmentation, to be used to calculate
         additional properties. See `skimage.measure.regionprops` for more info.
     properties : tuple of str, optional
@@ -274,11 +255,11 @@ def segmentation_to_objects(
 
     # we need to remove 'label' since this is a protected keyword for btrack
     # objects
-    if isinstance(properties, tuple) and "label" in properties:
+    if "label" in properties:
         logger.warning("Cannot use `scikit-image` `label` as a property.")
-        properties = set(properties)
-        properties.remove("label")
-        properties = tuple(properties)
+        properties_set = set(properties)
+        properties_set.remove("label")
+        properties = tuple(properties_set)
 
     processor = NodeProcessor(
         properties=properties,
@@ -297,14 +278,18 @@ def segmentation_to_objects(
         num_workers = 1
 
     if num_workers <= 1:
-        for data in tqdm(container, total=len(container)):
+        for data in tqdm(container, total=len(container), position=0):
             _nodes = processor(data)
             nodes = _concat_nodes(nodes, _nodes)
     else:
         logger.info(f"Processing using {num_workers} workers.")
         with Pool(processes=num_workers) as pool:
             result = list(
-                tqdm(pool.imap(processor, container), total=len(container))
+                tqdm(
+                    pool.imap(processor, container),
+                    total=len(container),
+                    position=0,
+                )
             )
 
         for _nodes in result:

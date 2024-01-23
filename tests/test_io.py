@@ -56,6 +56,37 @@ def test_hdf5_write_with_properties(hdf5_file_path):
             np.testing.assert_allclose(orig.properties[p], read.properties[p])
 
 
+@pytest.mark.parametrize("frac_dummies", [0.1, 0.5, 0.9])
+def test_hdf5_write_dummies(hdf5_file_path, test_objects, frac_dummies):
+    """Test writing tracks with a variable proportion of dummy objects."""
+
+    num_dummies = int(len(test_objects) * frac_dummies)
+
+    for obj in test_objects[:num_dummies]:
+        obj.dummy = True
+        obj.ID = -(obj.ID + 1)
+
+    track_id = 1
+    track_with_dummies = btrack.btypes.Tracklet(track_id, test_objects)
+    track_with_dummies.root = track_id
+    track_with_dummies.parent = track_id
+
+    # write them out
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "w") as h:
+        h.write_tracks(
+            [
+                track_with_dummies,
+            ]
+        )
+
+    # read them in
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
+        tracks_from_file = h.tracks
+    objects_from_file = tracks_from_file[0]._data
+
+    assert sum(obj.dummy for obj in objects_from_file) == num_dummies
+
+
 @pytest.mark.parametrize("export_format", ["", ".csv", ".h5"])
 def test_tracker_export(tmp_path, export_format):
     """Test that file export works using the `export_delegator`."""
@@ -136,3 +167,20 @@ def test_write_hdf_segmentation(hdf5_file_path):
     with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as h:
         segmentation_from_file = h.segmentation
     np.testing.assert_equal(segmentation, segmentation_from_file)
+
+
+def test_hdf_tree(hdf5_file_path, caplog):
+    """Test that the tree function iterates over the files and writes the output
+    to the logger."""
+    n_log_entries = len(caplog.records)
+
+    # first test with an empty tree
+    btrack.io.hdf._h5_tree({})
+
+    assert len(caplog.records) == n_log_entries
+
+    with btrack.io.HDF5FileHandler(hdf5_file_path, "r") as hdf:
+        hdf.tree()
+
+    n_expected_entries = 8
+    assert len(caplog.records) == n_log_entries + n_expected_entries

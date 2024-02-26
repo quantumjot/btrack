@@ -508,7 +508,7 @@ class BayesianTracker:
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""
-        return self.optimise(**kwargs)
+        return self.optimise(options=kwargs)
 
     def optimise(self, options: Optional[dict] = None) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.

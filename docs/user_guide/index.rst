@@ -16,5 +16,8 @@ Welcome to the user guide for ``btrack``.
    napari
    saving_tracks
    large_datasets
+   optuna
+   optuna_script
+   ctc_configs
 ..
    Add other stuff

@@ -6,8 +6,12 @@ on:
       - main
   pull_request:
     paths-ignore:
+      - ".napari-hub/**"
+      - "**.cff"
       - "**.md"
       - "**.rst"
+      - "docs/**"
+      - "examples/**"
 
 jobs:
   build_wheels:

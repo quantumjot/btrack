@@ -238,10 +238,7 @@ def segmentation_to_objects(  # noqa: PLR0913
     logger.info("Localizing objects from segmentation...")
 
     # Check if intensity image has more dimensions than segmentation
-    if (
-        intensity_image is not None
-        and intensity_image.ndim > segmentation.ndim
-    ):
+    if intensity_image is not None and intensity_image.ndim > segmentation.ndim:
         logger.warning(
             "Multichannel intensity image detected, using unweighted centroid."
         )

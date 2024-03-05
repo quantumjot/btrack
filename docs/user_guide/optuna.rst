@@ -44,7 +44,7 @@ Where:
 Running the Optimization
 ------------------------
 
-- Step-by-step instructions on executing the script. The script can be found in the file `script.py <https://github.com/quantumjot/btrack/btrack/docs/user_guide/optuna_script.rst>`_.
+- Step-by-step instructions on executing the script. The script can be found in the file `script.py <https://github.com/quantumjot/btrack/btrack/examples/example_optuna.py>`_.
 - In order to use your own dataset with this code, you need to specify the path of your data. This is done by assigning the path to the `dataset_path` variable and the experiment/sequence number to the `experiment` variable as shown in the code snippet below:
 
 .. code-block:: python

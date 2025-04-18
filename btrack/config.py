@@ -2,10 +2,11 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
 import numpy as np
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
+from pydantic_core import core_schema
 
 from btrack import _version
 
@@ -114,10 +115,28 @@ class TrackerConfig(BaseModel):
     model_config = {
         "arbitrary_types_allowed": True,
         "validate_assignment": True,
-        "json_encoders": {
+        "json_schema_extra": {"json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        }}
     }
+    
+    @classmethod
+    def __get_pydantic_core_schema__(
+        cls, _source_type: Any, _handler: Any
+    ) -> core_schema.CoreSchema:
+        """Define serialization for numpy arrays."""
+        schema = _handler(_source_type)
+        
+        def serialize_numpy_arrays(obj: Any) -> Any:
+            for field_name, field_value in obj.items():
+                if isinstance(field_value, np.ndarray):
+                    obj[field_name] = field_value.ravel().tolist()
+            return obj
+            
+        schema["serialization"] = core_schema.wrap_serializer_function_ser_schema(
+            serialize_numpy_arrays, schema.get("serialization")
+        )
+        return schema
 
 
 def load_config(filename: os.PathLike) -> TrackerConfig:

@@ -93,7 +93,7 @@ class TrackerConfig(BaseModel):
         min_length=1,
         max_length=len(constants.BayesianUpdateFeatures)
     )
-    enable_optimisation = True
+    enable_optimisation: bool = True
 
     @field_validator("volume", mode="before")
     @classmethod

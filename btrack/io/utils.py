@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def localizations_to_objects(
-    localizations: Union[npt.NDArray, list[btypes.PyTrackObject], dict[str, Any]]
+    localizations: Union[npt.NDArray, list[btypes.PyTrackObject], dict[str, Any]],
 ) -> list[btypes.PyTrackObject]:
     """Take a numpy array or pandas dataframe and convert to PyTrackObjects.
 

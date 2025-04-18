@@ -2,11 +2,10 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, ClassVar, Optional
+from typing import Optional
 
 import numpy as np
-from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
-from pydantic_core import core_schema
+from pydantic import BaseModel, Field, field_validator
 
 from btrack import _version
 
@@ -92,7 +91,7 @@ class TrackerConfig(BaseModel):
     tracking_updates: list[constants.BayesianUpdateFeatures] = Field(
         default=[constants.BayesianUpdateFeatures.MOTION],
         min_length=1,
-        max_length=len(constants.BayesianUpdateFeatures)
+        max_length=len(constants.BayesianUpdateFeatures),
     )
     enable_optimisation: bool = True
 
@@ -117,7 +116,7 @@ class TrackerConfig(BaseModel):
         "validate_assignment": True,
         "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
     }
 
 

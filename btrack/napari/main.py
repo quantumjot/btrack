@@ -272,9 +272,10 @@ def _run_tracker(
     """
     num_steps = 5 if tracker_config.enable_optimisation else 4
 
-    with btrack.BayesianTracker() as tracker, napari.utils.progress(
-        total=num_steps
-    ) as pbr:
+    with (
+        btrack.BayesianTracker() as tracker,
+        napari.utils.progress(total=num_steps) as pbr,
+    ):
         pbr.set_description("Initialising the tracker")
         tracker.configure(tracker_config)
         pbr.update(1)

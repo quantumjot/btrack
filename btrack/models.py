@@ -1,9 +1,8 @@
-from typing import Any, Optional
+from typing import Optional
 
 import numpy as np
 from numpy import typing as npt
 from pydantic import BaseModel, field_validator, model_validator
-from pydantic_core import core_schema
 
 from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
@@ -165,7 +164,7 @@ class MotionModel(BaseModel):
         "validate_assignment": True,
         "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
     }
 
 
@@ -199,7 +198,6 @@ class ObjectModel(BaseModel):
     @field_validator("emission", "transition", "start", mode="before")
     @classmethod
     def parse_array(cls, v, info):
-        values = info.data
         return np.asarray(v, dtype=float)
 
     @field_validator("emission", "transition", mode="before")
@@ -221,7 +219,7 @@ class ObjectModel(BaseModel):
         "validate_assignment": True,
         "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
     }
 
 
@@ -330,5 +328,5 @@ class HypothesisModel(BaseModel):
         "validate_assignment": True,
         "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }
+        },
     }

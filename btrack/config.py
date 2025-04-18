@@ -89,11 +89,10 @@ class TrackerConfig(BaseModel):
     optimizer_options: dict = constants.GLPK_OPTIONS
     features: list[str] = []
     tracking_updates: list[constants.BayesianUpdateFeatures] = Field(
+        default=[constants.BayesianUpdateFeatures.MOTION],
         min_length=1,
         max_length=len(constants.BayesianUpdateFeatures)
-    ) = [
-        constants.BayesianUpdateFeatures.MOTION,
-    ]
+    )
     enable_optimisation = True
 
     @field_validator("volume", mode="before")

@@ -163,28 +163,10 @@ class MotionModel(BaseModel):
     model_config = {
         "arbitrary_types_allowed": True,
         "validate_assignment": True,
-        "json_schema_extra": {"json_encoders": {
+        "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }}
+        }
     }
-    
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, _source_type: Any, _handler: Any
-    ) -> core_schema.CoreSchema:
-        """Define serialization for numpy arrays."""
-        schema = _handler(_source_type)
-        
-        def serialize_numpy_arrays(obj: Any) -> Any:
-            for field_name, field_value in obj.items():
-                if isinstance(field_value, np.ndarray):
-                    obj[field_name] = field_value.ravel().tolist()
-            return obj
-            
-        schema["serialization"] = core_schema.wrap_serializer_function_ser_schema(
-            serialize_numpy_arrays
-        )
-        return schema
 
 
 class ObjectModel(BaseModel):
@@ -237,28 +219,10 @@ class ObjectModel(BaseModel):
     model_config = {
         "arbitrary_types_allowed": True,
         "validate_assignment": True,
-        "json_schema_extra": {"json_encoders": {
+        "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }}
+        }
     }
-    
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, _source_type: Any, _handler: Any
-    ) -> core_schema.CoreSchema:
-        """Define serialization for numpy arrays."""
-        schema = _handler(_source_type)
-        
-        def serialize_numpy_arrays(obj: Any) -> Any:
-            for field_name, field_value in obj.items():
-                if isinstance(field_value, np.ndarray):
-                    obj[field_name] = field_value.ravel().tolist()
-            return obj
-            
-        schema["serialization"] = core_schema.wrap_serializer_function_ser_schema(
-            serialize_numpy_arrays
-        )
-        return schema
 
 
 class HypothesisModel(BaseModel):
@@ -364,25 +328,7 @@ class HypothesisModel(BaseModel):
 
     model_config = {
         "validate_assignment": True,
-        "json_schema_extra": {"json_encoders": {
+        "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
-        }}
+        }
     }
-    
-    @classmethod
-    def __get_pydantic_core_schema__(
-        cls, _source_type: Any, _handler: Any
-    ) -> core_schema.CoreSchema:
-        """Define serialization for numpy arrays."""
-        schema = _handler(_source_type)
-        
-        def serialize_numpy_arrays(obj: Any) -> Any:
-            for field_name, field_value in obj.items():
-                if isinstance(field_value, np.ndarray):
-                    obj[field_name] = field_value.ravel().tolist()
-            return obj
-            
-        schema["serialization"] = core_schema.wrap_serializer_function_ser_schema(
-            serialize_numpy_arrays
-        )
-        return schema

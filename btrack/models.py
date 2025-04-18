@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from numpy import typing as npt
-from pydantic import BaseModel, root_validator, validator
+from pydantic import BaseModel, field_validator, model_validator
+from pydantic_core import core_schema
 
 from . import constants
 from .optimise.hypothesis import H_TYPES, PyHypothesisParams
@@ -91,7 +92,8 @@ class MotionModel(BaseModel):
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"
 
-    @validator("A", "H", "P", "R", "G", "Q", pre=True)
+    @field_validator("A", "H", "P", "R", "G", "Q", mode="before")
+    @classmethod
     def parse_arrays(cls, v):
         if isinstance(v, dict):
             m = v.get("matrix", None)
@@ -99,57 +101,72 @@ class MotionModel(BaseModel):
             return np.asarray(m, dtype=float) * s
         return np.asarray(v, dtype=float)
 
-    @validator("A")
-    def reshape_A(cls, a, values):
+    @field_validator("A")
+    @classmethod
+    def reshape_A(cls, a, info):
+        values = info.data
         shape = (values["states"], values["states"])
         return np.reshape(a, shape)
 
-    @validator("H")
-    def reshape_H(cls, h, values):
+    @field_validator("H")
+    @classmethod
+    def reshape_H(cls, h, info):
+        values = info.data
         shape = (values["measurements"], values["states"])
         return np.reshape(h, shape)
 
-    @validator("P")
-    def reshape_P(cls, p, values):
+    @field_validator("P")
+    @classmethod
+    def reshape_P(cls, p, info):
+        values = info.data
         shape = (values["states"], values["states"])
         p = np.reshape(p, shape)
         if not _check_symmetric(p):
             raise ValueError("Matrix `P` is not symmetric.")
         return p
 
-    @validator("R")
-    def reshape_R(cls, r, values):
+    @field_validator("R")
+    @classmethod
+    def reshape_R(cls, r, info):
+        values = info.data
         shape = (values["measurements"], values["measurements"])
         r = np.reshape(r, shape)
         if not _check_symmetric(r):
             raise ValueError("Matrix `R` is not symmetric.")
         return r
 
-    @validator("G")
-    def reshape_G(cls, g, values):
+    @field_validator("G")
+    @classmethod
+    def reshape_G(cls, g, info):
+        values = info.data
         shape = (1, values["states"])
         return np.reshape(g, shape)
 
-    @validator("Q")
-    def reshape_Q(cls, q, values):
+    @field_validator("Q")
+    @classmethod
+    def reshape_Q(cls, q, info):
+        values = info.data
         shape = (values["states"], values["states"])
         q = np.reshape(q, shape)
         if not _check_symmetric(q):
             raise ValueError("Matrix `Q` is not symmetric.")
         return q
 
-    @root_validator
-    def validate_motion_model(cls, values):
-        if values["Q"] is None:
-            G = values.get("G", None)
-            if G is None:
+    @model_validator(mode="after")
+    def validate_motion_model(self):
+        if self.Q is None:
+            if self.G is None:
                 raise ValueError("Either a `G` or `Q` matrix is required.")
-            values["Q"] = G.T @ G
-        return values
+            self.Q = self.G.T @ self.G
+        return self
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+        "json_encoders": {
+            np.ndarray: lambda x: x.ravel().tolist(),
+        }
+    }
 
 
 class ObjectModel(BaseModel):
@@ -179,23 +196,33 @@ class ObjectModel(BaseModel):
     start: npt.NDArray
     name: str = "Default"
 
-    @validator("emission", "transition", "start", pre=True)
-    def parse_array(cls, v, values):
+    @field_validator("emission", "transition", "start", mode="before")
+    @classmethod
+    def parse_array(cls, v, info):
+        values = info.data
         return np.asarray(v, dtype=float)
 
-    @validator("emission", "transition", "start", pre=True)
-    def reshape_emission_transition(cls, v, values):
+    @field_validator("emission", "transition", mode="before")
+    @classmethod
+    def reshape_emission_transition(cls, v, info):
+        values = info.data
         shape = (values["states"], values["states"])
         return np.reshape(v, shape)
 
-    @validator("emission", "transition", "start", pre=True)
-    def reshape_start(cls, v, values):
+    @field_validator("start", mode="before")
+    @classmethod
+    def reshape_start(cls, v, info):
+        values = info.data
         shape = (1, values["states"])
         return np.reshape(v, shape)
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+        "json_encoders": {
+            np.ndarray: lambda x: x.ravel().tolist(),
+        }
+    }
 
 
 class HypothesisModel(BaseModel):
@@ -274,7 +301,8 @@ class HypothesisModel(BaseModel):
     relax: bool
     name: str = "Default"
 
-    @validator("hypotheses", pre=True)
+    @field_validator("hypotheses", mode="before")
+    @classmethod
     def parse_hypotheses(cls, hypotheses):
         if any(h not in H_TYPES for h in hypotheses):
             raise ValueError("Unknown hypothesis type in `hypotheses`.")
@@ -290,7 +318,7 @@ class HypothesisModel(BaseModel):
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 
-        for k, v in self.dict().items():
+        for k, v in self.model_dump().items():
             if k in fields:
                 setattr(h_params, k, v)
 
@@ -298,5 +326,9 @@ class HypothesisModel(BaseModel):
         h_params.hypotheses_to_generate = self.hypotheses_to_generate()
         return h_params
 
-    class Config:
-        validate_assignment = True
+    model_config = {
+        "validate_assignment": True,
+        "json_encoders": {
+            np.ndarray: lambda x: x.ravel().tolist(),
+        }
+    }

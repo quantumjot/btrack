@@ -2,10 +2,11 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
 import numpy as np
-from pydantic import BaseModel, conlist, validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
+from pydantic_core import core_schema
 
 from btrack import _version
 
@@ -88,20 +89,20 @@ class TrackerConfig(BaseModel):
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
     features: list[str] = []
-    tracking_updates: conlist(
-        constants.BayesianUpdateFeatures,
-        min_items=1,
-        max_items=len(constants.BayesianUpdateFeatures),
-    ) = [
-        constants.BayesianUpdateFeatures.MOTION,
-    ]
-    enable_optimisation = True
+    tracking_updates: list[constants.BayesianUpdateFeatures] = Field(
+        default=[constants.BayesianUpdateFeatures.MOTION],
+        min_length=1,
+        max_length=len(constants.BayesianUpdateFeatures)
+    )
+    enable_optimisation: bool = True
 
-    @validator("volume", pre=True, always=True)
+    @field_validator("volume", mode="before")
+    @classmethod
     def _parse_volume(cls, v):
         return ImagingVolume(*v) if isinstance(v, tuple) else v
 
-    @validator("tracking_updates", pre=True, always=True)
+    @field_validator("tracking_updates", mode="before")
+    @classmethod
     def _parse_tracking_updates(cls, v):
         _tracking_updates = v
         if all(isinstance(k, str) for k in _tracking_updates):
@@ -111,12 +112,13 @@ class TrackerConfig(BaseModel):
         _tracking_updates = list(set(_tracking_updates))
         return _tracking_updates
 
-    class Config:
-        arbitrary_types_allowed = True
-        validate_assignment = True
-        json_encoders: ClassVar[dict] = {
+    model_config = {
+        "arbitrary_types_allowed": True,
+        "validate_assignment": True,
+        "json_encoders": {
             np.ndarray: lambda x: x.ravel().tolist(),
         }
+    }
 
 
 def load_config(filename: os.PathLike) -> TrackerConfig:

@@ -134,7 +134,7 @@ class TrackerConfig(BaseModel):
             return obj
             
         schema["serialization"] = core_schema.wrap_serializer_function_ser_schema(
-            serialize_numpy_arrays, schema.get("serialization")
+            serialize_numpy_arrays
         )
         return schema
 

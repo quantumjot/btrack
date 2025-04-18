@@ -2,6 +2,7 @@
 This module contains functions for syncing widget values with TrackerConfig
 values.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

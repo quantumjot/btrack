@@ -1,6 +1,7 @@
 """
 This module is a reader plugin btrack files for napari.
 """
+
 import os
 import pathlib
 from collections.abc import Sequence

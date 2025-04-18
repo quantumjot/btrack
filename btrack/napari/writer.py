@@ -1,6 +1,7 @@
 """
 This module is a writer plugin to export Tracks layers using BTrack
 """
+
 from typing import Optional
 
 import numpy.typing as npt

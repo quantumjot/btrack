@@ -30,7 +30,7 @@ jobs:
           sudo apt-get install -y mingw-w64
         if: ${{ matrix.windows_cross_compile }}
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Build wheels
         run: bash build.sh
@@ -38,7 +38,7 @@ jobs:
           WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
 
       - name: Upload artefacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
             name: artefacts
             path: btrack/libs/*
@@ -53,7 +53,7 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
         os: [ubuntu-latest]
         include:
-          - os: macos-11
+          - os: macos-15
             python-version: "3.11"
           - os: macos-latest
             python-version: "3.11"
@@ -61,11 +61,11 @@ jobs:
             python-version: "3.11"
           - os: windows-latest
             python-version: "3.11"
-          - os: ubuntu-20.04
+          - os: ubuntu-24.04
             python-version: "3.11"
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Download artefacts
         uses: actions/download-artifact@v4.1.7

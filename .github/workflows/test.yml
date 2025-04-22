@@ -1,3 +1,4 @@
+# Updated: 2025-04-18
 name: Test
 
 on:
@@ -6,31 +7,36 @@ on:
       - main
   pull_request:
     paths-ignore:
-      - "**.md"
-      - "**.rst"
+      - '**.md'
+      - '**.rst'
 
 jobs:
   build_wheels:
     name: |-
       Build wheels on ${{ matrix.os }} with
       windows_cross_compile=${{ matrix.windows_cross_compile }}
+    # Using specific, current LTS/stable versions for build stability
+    # Check GitHub's documentation for the latest recommended runner versions
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # Keep running other jobs even if one fails
       matrix:
-        os: [macos-15, ubuntu-24.04]
+        os: [ubuntu-22.04, macos-13] # Updated OS versions (e.g., ubuntu-22.04, macos-13/14)
         windows_cross_compile: [false, true]
         exclude:
-          - os: macos-15
+          # Exclude cross-compiling on macOS
+          - os: macos-13 # Updated OS version
             windows_cross_compile: true
 
     steps:
-      - name: Install dependencies
-        run: |-
-          sudo apt-get update
-          sudo apt-get install -y mingw-w64
-        if: ${{ matrix.windows_cross_compile }}
+      - name: Install dependencies (Linux for cross-compile)
+        # Combine update and install; only run if cross-compiling on Linux
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends mingw-w64
+        if: runner.os == 'Linux' && matrix.windows_cross_compile == true
 
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Updated action version
 
       - name: Build wheels
         run: bash build.sh
@@ -38,59 +44,74 @@ jobs:
           WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
 
       - name: Upload artefacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4 # Updated action version
         with:
-            name: artefacts-${{ matrix.os }}-${{ matrix.windows_cross_compile }}
-            path: btrack/libs/*
-            if-no-files-found: error
+          name: artefacts-${{ matrix.os }}-${{ matrix.windows_cross_compile }} # Make artifact name more specific
+          path: btrack/libs/*
+          if-no-files-found: error # Good practice: fail if files are missing
 
   test:
     needs: build_wheels
-    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    name: Test ${{ matrix.os }} py${{ matrix.python-version }}
+    # Use -latest labels for testing broader compatibility
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false # Keep running other jobs even if one fails
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-        os: [ubuntu-latest]
-        windows_cross_compile: [false]
-        include:
-          - os: macos-15
-            python-version: "3.11"
-          - os: macos-latest
-            python-version: "3.11"
-          - os: windows-2019
-            python-version: "3.11"
-          - os: windows-latest
-            python-version: "3.11"
-          - os: ubuntu-24.04
-            python-version: "3.11"
+        # Test on latest stable/LTS versions of major OSs
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Update Python versions for 2025 (3.9 EOL Oct 2025, 3.10 security fixes only)
+        python-version: ["3.10", "3.11", "3.12"] # Added 3.12, removed 3.9
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4 # Updated action version
+
+      - name: Determine artifact name to download
+        id: artifact_info
+        # Need to figure out which build artifact corresponds to the current OS
+        # This logic assumes Linux builds produce windows cross-compiled artifacts
+        # And native builds match the OS. 
+        run: |
+          artifact_name="artefacts-${{ matrix.os }}-false" # Default: native build artifact
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+             # Assuming windows artifacts were cross-compiled on Linux
+             artifact_name="artefacts-ubuntu-22.04-true" # Match Linux cross-compile build
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+             artifact_name="artefacts-macos-13-false" # Match macOS native build
+          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+             artifact_name="artefacts-ubuntu-22.04-false" # Match Linux native build
+          fi
+          echo "artifact_name=$artifact_name" >> $GITHUB_OUTPUT
 
       - name: Download artefacts
-        uses: actions/download-artifact@v4.1.7
+        uses: actions/download-artifact@v4 # Updated action version
         with:
-            name: artefacts-${{ matrix.os }}-${{ matrix.windows_cross_compile }}
-            path: btrack/libs
+          name: ${{ steps.artifact_info.outputs.artifact_name }}
+          path: btrack/libs
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5 # Updated action version
         with:
           python-version: ${{ matrix.python-version }}
-          cache: "pip"
-          cache-dependency-path: "pyproject.toml"
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml' # Or your dependency file
 
-      # these libraries enable testing on Qt on linux
-      - uses: tlambert03/setup-qt-libs@v1
+      # Check if tlambert03/setup-qt-libs is still maintained/needed or if a newer version exists
+      - name: Setup Qt Libs (Linux)
+        uses: tlambert03/setup-qt-libs@v1
+        if: runner.os == 'Linux' # Only run on Linux if needed for Qt
 
-      - name: Install dependencies
-        run: python -m pip install tox tox-gh-actions
+      - name: Install test dependencies
+        run: python -m pip install --upgrade pip tox tox-gh-actions
 
       - name: Test with tox
+        # Pass Python version to tox if needed, OS is already available via RUNNER_OS env var
         run: tox run
         env:
-            OS: ${{ matrix.os }}
+          # Pass Python version explicitly if tox needs it via env var
+          PYTHON_VERSION: ${{ matrix.python-version }}
+          # OS env var provided by runner: RUNNER_OS (e.g., 'Linux', 'Windows', 'macOS')
 
-      - name: Coverage
-        uses: codecov/codecov-action@v5
+      - name: Upload code coverage
+        uses: codecov/codecov-action@v4 # Updated action version

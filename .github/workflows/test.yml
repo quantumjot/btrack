@@ -52,22 +52,18 @@ jobs:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
         os: [ubuntu-latest]
+        windows_cross_compile: [false]
         include:
           - os: macos-15
             python-version: "3.11"
-            windows_cross_compile: false
           - os: macos-latest
             python-version: "3.11"
-            windows_cross_compile: false
           - os: windows-2019
             python-version: "3.11"
-            windows_cross_compile: true
           - os: windows-latest
             python-version: "3.11"
-            windows_cross_compile: true
           - os: ubuntu-24.04
             python-version: "3.11"
-            windows_cross_compile: false
 
     steps:
       - uses: actions/checkout@v4

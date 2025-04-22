@@ -401,9 +401,11 @@ class Tracklet:
         # set the properties, replacing missing values with a NaN
         properties = {
             k: [
-                o.properties[k]
-                if k in o.properties
-                else np.full(property_shapes[k], np.nan)
+                (
+                    o.properties[k]
+                    if k in o.properties
+                    else np.full(property_shapes[k], np.nan)
+                )
                 for o in self._data
             ]
             for k in keys

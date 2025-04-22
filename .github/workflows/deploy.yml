@@ -74,7 +74,7 @@ jobs:
           # Find all relevant library files in the downloaded subdirectories and copy them
           # Adjust the pattern (*.dll, *.so, *.dylib) if your libs have different extensions
           # Using + instead of \; for efficiency with many files
-          find _downloaded_libs/ -type f \( -name '*.dll' -o -name '*.so' -o -name '*.dylib' \) -exec cp {} btrack/libs/ +
+          find _downloaded_libs/ -type f \( -name '*.dll' -o -name '*.so' -o -name '*.dylib' \) -exec cp {} btrack/libs/ \;
           echo "Contents of btrack/libs/ after move:"
           ls -l btrack/libs/
           # Optional: remove the temporary download directory

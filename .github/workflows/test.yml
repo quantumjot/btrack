@@ -72,6 +72,7 @@ jobs:
         # Need to figure out which build artifact corresponds to the current OS
         # This logic assumes Linux builds produce windows cross-compiled artifacts
         # And native builds match the OS. 
+        shell: bash
         run: |
           artifact_name="artefacts-${{ matrix.os }}-false" # Default: native build artifact
           if [[ "${{ matrix.os }}" == "windows-latest" ]]; then

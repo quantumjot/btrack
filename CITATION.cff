@@ -1,0 +1,55 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Lowe
+    given-names: Alan
+    orcid: https://orcid.org/0000-0002-0558-3597
+  - family-names: Stansby
+    given-names: David
+    orcid: https://orcid.org/0000-0002-0558-3597
+  - family-names: Roddy
+    given-names: Paddy
+    orcid: https://orcid.org/0000-0002-6271-1700
+  - family-names: Felder
+    given-names: Allesandro
+    orcid: https://orcid.org/0000-0003-3510-9906
+  - family-names: Perez-Suarez
+    given-names: David
+    orcid: https://orcid.org/0000-0003-0784-6909
+  - family-names: Ulicna
+    given-names: Kristina
+    orcid: https://orcid.org/0000-0002-0855-9293
+  - family-names: Day
+    given-names: Nathan
+    orcid: https://orcid.org/0000-0000-0000-0000
+  - family-names: Lambert
+    given-names: Talley
+    orcid: https://orcid.org/0000-0000-0000-0000
+  - family-names: Russell
+    given-names: John
+    orcid: https://orcid.org/0000-0000-0000-0000
+  - family-names: Hilsenstein
+    given-names: Volker
+    orcid: https://orcid.org/0000-0000-0000-0000
+title: "btrack"
+doi: "10.3389/fcomp.2021.734559"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: Ulicna
+    given-names: Kristina
+    orcid: https://orcid.org/0000-0002-0855-9293
+  - family-names: Vallardi
+    given-names: Giulia
+    orcid: https://orcid.org/0000-0001-5902-1445
+  - family-names: Charras
+    given-names: Guillaume
+    orcid: https://orcid.org/0000-0002-7902-0279
+  - family-names: Lowe
+    given-names: Alan
+    orcid: https://orcid.org/0000-0002-0558-3597
+  doi: "10.3389/fcomp.2021.734559"
+  journal: "Frontiers in Computer Science"
+  title: "Automated deep lineage tree analysis using a Bayesian single cell tracking approach"
+  volume: 3
+  year: 2021

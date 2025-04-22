@@ -1,104 +1,138 @@
+# Updated: 2025-04-22
 name: Deploy
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*' # Trigger deployment only on version tags like v1.2.3
 
 jobs:
   build_wheels:
     name: |-
       Build wheels on ${{ matrix.os }} with
       windows_cross_compile=${{ matrix.windows_cross_compile }}
+    # Using specific, current LTS/stable versions for build stability
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [macos-11, ubuntu-20.04]
+        os: [ubuntu-22.04, macos-13] # Updated OS versions
         windows_cross_compile: [false, true]
         exclude:
-          - os: macos-11
+          # Exclude cross-compiling on macOS
+          - os: macos-13 # Updated OS version
             windows_cross_compile: true
 
     steps:
-      - name: Install dependencies
-        run: |-
-          sudo apt-get update
-          sudo apt-get install -y mingw-w64
-        if: ${{ matrix.windows_cross_compile }}
+      - name: Install dependencies (Linux for cross-compile)
+        run: |
+          sudo apt-get update && sudo apt-get install -y --no-install-recommends mingw-w64
+        if: runner.os == 'Linux' && matrix.windows_cross_compile == true
 
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Updated action version
 
       - name: Build wheels
+        # This script likely produces the binary wheels containing platform-specific libs
         run: bash build.sh
         env:
           WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
 
-      - name: Upload artefacts
-        uses: actions/upload-artifact@v3
+      - name: Upload wheel build artefacts
+        uses: actions/upload-artifact@v4 # Updated action version
         with:
-            name: artefacts
-            path: btrack/libs/*
-            if-no-files-found: error
+          # Use specific names based on the build matrix
+          name: artefacts-${{ matrix.os }}-${{ matrix.windows_cross_compile }}
+          path: btrack/libs/* # Adjust path if build.sh puts libs elsewhere
+          if-no-files-found: error
 
   deploy-to-testpypi:
     needs: build_wheels
-    runs-on: "ubuntu-latest"
+    runs-on: ubuntu-latest # Use ubuntu-latest for consistency
+    environment: # Optional: Define environment for TestPyPI deployment
+      name: testpypi
+      url: https://test.pypi.org/p/btrack
+    permissions: # Required for pypa/gh-action-pypi-publish
+      id-token: write
     steps:
       - name: Checkout source
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Updated action version
 
-      - name: Download artefacts
-        uses: actions/download-artifact@v4.1.7
+      - name: Download ALL wheel build artefacts
+        uses: actions/download-artifact@v4 # Updated action version
         with:
-            name: artefacts
-            path: btrack/libs
+          # Download all artifacts produced by build_wheels using a pattern
+          pattern: artefacts-* # Matches all artifacts starting with 'artefacts-'
+          path: _downloaded_libs # Download into a temporary directory
 
-      - name: Set up python
-        uses: actions/setup-python@v4
+      - name: Move downloaded libs to expected location
+        shell: bash # Use bash for consistency across OS if needed, or default
+        run: |
+          echo "Moving libraries from _downloaded_libs/*/* ..."
+          # Ensure the target directory exists
+          mkdir -p btrack/libs
+          # Find all relevant library files in the downloaded subdirectories and copy them
+          # Adjust the pattern (*.dll, *.so, *.dylib) if your libs have different extensions
+          # Using + instead of \; for efficiency with many files
+          find _downloaded_libs/ -type f \( -name '*.dll' -o -name '*.so' -o -name '*.dylib' \) -exec cp {} btrack/libs/ +
+          echo "Contents of btrack/libs/ after move:"
+          ls -l btrack/libs/
+          # Optional: remove the temporary download directory
+          # rm -rf _downloaded_libs
+
+      - name: Set up Python
+        uses: actions/setup-python@v5 # Updated action version
         with:
-          python-version: "3.x"
+          python-version: "3.11" # Use a specific recent Python for building sdist/wheels
           cache: "pip"
-          cache-dependency-path: "pyproject.toml"
+          cache-dependency-path: "pyproject.toml" # Or your dependency file
 
-      - name: Install dependencies
-        run: python -m pip install build
+      - name: Install build dependencies
+        run: python -m pip install --upgrade pip build
 
-      - name: Build distributions
+      - name: Build distributions (sdist and wheels)
+        # This builds the source distribution (.tar.gz) and any pure-python wheels.
+        # It might incorporate files from the downloaded 'artefacts' if setup.py/pyproject.toml is configured to do so.
         run: python -m build
 
       - name: Publish package to TestPyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        # Uses trusted publishing (id-token: write permission) if configured on PyPI/TestPyPI
+        # Otherwise, uses the provided token/password secret.
+        uses: pypa/gh-action-pypi-publish@release/v1 # Use @release/v1 for latest v1.x
         with:
+          # Use password for API token stored in secret TESTPYPI_SECRET
+          # For trusted publishing, remove 'password' and ensure TestPyPI is configured
           password: ${{ secrets.TESTPYPI_SECRET }}
           repository-url: https://test.pypi.org/legacy/
+          # skip_existing: true # Optional: prevent errors if version already exists
+
+      - name: Upload distribution files artifact
+        # Upload the built .whl and .tar.gz files from the 'dist' directory
+        uses: actions/upload-artifact@v4
+        with:
+          name: distribution-files
+          path: dist/
+          if-no-files-found: error
 
   verify-testpypi-contains-binary:
     needs: deploy-to-testpypi
-    name: ${{ matrix.os }} py${{ matrix.python-version }}
+    name: Verify ${{ matrix.os }} py${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11"]
-        os: [ubuntu-latest]
-        include:
-          - os: macos-11
-            python-version: "3.11"
-          - os: macos-latest
-            python-version: "3.11"
-          - os: windows-2019
-            python-version: "3.11"
-          - os: windows-latest
-            python-version: "3.11"
-          - os: ubuntu-20.04
-            python-version: "3.11"
+        # Test on latest stable/LTS versions of major OSs
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        # Verify against updated Python versions
+        python-version: ["3.10", "3.11", "3.12"]
 
     steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+      # No checkout needed if only installing and running basic import test
+      # - name: Checkout source
+      #   uses: actions/checkout@v4
 
-      - name: Set up python
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5 # Updated action version
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -106,45 +140,51 @@ jobs:
         run: python -m pip install --upgrade pip
 
       - name: Install package from TestPyPI
+        # Installs the specific version tagged for release from TestPyPI
+        # Uses --extra-index-url to find dependencies on PyPI if needed
         run: >-
-          python -m pip install
-          -i https://test.pypi.org/simple/
+          python -m pip install --upgrade
+          --index-url https://test.pypi.org/simple/
           --extra-index-url https://pypi.org/simple
-          --upgrade btrack
+          btrack=="${GITHUB_REF_NAME#v}" # Install exact version, extracting from tag (e.g., v1.2.3 -> 1.2.3)
 
-      - name: Create BayesianTracker instance
-        run: |-
+      - name: Verify installation by importing and instantiating
+        # Simple test: Can we import the package and instantiate the main class?
+        run: |
           import btrack
-          btrack.BayesianTracker()
+          print(f"Imported btrack version: {btrack.__version__}")
+          tracker = btrack.BayesianTracker()
+          print("Successfully created BayesianTracker instance.")
+        # Use python shell for multi-line Python script
         shell: python
 
-  deploy-to-pypi:
-    needs: verify-testpypi-contains-binary
-    runs-on: "ubuntu-latest"
-    steps:
-      - name: Checkout source
-        uses: actions/checkout@v3
+  # deploy-to-pypi:
+  #   needs: verify-testpypi-contains-binary # Depends on successful verification
+  #   runs-on: ubuntu-latest
+  #   environment: # Optional: Define environment for PyPI deployment
+  #     name: pypi
+  #     url: https://pypi.org/p/btrack
+  #   permissions: # Required for trusted publishing via pypa/gh-action-pypi-publish
+  #     id-token: write
+  #   # Optional: Add condition to prevent running on forks or if verification failed
+  #   # if: github.event_name == 'push' && github.repository_owner == 'your-username-or-org'
 
-      - name: Download artefacts
-        uses: actions/download-artifact@v4.1.7
-        with:
-            name: artefacts
-            path: btrack/libs
+  #   steps:
+  #     - name: Download distribution files artifact
+  #       # Download the .whl and .tar.gz files built during the TestPyPI deploy
+  #       uses: actions/download-artifact@v4 # Updated action version
+  #       with:
+  #         name: distribution-files
+  #         path: dist/ # Download directly into dist/ directory
 
-      - name: Set up python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-          cache: "pip"
-          cache-dependency-path: "pyproject.toml"
-
-      - name: Install dependencies
-        run: python -m pip install build
-
-      - name: Build distributions
-        run: python -m build
-
-      - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          password: ${{ secrets.PYPI_PASSWORD }}
+  #     - name: Publish package to PyPI
+  #       # Uses trusted publishing (id-token: write permission) if configured on PyPI
+  #       # Otherwise, uses the provided token/password secret.
+  #       uses: pypa/gh-action-pypi-publish@release/v1 # Use @release/v1 for latest v1.x
+  #       with:
+  #         # Use password for API token stored in secret PYPI_PASSWORD
+  #         # For trusted publishing, remove 'password' and ensure PyPI is configured
+  #         # Standard practice is to name the secret PYPI_API_TOKEN
+  #         password: ${{ secrets.PYPI_PASSWORD }}
+  #         # Repository URL defaults to PyPI, no need to set it explicitly
+  #         # skip_existing: true # Optional

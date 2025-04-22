@@ -56,7 +56,7 @@ jobs:
     # Use -latest labels for testing broader compatibility
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false # Keep running other jobs even if one fails
+      fail-fast: false # Keep running other jobs even if one fails  
       matrix:
         # Test on latest stable/LTS versions of major OSs
         os: [ubuntu-latest, windows-latest, macos-latest]

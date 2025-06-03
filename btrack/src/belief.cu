@@ -102,22 +102,6 @@ __global__ void track_CUDA(float *belief_matrix, const float *new_positions,
 
   // update the posterior for this track
   belief_matrix[j * num_tracks + i] = posterior;
-
-  // make a value which can be updated for all values of this
-  float update_value = posterior;
-
-  // loop through all of these except for the one we have updated
-  for (int obj = 0; obj < num_obj; obj++) {
-    if (obj != j) {
-
-      // update the belief matrix for all other tracks
-      update_value = update_value *
-                     (1. + (prior_assign - posterior) / (1. - prior_assign));
-    }
-  }
-
-  // update the belief matrix here
-  belief_matrix[j * num_tracks + i] = update_value;
 }
 
 // This is the interface to the outside world!
@@ -129,18 +113,20 @@ void cost_CUDA(float *belief_matrix, const float *new_positions,
   // allocate some device memory
   float *belief, *new_pos, *pred_pos;
   cudaMalloc(&belief, N * T * sizeof(float));
-  cudaMalloc(&new_pos, N * sizeof(float));
-  cudaMalloc(&pred_pos, T * sizeof(float));
+  cudaMalloc(&new_pos, N * 3 * sizeof(float));
+  cudaMalloc(&pred_pos, T * 6 * sizeof(float));
 
   // copy to the GPU
   cudaMemcpy(belief, belief_matrix, N * T * sizeof(float),
              cudaMemcpyHostToDevice);
-  cudaMemcpy(new_pos, new_positions, N * sizeof(float), cudaMemcpyHostToDevice);
-  cudaMemcpy(pred_pos, predicted_positions, T * sizeof(float),
+  cudaMemcpy(new_pos, new_positions, N * 3 * sizeof(float), cudaMemcpyHostToDevice);
+  cudaMemcpy(pred_pos, predicted_positions, T * 6 * sizeof(float),
              cudaMemcpyHostToDevice);
 
-  // execute the kernel
-  track_CUDA<<<T, N>>>(belief, new_pos, pred_pos, N, T, prob_not_assign,
+  // execute the kernel with proper 2D grid configuration
+  dim3 block(16, 16);
+  dim3 grid((N + block.x - 1) / block.x, (T + block.y - 1) / block.y);
+  track_CUDA<<<grid, block>>>(belief, new_pos, pred_pos, N, T, prob_not_assign,
                        accuracy);
 
   // get the belief matrix back
@@ -155,4 +141,6 @@ void cost_CUDA(float *belief_matrix, const float *new_positions,
 
 int main_CUDA(void) {
   // do nothing - we'll call this from elsewhere
+  return 0;
+
 }

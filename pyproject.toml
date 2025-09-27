@@ -170,20 +170,9 @@ overrides."tool.ruff.isort.section-order".inline_arrays = false
 
 [tool.tox]
 legacy_tox_ini = """
-    [gh-actions]
-    python =
-        3.9: py39
-        3.10: py310
-        3.11: py311
-
-    [gh-actions:env]
-    OS =
-        ubuntu-latest: linux
-        macos-latest: macos
-        windows-latest: windows
-
     [testenv]
     commands = pytest --cov --cov-report=xml
+    extras = dev
     deps =
         napari
         pyqt5
@@ -199,5 +188,5 @@ legacy_tox_ini = """
         XAUTHORITY
 
     [tox]
-    envlist = py{39,310,311}-{linux,macos,windows}
+    envlist = py{310,311,312,313}
 """

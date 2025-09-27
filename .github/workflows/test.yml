@@ -1,118 +1,138 @@
-# Updated: 2025-04-18
 name: Tests
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
     paths-ignore:
       - '**.md'
       - '**.rst'
 
 jobs:
-  build_wheels:
-    name: |-
-      Build wheels on ${{ matrix.os }} with
-      windows_cross_compile=${{ matrix.windows_cross_compile }}
-    # Using specific, current LTS/stable versions for build stability
-    # Check GitHub's documentation for the latest recommended runner versions
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false # Keep running other jobs even if one fails
-      matrix:
-        os: [ubuntu-22.04, macos-13] # Updated OS versions (e.g., ubuntu-22.04, macos-13/14)
-        windows_cross_compile: [false, true]
-        exclude:
-          # Exclude cross-compiling on macOS
-          - os: macos-13 # Updated OS version
-            windows_cross_compile: true
-
+  cross-compile-windows:
+    name: Cross-compile Windows libraries
+    runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies (Linux for cross-compile)
-        # Combine update and install; only run if cross-compiling on Linux
-        run: |
-          sudo apt-get update && sudo apt-get install -y --no-install-recommends mingw-w64
-        if: runner.os == 'Linux' && matrix.windows_cross_compile == true
-
       - name: Checkout repository
-        uses: actions/checkout@v4 # Updated action version
+        uses: actions/checkout@v5
 
-      - name: Build wheels
-        run: bash build.sh
-        env:
-          WINDOWS_CROSS_COMPILE: ${{ matrix.windows_cross_compile }}
-
-      - name: Upload artefacts
-        uses: actions/upload-artifact@v4 # Updated action version
+      - name: Build Windows libraries
+        uses: ./.github/actions/build-btrack
         with:
-          name: artefacts-${{ matrix.os }}-${{ matrix.windows_cross_compile }} # Make artifact name more specific
-          path: btrack/libs/*
-          if-no-files-found: error # Good practice: fail if files are missing
+          cross-compile-windows: true
+          upload-artifacts: true
 
-  test:
-    needs: build_wheels
-    name: Test ${{ matrix.os }} py${{ matrix.python-version }}
-    # Use -latest labels for testing broader compatibility
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false # Keep running other jobs even if one fails
-      matrix:
-        # Test on latest stable/LTS versions of major OSs
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        # Update Python versions for 2025 (3.9 EOL Oct 2025, 3.10 security fixes only)
-        python-version: ["3.10", "3.11", "3.12"] # Added 3.12, removed 3.9
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4 # Updated action version
-
-      - name: Determine artifact name to download
-        id: artifact_info
-        # Need to figure out which build artifact corresponds to the current OS
-        # This logic assumes Linux builds produce windows cross-compiled artifacts
-        # And native builds match the OS.
-        shell: bash
+      - name: Verify Windows libraries
         run: |
-          artifact_name="artefacts-${{ matrix.os }}-false" # Default: native build artifact
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-             # Assuming windows artifacts were cross-compiled on Linux
-             artifact_name="artefacts-ubuntu-22.04-true" # Match Linux cross-compile build
-          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-             artifact_name="artefacts-macos-13-false" # Match macOS native build
-          elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
-             artifact_name="artefacts-ubuntu-22.04-false" # Match Linux native build
+          echo "Windows libraries built:"
+          ls -la btrack/libs/
+
+          # Check for DLL files (case insensitive)
+          dll_count=$(find btrack/libs/ -type f \( -iname '*.dll' \) | wc -l)
+          if [ "$dll_count" -eq 0 ]; then
+            echo "ERROR: No Windows DLL files found!"
+            exit 1
           fi
-          echo "artifact_name=$artifact_name" >> $GITHUB_OUTPUT
+          echo "✓ Found $dll_count Windows DLL file(s)"
 
-      - name: Download artefacts
-        uses: actions/download-artifact@v4 # Updated action version
-        with:
-          name: ${{ steps.artifact_info.outputs.artifact_name }}
-          path: btrack/libs
+  test-unix:
+    name: Test ${{ matrix.os }} - Python ${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5 # Updated action version
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
-          cache-dependency-path: 'pyproject.toml' # Or your dependency file
+          cache-dependency-path: 'pyproject.toml'
 
-      # Check if tlambert03/setup-qt-libs is still maintained/needed or if a newer version exists
+      - name: Build btrack libraries
+        uses: ./.github/actions/build-btrack
+        with:
+          upload-artifacts: false
+
       - name: Setup Qt Libs (Linux)
+        if: runner.os == 'Linux'
         uses: tlambert03/setup-qt-libs@v1
-        if: runner.os == 'Linux' # Only run on Linux if needed for Qt
 
-      - name: Install test dependencies
-        run: python -m pip install --upgrade pip tox tox-gh-actions
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+          # Install napari and testing dependencies
+          python -m pip install napari pyqt5 pytest-cov pytest-qt
+          # Linux-specific dependencies
+          if [ "${{ runner.os }}" = "Linux" ]; then
+            python -m pip install pytest-xvfb
+          fi
 
-      - name: Test with tox
-        # Pass Python version to tox if needed, OS is already available via RUNNER_OS env var
-        run: tox run
+      - name: Run tests
+        run: pytest --cov --cov-report=xml
         env:
-          # Pass Python version explicitly if tox needs it via env var
-          PYTHON_VERSION: ${{ matrix.python-version }}
-          # OS env var provided by runner: RUNNER_OS (e.g., 'Linux', 'Windows', 'macOS')
+          CI: true
+          GITHUB_ACTIONS: true
+          # Windows-only: Force Qt to render windows offscreen to avoid OpenGL context issues
+          QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'offscreen' || '' }}
+          # Force software rendering to avoid OpenGL context issues
+          QT_OPENGL: software
+          # Disable napari GUI in headless environment
+          NAPARI_APPLICATION_IPY_INTERACTIVE: false
 
-      - name: Upload code coverage
-        uses: codecov/codecov-action@v4 # Updated action version
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+
+  test-windows:
+    name: Test Windows - Python ${{ matrix.python-version }}
+    runs-on: windows-latest
+    needs: cross-compile-windows  # Only run if cross-compilation succeeds
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: 'pyproject.toml'
+
+      - name: Download Windows libraries
+        uses: actions/download-artifact@v4
+        with:
+          name: libs-windows-cross
+          path: btrack/libs
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+          python -m pip install napari pyqt5 pytest-cov pytest-qt
+
+      - name: Run tests
+        run: pytest --cov --cov-report=xml
+        env:
+          CI: true
+          GITHUB_ACTIONS: true
+          # Windows-only: Force Qt to render windows offscreen to avoid OpenGL context issues
+          QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'offscreen' || '' }}
+          # Force software rendering to avoid OpenGL context issues
+          QT_OPENGL: software
+          # Disable napari GUI in headless environment
+          NAPARI_APPLICATION_IPY_INTERACTIVE: false
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4

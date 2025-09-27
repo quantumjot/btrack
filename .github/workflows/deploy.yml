@@ -53,14 +53,14 @@ jobs:
       - name: Organize libraries
         run: |
           mkdir -p btrack/libs
-          find _libs/ -type f \( -name '*.dll' -o -name '*.so' -o -name '*.dylib' \) -exec cp {} btrack/libs/ \;
+          find _libs/ -type f \( -name '*.dll' -o -name '*.DLL' -o -name '*.so' -o -name '*.dylib' \) -exec cp {} btrack/libs/ \;
           echo "Libraries collected:"
           ls -la btrack/libs/
 
           # Verify we have libraries for all platforms
           if [ ! -f btrack/libs/*.so ]; then echo "Missing Linux libraries"; exit 1; fi
           if [ ! -f btrack/libs/*.dylib ]; then echo "Missing macOS libraries"; exit 1; fi
-          if [ ! -f btrack/libs/*.dll ]; then echo "Missing Windows libraries"; exit 1; fi
+          if ! ls btrack/libs/*.dll btrack/libs/*.DLL 2>/dev/null; then echo "Missing Windows libraries"; exit 1; fi
 
       - name: Install build dependencies
         run: python -m pip install --upgrade pip build

@@ -50,6 +50,14 @@ jobs:
           path: _libs
           merge-multiple: true
 
+      - name: Extract and verify version
+        id: version
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Tag: $GITHUB_REF_NAME"
+          echo "Extracted version: $VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Organize libraries
         run: |
           mkdir -p btrack/libs
@@ -74,15 +82,26 @@ jobs:
       - name: Build distributions
         run: python -m build
 
+      - name: Verify distributions
+        run: |
+          echo "Built distributions:"
+          ls -la dist/
+          echo "\nWheel contents:"
+          python -m zipfile -l dist/*.whl | head -20
+          echo "\nSDist contents:"
+          tar -tzf dist/*.tar.gz | head -20
+
       - name: Deploy to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.TESTPYPI_SECRET }}
           repository-url: https://test.pypi.org/legacy/
+          verbose: true
+          print-hash: true
 
       - name: Test TestPyPI installation
         run: |
-          VERSION="${GITHUB_REF_NAME#v}"
+          VERSION="${{ steps.version.outputs.version }}"
           echo "Testing version: $VERSION"
 
           # Install from TestPyPI

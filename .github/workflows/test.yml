@@ -80,8 +80,8 @@ jobs:
         env:
           CI: true
           GITHUB_ACTIONS: true
-          # Force Qt to render windows offscreen (headless testing)
-          QT_QPA_PLATFORM: offscreen
+          # Windows-only: Force Qt to render windows offscreen to avoid OpenGL context issues
+          QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'offscreen' || '' }}
           # Force software rendering to avoid OpenGL context issues
           QT_OPENGL: software
           # Disable napari GUI in headless environment
@@ -127,8 +127,8 @@ jobs:
         env:
           CI: true
           GITHUB_ACTIONS: true
-          # Force Qt to render windows offscreen (headless testing)
-          QT_QPA_PLATFORM: offscreen
+          # Windows-only: Force Qt to render windows offscreen to avoid OpenGL context issues
+          QT_QPA_PLATFORM: ${{ runner.os == 'Windows' && 'offscreen' || '' }}
           # Force software rendering to avoid OpenGL context issues
           QT_OPENGL: software
           # Disable napari GUI in headless environment

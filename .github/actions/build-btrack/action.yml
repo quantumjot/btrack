@@ -1,0 +1,55 @@
+name: 'Build btrack'
+description: 'Build btrack C++ libraries for specified platform'
+inputs:
+  cross-compile-windows:
+    description: 'Cross-compile Windows libraries on Linux'
+    required: false
+    default: 'false'
+  upload-artifacts:
+    description: 'Upload build artifacts'
+    required: false
+    default: 'true'
+
+outputs:
+  artifact-name:
+    description: 'Name of uploaded artifact'
+    value: ${{ steps.artifact-info.outputs.name }}
+  libs-path:
+    description: 'Path to built libraries'
+    value: 'btrack/libs'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install cross-compilation dependencies
+      if: runner.os == 'Linux' && inputs.cross-compile-windows == 'true'
+      shell: bash
+      run: |
+        sudo apt-get update && sudo apt-get install -y --no-install-recommends mingw-w64
+
+    - name: Build libraries
+      shell: bash
+      run: bash build.sh
+      env:
+        WINDOWS_CROSS_COMPILE: ${{ inputs.cross-compile-windows }}
+
+    - name: Set artifact info
+      id: artifact-info
+      shell: bash
+      run: |
+        if [[ "${{ inputs.cross-compile-windows }}" == "true" ]]; then
+          name="libs-windows-cross"
+        else
+          name="libs-${{ runner.os }}-native"
+        fi
+        echo "name=$name" >> $GITHUB_OUTPUT
+        echo "Artifact name: $name"
+
+    - name: Upload artifacts
+      if: inputs.upload-artifacts == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.artifact-info.outputs.name }}
+        path: btrack/libs/*
+        if-no-files-found: error
+        retention-days: 7

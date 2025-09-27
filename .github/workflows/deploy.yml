@@ -118,7 +118,7 @@ jobs:
           print('✓ TestPyPI deployment verified')
           "
 
-      # - name: Deploy to PyPI
-      #   if: github.repository == 'quantumjot/btrack'
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   # Uses trusted publishing - no password needed
+      - name: Deploy to PyPI
+        if: github.repository == 'quantumjot/btrack'
+        uses: pypa/gh-action-pypi-publish@release/v1
+        # Uses trusted publishing - no password needed

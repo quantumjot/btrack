@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import os
+import sys
 from unittest.mock import patch
 
 import pytest
@@ -16,6 +18,10 @@ OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" and os.getenv("CI") == "true",
+    reason="OpenGL context not available on Windows CI runners",
+)
 def test_add_widget(make_napari_viewer):
     """Checks that the track widget can be added inside a dock widget."""
 
@@ -122,6 +128,10 @@ def test_reset_button(track_widget):
     assert new_optimise == original_optimise
 
 
+@pytest.mark.skipif(
+    sys.platform == "win32" and os.getenv("CI") == "true",
+    reason="OpenGL context not available on Windows CI runners",
+)
 def test_run_button(track_widget, simplistic_tracker_outputs):
     """Tests that clicking the run button calls run_tracker,
     and that the napari viewer has an additional tracks layer after running.

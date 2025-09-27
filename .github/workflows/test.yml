@@ -122,6 +122,11 @@ jobs:
         env:
           CI: true
           GITHUB_ACTIONS: true
+          # Ensure consistent headless behavior across platforms
+          # Force software rendering on Windows to avoid OpenGL context issues
+          QT_OPENGL: software
+          # Disable napari GUI in headless environment
+          NAPARI_APPLICATION_IPY_INTERACTIVE: false
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

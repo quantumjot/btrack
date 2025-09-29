@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from btrack import constants
 
+from ._geff import export_GEFF
 from .hdf import HDF5FileHandler
 from .utils import check_track_type
 
@@ -52,6 +53,8 @@ def export_delegator(
         export_CSV(filename, tracker.tracks, obj_type=obj_type)
     elif ext in (".hdf", ".hdf5", ".h5"):
         _export_HDF(filename, tracker, obj_type=obj_type, filter_by=filter_by)
+    elif ext in (".geff", ".zarr"):
+        export_GEFF(filename, tracker.tracks, obj_type=obj_type)
     else:
         logger.error(f"Export file format {ext} not recognized.")
 

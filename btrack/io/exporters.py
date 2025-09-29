@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-import csv
-import logging
-import os
-from pathlib import Path
-from typing import TYPE_CHECKING, Optional
-
-import numpy as np
-
 from btrack import constants
 
 from .hdf import HDF5FileHandler
 from .utils import check_track_type
+
+import csv
+import logging
+import os
+from pathlib import Path
+from typing import TYPE_CHECKING
+
+import numpy as np
 
 if TYPE_CHECKING:
     from btrack import BayesianTracker
@@ -23,8 +23,8 @@ logger = logging.getLogger(__name__)
 def export_delegator(
     filename: os.PathLike,
     tracker: BayesianTracker,
-    obj_type: Optional[str] = None,
-    filter_by: Optional[str] = None,
+    obj_type: str | None = None,
+    filter_by: str | None = None,
 ) -> None:
     """Export data from the tracker using the appropriate exporter.
 
@@ -45,7 +45,7 @@ def export_delegator(
     -----
     This uses the appropriate exporter dependent on the given file extension.
     """
-    export_dir, export_fn = os.path.split(filename)
+    _export_dir, _export_fn = os.path.split(filename)
     _, ext = os.path.splitext(filename)
 
     if ext == ".csv":
@@ -60,7 +60,7 @@ def export_CSV(
     filename: os.PathLike,
     tracks: list,
     properties: list = constants.DEFAULT_EXPORT_PROPERTIES,
-    obj_type: Optional[str] = None,
+    obj_type: str | None = None,
 ):
     """Export the track data as a simple CSV file.
 
@@ -115,8 +115,8 @@ def export_LBEP(filename: os.PathLike, tracks: list):
 def _export_HDF(
     filename: os.PathLike,
     tracker,
-    obj_type: Optional[str] = None,
-    filter_by: Optional[str] = None,
+    obj_type: str | None = None,
+    filter_by: str | None = None,
 ):
     """Export to HDF."""
 

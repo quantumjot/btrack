@@ -74,7 +74,6 @@ run = {branch = true, parallel = true, source = [
 ]}
 paths.source = [
     "btrack",
-    ".tox*/*/lib/python*/site-packages",
 ]
 
 [tool.pytest.ini_options]
@@ -86,6 +85,9 @@ testpaths = [
 [tool.ruff]
 fix = true
 force-exclude = true
+target-version = "py312"
+
+[tool.ruff.lint]
 ignore = [
     "B905", # python>=3.10
     "EM101",
@@ -93,6 +95,7 @@ ignore = [
     "N802",
     "N803",
     "N806",
+    "PLC0206", # dictionary iteration without .items()
     "S101",
     "UP006",
     "UP007",
@@ -100,6 +103,8 @@ ignore = [
 ]
 per-file-ignores = {"__init__.py" = [
     "F401", # unused-import
+], "btrack/btypes.py" = [
+    "PLC0415", # import should be at top-level (conditional pandas import)
 ], "test_*.py" = [
     "S101", # use of 'assert'
 ]}
@@ -130,24 +135,29 @@ select = [
     "W",
     "YTT",
 ]
-target-version = "py39"
-isort.known-first-party = [
+
+[tool.ruff.lint.isort]
+known-first-party = [
     "black",
 ]
-isort.section-order = [
+section-order = [
     "future",
-    "standard-library",
-    "third-party",
-    "napari",
     "first-party",
     "local-folder",
+    "napari",
+    "standard-library",
+    "third-party",
 ]
-isort.sections.napari = [
+sections.napari = [
     "magicgui",
     "napari",
 ]
-mccabe.max-complexity = 18
-pep8-naming.classmethod-decorators = [
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.pep8-naming]
+classmethod-decorators = [
     "classmethod",
     "pydantic.root_validator",
     "pydantic.validator",
@@ -168,26 +178,3 @@ overrides."project.classifiers".inline_arrays = false
 overrides."tool.black.target-version".inline_arrays = false
 overrides."tool.coverage.paths.source".inline_arrays = false
 overrides."tool.ruff.isort.section-order".inline_arrays = false
-
-[tool.tox]
-legacy_tox_ini = """
-    [testenv]
-    commands = pytest --cov --cov-report=xml
-    extras = dev
-    deps =
-        napari
-        pyqt5
-        pytest-cov
-        pytest-qt
-        pytest-xvfb ; sys_platform == 'linux'
-    passenv =
-        CI
-        DISPLAY
-        GITHUB_ACTIONS
-        NUMPY_EXPERIMENTAL_ARRAY_FUNCTION
-        PYVISTA_OFF_SCREEN
-        XAUTHORITY
-
-    [tox]
-    envlist = py{310,311,312,313}
-"""

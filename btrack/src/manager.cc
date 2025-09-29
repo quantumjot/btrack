@@ -428,7 +428,7 @@ void TrackManager::build_trees(void) {
           } // has_children
 
         } // queue empty
-      }   // root has_children
+      } // root has_children
 
       // push this onto the vector of trees
       m_trees.push_back(root_node);

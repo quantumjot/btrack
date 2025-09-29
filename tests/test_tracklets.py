@@ -1,11 +1,11 @@
-import numpy as np
-import pytest
-
 from ._utils import (
     create_test_object,
     create_test_properties,
     create_test_tracklet,
 )
+
+import numpy as np
+import pytest
 
 
 def test_create_object():
@@ -28,7 +28,7 @@ def test_object_to_dict():
 @pytest.mark.parametrize("properties", [{}, create_test_properties()])
 def test_create_object_with_properties(properties: dict):
     """Test an object with some properties."""
-    obj, data = create_test_object()
+    obj, _data = create_test_object()
     obj.properties = properties
     for k, v in properties.items():
         np.testing.assert_equal(obj.properties[k], v)
@@ -64,7 +64,7 @@ def test_object_feature_values():
 
 def test_object_incorrect_features():
     """Test creating object and setting tracking features."""
-    obj, data = create_test_object()
+    obj, _data = create_test_object()
     assert obj.n_features == 0
     with pytest.raises(KeyError):
         obj.set_features(
@@ -79,7 +79,7 @@ def test_object_incorrect_features():
 def test_create_tracklet(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     data matches the data used for creation."""
-    tracklet, data, properties, track_ID = create_test_tracklet(track_len)
+    tracklet, data, _properties, track_ID = create_test_tracklet(track_len)
     assert len(tracklet) == len(data)
 
     # now check that the track data is correct
@@ -94,7 +94,7 @@ def test_create_tracklet(track_len: int):
 def test_create_tracklet_with_properties(track_len: int):
     """Test that a track is correctly instantiated, and that the stored
     properties match the data used for creation."""
-    tracklet, data, properties, track_ID = create_test_tracklet(track_len)
+    tracklet, _data, properties, _track_ID = create_test_tracklet(track_len)
     t_properties = tracklet.properties
 
     for k, v in properties.items():
@@ -105,7 +105,7 @@ def test_tracklet_to_dict():
     """Test that a tracklet can be converted to a dictionary using the built-in
     method."""
     track_len = 10
-    tracklet, data, properties, track_ID = create_test_tracklet(track_len)
+    tracklet, data, _properties, track_ID = create_test_tracklet(track_len)
     tracklet_as_dict = tracklet.to_dict()
     # now check that the track data is correct
     assert track_ID == tracklet_as_dict["ID"]

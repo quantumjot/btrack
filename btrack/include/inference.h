@@ -26,8 +26,8 @@
 
 class ObjectModel {
 public:
-  ObjectModel(){};
-  ~ObjectModel(){};
+  ObjectModel() {};
+  ~ObjectModel() {};
 
   // initialise with transition, emission and start matrices
   ObjectModel(const Eigen::MatrixXd &transition,

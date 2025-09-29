@@ -18,7 +18,7 @@ import pytz
 
 sys.path.insert(0, os.path.abspath(".."))
 
-import btrack  # noqa: E402
+import btrack
 
 # -- Project information -----------------------------------------------------
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
+from btrack import btypes
+
 import csv
 import os
-
-from btrack import btypes
 
 
 def import_CSV(filename: os.PathLike) -> list[btypes.PyTrackObject]:

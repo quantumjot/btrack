@@ -1,12 +1,12 @@
+import btrack
+import btrack.datasets
+
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 import numpy as np
 from numpy import typing as npt
 from skimage.measure import label
-
-import btrack
-import btrack.datasets
 
 CONFIG_FILE = btrack.datasets.cell_config()
 
@@ -16,7 +16,7 @@ RANDOM_SEED = 1234
 
 
 def create_test_object(
-    test_id: Optional[int] = None,
+    test_id: int | None = None,
     ndim: int = 3,
 ) -> tuple[btrack.btypes.PyTrackObject, dict[str, Any]]:
     """Create a test object."""
@@ -54,7 +54,7 @@ def create_test_properties() -> dict:
 
 def create_test_tracklet(
     track_len: int,
-    track_id: Optional[int] = None,
+    track_id: int | None = None,
     ndim: int = 3,
 ) -> tuple[btrack.btypes.Tracklet, list[btrack.btypes.PyTrackObject], dict, int]:
     """Create a test track."""
@@ -103,7 +103,7 @@ def create_test_image(
     binsize: int = 5,
     *,
     binary: bool = True,
-) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
+) -> tuple[npt.NDArray, npt.NDArray | None]:
     """Make a test image that ensures that no two pixels are in contact."""
 
     rng = np.random.default_rng(seed=RANDOM_SEED)
@@ -122,9 +122,9 @@ def create_test_image(
         _img = np.zeros((binsize,) * ndim, dtype=np.uint16)
         _coord = tuple(rng.integers(1, binsize - 1, size=(ndim,)).tolist())
         _img[_coord] = 1
-        assert (
-            np.sum(_img) == 1
-        ), "Test image voxel contains incorrect number of objects."
+        assert np.sum(_img) == 1, (
+            "Test image voxel contains incorrect number of objects."
+        )
         return _img, _coord
 
     # now we update nobj grid positions with a sample
@@ -150,9 +150,9 @@ def create_test_image(
         np.lexsort([centroids_sorted[:, dim] for dim in range(ndim)][::-1])
     ]
 
-    assert (
-        centroids_sorted.shape[0] == nobj
-    ), "Number of created centroids != requested in test image."
+    assert centroids_sorted.shape[0] == nobj, (
+        "Number of created centroids != requested in test image."
+    )
 
     vals = np.unique(img)
     assert np.max(vals) == 1 if binary else nobj, "Test image labels are incorrect."

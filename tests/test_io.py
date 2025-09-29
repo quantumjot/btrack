@@ -1,9 +1,3 @@
-import os
-from pathlib import Path
-
-import numpy as np
-import pytest
-
 import btrack
 
 from ._utils import (
@@ -12,6 +6,12 @@ from ._utils import (
     full_tracker_example,
     simple_tracker_example,
 )
+
+import os
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 
 def test_hdf5_write(hdf5_file_path, test_objects):

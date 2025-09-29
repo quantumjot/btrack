@@ -11,9 +11,9 @@ if TYPE_CHECKING:
     import btrack.napari.widgets
     from btrack.napari.config import Sigmas, UnscaledTrackerConfig
 
-from qtpy import QtCore
-
 import btrack.napari.constants
+
+from qtpy import QtCore
 
 
 def update_config_from_widgets(

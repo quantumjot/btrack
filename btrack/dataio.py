@@ -1,8 +1,7 @@
 import warnings
 
 warnings.warn(  # noqa: B028
-    "`btrack.dataio` has been deprecated. Please use `btrack.io` subpackage "
-    "instead.",
+    "`btrack.dataio` has been deprecated. Please use `btrack.io` subpackage instead.",
     # DeprecationWarning,
 )
 

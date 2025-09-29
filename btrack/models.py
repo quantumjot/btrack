@@ -1,13 +1,11 @@
-from typing import Optional
+from . import constants
+from .optimise.hypothesis import H_TYPES, PyHypothesisParams
 
 import numpy as np
 from numpy import typing as npt
 from pydantic import BaseModel, field_validator, model_validator
 
-from . import constants
-from .optimise.hypothesis import H_TYPES, PyHypothesisParams
-
-__all__ = ["MotionModel", "ObjectModel", "HypothesisModel"]
+__all__ = ["HypothesisModel", "MotionModel", "ObjectModel"]
 
 
 def _check_symmetric(x: npt.NDArray, rtol: float = 1e-5, atol: float = 1e-8) -> bool:
@@ -83,8 +81,8 @@ class MotionModel(BaseModel):
     H: npt.NDArray
     P: npt.NDArray
     R: npt.NDArray
-    G: Optional[npt.NDArray] = None
-    Q: Optional[npt.NDArray] = None
+    G: npt.NDArray | None = None
+    Q: npt.NDArray | None = None
     dt: float = 1.0
     accuracy: float = 2.0
     max_lost: int = constants.MAX_LOST

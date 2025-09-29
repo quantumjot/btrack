@@ -17,10 +17,10 @@ __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
 
+from btrack import constants
+
 import ctypes
 from typing import ClassVar
-
-from btrack import constants
 
 H_TYPES = [
     "P_FP",

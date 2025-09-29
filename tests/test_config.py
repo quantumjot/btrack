@@ -1,13 +1,13 @@
+import btrack
+
+from ._utils import CONFIG_FILE, RANDOM_SEED
+
 from pathlib import Path
 from typing import Union
 
 import numpy as np
 import pytest
 from pydantic import BaseModel
-
-import btrack
-
-from ._utils import CONFIG_FILE, RANDOM_SEED
 
 
 def _random_config() -> dict:

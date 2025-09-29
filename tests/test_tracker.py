@@ -1,13 +1,13 @@
-import json
-
-import numpy as np
-import pytest
-
 from ._utils import (
     TEST_DATA_PATH,
     full_tracker_example,
     simple_tracker_example,
 )
+
+import json
+
+import numpy as np
+import pytest
 
 
 def _gt_object_hook(d):

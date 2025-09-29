@@ -6,6 +6,10 @@ the GEFF format for exchanging spatial graph data.
 
 from __future__ import annotations
 
+from btrack import btypes
+
+from .utils import check_track_type
+
 import logging
 import os
 import shutil
@@ -14,17 +18,15 @@ from typing import TYPE_CHECKING
 import networkx as nx
 import numpy as np
 
-from btrack import btypes
-
-from .utils import check_track_type
-
 if TYPE_CHECKING:
     try:
-        import geff
-
         from btrack import BayesianTracker
+
+        import geff
+        from geff import GeffMetadata
     except ImportError:
         geff = None
+        GeffMetadata = None
         BayesianTracker = None
 
 # get the logger instance
@@ -38,7 +40,7 @@ COORDINATE_Z_INDEX = 2
 def _validate_geff_prerequisites(filename: os.PathLike):
     """Validate GEFF import prerequisites."""
     try:
-        import geff  # noqa: F401
+        import geff  # noqa: F401, PLC0415
     except ImportError as e:
         msg = (
             "GEFF library is required for importing GEFF files. "
@@ -51,18 +53,26 @@ def _validate_geff_prerequisites(filename: os.PathLike):
 
 
 def _read_geff_graph(filename: os.PathLike):
-    """Read GEFF file and return graph."""
-    import geff
+    """Read GEFF file and return graph and metadata.
+
+    Returns
+    -------
+    graph : nx.Graph
+        The NetworkX graph from the GEFF file.
+    metadata : dict
+        The metadata from the GEFF file.
+    """
+    import geff  # noqa: PLC0415
 
     try:
-        graph, _metadata = geff.read(filename, backend="networkx")
+        graph, metadata = geff.read(filename, backend="networkx")
     except Exception as e:
         raise ValueError(f"Failed to read GEFF file {filename}: {e}") from e
 
     if not isinstance(graph, nx.Graph):
         raise ValueError(f"Expected NetworkX graph, got {type(graph)}")
 
-    return graph
+    return graph, metadata
 
 
 def _extract_position_coordinates(position, node_id):
@@ -89,21 +99,46 @@ def _extract_position_coordinates(position, node_id):
     return x, y, z
 
 
-def _extract_node_properties(node_data, node_id):
-    """Extract properties from node data."""
+def _extract_node_properties(node_data, node_id, id_mapping=None):
+    """Extract properties from node data.
+
+    Parameters
+    ----------
+    node_data : dict
+        Node attributes from the graph.
+    node_id : int
+        The node ID in the graph (positive).
+    id_mapping : dict, optional
+        Mapping from positive node IDs to original negative IDs (if any).
+
+    Returns
+    -------
+    obj_id : int
+        The object ID (may be negative for dummies).
+    t : int
+        Time frame.
+    label : int
+        Object label.
+    dummy : bool
+        Whether this is a dummy object.
+    """
     # Extract time
     t = node_data.get("t", node_data.get("time", 0))
     if isinstance(t, (list, np.ndarray)) and len(t) > 0:
         t = t[0]
     t = int(t)
 
-    # Extract ID
+    # Extract ID - check if it was remapped from a negative ID
     obj_id = node_data.get("ID", node_data.get("id", node_id))
     if isinstance(obj_id, str):
         try:
             obj_id = int(obj_id)
         except ValueError:
             obj_id = hash(obj_id) % (2**31)
+
+    # If we have an ID mapping and this node was remapped, restore the original ID
+    if id_mapping and node_id in id_mapping:
+        obj_id = id_mapping[node_id]
 
     # Extract label
     label = node_data.get("label", 0)
@@ -118,15 +153,30 @@ def _extract_node_properties(node_data, node_id):
     return int(obj_id), t, int(label), bool(dummy)
 
 
-def _create_track_object_from_node(node_id, node_data):
-    """Create a PyTrackObject from node data."""
+def _create_track_object_from_node(node_id, node_data, id_mapping=None):
+    """Create a PyTrackObject from node data.
+
+    Parameters
+    ----------
+    node_id : int
+        The node ID in the graph.
+    node_data : dict
+        Node attributes.
+    id_mapping : dict, optional
+        Mapping from positive node IDs to original negative IDs.
+
+    Returns
+    -------
+    obj : PyTrackObject or None
+        The track object, or None if creation failed.
+    """
     position = node_data.get("position")
     coords = _extract_position_coordinates(position, node_id)
     if coords is None:
         return None
 
     x, y, z = coords
-    obj_id, t, label, dummy = _extract_node_properties(node_data, node_id)
+    obj_id, t, label, dummy = _extract_node_properties(node_data, node_id, id_mapping)
 
     data_dict = {
         "ID": obj_id,
@@ -182,16 +232,24 @@ def import_GEFF(filename: os.PathLike) -> list[btypes.PyTrackObject]:
     _validate_geff_prerequisites(filename)
     logger.info(f"Reading GEFF file: {filename}")
 
-    graph = _read_geff_graph(filename)
+    graph, metadata = _read_geff_graph(filename)
     logger.info(
         f"Loaded graph with {graph.number_of_nodes()} nodes and "
         f"{graph.number_of_edges()} edges"
     )
 
+    # Extract ID mapping from metadata if available
+    id_mapping = None
+    if metadata and hasattr(metadata, "extra") and "btrack" in metadata.extra:
+        btrack_meta = metadata.extra["btrack"]
+        if "id_mapping" in btrack_meta:
+            id_mapping = {int(k): int(v) for k, v in btrack_meta["id_mapping"].items()}
+            logger.info(f"Loaded ID mapping for {len(id_mapping)} remapped IDs")
+
     objects = []
     for node_id, node_data in graph.nodes(data=True):
         try:
-            obj = _create_track_object_from_node(node_id, node_data)
+            obj = _create_track_object_from_node(node_id, node_data, id_mapping)
             if obj is not None:
                 objects.append(obj)
         except Exception as e:
@@ -206,9 +264,24 @@ def import_GEFF(filename: os.PathLike) -> list[btypes.PyTrackObject]:
     return objects
 
 
-def _create_track_object_with_track_info(node_id, node_data):
-    """Create a PyTrackObject from node data with track info."""
-    obj = _create_track_object_from_node(node_id, node_data)
+def _create_track_object_with_track_info(node_id, node_data, id_mapping=None):
+    """Create a PyTrackObject from node data with track info.
+
+    Parameters
+    ----------
+    node_id : int
+        The node ID in the graph.
+    node_data : dict
+        Node attributes.
+    id_mapping : dict, optional
+        Mapping from positive node IDs to original negative IDs.
+
+    Returns
+    -------
+    node_info : dict or None
+        Dictionary with object, track_id, and time, or None if creation failed.
+    """
+    obj = _create_track_object_from_node(node_id, node_data, id_mapping)
     if obj is None:
         return None
 
@@ -297,17 +370,27 @@ def import_GEFF_tracks(filename: os.PathLike) -> list[btypes.Tracklet]:
     _validate_geff_prerequisites(filename)
     logger.info(f"Reading GEFF tracks from file: {filename}")
 
-    graph = _read_geff_graph(filename)
+    graph, metadata = _read_geff_graph(filename)
     logger.info(
         f"Loaded graph with {graph.number_of_nodes()} nodes and "
         f"{graph.number_of_edges()} edges"
     )
 
+    # Extract ID mapping from metadata if available
+    id_mapping = None
+    if metadata and hasattr(metadata, "extra") and "btrack" in metadata.extra:
+        btrack_meta = metadata.extra["btrack"]
+        if "id_mapping" in btrack_meta:
+            id_mapping = {int(k): int(v) for k, v in btrack_meta["id_mapping"].items()}
+            logger.info(f"Loaded ID mapping for {len(id_mapping)} remapped IDs")
+
     # Convert all nodes to PyTrackObject instances with track info
     node_objects = {}
     for node_id, node_data in graph.nodes(data=True):
         try:
-            node_info = _create_track_object_with_track_info(node_id, node_data)
+            node_info = _create_track_object_with_track_info(
+                node_id, node_data, id_mapping
+            )
             if node_info is not None:
                 node_objects[node_id] = node_info
         except Exception as e:
@@ -329,8 +412,64 @@ def import_GEFF_tracks(filename: os.PathLike) -> list[btypes.Tracklet]:
     return tracks
 
 
+def _create_id_mapping(tracks):
+    """Create a mapping from original IDs (including negative) to positive node IDs.
+
+    Parameters
+    ----------
+    tracks : list
+        List of Tracklet objects.
+
+    Returns
+    -------
+    id_mapping : dict
+        Mapping from original IDs to positive node IDs for GEFF compatibility.
+    """
+    # Collect all unique object IDs from tracks
+    all_ids = set()
+    for track in tracks:
+        for obj in track._data:
+            all_ids.add(int(obj.ID))
+
+    # Create mapping: negative IDs and positive IDs both get mapped to positive
+    # values. We need to ensure no collisions between mapped negative IDs and
+    # existing positive IDs.
+    max_positive_id = max((obj_id for obj_id in all_ids if obj_id >= 0), default=-1)
+
+    id_mapping = {}
+    next_available_id = max_positive_id + 1
+
+    for obj_id in sorted(all_ids):
+        if obj_id >= 0:
+            # Positive IDs map to themselves
+            id_mapping[obj_id] = obj_id
+        else:
+            # Negative IDs map to new positive IDs
+            id_mapping[obj_id] = next_available_id
+            next_available_id += 1
+
+    return id_mapping
+
+
 def _create_graph_from_tracks(tracks, axis_names, axis_units):
-    """Create NetworkX graph from tracks data."""
+    """Create NetworkX graph from tracks data.
+
+    Parameters
+    ----------
+    tracks : list
+        List of Tracklet objects.
+    axis_names : list
+        Names for spatial axes.
+    axis_units : list
+        Units for spatial axes.
+
+    Returns
+    -------
+    graph : nx.DiGraph
+        NetworkX directed graph.
+    id_mapping : dict
+        Mapping from original IDs to positive node IDs.
+    """
     graph = nx.DiGraph()
 
     # Set default axis information
@@ -339,20 +478,36 @@ def _create_graph_from_tracks(tracks, axis_names, axis_units):
     if axis_units is None:
         axis_units = [None, None, None, None]
 
+    # Create ID mapping to handle negative IDs
+    id_mapping = _create_id_mapping(tracks)
+
     # Convert tracks to graph nodes and edges
     for track in tracks:
-        _add_track_to_graph(graph, track, tracks)
+        _add_track_to_graph(graph, track, tracks, id_mapping)
 
-    return graph
+    return graph, id_mapping
 
 
-def _add_track_to_graph(graph, track, all_tracks):
-    """Add a single track to the graph with nodes and edges."""
+def _add_track_to_graph(graph, track, all_tracks, id_mapping):
+    """Add a single track to the graph with nodes and edges.
+
+    Parameters
+    ----------
+    graph : nx.DiGraph
+        The graph to add nodes and edges to.
+    track : Tracklet
+        The track to add.
+    all_tracks : list
+        All tracks for lineage edge creation.
+    id_mapping : dict
+        Mapping from original IDs (including negative) to positive node IDs.
+    """
     track_objects = track._data
 
     # Add nodes for each object in the track
     for i, obj in enumerate(track_objects):
-        node_id = int(obj.ID)
+        original_id = int(obj.ID)
+        node_id = id_mapping[original_id]  # Use mapped positive ID
         position = np.array([obj.x, obj.y, obj.z, obj.t], dtype=float)
 
         node_attrs = {
@@ -363,7 +518,7 @@ def _add_track_to_graph(graph, track, all_tracks):
             "t": int(obj.t),
             "track_id": track.ID,
             "object_index": i,
-            "ID": obj.ID,
+            "ID": original_id,  # Store original ID as attribute
             "label": obj.label,
             "dummy": obj.dummy,
         }
@@ -379,17 +534,29 @@ def _add_track_to_graph(graph, track, all_tracks):
         # Add temporal edge to next object in track
         if i > 0:
             prev_obj = track_objects[i - 1]
-            prev_node_id = int(prev_obj.ID)
+            prev_node_id = id_mapping[int(prev_obj.ID)]  # Use mapped ID
             graph.add_edge(
                 prev_node_id, node_id, edge_type="temporal", track_id=track.ID
             )
 
     # Add lineage edges for parent-child relationships
-    _add_lineage_edges(graph, track, all_tracks)
+    _add_lineage_edges(graph, track, all_tracks, id_mapping)
 
 
-def _add_lineage_edges(graph, track, all_tracks):
-    """Add lineage edges for parent-child relationships."""
+def _add_lineage_edges(graph, track, all_tracks, id_mapping):
+    """Add lineage edges for parent-child relationships.
+
+    Parameters
+    ----------
+    graph : nx.DiGraph
+        The graph to add edges to.
+    track : Tracklet
+        The current track.
+    all_tracks : list
+        All tracks for finding parent.
+    id_mapping : dict
+        Mapping from original IDs to positive node IDs.
+    """
     if not (hasattr(track, "parent") and track.parent is not None):
         return
 
@@ -398,8 +565,8 @@ def _add_lineage_edges(graph, track, all_tracks):
         if track.parent == parent_track.ID:
             parent_last_obj = parent_track._data[-1]
             track_first_obj = track._data[0]
-            parent_last_node = int(parent_last_obj.ID)
-            track_first_node = int(track_first_obj.ID)
+            parent_last_node = id_mapping[int(parent_last_obj.ID)]
+            track_first_node = id_mapping[int(track_first_obj.ID)]
             graph.add_edge(
                 parent_last_node,
                 track_first_node,
@@ -410,24 +577,66 @@ def _add_lineage_edges(graph, track, all_tracks):
             break
 
 
-def _write_graph_to_geff_file(graph, filename, axis_names, axis_units, track_count):
-    """Write the graph to a GEFF file."""
-    import geff
+def _write_graph_to_geff_file(  # noqa: PLR0913
+    graph, filename, axis_names, axis_units, id_mapping, track_count
+):
+    """Write the graph to a GEFF file with metadata for ID mapping.
 
-    metadata = None  # Let GEFF create default metadata
+    Parameters
+    ----------
+    graph : nx.DiGraph
+        The graph to write.
+    filename : PathLike
+        Output filename.
+    axis_names : list
+        Names for spatial axes.
+    axis_units : list
+        Units for spatial axes.
+    id_mapping : dict
+        Mapping from original IDs to positive node IDs.
+    track_count : int
+        Number of tracks.
+    """
+    import geff  # noqa: PLC0415
+    from geff import GeffMetadata  # noqa: PLC0415
 
     try:
+        # First write the graph without custom metadata
         geff.write(
             graph=graph,
             store=str(filename),
-            metadata=metadata,
+            metadata=None,
             axis_names=axis_names,
             axis_units=axis_units,
             axis_types=["space", "space", "space", "time"],
         )
+
+        # Now read back the metadata and add our custom btrack data
+        metadata = GeffMetadata.read(filename)
+
+        # Store ID mapping for negative IDs in the extra field
+        # Only store the reverse mapping for IDs that were remapped
+        reverse_mapping = {str(v): int(k) for k, v in id_mapping.items() if k < 0}
+
+        if reverse_mapping:
+            metadata.extra["btrack"] = {
+                "version": "1.0",
+                "id_mapping": reverse_mapping,
+                "description": (
+                    "btrack tracking data with negative ID mapping for dummy objects"
+                ),
+            }
+
+            # Write the updated metadata back
+            metadata.write(filename)
+            logger.info(
+                f"Stored mapping for {len(reverse_mapping)} negative IDs in metadata"
+            )
+
         logger.info(
             f"Successfully exported {track_count} tracks to GEFF file: {filename}"
         )
+
     except Exception as e:
         logger.error(f"Failed to write GEFF file {filename}: {e}")
         raise
@@ -471,7 +680,7 @@ def export_GEFF(
         If no tracks are provided or tracks are invalid.
     """
     try:
-        import geff  # noqa: F401
+        import geff  # noqa: F401, PLC0415
     except ImportError as e:
         msg = (
             "GEFF library is required for exporting GEFF files. "
@@ -496,13 +705,15 @@ def export_GEFF(
         else:
             os.remove(filename)
 
-    graph = _create_graph_from_tracks(tracks, axis_names, axis_units)
+    graph, id_mapping = _create_graph_from_tracks(tracks, axis_names, axis_units)
     logger.info(
         f"Created graph with {graph.number_of_nodes()} nodes and "
         f"{graph.number_of_edges()} edges"
     )
 
-    _write_graph_to_geff_file(graph, filename, axis_names, axis_units, len(tracks))
+    _write_graph_to_geff_file(
+        graph, filename, axis_names, axis_units, id_mapping, len(tracks)
+    )
 
 
 def export_tracker_GEFF(

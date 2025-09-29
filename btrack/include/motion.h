@@ -33,7 +33,7 @@
 class MotionModel {
 public:
   // Default constructor for MotionModel
-  MotionModel(){};
+  MotionModel() {};
 
   // Initialise a motion model with matrices representing the motion model.
   // A: State transition matrix
@@ -48,7 +48,7 @@ public:
               const Eigen::MatrixXd &Q);
 
   // Default destructor
-  ~MotionModel(){};
+  ~MotionModel() {};
 
   // Setup the filter from a new object, set x_hat to the object position
   void setup(const TrackObjectPtr new_object);

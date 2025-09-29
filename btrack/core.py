@@ -1,18 +1,18 @@
-import ctypes
-import itertools
-import logging
-import os
-import warnings
-from typing import Optional, Union
-
-import numpy as np
-from numpy import typing as npt
-
 from btrack import _version
 
 from . import btypes, config, constants, libwrapper, models, utils
 from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
+
+import ctypes
+import itertools
+import logging
+import os
+import warnings
+from typing import Union
+
+import numpy as np
+from numpy import typing as npt
 
 __version__ = _version.version
 
@@ -425,9 +425,8 @@ class BayesianTracker:
         self,
         *,
         step_size: int = 100,
-        tracking_updates: Optional[
-            list[Union[str, constants.BayesianUpdateFeatures]]
-        ] = None,
+        tracking_updates: list[Union[str, constants.BayesianUpdateFeatures]]
+        | None = None,
     ) -> None:
         """Run the tracking in an interactive mode.
 
@@ -464,8 +463,8 @@ class BayesianTracker:
         while stats.tracker_active:
             logger.info(
                 f"Tracking objects in frames {frame} to "
-                f"{min(frame+step_size-1, self._frame_range[1]+1)} "
-                f"(of {self._frame_range[1]+1})..."
+                f"{min(frame + step_size - 1, self._frame_range[1] + 1)} "
+                f"(of {self._frame_range[1] + 1})..."
             )
 
             stats = self.step(step_size)
@@ -476,14 +475,14 @@ class BayesianTracker:
             logger.info("SUCCESS.")
             logger.info(
                 f" - Found {self.n_tracks} tracks in "
-                f"{1+self._frame_range[1]} frames "
+                f"{1 + self._frame_range[1]} frames "
                 f"(in {stats.t_total_time}s)"
             )
             logger.info(
                 f" - Inserted {self.n_dummies} dummy objects to fill tracking gaps"
             )
 
-    def step(self, n_steps: int = 1) -> Optional[btypes.PyTrackingInfo]:
+    def step(self, n_steps: int = 1) -> btypes.PyTrackingInfo | None:
         """Run an iteration (or more) of the tracking. Mostly for interactive
         mode tracking."""
         if not self._initialised:
@@ -510,7 +509,7 @@ class BayesianTracker:
         """Proxy for `optimise` for our American friends ;)"""
         return self.optimise(options=kwargs)
 
-    def optimise(self, options: Optional[dict] = None) -> list[hypothesis.Hypothesis]:
+    def optimise(self, options: dict | None = None) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.
 
         Parameters
@@ -641,8 +640,8 @@ class BayesianTracker:
     def export(
         self,
         filename: os.PathLike,
-        obj_type: Optional[str] = None,
-        filter_by: Optional[str] = None,
+        obj_type: str | None = None,
+        filter_by: str | None = None,
     ) -> None:
         """Export tracks using the appropriate exporter.
 
@@ -662,7 +661,7 @@ class BayesianTracker:
     def to_napari(
         self,
         replace_nan: bool = True,  # noqa: FBT001,FBT002
-        ndim: Optional[int] = None,
+        ndim: int | None = None,
     ) -> tuple[npt.NDArray, dict, dict]:
         """Return the data in a format for a napari tracks layer.
         See :py:meth:`btrack.utils.tracks_to_napari`."""

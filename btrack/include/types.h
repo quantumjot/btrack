@@ -57,7 +57,7 @@ extern "C" struct PyTrackInfo {
   PyTrackInfo()
       : error(ERROR_none), n_tracks(0), n_active(0), n_conflicts(0), n_lost(0),
         t_update_belief(0), t_update_link(0), t_total_time(0), p_link(0),
-        p_lost(0), complete(false){};
+        p_lost(0), complete(false) {};
 };
 
 // structure to return the Bayesian belief matrix as a series of graph edges
@@ -75,16 +75,16 @@ public:
   // Start a new tracklet without any prior information.
   TrackObject()
       : ID(0), x(0.), y(0.), z(0.), t(0), dummy(true), label(0),
-        n_features(0){};
+        n_features(0) {};
 
   // Instantiate a track object from an existing PyTrackObject
   TrackObject(const PyTrackObject &trk)
       : ID(trk.ID), x(trk.x), y(trk.y), z(trk.z), t(trk.t), dummy(trk.dummy),
         label(trk.label), states(trk.states), n_features(trk.n_features),
-        features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features)){};
+        features(Eigen::Map<Eigen::VectorXd>(trk.features, trk.n_features)) {};
 
   // Default destructor
-  ~TrackObject(){};
+  ~TrackObject() {};
 
   // xyzt position, dummy flag and class label, note that the ID can be
   // negative, indicating a dummy object
@@ -143,7 +143,7 @@ struct Prediction {
     covar.setIdentity(6, 6);
   }
   Prediction(const Eigen::VectorXd &a_mu, const Eigen::MatrixXd &a_covar)
-      : mu(a_mu), covar(a_covar){};
+      : mu(a_mu), covar(a_covar) {};
 };
 
 // Comparison object to order track objects ready for tracking.
@@ -207,10 +207,10 @@ struct ImagingVolume {
 template <typename T> class HypothesisMap {
 public:
   // default constructor
-  HypothesisMap(){};
+  HypothesisMap() {};
 
   // default destructor
-  ~HypothesisMap(){};
+  ~HypothesisMap() {};
 
   // construct a map with n_entries, which are initialised with empty vectors
   // of hypotheses

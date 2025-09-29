@@ -1,11 +1,11 @@
+import btrack
+from btrack.constants import BTRACK_LIB_PATH
+from btrack.libwrapper import load_library
+
 import platform
 from pathlib import Path
 
 import pytest
-
-import btrack
-from btrack.constants import BTRACK_LIB_PATH
-from btrack.libwrapper import load_library
 
 
 def test_load_library():

@@ -7,9 +7,10 @@ This example:
 - loads the btrack plugin
 - opens the napari viewer
 """
-import napari
 
 from btrack import datasets
+
+import napari
 
 viewer = napari.Viewer()
 napari.current_viewer()

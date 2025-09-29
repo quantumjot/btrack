@@ -1,18 +1,6 @@
+# import core
 from __future__ import annotations
 
-import itertools
-import logging
-import os
-import re
-from ast import literal_eval
-from functools import wraps
-from typing import TYPE_CHECKING, Any, Optional, Union
-
-import h5py
-import numpy as np
-from numpy import typing as npt
-
-# import core
 from btrack import _version, btypes, constants, utils
 
 from .utils import (
@@ -21,6 +9,18 @@ from .utils import (
     objects_from_array,
     objects_from_dict,
 )
+
+import itertools
+import logging
+import os
+import re
+from ast import literal_eval
+from functools import wraps
+from typing import TYPE_CHECKING, Any, Union
+
+import h5py
+import numpy as np
+from numpy import typing as npt
 
 if TYPE_CHECKING:
     from btrack import BayesianTracker
@@ -198,10 +198,10 @@ class HDF5FileHandler:
     @h5check_property_exists("objects")
     def filtered_objects(
         self,
-        f_expr: Optional[str] = None,
+        f_expr: str | None = None,
         *,
         lazy_load_properties: bool = True,
-        exclude_properties: Optional[list[str]] = None,
+        exclude_properties: list[str] | None = None,
     ) -> list[btypes.PyTrackObject]:
         """A filtered list of objects based on metadata.
 
@@ -493,7 +493,7 @@ class HDF5FileHandler:
         self,
         data: Union[list[btypes.Tracklet], BayesianTracker],
         *,
-        f_expr: Optional[str] = None,
+        f_expr: str | None = None,
     ) -> None:
         """Write tracks to HDF file.
 

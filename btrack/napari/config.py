@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from btrack.config import TrackerConfig
 
+import btrack
+import btrack.datasets
+
 import copy
 import os
 from dataclasses import dataclass, field
 
 import numpy as np
-
-import btrack
-import btrack.datasets
 
 __all__ = [
     "create_default_configs",
@@ -170,8 +170,7 @@ class TrackerConfigs:
         # TODO: Make the combobox editable so config names can be changed within the GUI
         if config_name in self.configs and not overwrite:
             _msg = (
-                f"Config '{config_name}' already exists - "
-                "config names must be unique."
+                f"Config '{config_name}' already exists - config names must be unique."
             )
             raise ValueError(_msg)
 

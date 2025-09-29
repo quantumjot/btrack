@@ -49,8 +49,8 @@ void merge_tracks(const MergeHypothesis &merge);
 // Lineage tree node, used for building trees
 class LineageTreeNode {
 public:
-  LineageTreeNode(){};
-  ~LineageTreeNode(){};
+  LineageTreeNode() {};
+  ~LineageTreeNode() {};
 
   LineageTreeNode(TrackletPtr a_track) { m_track = a_track; };
 
@@ -77,7 +77,7 @@ public:
     m_tracks.reserve(RESERVE_ALL_TRACKS);
     // m_graph_edges.reserve(RESERVE_GRAPH_EDGES);
   };
-  virtual ~TrackManager(){};
+  virtual ~TrackManager() {};
 
   void clear(void) {
     //

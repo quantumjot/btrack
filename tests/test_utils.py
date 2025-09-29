@@ -1,18 +1,18 @@
-from contextlib import nullcontext
-
-import numpy as np
-import pytest
-
 from btrack import btypes, utils
 from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
 from btrack.io import objects_from_array
 
 from ._utils import create_test_image, create_test_tracklet
 
+from contextlib import nullcontext
+
+import numpy as np
+import pytest
+
 
 def _example_segmentation_generator():
     for _ in range(10):
-        img, centroids = create_test_image()
+        img, _centroids = create_test_image()
         yield img
 
 
@@ -45,7 +45,7 @@ def _validate_centroids(centroids, objects, scale=None):
 
 def test_segmentation_to_objects_type():
     """Test that btrack objects are returned."""
-    img, centroids = create_test_image()
+    img, _centroids = create_test_image()
     objects = utils.segmentation_to_objects(img[np.newaxis, ...])
     assert all(isinstance(o, btypes.PyTrackObject) for o in objects)
 
@@ -93,7 +93,7 @@ def test_segmentation_to_objects_scale(scale):
 @pytest.mark.parametrize("nobj", [0, 1, 10, 30, 300])
 def test_assign_class_ID(ndim, nobj):
     """Test mask class_id assignment."""
-    img, centroids = create_test_image(ndim=ndim, nobj=nobj, binary=False)
+    img, _centroids = create_test_image(ndim=ndim, nobj=nobj, binary=False)
     objects = utils.segmentation_to_objects(img[np.newaxis, ...], assign_class_ID=True)
     # check that the values match
     for obj in objects:
@@ -103,7 +103,7 @@ def test_assign_class_ID(ndim, nobj):
 
 def test_regionprops():
     """Test using regionprops returns objects with correct property keys."""
-    img, centroids = create_test_image()
+    img, _centroids = create_test_image()
     properties = (
         "area",
         "axis_major_length",
@@ -117,7 +117,7 @@ def test_regionprops():
 
 def test_extra_regionprops():
     """Test adding a callable function for extra property calculation."""
-    img, centroids = create_test_image()
+    img, _centroids = create_test_image()
 
     def extra_prop(_mask) -> float:
         return np.sum(_mask)
@@ -139,7 +139,7 @@ def test_extra_regionprops():
 @pytest.mark.parametrize("ndim", [2, 3])
 def test_intensity_image(default_rng, ndim):
     """Test using an intensity image."""
-    img, centroids = create_test_image(ndim=ndim, binary=True)
+    img, _centroids = create_test_image(ndim=ndim, binary=True)
     intensity_image = img * default_rng.uniform(size=img.shape)
     objects = utils.segmentation_to_objects(
         img[np.newaxis, ...],
@@ -163,7 +163,7 @@ def test_update_segmentation_2d(test_segmentation_and_tracks):
 @pytest.mark.parametrize("color_by", ["ID", "root", "generation", "fake"])
 def test_update_segmentation_2d_colorby(test_segmentation_and_tracks, color_by):
     """Test relabeling a 2D-segmentation with track ID."""
-    in_segmentation, out_segmentation, tracks = test_segmentation_and_tracks
+    in_segmentation, _out_segmentation, tracks = test_segmentation_and_tracks
 
     with pytest.raises(ValueError) if color_by == "fake" else nullcontext():
         _ = utils.update_segmentation(in_segmentation, tracks, color_by=color_by)
@@ -209,7 +209,7 @@ def test_tracks_to_napari(ndim: int):
     # check that the data have the correct values
     track_ids = np.asarray([1] * track_len + [2] * track_len + [3] * track_len)
     np.testing.assert_equal(data[:, 0], track_ids)
-    header = ["t"] + ["z", "y", "x"][-ndim:]
+    header = ["t", *["z", "y", "x"][-ndim:]]
     for idx, key in enumerate(header):
         gt_data = np.concatenate([getattr(t, key) for t in tracks])
         np.testing.assert_equal(data[:, idx + 1], gt_data)
@@ -233,7 +233,7 @@ def test_tracks_to_napari_incorrect_ndim(ndim: int):
     tracks = [create_test_tracklet(track_len, idx + 1)[0] for idx in range(3)]
 
     with pytest.raises(ValueError):
-        data, properties, graph = utils.tracks_to_napari(tracks, ndim=ndim)
+        _data, _properties, _graph = utils.tracks_to_napari(tracks, ndim=ndim)
 
 
 @pytest.mark.parametrize("ndim", [2, 3])

@@ -16,14 +16,14 @@
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
+from btrack.constants import GLPK_OPTIONS, Fates
+
+from . import hypothesis
+
 import logging
 
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
-
-from btrack.constants import GLPK_OPTIONS, Fates
-
-from . import hypothesis
 
 # get the logger instance
 logger = logging.getLogger(__name__)
@@ -157,7 +157,7 @@ class TrackOptimiser:
                 A[N + trk, counter] = 1
                 continue
 
-            elif h.hypothesis_type in TERM_FATES:  # noqa: SIM114
+            elif h.hypothesis_type in TERM_FATES:
                 # a termination event, entry in first half only
                 trk = trk_idx(h.ID)
                 A[trk, counter] = 1

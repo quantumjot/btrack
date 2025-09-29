@@ -75,7 +75,7 @@ typedef std::pair<unsigned int, double> LinkHypothesis;
 class BayesianTracker : public UpdateFeatures {
 public:
   // Constructor
-  BayesianTracker(){};
+  BayesianTracker() {};
   // BayesianTracker(const bool verbose);
   // BayesianTracker(
   //   const bool verbose,

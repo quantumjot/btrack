@@ -284,7 +284,7 @@ void HypothesisEngine::create(void) {
         // trk_c1) << std::endl;
 
       } // q
-    }   // p
+    } // p
   }
 }
 

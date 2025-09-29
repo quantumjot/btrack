@@ -1,13 +1,13 @@
+# import core
 from __future__ import annotations
+
+from btrack import btypes, constants
 
 import logging
 from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
-
-# import core
-from btrack import btypes, constants
 
 # get the logger instance
 logger = logging.getLogger(__name__)

@@ -1,11 +1,11 @@
+from .btypes import PyTrackObject, Tracklet
+from .io import HDF5FileHandler, import_CSV
+
 import os
 
 import pooch
 from numpy import typing as npt
 from skimage.io import imread
-
-from .btypes import PyTrackObject, Tracklet
-from .io import HDF5FileHandler, import_CSV
 
 BASE_URL = "https://raw.githubusercontent.com/lowe-lab-ucl/btrack-examples/main/"
 

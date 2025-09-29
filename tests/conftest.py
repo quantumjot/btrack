@@ -1,11 +1,3 @@
-import os
-from typing import Union
-
-import numpy as np
-import numpy.typing as npt
-import pytest
-from qtpy import QtWidgets
-
 import btrack
 
 from ._utils import (
@@ -14,6 +6,14 @@ from ._utils import (
     create_test_object,
     create_test_segmentation_and_tracks,
 )
+
+import os
+from typing import Union
+
+import numpy as np
+import numpy.typing as npt
+import pytest
+from qtpy import QtWidgets
 
 
 def _write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:
@@ -103,9 +103,9 @@ def track_widget(make_napari_viewer) -> QtWidgets.QWidget:
 
 
 @pytest.fixture
-def simplistic_tracker_outputs() -> (
-    tuple[npt.NDArray, dict[str, npt.NDArray], dict[int, list]]
-):
+def simplistic_tracker_outputs() -> tuple[
+    npt.NDArray, dict[str, npt.NDArray], dict[int, list]
+]:
     """Provides simplistic return values of a btrack run.
     They have the correct types and dimensions, but contain zeros.
     Useful for mocking the tracker.

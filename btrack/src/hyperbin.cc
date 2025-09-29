@@ -218,10 +218,10 @@ std::vector<TrackletPtr> HypercubeBin::get(const TrackletPtr a_trk,
             }
 
           } // i
-        }   // x
-      }     // y
-    }       // z
-  }         // n
+        } // x
+      } // y
+    } // z
+  } // n
   return r_trks;
 }
 
@@ -341,9 +341,9 @@ std::vector<TrackObjectPtr_and_Index> ObjectBin::get(const TrackletPtr a_trk,
         for (size_t i = 0; i < ret->second.size(); i++) {
           r_objs.push_back(ret->second[i]);
         } // i
-      }   // x
-    }     // y
-  }       // z
+      } // x
+    } // y
+  } // z
 
   return r_objs;
 }

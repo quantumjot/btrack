@@ -29,7 +29,7 @@ def create_logo_widgets() -> dict[str, QtWidgets.QWidget]:
 
     docs = QtWidgets.QLabel('<a href="https://btrack.readthedocs.io">Documentation</a>')
     docs.setAlignment(QtCore.Qt.AlignHCenter)
-    docs.setOpenExternalLinks(True)  # noqa: FBT003
+    docs.setOpenExternalLinks(True)
     docs.setTextFormat(QtCore.Qt.RichText)
     docs.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
     widgets["documentation"] = docs
@@ -83,7 +83,7 @@ def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "The local spatial search radius (isotropic, pixels) used when the update "
         "method is 'APPROXIMATE'"
     )
-    max_search_radius.setWrapping(True)  # noqa: FBT003
+    max_search_radius.setWrapping(True)
     widgets["max_search_radius"] = ("search radius", max_search_radius)
 
     max_lost_frames = QtWidgets.QSpinBox()
@@ -105,13 +105,13 @@ def create_basic_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
     )
 
     optimise = QtWidgets.QCheckBox()
-    optimise.setChecked(True)  # noqa: FBT003
+    optimise.setChecked(True)
     optimise.setToolTip(
         "Enable the track optimisation.\n"
         "This means that tracks will be optimised using the hypotheses"
         "specified in the optimiser tab."
     )
-    optimise.setTristate(False)  # noqa: FBT003
+    optimise.setTristate(False)
     widgets["enable_optimisation"] = ("enable optimisation", optimise)
 
     return widgets

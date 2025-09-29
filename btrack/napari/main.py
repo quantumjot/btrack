@@ -3,22 +3,22 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    import numpy.typing as npt
-    from qtpy import QtWidgets
-
     from btrack.config import TrackerConfig
     from btrack.napari.config import TrackerConfigs
 
-import logging
-from pathlib import Path
-
-import napari
+    import numpy.typing as npt
+    from qtpy import QtWidgets
 
 import btrack
 import btrack.napari.config
 import btrack.napari.sync
 import btrack.napari.widgets
 from btrack.utils import segmentation_to_objects
+
+import napari
+
+import logging
+from pathlib import Path
 
 __all__ = [
     "create_btrack_widget",

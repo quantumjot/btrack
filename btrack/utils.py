@@ -3,13 +3,10 @@ from __future__ import annotations
 import dataclasses
 import functools
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     import numpy.typing as npt
-
-import numpy as np
-from skimage.util import map_array
 
 # import core
 from . import _version, btypes, constants
@@ -18,6 +15,9 @@ from .constants import DEFAULT_EXPORT_PROPERTIES, Dimensionality
 from .io import objects_from_dict
 from .io._localization import segmentation_to_objects
 from .models import HypothesisModel, MotionModel, ObjectModel
+
+import numpy as np
+from skimage.util import map_array
 
 # Choose a subset of classes/functions to document in public facing API
 __all__ = [
@@ -45,37 +45,38 @@ def log_stats(stats: dict) -> None:
         return
 
     logger.info(
-        " - Timing (Bayesian updates: {:.2f}ms, Linking:"
-        " {:.2f}ms)".format(stats["t_update_belief"], stats["t_update_link"])
+        " - Timing (Bayesian updates: {:.2f}ms, Linking: {:.2f}ms)".format(
+            stats["t_update_belief"], stats["t_update_link"]
+        )
     )
 
     logger.info(
-        " - Probabilities (Link: {:.5f}, Lost:"
-        " {:.5f})".format(stats["p_link"], stats["p_lost"])
+        " - Probabilities (Link: {:.5f}, Lost: {:.5f})".format(
+            stats["p_link"], stats["p_lost"]
+        )
     )
 
     if stats["complete"]:
         return
 
     logger.info(
-        " - Stats (Active: {:d}, Lost: {:d}, Conflicts "
-        "resolved: {:d})".format(
+        " - Stats (Active: {:d}, Lost: {:d}, Conflicts resolved: {:d})".format(
             stats["n_active"], stats["n_lost"], stats["n_conflicts"]
         )
     )
 
 
-def read_motion_model(cfg: dict) -> Optional[MotionModel]:
+def read_motion_model(cfg: dict) -> MotionModel | None:
     cfg = cfg.get("MotionModel", {})
     return MotionModel(**cfg) if cfg else None
 
 
-def read_object_model(cfg: dict) -> Optional[ObjectModel]:
+def read_object_model(cfg: dict) -> ObjectModel | None:
     cfg = cfg.get("ObjectModel", {})
     return ObjectModel(**cfg) if cfg else None
 
 
-def read_hypothesis_model(cfg: dict) -> Optional[HypothesisModel]:
+def read_hypothesis_model(cfg: dict) -> HypothesisModel | None:
     cfg = cfg.get("HypothesisModel", {})
     return HypothesisModel(**cfg) if cfg else None
 
@@ -191,7 +192,7 @@ def tracks_to_napari(
     if ndim not in (Dimensionality.TWO, Dimensionality.THREE):
         raise ValueError("ndim must be 2 or 3 dimensional.")
 
-    t_header = ["ID", "t"] + ["z", "y", "x"][-ndim:]
+    t_header = ["ID", "t", *["z", "y", "x"][-ndim:]]
     p_header = ["t", "state", "generation", "root", "parent", "dummy"]
 
     # ensure lexicographic ordering of tracks
@@ -222,8 +223,8 @@ def tracks_to_napari(
 
 def napari_to_tracks(
     data: npt.NDArray,
-    properties: Optional[dict[str, npt.ArrayLike]],
-    graph: Optional[dict[int, list[int]]],
+    properties: dict[str, npt.ArrayLike] | None,
+    graph: dict[int, list[int]] | None,
 ) -> list[btypes.Tracklet]:
     """Convert napari Tracks to a list of Tracklets.
 
@@ -306,7 +307,7 @@ def update_segmentation(
     segmentation: npt.NDArray,
     tracks: list[btypes.Tracklet],
     *,
-    scale: Optional[tuple(float)] = None,
+    scale: tuple(float) | None = None,
     color_by: str = "ID",
 ) -> npt.NDArray:
     """Map tracks back into a masked array.

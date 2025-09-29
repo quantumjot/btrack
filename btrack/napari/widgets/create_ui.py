@@ -1,9 +1,5 @@
 from __future__ import annotations
 
-from qtpy import QtWidgets
-
-from napari.viewer import Viewer
-
 from btrack.napari.widgets._general import (
     create_basic_widgets,
     create_config_widgets,
@@ -13,6 +9,10 @@ from btrack.napari.widgets._general import (
 )
 from btrack.napari.widgets._motion import create_motion_model_widgets
 from btrack.napari.widgets._optimiser import create_optimiser_widgets
+
+from napari.viewer import Viewer
+
+from qtpy import QtWidgets
 
 
 class BtrackWidget(QtWidgets.QScrollArea):
@@ -33,7 +33,7 @@ class BtrackWidget(QtWidgets.QScrollArea):
         self.viewer = napari_viewer
 
         # Let the scroll area automatically resize the widget
-        self.setWidgetResizable(True)  # noqa: FBT003
+        self.setWidgetResizable(True)
 
         self._main_layout = QtWidgets.QVBoxLayout()
         self._main_widget = QtWidgets.QWidget()

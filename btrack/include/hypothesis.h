@@ -49,16 +49,16 @@ extern "C" struct PyHypothesis {
   unsigned int parent_one_ID;
   unsigned int parent_two_ID;
 
-  PyHypothesis(unsigned int h, unsigned int id) : hypothesis(h), ID(id){};
+  PyHypothesis(unsigned int h, unsigned int id) : hypothesis(h), ID(id) {};
 };
 
 // Internal hypothesis class
 class Hypothesis {
 public:
-  Hypothesis(){};
-  ~Hypothesis(){};
+  Hypothesis() {};
+  ~Hypothesis() {};
   Hypothesis(const unsigned int h, const TrackletPtr a_trk)
-      : hypothesis(h), ID(a_trk->ID), trk_ID(a_trk){};
+      : hypothesis(h), ID(a_trk->ID), trk_ID(a_trk) {};
 
   unsigned int hypothesis = TYPE_undef;
   unsigned int ID;

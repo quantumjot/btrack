@@ -30,7 +30,7 @@
 class Tracklet {
 public:
   // default constructor for Tracklet
-  Tracklet() : remove_flag(false){};
+  Tracklet() : remove_flag(false) {};
 
   // construct Tracklet using a new ID, new object and model specific
   // parameters
@@ -38,7 +38,7 @@ public:
            const unsigned int max_lost, const MotionModel &model);
 
   // default destructor for Tracklet
-  ~Tracklet(){};
+  ~Tracklet() {};
 
   // append a new track object to the trajectory, update flag tells the
   // function whether to update the motion model or not - new tracks should

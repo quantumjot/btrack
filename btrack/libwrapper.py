@@ -1,3 +1,8 @@
+from btrack.btypes import PyGraphEdge, PyTrackingInfo, PyTrackObject
+from btrack.constants import BTRACK_LIB_PATH
+from btrack.optimise import hypothesis
+from btrack.utils import log_debug_info
+
 import ctypes
 import logging
 import os
@@ -5,11 +10,6 @@ import platform
 from pathlib import Path
 
 import numpy as np
-
-from btrack.btypes import PyGraphEdge, PyTrackingInfo, PyTrackObject
-from btrack.constants import BTRACK_LIB_PATH
-from btrack.optimise import hypothesis
-from btrack.utils import log_debug_info
 
 # get the logger instance
 logger = logging.getLogger(__name__)

@@ -1,9 +1,3 @@
-import os
-from pathlib import Path
-
-import numpy as np
-import pytest
-
 import btrack
 
 from ._utils import (
@@ -12,6 +6,12 @@ from ._utils import (
     full_tracker_example,
     simple_tracker_example,
 )
+
+import os
+from pathlib import Path
+
+import numpy as np
+import pytest
 
 
 def test_hdf5_write(hdf5_file_path, test_objects):
@@ -347,9 +347,9 @@ def test_geff_tracks_roundtrip(tmp_path, test_real_objects):
 
         # Check that objects within tracks are properly ordered by time
         imported_times = [obj.t for obj in imported_track._data]
-        assert imported_times == sorted(
-            imported_times
-        ), "Objects should be sorted by time"
+        assert imported_times == sorted(imported_times), (
+            "Objects should be sorted by time"
+        )
 
         # Verify object properties within each track
         for orig_obj, imported_obj in zip(orig_track._data, imported_track._data):

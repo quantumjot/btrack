@@ -2,22 +2,22 @@
 This module is a reader plugin btrack files for napari.
 """
 
-import os
-import pathlib
-from collections.abc import Sequence
-from typing import Callable, Optional, Union
+from btrack.io import HDF5FileHandler
+from btrack.utils import tracks_to_napari
 
 from napari.types import LayerDataTuple
 
-from btrack.io import HDF5FileHandler
-from btrack.utils import tracks_to_napari
+import os
+import pathlib
+from collections.abc import Callable, Sequence
+from typing import Union
 
 # Type definitions
 PathOrPaths = Union[os.PathLike, Sequence[os.PathLike]]
 ReaderFunction = Callable[[PathOrPaths], list[LayerDataTuple]]
 
 
-def get_reader(path: PathOrPaths) -> Optional[ReaderFunction]:
+def get_reader(path: PathOrPaths) -> ReaderFunction | None:
     """A basic implementation of the napari_get_reader hook specification.
 
     Parameters

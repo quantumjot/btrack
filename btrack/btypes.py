@@ -15,14 +15,14 @@
 
 from __future__ import annotations
 
+from . import constants
+
 import ctypes
 from collections import OrderedDict
-from typing import Any, ClassVar, NamedTuple, Optional
+from typing import Any, ClassVar, NamedTuple
 
 import numpy as np
 from numpy import typing as npt
-
-from . import constants
 
 __all__ = ["PyTrackObject", "Tracklet"]
 
@@ -30,7 +30,7 @@ __all__ = ["PyTrackObject", "Tracklet"]
 class ImagingVolume(NamedTuple):
     x: tuple[float, float]
     y: tuple[float, float]
-    z: Optional[tuple[float, float]] = None
+    z: tuple[float, float] | None = None
 
     @property
     def ndim(self) -> int:
@@ -348,13 +348,13 @@ class Tracklet:
     x values.
     """
 
-    def __init__(  # noqa: PLR0913
+    def __init__(
         self,
         ID: int,
         data: list[PyTrackObject],
         *,
-        parent: Optional[int] = None,
-        children: Optional[list[int]] = None,
+        parent: int | None = None,
+        children: list[int] | None = None,
         fate: constants.Fates = constants.Fates.UNDEFINED,
     ):
         assert all(isinstance(o, PyTrackObject) for o in data)
@@ -549,7 +549,7 @@ class Tracklet:
         d = [o for o in self._data if o.t <= frame and o.t >= frame - tail]
         return Tracklet(self.ID, d)
 
-    def LBEP(self) -> tuple[int, list, list, Optional[int], None, int]:
+    def LBEP(self) -> tuple[int, list, list, int | None, None, int]:
         """Return an LBEP table summarising the track."""
         return (
             self.ID,

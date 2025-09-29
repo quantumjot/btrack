@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+import btrack
+import btrack.datasets
+import btrack.napari
+import btrack.napari.main
+
+import napari
+
 import json
 import os
 import sys
 from unittest.mock import patch
 
 import pytest
-
-import napari
-
-import btrack
-import btrack.datasets
-import btrack.napari
-import btrack.napari.main
 
 OLD_WIDGET_LAYERS = 1
 NEW_WIDGET_LAYERS = 2

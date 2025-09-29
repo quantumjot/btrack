@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import dataclasses
 import logging
-from collections.abc import Generator
+from collections.abc import Callable, Generator
 from multiprocessing.pool import Pool
-from typing import Callable, Optional, Union
+from typing import Union
 
 import numpy as np
 import numpy.typing as npt
@@ -43,13 +43,13 @@ class SegmentationContainer:
     """Container for segmentation data."""
 
     segmentation: Union[Generator, npt.NDArray]
-    intensity_image: Optional[Union[Generator, npt.NDArray]] = None
+    intensity_image: Union[Generator, npt.NDArray] | None = None
 
     def __post_init__(self) -> None:
         self._is_generator = isinstance(self.segmentation, Generator)
         self._next = self._next_generator if self._is_generator else self._next_array
 
-    def _next_generator(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_generator(self) -> tuple[npt.NDArray, npt.NDArray | None]:
         """__next__ method for a generator input."""
         seg = next(self.segmentation)
         intens = (
@@ -57,7 +57,7 @@ class SegmentationContainer:
         )
         return seg, intens
 
-    def _next_array(self) -> tuple[npt.NDArray, Optional[npt.NDArray]]:
+    def _next_array(self) -> tuple[npt.NDArray, npt.NDArray | None]:
         """__next__ method for an array-like input."""
         if self._iter >= len(self):
             raise StopIteration
@@ -73,7 +73,7 @@ class SegmentationContainer:
         self._iter = 0
         return self
 
-    def __next__(self) -> tuple[int, npt.NDArray, Optional[npt.NDArray]]:
+    def __next__(self) -> tuple[int, npt.NDArray, npt.NDArray | None]:
         seg, intens = self._next()
         data = (self._iter, seg, intens)
         self._iter += 1
@@ -89,10 +89,10 @@ class NodeProcessor:
 
     properties: tuple[str, ...]
     centroid_type: str = "centroid"
-    intensity_image: Optional[npt.NDArray] = None
-    scale: Optional[tuple[float]] = None
+    intensity_image: npt.NDArray | None = None
+    scale: tuple[float] | None = None
     assign_class_ID: bool = False  # noqa: N815
-    extra_properties: Optional[tuple[Callable]] = None
+    extra_properties: tuple[Callable] | None = None
 
     @property
     def img_props(self) -> tuple[str, ...]:
@@ -103,7 +103,7 @@ class NodeProcessor:
             else ()
         )
 
-    def __call__(self, data: tuple[int, npt.NDArray, Optional[npt.NDArray]]) -> dict:
+    def __call__(self, data: tuple[int, npt.NDArray, npt.NDArray | None]) -> dict:
         """Return the object centroids from a numpy array representing the
         image data."""
 
@@ -157,10 +157,10 @@ class NodeProcessor:
 def segmentation_to_objects(  # noqa: PLR0913
     segmentation: Union[npt.NDArray, Generator],
     *,
-    intensity_image: Optional[Union[npt.NDArray, Generator]] = None,
+    intensity_image: Union[npt.NDArray, Generator] | None = None,
     properties: tuple[str, ...] = (),
-    extra_properties: Optional[tuple[Callable]] = None,
-    scale: Optional[tuple[float]] = None,
+    extra_properties: tuple[Callable] | None = None,
+    scale: tuple[float] | None = None,
     use_weighted_centroid: bool = True,
     assign_class_ID: bool = False,
     num_workers: int = 1,

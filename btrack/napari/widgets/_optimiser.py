@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from qtpy import QtCore, QtWidgets
-
 import btrack.napari.constants
+
+from qtpy import QtCore, QtWidgets
 
 
 def _create_hypotheses_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
@@ -139,7 +139,7 @@ def create_optimiser_widgets() -> dict[str, tuple[str, QtWidgets.QWidget]]:
         "This means that tracks can initialize or terminate anywhere and"
         "at any time in the dataset."
     )
-    relax.setTristate(False)  # noqa: FBT003
+    relax.setTristate(False)
     widgets["relax"] = ("relax thresholds", relax)
 
     return widgets

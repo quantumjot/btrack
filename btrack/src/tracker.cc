@@ -15,6 +15,9 @@
 */
 
 #include "tracker.h"
+#include "belief.h"
+#include <vector> 
+#include <tuple>
 
 using namespace ProbabilityDensityFunctions;
 using namespace BayesianUpdateFunctions;
@@ -67,22 +70,27 @@ BayesianTracker::~BayesianTracker() {
 
 void BayesianTracker::set_update_mode(const unsigned int update_mode) {
   cost_function_mode = update_mode;
-  if (DEBUG)
-    std::cout << "Update mode: " << cost_function_mode << std::endl;
+  const char* method_str = nullptr;
 
   if (cost_function_mode == UPDATE_MODE_EXACT) {
     m_cost_fn = &BayesianTracker::cost_EXACT;
+    method_str = "EXACT";
   } else if (cost_function_mode == UPDATE_MODE_APPROXIMATE) {
     m_cost_fn = &BayesianTracker::cost_APPROXIMATE;
+    method_str = "APPROXIMATE";
+  } else if (cost_function_mode == UPDATE_MODE_CUDA) {
+    m_cost_fn = &BayesianTracker::cost_CUDA;
+    method_str = "CUDA";
+  } else if (cost_function_mode == UPDATE_MODE_METAL) {
+    m_cost_fn = &BayesianTracker::cost_METAL;
+    method_str = "METAL/MPS";
   } else {
-    // throw std::runtime_error("CUDA update method not supported");
-
-    std::cout << "CUDA update method not currently supported, reverting to "
-                 "EXACT.";
-    std::cout << std::endl;
-
+    std::cout << "[INFO] Unknown update method, reverting to EXACT." << std::endl;
     m_cost_fn = &BayesianTracker::cost_EXACT;
+    method_str = "EXACT (fallback)";
   }
+
+  std::cout << "[INFO] BayesianTracker: Using " << method_str << " backend for belief updates." << std::endl;
 }
 
 unsigned int BayesianTracker::set_motion_model(
@@ -625,6 +633,221 @@ void BayesianTracker::cost_APPROXIMATE(Eigen::Ref<Eigen::MatrixXd> belief,
       (std::clock() - t_update_start) / (double)(CLOCKS_PER_SEC / 1000);
   statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
 }
+
+// make the cost matrix of all possible linkages using CUDA
+void BayesianTracker::cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief,
+                                const size_t n_tracks, const size_t n_objects,
+                                const bool use_uniform_prior) {
+  #ifdef HAVE_CUDA
+  
+    // start a timer
+    std::clock_t t_update_start = std::clock();
+
+    // set up some variables for Bayesian updates
+    double uniform_prior = 1. / (n_objects + 1);
+
+    // start by intializing the belief matrix with a uniform prior
+    if (use_uniform_prior) {
+      belief.fill(uniform_prior);
+    }
+
+    // Prepare data for CUDA kernel
+    // 1. New object positions (x, y, z)
+    std::vector<float> h_new_positions(n_objects * 3);
+    for (size_t i = 0; i < n_objects; ++i) {
+      h_new_positions[i * 3 + 0] = static_cast<float>(new_objects[i]->x);
+      h_new_positions[i * 3 + 1] = static_cast<float>(new_objects[i]->y);
+      h_new_positions[i * 3 + 2] = static_cast<float>(new_objects[i]->z);
+    }
+
+    // 2. Predicted track positions and variances (px, py, pz, var_x, var_y, var_z)
+    std::vector<float> h_predicted_positions(n_tracks * 6);
+    for (size_t i = 0; i < n_tracks; ++i) {
+      // Get prediction from tracklet (this includes motion model prediction + tracklet logic)
+      Prediction pred = active[i]->predict();
+
+      h_predicted_positions[i * 6 + 0] = static_cast<float>(pred.mu(0)); // x
+      h_predicted_positions[i * 6 + 1] = static_cast<float>(pred.mu(1)); // y
+      h_predicted_positions[i * 6 + 2] = static_cast<float>(pred.mu(2)); // z
+      h_predicted_positions[i * 6 + 3] = static_cast<float>(pred.covar(0, 0)); // var_x
+      h_predicted_positions[i * 6 + 4] = static_cast<float>(pred.covar(1, 1)); // var_y
+      h_predicted_positions[i * 6 + 5] = static_cast<float>(pred.covar(2, 2)); // var_z
+    }
+
+    // 3. Belief matrix for CUDA (only object rows, excluding lost row)
+    std::vector<float> h_belief_matrix(n_objects * n_tracks);
+    for (size_t trk = 0; trk < n_tracks; ++trk) {
+      for (size_t obj = 0; obj < n_objects; ++obj) {
+        h_belief_matrix[obj * n_tracks + trk] = static_cast<float>(belief(obj, trk));
+      }
+    }
+
+    // Call the C-style CUDA wrapper function from belief.cu
+    ::cost_CUDA(h_belief_matrix.data(), h_new_positions.data(),
+                h_predicted_positions.data(), static_cast<unsigned int>(n_objects),
+                static_cast<unsigned int>(n_tracks), static_cast<float>(this->prob_not_assign),
+                static_cast<float>(this->accuracy));
+
+    // Copy results back from CUDA to Eigen belief matrix (object rows only)
+    for (size_t trk = 0; trk < n_tracks; ++trk) {
+      for (size_t obj = 0; obj < n_objects; ++obj) {
+        belief(obj, trk) = static_cast<double>(h_belief_matrix[obj * n_tracks + trk]);
+      }
+    }
+
+    // Handle the "lost" row (row n_objects) following CPU implementation pattern
+    Eigen::VectorXd v_posterior;
+    Eigen::VectorXd v_update = Eigen::VectorXd(n_objects + 1);
+
+    for (size_t trk = 0; trk != n_tracks; trk++) {
+      v_posterior = belief.col(trk);
+
+      // loop through each candidate object to update the lost probability
+      for (size_t obj = 0; obj != n_objects; obj++) {
+        // call the assignment function
+        double prob_assign = (this->*m_update_fn)(active[trk], new_objects[obj]);
+
+        // now do the bayesian updates for the lost row
+        double prior_assign = v_posterior(obj);
+        double safe_update, posterior;
+
+        std::tie(safe_update, posterior) =
+            BayesianUpdateFunctions::safe_bayesian_update(
+                prior_assign, prob_assign, prob_not_assign);
+
+        v_update.fill(safe_update);
+        v_update(obj) = 1.;
+
+        // do the update
+        v_posterior = v_posterior.array() * v_update.array();
+        v_posterior(obj) = posterior;
+      }
+
+      // now update the entire column (i.e. track)
+      belief.col(trk) = v_posterior;
+    }
+
+    // set the timings
+    double t_elapsed_ms =
+        (std::clock() - t_update_start) / (double)(CLOCKS_PER_SEC / 1000);
+    statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
+  #else
+  // Fallback to CPU implementation when CUDA not available
+  std::cerr << "CUDA not available, falling back to EXACT method" << std::endl;
+  cost_EXACT(belief, n_tracks, n_objects, use_uniform_prior);
+  #endif
+}
+
+
+// make the cost matrix of all possible linkages using Metal/MPS
+void BayesianTracker::cost_METAL(Eigen::Ref<Eigen::MatrixXd> belief,
+                                 const size_t n_tracks, const size_t n_objects,
+                                 const bool use_uniform_prior) {
+  #ifdef HAVE_METAL
+  
+    // start a timer
+    std::clock_t t_update_start = std::clock();
+
+    // set up some variables for Bayesian updates
+    double uniform_prior = 1. / (n_objects + 1);
+
+    // start by intializing the belief matrix with a uniform prior
+    if (use_uniform_prior) {
+      belief.fill(uniform_prior);
+    }
+
+    // Prepare data for Metal kernel
+    // 1. New object positions (x, y, z)
+    std::vector<float> h_new_positions(n_objects * 3);
+    for (size_t i = 0; i < n_objects; ++i) {
+      h_new_positions[i * 3 + 0] = static_cast<float>(new_objects[i]->x);
+      h_new_positions[i * 3 + 1] = static_cast<float>(new_objects[i]->y);
+      h_new_positions[i * 3 + 2] = static_cast<float>(new_objects[i]->z);
+    }
+
+    // 2. Predicted track positions and variances (px, py, pz, var_x, var_y, var_z)
+    std::vector<float> h_predicted_positions(n_tracks * 6);
+    for (size_t i = 0; i < n_tracks; ++i) {
+      // Get prediction from tracklet (this includes motion model prediction + tracklet logic)
+      Prediction pred = active[i]->predict();
+
+      h_predicted_positions[i * 6 + 0] = static_cast<float>(pred.mu(0)); // x
+      h_predicted_positions[i * 6 + 1] = static_cast<float>(pred.mu(1)); // y
+      h_predicted_positions[i * 6 + 2] = static_cast<float>(pred.mu(2)); // z
+      h_predicted_positions[i * 6 + 3] = static_cast<float>(pred.covar(0, 0)); // var_x
+      h_predicted_positions[i * 6 + 4] = static_cast<float>(pred.covar(1, 1)); // var_y
+      h_predicted_positions[i * 6 + 5] = static_cast<float>(pred.covar(2, 2)); // var_z
+    }
+
+    // 3. Belief matrix for Metal (only object rows, excluding lost row)
+    std::vector<float> h_belief_matrix(n_objects * n_tracks);
+    for (size_t trk = 0; trk < n_tracks; ++trk) {
+      for (size_t obj = 0; obj < n_objects; ++obj) {
+        h_belief_matrix[obj * n_tracks + trk] = static_cast<float>(belief(obj, trk));
+      }
+    }
+
+    // Call the C-style Metal wrapper function from belief.metal
+    static bool printed = false;
+    if (!printed) {
+      std::cout << "[INFO] Running Metal kernel for Bayesian updates (track_Metal)." << std::endl;
+      printed = true;
+    }
+    ::cost_METAL(h_belief_matrix.data(), h_new_positions.data(),
+                 h_predicted_positions.data(), static_cast<unsigned int>(n_objects),
+                 static_cast<unsigned int>(n_tracks), static_cast<float>(this->prob_not_assign),
+                 static_cast<float>(this->accuracy));
+
+    // Copy results back from Metal to Eigen belief matrix (object rows only)
+    for (size_t trk = 0; trk < n_tracks; ++trk) {
+      for (size_t obj = 0; obj < n_objects; ++obj) {
+        belief(obj, trk) = static_cast<double>(h_belief_matrix[obj * n_tracks + trk]);
+      }
+    }
+
+    // Handle the "lost" row (row n_objects) following CPU implementation pattern
+    Eigen::VectorXd v_posterior;
+    Eigen::VectorXd v_update = Eigen::VectorXd(n_objects + 1);
+
+    for (size_t trk = 0; trk != n_tracks; trk++) {
+      v_posterior = belief.col(trk);
+
+      // loop through each candidate object to update the lost probability
+      for (size_t obj = 0; obj != n_objects; obj++) {
+        // call the assignment function
+        double prob_assign = (this->*m_update_fn)(active[trk], new_objects[obj]);
+
+        // now do the bayesian updates for the lost row
+        double prior_assign = v_posterior(obj);
+        double safe_update, posterior;
+
+        std::tie(safe_update, posterior) =
+            BayesianUpdateFunctions::safe_bayesian_update(
+                prior_assign, prob_assign, prob_not_assign);
+
+        v_update.fill(safe_update);
+        v_update(obj) = 1.;
+
+        // do the update
+        v_posterior = v_posterior.array() * v_update.array();
+        v_posterior(obj) = posterior;
+      }
+
+      // now update the entire column (i.e. track)
+      belief.col(trk) = v_posterior;
+    }
+
+    // set the timings
+    double t_elapsed_ms =
+        (std::clock() - t_update_start) / (double)(CLOCKS_PER_SEC / 1000);
+    statistics.t_update_belief = static_cast<float>(t_elapsed_ms);
+  #else
+  // Fallback to CPU implementation when Metal not available
+  std::cerr << "Metal not available, falling back to EXACT method" << std::endl;
+  cost_EXACT(belief, n_tracks, n_objects, use_uniform_prior);
+  #endif
+}
+
 
 // make the cost matrix of all possible linkages
 void BayesianTracker::link(Eigen::Ref<Eigen::MatrixXd> belief,

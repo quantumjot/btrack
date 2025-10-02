@@ -84,6 +84,7 @@ class BayesianUpdates(enum.Enum):
     EXACT = 0
     APPROXIMATE = 1
     CUDA = 2
+    MPS = 3
 
 
 @enum.unique

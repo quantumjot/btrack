@@ -73,6 +73,7 @@ const double kRootTwoPi = std::sqrt(2.0 * M_PI);
 #define UPDATE_MODE_EXACT 0
 #define UPDATE_MODE_APPROXIMATE 1
 #define UPDATE_MODE_CUDA 2
+#define UPDATE_MODE_METAL 3
 
 // hypothesis generation
 #define MAX_TRACK_LEN 150

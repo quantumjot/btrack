@@ -502,8 +502,16 @@ class BayesianTracker:
             self._frame_range[1],
         )
 
-        # now get all of the hypotheses
-        return [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
+        # now get all of the hypotheses using bulk retrieval for performance
+        if n_hypotheses == 0:
+            return []
+
+        # Create array to hold all hypotheses
+        hypotheses_array = (hypothesis.Hypothesis * n_hypotheses)()
+        self._lib.get_all_hypotheses(self._engine, hypotheses_array, n_hypotheses)
+
+        # Convert to list
+        return list(hypotheses_array)
 
     def optimize(self, **kwargs):
         """Proxy for `optimise` for our American friends ;)"""

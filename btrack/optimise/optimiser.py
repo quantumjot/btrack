@@ -22,6 +22,7 @@ from . import hypothesis
 
 import logging
 
+import numpy as np
 from cvxopt import matrix, spmatrix
 from cvxopt.glpk import ilp
 
@@ -111,7 +112,173 @@ class TrackOptimiser:
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
-    def optimise(self):  # noqa: PLR0915
+    def _build_constraints_matrix_vectorized(  # noqa: PLR0915
+        self, n_hypotheses: int, N: int
+    ):
+        """Build constraints matrix using vectorized operations.
+
+        Parameters
+        ----------
+        n_hypotheses : int
+            Number of hypotheses
+        N : int
+            Maximum track ID
+
+        Returns
+        -------
+        A : spmatrix
+            Sparse constraints matrix (2N x n_hypotheses)
+        rho : matrix
+            Vector of hypothesis log-likelihoods
+        """
+
+        # anon function to renumber track ID from C++
+        def trk_idx(_h):
+            return int(_h) - 1
+
+        # Pre-allocate arrays for sparse matrix triplets (row, col, val)
+        # Estimate max size: most hypotheses contribute 1-3 entries
+        max_entries = n_hypotheses * 3
+        rows = np.zeros(max_entries, dtype=np.int32)
+        cols = np.zeros(max_entries, dtype=np.int32)
+        entry_idx = 0
+
+        # Allocate rho vector
+        rho = matrix(0.0, (n_hypotheses, 1), "d")
+
+        # Extract hypothesis data into arrays for vectorized processing
+        h_types = np.array(
+            [h.hypothesis_type.value for h in self.hypotheses], dtype=np.int32
+        )
+        h_ids = np.array([trk_idx(h.ID) for h in self.hypotheses], dtype=np.int32)
+        h_log_likes = np.array(
+            [h.log_likelihood for h in self.hypotheses], dtype=np.float64
+        )
+
+        # Set all log likelihoods at once
+        rho[:] = h_log_likes.reshape(-1, 1)
+
+        # Process FALSE_POSITIVE hypotheses
+        mask = h_types == Fates.FALSE_POSITIVE.value
+        if np.any(mask):
+            indices = np.where(mask)[0]
+            n = len(indices)
+            # Each FALSE_POSITIVE adds 2 entries:
+            # A[trk, counter] = 1, A[N+trk, counter] = 1
+            rows[entry_idx : entry_idx + n] = h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = N + h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+
+        # Process INIT_FATES hypotheses
+        for fate in INIT_FATES:
+            mask = h_types == fate.value
+            if np.any(mask):
+                indices = np.where(mask)[0]
+                n = len(indices)
+                # Each INIT adds 1 entry: A[N+trk, counter] = 1
+                rows[entry_idx : entry_idx + n] = N + h_ids[mask]
+                cols[entry_idx : entry_idx + n] = indices
+                entry_idx += n
+
+        # Process TERM_FATES hypotheses
+        for fate in TERM_FATES:
+            mask = h_types == fate.value
+            if np.any(mask):
+                indices = np.where(mask)[0]
+                n = len(indices)
+                # Each TERM adds 1 entry: A[trk, counter] = 1
+                rows[entry_idx : entry_idx + n] = h_ids[mask]
+                cols[entry_idx : entry_idx + n] = indices
+                entry_idx += n
+
+        # Process APOPTOSIS hypotheses
+        mask = h_types == Fates.APOPTOSIS.value
+        if np.any(mask):
+            indices = np.where(mask)[0]
+            n = len(indices)
+            # Each APOPTOSIS adds 1 entry: A[trk, counter] = 1
+            rows[entry_idx : entry_idx + n] = h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+
+        # Process LINK hypotheses (require additional data)
+        mask = h_types == Fates.LINK.value
+        if np.any(mask):
+            indices = np.where(mask)[0]
+            link_ids = np.array(
+                [trk_idx(self.hypotheses[i].link_ID) for i in indices], dtype=np.int32
+            )
+            n = len(indices)
+            # Each LINK adds 2 entries: A[trk_i, counter] = 1, A[N+trk_j, counter] = 1
+            rows[entry_idx : entry_idx + n] = h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = N + link_ids
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+
+        # Process DIVIDE hypotheses (require additional data)
+        mask = h_types == Fates.DIVIDE.value
+        if np.any(mask):
+            indices = np.where(mask)[0]
+            child_one_ids = np.array(
+                [trk_idx(self.hypotheses[i].child_one_ID) for i in indices],
+                dtype=np.int32,
+            )
+            child_two_ids = np.array(
+                [trk_idx(self.hypotheses[i].child_two_ID) for i in indices],
+                dtype=np.int32,
+            )
+            n = len(indices)
+            # Each DIVIDE adds 3 entries
+            rows[entry_idx : entry_idx + n] = h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = N + child_one_ids
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = N + child_two_ids
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+
+        # Process MERGE hypotheses (require additional data)
+        mask = h_types == Fates.MERGE.value
+        if np.any(mask):
+            indices = np.where(mask)[0]
+            parent_one_ids = np.array(
+                [trk_idx(self.hypotheses[i].parent_one_ID) for i in indices],
+                dtype=np.int32,
+            )
+            parent_two_ids = np.array(
+                [trk_idx(self.hypotheses[i].parent_two_ID) for i in indices],
+                dtype=np.int32,
+            )
+            n = len(indices)
+            # Each MERGE adds 3 entries
+            rows[entry_idx : entry_idx + n] = N + h_ids[mask]
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = parent_one_ids
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+            rows[entry_idx : entry_idx + n] = parent_two_ids
+            cols[entry_idx : entry_idx + n] = indices
+            entry_idx += n
+
+        # Trim arrays to actual size and create sparse matrix
+        rows = rows[:entry_idx].tolist()
+        cols = cols[:entry_idx].tolist()
+        vals = [1.0] * entry_idx
+
+        # Create sparse matrix with all entries at once
+        A = spmatrix(vals, rows, cols, (2 * N, n_hypotheses), "d")
+
+        return A, rho
+
+    def optimise(self):
         """Run the opimization algorithm.
 
         Returns
@@ -124,82 +291,12 @@ class TrackOptimiser:
         if self.options:
             logger.info(f"Using GLPK options: {self.options}...")
 
-        # anon function to renumber track ID from C++
-        def trk_idx(_h):
-            return int(_h) - 1
-
         # calculate the number of hypotheses, could use this moment to cull?
         n_hypotheses = len(self.hypotheses)
         N = max(int(h.ID) for h in self.hypotheses)
 
-        # A is the constraints matrix (store as sparse since mostly empty)
-        # note that we make this in the already transposed form...
-        A = spmatrix([], [], [], (2 * N, n_hypotheses), "d")
-        rho = matrix(0.0, (n_hypotheses, 1), "d")
-
-        # iterate over the hypotheses and build the constraints
-        # TODO(arl): vectorize this for increased performance
-        for counter, h in enumerate(self.hypotheses):
-            # set the hypothesis score
-            rho[counter] = h.log_likelihood
-
-            if h.hypothesis_type == Fates.FALSE_POSITIVE:
-                # is this a false positive?
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                A[N + trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type in INIT_FATES:
-                # an initialisation, therefore we only present this in the
-                # second half of the A matrix
-                trk = trk_idx(h.ID)
-                A[N + trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type in TERM_FATES:
-                # a termination event, entry in first half only
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.APOPTOSIS:
-                # an apoptosis event, entry in first half only
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
-                continue
-
-            elif h.hypothesis_type == Fates.LINK:
-                # a linkage event
-                trk_i = trk_idx(h.ID)
-                trk_j = trk_idx(h.link_ID)
-                A[trk_i, counter] = 1
-                A[N + trk_j, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.DIVIDE:
-                # a branch event
-                trk = trk_idx(h.ID)
-                child_one = trk_idx(h.child_one_ID)
-                child_two = trk_idx(h.child_two_ID)
-                A[trk, counter] = 1
-                A[N + child_one, counter] = 1
-                A[N + child_two, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.MERGE:
-                # a merge event
-                trk = trk_idx(h.ID)
-                parent_one = trk_idx(h.parent_one_ID)
-                parent_two = trk_idx(h.parent_two_ID)
-                A[N + trk, counter] = 1
-                A[parent_one, counter] = 1
-                A[parent_two, counter] = 1
-                continue
-
-            else:
-                raise ValueError(f"Unknown hypothesis: {h.hypothesis_type}")
+        # Build constraints matrix using vectorized operations
+        A, rho = self._build_constraints_matrix_vectorized(n_hypotheses, N)
 
         logger.info("Optimizing...")
 

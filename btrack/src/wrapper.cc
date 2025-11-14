@@ -307,6 +307,14 @@ PyHypothesis InterfaceWrapper::get_hypothesis(const unsigned int a_idx) {
   return h_engine.get_hypothesis(a_idx);
 };
 
+// get all hypotheses at once (bulk retrieval for performance)
+void InterfaceWrapper::get_all_hypotheses(PyHypothesis *a_hypotheses,
+                                          const unsigned int n_hypotheses) {
+  for (unsigned int i = 0; i < n_hypotheses; i++) {
+    a_hypotheses[i] = h_engine.get_hypothesis(i);
+  }
+};
+
 // merge tracks based on hypothesis IDs
 void InterfaceWrapper::merge(unsigned int *a_hypotheses,
                              unsigned int n_hypotheses) {

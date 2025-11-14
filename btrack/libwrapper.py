@@ -227,6 +227,14 @@ def get_library() -> ctypes.CDLL:  # noqa: PLR0915
     lib.get_hypothesis.restype = hypothesis.Hypothesis
     lib.get_hypothesis.argtypes = [ctypes.c_void_p, ctypes.c_uint]
 
+    # get all hypotheses at once (bulk retrieval)
+    lib.get_all_hypotheses.restype = None
+    lib.get_all_hypotheses.argtypes = [
+        ctypes.c_void_p,
+        ctypes.POINTER(hypothesis.Hypothesis),
+        ctypes.c_uint,
+    ]
+
     # merge following optimisation
     lib.merge.restype = None
     lib.merge.argtypes = [ctypes.c_void_p, np_uint_p, ctypes.c_uint]

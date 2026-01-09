@@ -1,6 +1,7 @@
 from btrack import btypes, utils
 from btrack.constants import DEFAULT_OBJECT_KEYS, Dimensionality
 from btrack.io import objects_from_array
+from btrack.io._localization import _is_unique
 
 from ._utils import create_test_image, create_test_tracklet
 
@@ -8,6 +9,32 @@ from contextlib import nullcontext
 
 import numpy as np
 import pytest
+
+
+def test_is_unique_boolean_array():
+    """Test that _is_unique returns False for boolean arrays."""
+    # Create a simple boolean mask
+    mask = np.array(
+        [[True, False, False], [False, True, False], [False, False, True]], dtype=bool
+    )
+    assert _is_unique(mask) is False
+
+
+def test_is_unique_labeled_array():
+    """Test that _is_unique returns True for already-labeled arrays."""
+    # Create a labeled array (each object has a unique integer ID)
+    labeled = np.array([[1, 0, 0], [0, 2, 0], [0, 0, 3]], dtype=int)
+    assert _is_unique(labeled) is True
+
+
+def test_is_unique_unlabeled_array():
+    """Test that _is_unique returns False for unlabeled binary arrays."""
+    # Create a mask with multiple separate objects all having the same
+    # non-sequential ID (5). After labeling, they should have IDs (1, 2)
+    unlabeled = np.array(
+        [[5, 5, 0, 0], [5, 5, 0, 0], [0, 0, 5, 5], [0, 0, 5, 5]], dtype=int
+    )
+    assert _is_unique(unlabeled) is False
 
 
 def _example_segmentation_generator():

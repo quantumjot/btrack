@@ -26,6 +26,8 @@ logger = logging.getLogger(__name__)
 
 def _is_unique(x: npt.NDArray) -> bool:
     """Check whether a segmentation is equivalent to the labeled version."""
+    if x.dtype == bool:
+        return False
     return np.array_equal(label(x), x)
 
 

@@ -48,7 +48,6 @@ docs/api/*
 downloads
 eggs
 env
-examples
 examples/napari.png
 htmlcov
 instance

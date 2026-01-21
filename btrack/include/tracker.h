@@ -164,6 +164,9 @@ public:
   void cost_CUDA(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
                  const size_t n_objects, const bool use_uniform_prior);
 
+  void cost_METAL(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
+                  const size_t n_objects, const bool use_uniform_prior);
+
   // calculate linkages based on belief matrix
   void link(Eigen::Ref<Eigen::MatrixXd> belief, const size_t n_tracks,
             const size_t n_objects);

@@ -237,6 +237,12 @@ EXTERN_DECL {
     return h->get_hypothesis(a_ID);
   };
 
+  SHARED_LIB void get_all_hypotheses(InterfaceWrapper * h,
+                                     PyHypothesis * a_hypotheses,
+                                     const unsigned int n_hypotheses) {
+    h->get_all_hypotheses(a_hypotheses, n_hypotheses);
+  };
+
   SHARED_LIB void merge(InterfaceWrapper * h, unsigned int *a_hypotheses,
                         unsigned int n_hypotheses) {
     h->merge(a_hypotheses, n_hypotheses);

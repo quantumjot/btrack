@@ -120,6 +120,10 @@ public:
   // return a specific hypothesis
   PyHypothesis get_hypothesis(const unsigned int a_ID);
 
+  // return all hypotheses as a contiguous array
+  void get_all_hypotheses(PyHypothesis *a_hypotheses,
+                          const unsigned int n_hypotheses);
+
   // merge tracks based on optimisation
   void merge(unsigned int *a_hypotheses, unsigned int n_hypotheses);
 

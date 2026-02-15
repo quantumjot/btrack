@@ -20,12 +20,25 @@ using namespace BayesianUpdateFunctions;
 
 std::tuple<double, double> BayesianUpdateFunctions::safe_bayesian_update(
     double prior_assign, double prob_assign, double prob_not_assign) {
-  double safe_prior_assign = std::max(prior_assign, 1e-99);
+  double safe_prior_assign = std::max(prior_assign, 1e-10);
   double inv_prior_assign = 1.0 - safe_prior_assign;
+  // Fix: Use inv_prior_assign instead of (1. - prob_assign)
+  // Correct Bayes' rule: P(D) = P(D|H)*P(H) + P(D|¬H)*P(¬H)
   double PrDP =
-      prob_assign * safe_prior_assign + prob_not_assign * (1. - prob_assign);
-  double posterior = (prob_assign * (safe_prior_assign / PrDP));
-  double update = (1. + (safe_prior_assign - posterior) / inv_prior_assign);
+      prob_assign * safe_prior_assign + prob_not_assign * inv_prior_assign;
+
+  // Prevent division by zero
+  if (PrDP < 1e-15) {
+    PrDP = 1e-15;
+  }
+
+  double posterior = (prob_assign * safe_prior_assign) / PrDP;
+
+  // Prevent division by zero in update calculation
+  double update =
+      (inv_prior_assign > 1e-15)
+          ? (1. + (safe_prior_assign - posterior) / inv_prior_assign)
+          : 1.0;
 
   return std::make_tuple(update, posterior);
 }

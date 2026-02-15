@@ -36,10 +36,17 @@ ObjectModel::ObjectModel(const Eigen::MatrixXd &transition,
 
 // run the forward pass of the model
 void ObjectModel::forward(const unsigned int observation) {
-  Eigen::VectorXd update(states);
-  for (unsigned int s = 0; s < states; s++) {
-    update = transition.col(s).array() * x_hat.array();
-    x_hat(s) = emission(s, observation) * update.sum();
+  // Vectorized implementation: x_new = emission(obs) .* (Transition^T * x_old)
+  // This correctly implements the forward algorithm without in-place updates
+  Eigen::VectorXd x_hat_new = (transition.transpose() * x_hat).array() *
+                              emission.col(observation).array();
+
+  // Normalize to prevent numerical underflow
+  double sum = x_hat_new.sum();
+  if (sum > 1e-15) {
+    x_hat = x_hat_new / sum;
+  } else {
+    x_hat = x_hat_new;
   }
 }
 

@@ -89,7 +89,7 @@ unsigned int BayesianTracker::set_motion_model(
     const unsigned int measurements, const unsigned int states, double *A_raw,
     double *H_raw, double *P_raw, double *Q_raw, double *R_raw, const double dt,
     const double accuracy, const unsigned int max_lost,
-    const double prob_not_assign) {
+    const double prob_not_assign, const bool use_bhattacharyya) {
   // do some error checking
   if (prob_not_assign <= 0. || prob_not_assign >= 1.)
     return ERROR_prob_not_assign_out_of_range;
@@ -103,6 +103,7 @@ unsigned int BayesianTracker::set_motion_model(
   this->max_lost = max_lost;
   this->prob_not_assign = prob_not_assign;
   this->accuracy = accuracy;
+  this->use_bhattacharyya = use_bhattacharyya;
 
   if (verbose && DEBUG) {
     std::cout << "MAX_LOST: " << this->max_lost << std::endl;
@@ -436,8 +437,13 @@ double BayesianTracker::prob_update_motion(const TrackletPtr &trk,
   double prob_assign = 0.;
 
   // calculate the probability that this is the correct track
-  prob_assign =
-      ProbabilityDensityFunctions::multivariate_erf(trk, obj, this->accuracy);
+  if (this->use_bhattacharyya) {
+    prob_assign =
+        ProbabilityDensityFunctions::bhattacharyya(trk, obj, this->accuracy);
+  } else {
+    prob_assign =
+        ProbabilityDensityFunctions::multivariate_erf(trk, obj, this->accuracy);
+  }
 
   // set the probability of assignment to zero if the track is currently
   // in a metaphase state and the object to link to is anaphase

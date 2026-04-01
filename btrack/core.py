@@ -346,6 +346,7 @@ class BayesianTracker:
             model.accuracy,
             model.max_lost,
             model.prob_not_assign,
+            model.use_bhattacharyya,
         )
 
     def _object_model(self, model: models.ObjectModel) -> None:

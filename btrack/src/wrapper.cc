@@ -60,15 +60,13 @@ void InterfaceWrapper::set_update_features(
 // check the update features of the tracker
 
 // tracking and basic data handling
-void InterfaceWrapper::set_motion_model(const unsigned int measurements,
-                                        const unsigned int states, double *A,
-                                        double *H, double *P, double *Q,
-                                        double *R, double dt, double accuracy,
-                                        unsigned int max_lost,
-                                        double prob_not_assign) {
+void InterfaceWrapper::set_motion_model(
+    const unsigned int measurements, const unsigned int states, double *A,
+    double *H, double *P, double *Q, double *R, double dt, double accuracy,
+    unsigned int max_lost, double prob_not_assign, bool use_bhattacharyya) {
   // set the motion model of the tracker
   tracker.set_motion_model(measurements, states, A, H, P, Q, R, dt, accuracy,
-                           max_lost, prob_not_assign);
+                           max_lost, prob_not_assign, use_bhattacharyya);
 };
 
 // set the maximum search radius

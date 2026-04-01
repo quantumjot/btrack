@@ -102,7 +102,8 @@ public:
   set_motion_model(const unsigned int measurements, const unsigned int states,
                    double *A_raw, double *H_raw, double *P_raw, double *Q_raw,
                    double *R_raw, const double dt, const double accuracy,
-                   const unsigned int max_lost, const double prob_not_assign);
+                   const unsigned int max_lost, const double prob_not_assign,
+                   const bool use_bhattacharyya);
 
   // set up the object model
   unsigned int set_object_model(const unsigned int states,
@@ -211,6 +212,7 @@ private:
   double prob_not_assign = PROB_NOT_ASSIGN;
   double accuracy = DEFAULT_ACCURACY;
   unsigned int max_lost = MAX_LOST;
+  bool use_bhattacharyya = false;
 
   // provide a global ID counter for new tracks
   // NOTE(arl): because the increment is before the return, all tracks will

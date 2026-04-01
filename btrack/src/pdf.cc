@@ -70,6 +70,35 @@ ProbabilityDensityFunctions::multivariate_erf(const TrackletPtr &trk,
   return phi;
 }
 
+// Bhattacharyya coefficient between the Kalman prediction Gaussian and an
+// isotropic observation Gaussian centred at obj->position() with std dev
+// `accuracy`. Returns a value in (0, 1]; larger means better overlap.
+double ProbabilityDensityFunctions::bhattacharyya(const TrackletPtr &trk,
+                                                  const TrackObjectPtr &obj,
+                                                  const double accuracy = 2.) {
+  Prediction p = trk->predict();
+  Eigen::Vector3d x = obj->position();
+
+  double acc2 = accuracy * accuracy;
+  double mahal = 0.;
+  double det_term = 0.;
+
+  for (unsigned int i = 0; i < 3; i++) {
+    double sigma2 = p.covar(i, i);
+    double d = p.mu(i) - x(i);
+    double sum_var = sigma2 + acc2;
+
+    mahal += (d * d) / sum_var;
+    det_term += std::log(sum_var / (2. * std::sqrt(sigma2) * accuracy));
+  }
+
+  double D_B = 0.25 * mahal + 0.5 * det_term;
+  double bc = std::exp(-D_B);
+
+  assert(!std::isnan(bc));
+  return bc;
+}
+
 // cosine similarity
 double
 ProbabilityDensityFunctions::cosine_similarity(const TrackletPtr &trk,

@@ -116,6 +116,7 @@ def get_library() -> ctypes.CDLL:  # noqa: PLR0915
         ctypes.c_double,
         ctypes.c_uint,
         ctypes.c_double,
+        ctypes.c_bool,
     ]
 
     # set the object model

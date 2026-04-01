@@ -42,7 +42,18 @@ class MotionModel(BaseModel):
     dt : float
         Time difference (always 1).
     accuracy : float
-        Integration limits for calculating the probabilities.
+        Integration limits for calculating the probabilities. When
+        ``use_bhattacharyya=True``, interpreted as the std dev of the isotropic
+        observation position uncertainty.
+    use_bhattacharyya : bool
+        If ``True``, use the Bhattacharyya coefficient to compute the motion
+        assignment probability instead of the default erf box-integral method.
+        The Bhattacharyya coefficient treats the Kalman filter prediction as
+        one Gaussian and the observation as an isotropic Gaussian with std dev
+        ``accuracy``, then returns their overlap as a value in ``(0, 1]``.
+        This is rotationally symmetric and gives ``accuracy`` a concrete
+        physical meaning (detector/segmentation positional uncertainty).
+        Default is ``False`` (original erf method).
     max_lost : int
         Number of frames without observation before marking as lost.
     prob_not_assign : float
@@ -85,6 +96,7 @@ class MotionModel(BaseModel):
     Q: npt.NDArray | None = None
     dt: float = 1.0
     accuracy: float = 2.0
+    use_bhattacharyya: bool = False
     max_lost: int = constants.MAX_LOST
     prob_not_assign: float = constants.PROB_NOT_ASSIGN
     name: str = "Default"

@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 """Benchmark script for hypothesis generation performance analysis."""
-# ruff: noqa: T201, E501, RUF001, PLC0415
+# ruff: noqa: T201, E501, RUF001
+
+import btrack
+from btrack import datasets
 
 import time
 from collections import Counter
 
 import numpy as np
-
-import btrack
-from btrack import datasets
-from btrack.constants import Fates
 
 
 def benchmark_hypothesis_generation(n_objects=100, n_frames=50):

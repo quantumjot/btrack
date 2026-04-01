@@ -83,10 +83,10 @@ EXTERN_DECL {
                          const unsigned int states, double *A, double *H,
                          double *P, double *Q, double *R, double dt,
                          double accuracy, unsigned int max_lost,
-                         double prob_not_assign) {
+                         double prob_not_assign, bool use_bhattacharyya) {
     // set the motion_model settings
     h->set_motion_model(measurements, states, A, H, P, Q, R, dt, accuracy,
-                        max_lost, prob_not_assign);
+                        max_lost, prob_not_assign, use_bhattacharyya);
   }
 
   SHARED_LIB void max_search_radius(InterfaceWrapper * h,

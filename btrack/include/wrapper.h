@@ -49,7 +49,7 @@ public:
                         const unsigned int states, double *A, double *H,
                         double *P, double *Q, double *R, double dt,
                         double accuracy, unsigned int max_lost,
-                        double prob_not_assign);
+                        double prob_not_assign, bool use_bhattacharyya);
 
   // set the maximum search radius
   void set_max_search_radius(const float max_search_radius);

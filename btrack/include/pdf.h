@@ -34,6 +34,9 @@ double cheat_multivariate_normal(const TrackletPtr &trk,
 double multivariate_erf(const TrackletPtr &trk, const TrackObjectPtr &obj,
                         const double accuracy);
 
+double bhattacharyya(const TrackletPtr &trk, const TrackObjectPtr &obj,
+                     const double accuracy);
+
 double cosine_similarity(const TrackletPtr &trk, const TrackObjectPtr &obj);
 
 double soft_cosine_similarity(const TrackletPtr &trk,

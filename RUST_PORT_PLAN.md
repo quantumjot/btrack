@@ -60,27 +60,27 @@ This document outlines the architecture, roadmap, and implementation strategy fo
 ## 3. Implementation Roadmap
 
 ### Phase 1: Workspace & Build System Setup
-- [ ] Initialize Cargo project structure under `crates/btrack_core` (or root `Cargo.toml`).
-- [ ] Configure `pyproject.toml` with `maturin` as the build backend.
-- [ ] Set up basic PyO3 skeleton module to verify compiling and importing inside the Python virtual environment.
-- [ ] Ensure local dev workflow works: `maturin develop` inside the python venv.
+- [x] Initialize Cargo project structure under `crates/btrack_core` (or root `Cargo.toml`).
+- [x] Configure `pyproject.toml` with `maturin` as the build backend.
+- [x] Set up basic PyO3 skeleton module to verify compiling and importing inside the Python virtual environment.
+- [x] Ensure local dev workflow works: `maturin develop` inside the python venv.
 
 ### Phase 2: Core Data Types & Mathematical Primitives
 *Source references: `btrack/include/types.h`, `defs.h`, `pdf.cc`, `bayes.cc`, `motion.cc`, `hyperbin.cc`*
 
-- [ ] **TrackObject & ImagingVolume**:
+- [x] **TrackObject & ImagingVolume**:
   - `TrackObject`: Position $(x, y, z)$, frame $t$, dummy flag, label, and feature vectors.
   - `ImagingVolume`: Bounding volume, automatic 2D vs 3D detection, boundary proximity calculation (`dist_from_border`).
-- [ ] **MotionModel (Kalman Filter)**:
+- [x] **MotionModel (Kalman Filter)**:
   - Transition matrix $A$, observation matrix $H$, covariance $P$, process noise $Q$, measurement noise $R$.
   - Prediction and update steps:
     $$\hat{x}_{k|k-1} = A \hat{x}_{k-1}, \quad P_{k|k-1} = A P_{k-1} A^T + Q$$
     $$K = P_{k|k-1} H^T (H P_{k|k-1} H^T + R)^{-1}$$
     $$\hat{x}_k = \hat{x}_{k|k-1} + K (z_k - H \hat{x}_{k|k-1}), \quad P_k = (I - KH) P_{k|k-1}$$
-- [ ] **Bayesian Updating & Error Function PDF**:
+- [x] **Bayesian Updating & Error Function PDF**:
   - `multivariate_erf`: Exact erf-based spatial overlap integral over observation bounding regions.
   - `safe_bayesian_update`: Bayesian odds calculation with numerical clamping.
-- [ ] **Spatial-Temporal Hashing (`HypercubeBin`)**:
+- [x] **Spatial-Temporal Hashing (`HypercubeBin`)**:
   - Multi-dimensional grid binning for localized neighbor lookups.
 
 ### Phase 3: Tracklet Management & Tracker Engine

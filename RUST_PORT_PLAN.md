@@ -86,11 +86,11 @@ This document outlines the architecture, roadmap, and implementation strategy fo
 ### Phase 3: Tracklet Management & Tracker Engine
 *Source references: `tracklet.cc`, `manager.cc`, `tracker.cc`*
 
-- [ ] **Tracklet**:
+- [x] **Tracklet**:
   - Store observation histories, Kalman states $(\mu, \Sigma)$, track status (`active`, `lost`), lineage IDs (`parent`, `root`, `children`), and track fate.
-- [ ] **TrackManager**:
+- [x] **TrackManager**:
   - ID generation, track storage, active/lost tracking lists, dummy point insertion, and candidate graph edge tracking.
-- [ ] **BayesianTracker**:
+- [x] **BayesianTracker**:
   - Frame-by-frame loop (`step()` and `track()`):
     1. Filter active tracks within volume.
     2. Collect observations for current frame.

@@ -152,7 +152,7 @@ impl BayesianTracker {
 
         self.current_frame += 1;
         self.initialised = true;
-        self.statistics.error = TrackingError::Success;
+        self.statistics.error = TrackingError::None;
         Ok(())
     }
 

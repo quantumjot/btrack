@@ -409,13 +409,15 @@ class BayesianTracker:
         # store a copy of the list of objects
         self._objects += objects
 
-    def _stats(self, info_ptr: ctypes.pointer) -> btypes.PyTrackingInfo:
+    def _stats(
+        self, info_ptr: Union[ctypes.pointer, btypes.PyTrackingInfo]
+    ) -> btypes.PyTrackingInfo:
         """Cast the info pointer back to an object."""
-
-        if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
-            raise TypeError("Stats requires the pointer to the object")
-
-        return info_ptr.contents
+        if hasattr(info_ptr, "contents"):
+            return info_ptr.contents
+        if isinstance(info_ptr, btypes.PyTrackingInfo):
+            return info_ptr
+        return info_ptr
 
     def track_interactive(self, *args, **kwargs) -> None:
         logger.warning("`track_interactive` will be deprecated. Use `track` instead.")

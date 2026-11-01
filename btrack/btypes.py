@@ -17,8 +17,8 @@ from __future__ import annotations
 
 from . import constants
 
-import ctypes
 from collections import OrderedDict
+from dataclasses import asdict, dataclass
 from typing import Any, ClassVar, NamedTuple
 
 import numpy as np
@@ -42,7 +42,7 @@ class ImagingVolume(NamedTuple):
         )
 
 
-class PyTrackObject(ctypes.Structure):
+class PyTrackObject:
     """The base `btrack` track object.
 
     Primitive class to store information about an object. Essentially a single
@@ -80,33 +80,43 @@ class PyTrackObject(ctypes.Structure):
         Dictionary of properties associated with this object.
     state : constants.States
         A state label for the object. See `constants.States`
-
-    Notes
-    -----
-    stackoverflow.com/questions/23329663/access-np-array-in-ctypes-struct
-
     """
 
     _fields_: ClassVar[list] = [
-        ("ID", ctypes.c_long),
-        ("x", ctypes.c_double),
-        ("y", ctypes.c_double),
-        ("z", ctypes.c_double),
-        ("t", ctypes.c_uint),
-        ("dummy", ctypes.c_bool),
-        ("states", ctypes.c_uint),
-        ("label", ctypes.c_int),
-        ("n_features", ctypes.c_int),
-        ("features", ctypes.POINTER(ctypes.c_double)),
+        ("ID", int),
+        ("x", float),
+        ("y", float),
+        ("z", float),
+        ("t", int),
+        ("dummy", bool),
+        ("states", int),
+        ("label", int),
+        ("n_features", int),
+        ("features", None),
     ]
 
-    def __init__(self):
-        super().__init__()
-        self.dummy = False
-        self.label = constants.States.NULL.value
-        self.states = len(constants.States)
+    def __init__(
+        self,
+        ID: int = 0,
+        x: float = 0.0,
+        y: float = 0.0,
+        z: float = 0.0,
+        t: int = 0,
+        dummy: bool = False,
+        states: int = len(constants.States),
+        label: int = constants.States.NULL.value,
+    ):
+        self.ID = int(ID)
+        self.x = float(x)
+        self.y = float(y)
+        self.z = float(z)
+        self.t = int(t)
+        self.dummy = bool(dummy)
+        self.states = int(states)
+        self.label = int(label)
         self.n_features = 0
-        self._properties = {}
+        self.features = np.zeros(0, dtype=np.float64)
+        self._properties: dict[str, Any] = {}
 
     @property
     def properties(self) -> dict[str, Any]:
@@ -123,46 +133,44 @@ class PyTrackObject(ctypes.Structure):
 
     def set_features(self, keys: list[str]) -> None:
         """Set features to be used by the tracking update."""
-
         if not keys:
             self.n_features = 0
+            self.features = np.zeros(0, dtype=np.float64)
             return
 
         if any(k not in self.properties for k in keys):
             missing_features = list(set(keys).difference(set(self.properties.keys())))
             raise KeyError(f"Feature(s) missing: {missing_features}.")
 
-        # store a reference to the numpy array so that Python maintains
-        # ownership of the memory allocated to the numpy array
         self._features = np.concatenate(
             [np.asarray(self.properties[k]).ravel() for k in keys], axis=-1
         ).astype(np.float64)
 
-        # NOTE(arl): do we want to normalise the features here???
-        # self._features = features / np.linalg.norm(features)
-        self.features = np.ctypeslib.as_ctypes(self._features)
+        self.features = self._features
         self.n_features = len(self._features)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the fields and their values."""
         node = {
-            k: getattr(self, k)
-            for k, _ in PyTrackObject._fields_
-            if k not in ("features", "n_features")
+            "ID": self.ID,
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+            "t": self.t,
+            "dummy": self.dummy,
+            "states": self.states,
+            "label": self.label,
         }
         node |= self.properties
         return node
 
-    @staticmethod
-    def from_dict(properties: dict[str, Any]) -> PyTrackObject:
+    @classmethod
+    def from_dict(cls, properties: dict[str, Any]) -> PyTrackObject:
         """Build an object from a dictionary."""
-        obj = PyTrackObject()
-        fields = dict(PyTrackObject._fields_)
-        attr = [k for k in fields if k in properties]
-        for key in attr:
+        obj = cls()
+        fields = {"ID", "x", "y", "z", "t", "dummy", "states", "label"}
+        for key in fields.intersection(properties):
             new_data = properties[key]
-
-            # fix for implicit type conversion
             if key in ("ID", "t", "states", "label"):
                 setattr(obj, key, int(new_data))
             elif key in ("dummy",):
@@ -181,7 +189,8 @@ class PyTrackObject(ctypes.Structure):
         return _pandas_html_repr(self)
 
 
-class PyTrackingInfo(ctypes.Structure):
+@dataclass
+class PyTrackingInfo:
     """Primitive class to store information about the tracking output.
 
     Parameters
@@ -208,33 +217,37 @@ class PyTrackingInfo(ctypes.Structure):
         Typical probability of losing track.
     complete : bool
         Flag denoting that the tracking is complete.
-
-    Notes
-    -----
-    TODO(arl): should update to give more useful statistics, perhaps
-    histogram of probabilities and timings.
-
     """
 
+    error: int = 910
+    n_tracks: int = 0
+    n_active: int = 0
+    n_conflicts: int = 0
+    n_lost: int = 0
+    t_update_belief: float = 0.0
+    t_update_link: float = 0.0
+    t_total_time: float = 0.0
+    p_link: float = 0.0
+    p_lost: float = 0.0
+    complete: bool = False
+
     _fields_: ClassVar[list] = [
-        ("error", ctypes.c_uint),
-        ("n_tracks", ctypes.c_uint),
-        ("n_active", ctypes.c_uint),
-        ("n_conflicts", ctypes.c_uint),
-        ("n_lost", ctypes.c_uint),
-        ("t_update_belief", ctypes.c_float),
-        ("t_update_link", ctypes.c_float),
-        ("t_total_time", ctypes.c_float),
-        ("p_link", ctypes.c_float),
-        ("p_lost", ctypes.c_float),
-        ("complete", ctypes.c_bool),
+        ("error", int),
+        ("n_tracks", int),
+        ("n_active", int),
+        ("n_conflicts", int),
+        ("n_lost", int),
+        ("t_update_belief", float),
+        ("t_update_link", float),
+        ("t_total_time", float),
+        ("p_link", float),
+        ("p_lost", float),
+        ("complete", bool),
     ]
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary of the statistics"""
-        # TODO(arl): make this more readable by converting seconds, ms
-        # and interpreting error messages?
-        return {k: getattr(self, k) for k, typ in PyTrackingInfo._fields_}
+        return asdict(self)
 
     @property
     def tracker_active(self) -> bool:
@@ -243,7 +256,8 @@ class PyTrackingInfo(ctypes.Structure):
         return no_error and not self.complete
 
 
-class PyGraphEdge(ctypes.Structure):
+@dataclass
+class PyGraphEdge:
     """A structure defining an edge in the association graph. This is derived
     from the Bayesian belief matrix in the initial step of the tracking
     algorithm.
@@ -256,23 +270,33 @@ class PyGraphEdge(ctypes.Structure):
         A reference to a target object.
     score : float
         The posterior probability of linking the target object to the source.
-
-    Notes
-    -----
-    This structure does not guarantee that the target timestamp is *after* the
-    source timestamp, we just assume that the tracker has done it's job.
+    edge_type : int
+        Type of graph edge.
     """
 
+    source: int = 0
+    target: int = 0
+    score: float = 0.0
+    edge_type: int = 0
+
     _fields_: ClassVar[list] = [
-        ("source", ctypes.c_long),
-        ("target", ctypes.c_long),
-        ("score", ctypes.c_double),
-        ("edge_type", ctypes.c_uint),
+        ("source", int),
+        ("target", int),
+        ("score", float),
+        ("edge_type", int),
     ]
+
+    @property
+    def probability(self) -> float:
+        return self.score
+
+    @probability.setter
+    def probability(self, value: float) -> None:
+        self.score = float(value)
 
     def to_dict(self) -> dict[str, Any]:
         """Return a dictionary describing the edge."""
-        return {k: getattr(self, k) for k, _ in PyGraphEdge._fields_}
+        return asdict(self)
 
 
 class Tracklet:

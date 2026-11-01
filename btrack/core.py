@@ -4,12 +4,11 @@ from . import btypes, config, constants, libwrapper, models, utils
 from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
-import ctypes
 import itertools
 import logging
 import os
 import warnings
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -410,13 +409,11 @@ class BayesianTracker:
         self._objects += objects
 
     def _stats(
-        self, info_ptr: Union[ctypes.pointer, btypes.PyTrackingInfo]
+        self, info_ptr: Any
     ) -> btypes.PyTrackingInfo:
         """Cast the info pointer back to an object."""
         if hasattr(info_ptr, "contents"):
             return info_ptr.contents
-        if isinstance(info_ptr, btypes.PyTrackingInfo):
-            return info_ptr
         return info_ptr
 
     def track_interactive(self, *args, **kwargs) -> None:

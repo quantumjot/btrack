@@ -8,6 +8,8 @@ pub mod hyperbin;
 pub mod tracklet;
 pub mod manager;
 pub mod tracker;
+pub mod hypothesis;
+pub mod optimiser;
 
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
@@ -22,6 +24,10 @@ use crate::tracker::{BayesianTracker, TrackerConfig};
 use crate::motion::MotionModel;
 #[cfg(feature = "python")]
 use crate::types::TrackObject;
+#[cfg(feature = "python")]
+use crate::hypothesis::{Hypothesis, HypothesisEngine, HypothesisParams};
+#[cfg(feature = "python")]
+use crate::optimiser::TrackOptimiser;
 
 #[cfg(feature = "python")]
 #[pyfunction]
@@ -35,11 +41,56 @@ fn cosine_similarity(f1: Vec<f64>, f2: Vec<f64>) -> f64 {
     pdf::cosine_similarity(&f1, &f2)
 }
 
+/// Python-compatible Hypothesis structure.
+#[cfg(feature = "python")]
+#[pyclass(name = "Hypothesis")]
+#[derive(Debug, Clone)]
+pub struct PyHypothesis {
+    #[pyo3(get)]
+    pub hypothesis: u32,
+    #[pyo3(get, name = "ID")]
+    pub id: usize,
+    #[pyo3(get)]
+    pub probability: f64,
+    #[pyo3(get, name = "link_ID")]
+    pub link_id: usize,
+    #[pyo3(get, name = "child_one_ID")]
+    pub child_one_id: usize,
+    #[pyo3(get, name = "child_two_ID")]
+    pub child_two_id: usize,
+    #[pyo3(get, name = "parent_one_ID")]
+    pub parent_one_id: usize,
+    #[pyo3(get, name = "parent_two_ID")]
+    pub parent_two_id: usize,
+}
+
+#[cfg(feature = "python")]
+#[pymethods]
+impl PyHypothesis {
+    #[getter]
+    fn hypothesis_type(&self) -> u32 {
+        self.hypothesis
+    }
+
+    #[getter]
+    fn log_likelihood(&self) -> f64 {
+        self.probability
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "Hypothesis(type={}, ID={}, prob={:.4}, link={}, children=({}, {}))",
+            self.hypothesis, self.id, self.probability, self.link_id, self.child_one_id, self.child_two_id
+        )
+    }
+}
+
 /// PyO3 Python wrapper around BayesianTracker.
 #[cfg(feature = "python")]
 #[pyclass(name = "BayesianTracker")]
 pub struct PyBayesianTracker {
     inner: BayesianTracker,
+    stored_hypotheses: Vec<Hypothesis>,
 }
 
 #[cfg(feature = "python")]
@@ -79,6 +130,7 @@ impl PyBayesianTracker {
 
         Ok(Self {
             inner: BayesianTracker::new(motion_model, config),
+            stored_hypotheses: Vec::new(),
         })
     }
 
@@ -219,6 +271,104 @@ impl PyBayesianTracker {
     fn num_edges(&self) -> usize {
         self.inner.manager.num_edges()
     }
+
+    #[pyo3(signature = (params_dict=None, start_frame=None, stop_frame=None))]
+    fn create_hypotheses(
+        &mut self,
+        params_dict: Option<&Bound<'_, pyo3::types::PyDict>>,
+        start_frame: Option<usize>,
+        stop_frame: Option<usize>,
+    ) -> usize {
+        let mut params = HypothesisParams::default();
+
+        if let Some(dict) = params_dict {
+            if let Ok(Some(v)) = dict.get_item("lambda_time") {
+                if let Ok(val) = v.extract() { params.lambda_time = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("lambda_dist") {
+                if let Ok(val) = v.extract() { params.lambda_dist = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("lambda_link") {
+                if let Ok(val) = v.extract() { params.lambda_link = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("lambda_branch") {
+                if let Ok(val) = v.extract() { params.lambda_branch = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("eta") {
+                if let Ok(val) = v.extract() { params.eta = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("theta_dist") {
+                if let Ok(val) = v.extract() { params.theta_dist = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("theta_time") {
+                if let Ok(val) = v.extract() { params.theta_time = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("dist_thresh") {
+                if let Ok(val) = v.extract() { params.dist_thresh = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("time_thresh") {
+                if let Ok(val) = v.extract() { params.time_thresh = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("apop_thresh") {
+                if let Ok(val) = v.extract() { params.apop_thresh = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("segmentation_miss_rate") {
+                if let Ok(val) = v.extract() { params.segmentation_miss_rate = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("apoptosis_rate") {
+                if let Ok(val) = v.extract() { params.apoptosis_rate = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("relax") {
+                if let Ok(val) = v.extract() { params.relax = val; }
+            }
+            if let Ok(Some(v)) = dict.get_item("hypotheses_to_generate") {
+                if let Ok(val) = v.extract() { params.hypotheses_to_generate = val; }
+            }
+        }
+
+        let f0 = start_frame.unwrap_or(0);
+        let f1 = stop_frame.unwrap_or(usize::MAX);
+
+        let mut engine = HypothesisEngine::new(params, &self.inner.volume, (f0, f1));
+        let hyps = engine.create(&self.inner.manager);
+        let count = hyps.len();
+        self.stored_hypotheses = hyps;
+        count
+    }
+
+    fn get_hypotheses(&self) -> Vec<PyHypothesis> {
+        self.stored_hypotheses
+            .iter()
+            .map(|h| PyHypothesis {
+                hypothesis: h.hypothesis_type as u32,
+                id: h.id,
+                probability: h.probability,
+                link_id: h.link_id,
+                child_one_id: h.child_one_id,
+                child_two_id: h.child_two_id,
+                parent_one_id: h.parent_one_id,
+                parent_two_id: h.parent_two_id,
+            })
+            .collect()
+    }
+
+    fn get_hypothesis(&self, idx: usize) -> Option<PyHypothesis> {
+        self.stored_hypotheses.get(idx).map(|h| PyHypothesis {
+            hypothesis: h.hypothesis_type as u32,
+            id: h.id,
+            probability: h.probability,
+            link_id: h.link_id,
+            child_one_id: h.child_one_id,
+            child_two_id: h.child_two_id,
+            parent_one_id: h.parent_one_id,
+            parent_two_id: h.parent_two_id,
+        })
+    }
+
+    fn optimise(&self) -> Vec<usize> {
+        let opt = TrackOptimiser::new(&self.stored_hypotheses);
+        opt.optimise()
+    }
 }
 
 #[cfg(feature = "python")]
@@ -228,5 +378,6 @@ fn _btrack_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(safe_bayesian_update, m)?)?;
     m.add_function(wrap_pyfunction!(cosine_similarity, m)?)?;
     m.add_class::<PyBayesianTracker>()?;
+    m.add_class::<PyHypothesis>()?;
     Ok(())
 }

@@ -472,8 +472,10 @@ impl BayesianTracker {
         if !self.initialised {
             self.initialise()?;
         }
-        let total_frames = self.frames.len();
-        self.step(total_frames + 1)
+        let first = *self.frames.first().unwrap_or(&0);
+        let last = *self.frames.last().unwrap_or(&0);
+        let total_span = if last >= first { last - first + 1 } else { 1 };
+        self.step(total_span + 1)
     }
 }
 

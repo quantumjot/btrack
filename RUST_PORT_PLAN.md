@@ -100,7 +100,7 @@ This document outlines the architecture, roadmap, and implementation strategy fo
 ### Phase 4: Hypothesis Generation Engine
 *Source references: `btrack/include/hypothesis.h`, `hypothesis.cc`*
 
-- [ ] Define hypothesis types:
+- [x] Define hypothesis types:
   - `FalsePositive` ($P_{FP}$)
   - `Initialize` ($P_{init}$)
   - `Terminate` ($P_{term}$)
@@ -108,25 +108,25 @@ This document outlines the architecture, roadmap, and implementation strategy fo
   - `Branch` / Division ($P_{branch}$)
   - `Apoptosis` / Dead ($P_{dead}$)
   - `Merge` ($P_{merge}$)
-- [ ] Implement `HypothesisEngine`:
+- [x] Implement `HypothesisEngine`:
   - Query spatial hash bins for candidate track pairs/triplets within time threshold $\Delta t \le \theta_{time}$ and distance threshold $d \le \theta_{dist}$.
   - Compute log-likelihood penalties with user parameters ($\lambda_{time}, \lambda_{dist}, \lambda_{link}, \lambda_{branch}$, etc.).
 
 ### Phase 5: Rust ILP Solver (Replacing `cvxopt.glpk`)
 *Source reference: `btrack/optimise/optimiser.py`*
 
-- [ ] **Problem Formulation**:
+- [x] **Problem Formulation**:
   - Decision variables $x_k \in \{0, 1\}$ for each hypothesis $k \in \{0, \dots, M-1\}$.
   - Objective:
     $$\min \sum_{k=0}^{M-1} -\rho_k x_k \quad \text{where } \rho_k = \ln P(h_k)$$
   - Subject to exact inflow and outflow constraints:
     $$A x = \mathbf{1}_{2N}$$
     where $N$ is the number of tracklets, row $trk$ represents outflow/termination, and row $N + trk$ represents inflow/initialization.
-- [ ] **HiGHS Integration**:
-  - Construct sparse constraints directly in memory using the `highs` crate (or `good_lp`).
+- [x] **Pure Rust MILP Branch-and-Bound Solver**:
+  - Construct sparse constraints directly in memory using `minilp` and branch-and-bound.
   - Solve the binary integer program.
   - Return the indices of selected hypotheses ($x_k = 1$).
-  - Remove `cvxopt` from Python dependencies!
+  - Eliminate `cvxopt` and GLPK!
 
 ### Phase 6: Post-Optimization Graph Merging & Lineage
 *Source reference: `btrack/src/manager.cc`*

@@ -17,6 +17,7 @@ nalgebra = { version = "0.33" }
 statrs = "0.17"
 hashbrown = "0.14"
 thiserror = "1.0"
+minilp = "0.2.2"
 
 [features]
 default = []

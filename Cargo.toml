@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "crates/btrack_core",
+]
+resolver = "2"

@@ -372,7 +372,7 @@ class BayesianTracker:
     @property
     def frame_range(self) -> tuple:
         """Return the frame range."""
-        return tuple(self.configuration.frame_range)
+        return tuple(self._frame_range)
 
     @property
     def objects(self) -> list[btypes.PyTrackObject]:

@@ -20,7 +20,6 @@ from btrack.utils import log_debug_info
 
 import logging
 import os
-import platform
 from pathlib import Path
 
 import numpy as np

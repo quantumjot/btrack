@@ -26,7 +26,7 @@ class BayesianTracker:
     BayesianTracker is a multi object tracking algorithm, specifically used to
     reconstruct tracks in crowded fields. Here we use a probabilistic network of
     information to perform the trajectory linking. This class is a wrapper for
-    the C++ implementation of the BayesianTracker.
+    the Rust implementation of the BayesianTracker.
 
     Parameters
     ----------
@@ -124,7 +124,7 @@ class BayesianTracker:
         self,
         verbose: bool = True,  # noqa: FBT001 FBT002
     ):
-        """Initialise the BayesianTracker C++ engine and parameters."""
+        """Initialise the BayesianTracker Rust engine and parameters."""
 
         # load the library, get an instance of the engine
         self._initialised = False
@@ -203,7 +203,7 @@ class BayesianTracker:
         else:
             object.__setattr__(self, attr, value)
 
-        # if we need to update the C++ library instance, do it here
+        # if we need to update the Rust library instance, do it here
         attrs_to_update = [
             "motion_model",
             "object_model",
@@ -332,7 +332,7 @@ class BayesianTracker:
             A motion model to be used by the tracker.
         """
 
-        # need to populate fields in the C++ library
+        # need to populate fields in the Rust library
         self._lib.motion(
             self._engine,
             model.measurements,
@@ -360,7 +360,7 @@ class BayesianTracker:
         logger.info(f"Loading object model: {model.name}")
         self.configuration.object_model = model
 
-        # need to populate fields in the C++ library
+        # need to populate fields in the Rust library
         self._lib.model(
             self._engine,
             model.states,

@@ -56,8 +56,7 @@ class TrackerConfig(BaseModel):
                 Use the CUDA implementation of the Bayesian update method. Not
                 currently implemented.
     optimizer_options: dict
-        Additional options to pass to the optimizer. See `cvxopt.glpk` for more
-        details of options that can be passed.
+        Additional options to pass to the optimizer.
     features : list
         A list of feature names to be used during tracking updates. These must
         correspond to named features found in the properties of each

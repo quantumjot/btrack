@@ -16,7 +16,7 @@
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
-from btrack.constants import GLPK_OPTIONS, Fates
+from btrack.constants import GLPK_OPTIONS
 
 from . import hypothesis
 
@@ -26,19 +26,6 @@ import _btrack_core
 
 # get the logger instance
 logger = logging.getLogger(__name__)
-
-INIT_FATES = (
-    Fates.INITIALIZE,
-    Fates.INITIALIZE_BORDER,
-    Fates.INITIALIZE_FRONT,
-    Fates.INITIALIZE_LAZY,
-)
-TERM_FATES = (
-    Fates.TERMINATE,
-    Fates.TERMINATE_BORDER,
-    Fates.TERMINATE_BACK,
-    Fates.TERMINATE_LAZY,
-)
 
 
 class TrackOptimiser:

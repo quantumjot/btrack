@@ -30,15 +30,30 @@ use crate::hypothesis::{Hypothesis, HypothesisEngine, HypothesisParams};
 use crate::optimiser::TrackOptimiser;
 
 #[cfg(feature = "python")]
+/// Performs a numerically safe binary Bayesian update using the Law of Total Probability:
+/// P(D) = P(D|A)P(A) + P(D|~A)P(~A)
+///
+/// Returns (update_multiplier, posterior).
 #[pyfunction]
 fn safe_bayesian_update(prior: f64, prob_assign: f64, prob_not_assign: f64) -> (f64, f64) {
     bayes::safe_bayesian_update(prior, prob_assign, prob_not_assign)
 }
 
 #[cfg(feature = "python")]
+/// Computes cosine similarity between two feature vectors, rescaled to [0.0, 1.0].
 #[pyfunction]
 fn cosine_similarity(f1: Vec<f64>, f2: Vec<f64>) -> f64 {
     pdf::cosine_similarity(&f1, &f2)
+}
+
+#[cfg(feature = "python")]
+/// Evaluates the directional von Mises-Fisher (vMF) feature likelihood ratio:
+/// exp(-kappa * (1.0 - cos_sim))
+///
+/// Returns 1.0 for perfect matches or empty feature vectors, and decays exponentially as features diverge.
+#[pyfunction]
+fn vmf_likelihood_ratio(f1: Vec<f64>, f2: Vec<f64>, kappa: f64) -> f64 {
+    pdf::vmf_likelihood_ratio(&f1, &f2, kappa)
 }
 
 #[cfg(feature = "python")]
@@ -383,6 +398,14 @@ impl PyBayesianTracker {
     fn set_update_features(&mut self, features: u32) {
         self.inner.config.use_motion_features = (features & 1) != 0;
         self.inner.config.use_visual_features = (features & 2) != 0;
+    }
+
+    fn set_feature_concentration(&mut self, kappa: f64) {
+        self.inner.config.feature_concentration = kappa;
+    }
+
+    fn get_feature_concentration(&self) -> f64 {
+        self.inner.config.feature_concentration
     }
 
     fn set_max_search_radius(&mut self, radius: f64) {
@@ -764,6 +787,7 @@ fn _btrack_core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("__version__", env!("CARGO_PKG_VERSION"))?;
     m.add_function(wrap_pyfunction!(safe_bayesian_update, m)?)?;
     m.add_function(wrap_pyfunction!(cosine_similarity, m)?)?;
+    m.add_function(wrap_pyfunction!(vmf_likelihood_ratio, m)?)?;
     m.add_function(wrap_pyfunction!(optimise_hypotheses, m)?)?;
     m.add_class::<PyBayesianTracker>()?;
     m.add_class::<PyHypothesis>()?;

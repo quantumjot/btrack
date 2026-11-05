@@ -2,11 +2,19 @@
 
 use nalgebra::{DMatrix, DVector, Vector3};
 
+/// Numerical floor used to prevent zero probabilities.
 pub const DEFAULT_LOW_PROBABILITY: f64 = 1e-308;
+/// Default prior probability for a lost tracklet hypothesis.
 pub const DEFAULT_LOST_PROBABILITY: f64 = 0.1;
+/// Spatial integration accuracy bound ($\delta$) in Euclidean units.
 pub const DEFAULT_ACCURACY: f64 = 2.0;
+/// Probability of spatial non-assignment (clutter / false detection rate).
 pub const PROB_NOT_ASSIGN: f64 = 0.01;
+/// Default concentration parameter ($\kappa$) for von Mises-Fisher directional feature likelihood.
+pub const DEFAULT_FEATURE_CONCENTRATION: f64 = 3.0;
+/// Maximum number of consecutive frames a tracklet can remain lost before termination.
 pub const MAX_LOST: usize = 5;
+/// Maximum spatial search radius for candidate object linkage.
 pub const MAX_SEARCH_RADIUS: f64 = 100.0;
 
 /// Tracking errors corresponding to C++ TrackingError enum.

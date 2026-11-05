@@ -57,16 +57,20 @@ class BayesianTracker:
     Notes
     -----
     This method uses positional information (position, velocity ...) as well as
-    visual information (labels, features...) for track linking.
+    visual appearance features for track linking.
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
     probabilistic model in the form of a Kalman filter [1]_, and utilises this to
     predict future states (and error in states) of each of the objects in the
-    field of view.  We assign new observations to the growing tracklets
-    (linking) by evaluating the posterior probability of each potential linkage
-    from a Bayesian belief matrix for all possible linkages [2]_. The best
-    linkages are those with the highest posterior probability.
+    field of view.
+
+    We assign new observations to the growing tracklets (linking) by evaluating
+    the posterior probability of each potential linkage using a closed-form
+    symmetric joint categorical Bayesian update across all candidate objects [2]_.
+    When visual features are enabled, visual similarity is modeled via directional
+    density likelihood ratios (von Mises-Fisher exponential cosine kernel).
+    The best linkages are those with the highest posterior probability.
 
     Data can be passed in in the following formats:
 
@@ -138,6 +142,9 @@ class BayesianTracker:
 
         # silently set the update method to EXACT
         self._lib.set_update_mode(self._engine, self.configuration.update_method.value)
+        self._lib.set_feature_concentration(
+            self._engine, self.configuration.feature_concentration
+        )
 
         # default parameters and space for stored objects
         self._objects: list[btypes.PyTrackObject] = []
@@ -210,6 +217,7 @@ class BayesianTracker:
             "volume",
             "update_method",
             "store_candidate_graph",
+            "feature_concentration",
         ]
         if attr in attrs_to_update and value is not None:
             update_lib_func = getattr(self, f"_{attr}")
@@ -217,6 +225,10 @@ class BayesianTracker:
 
     def __len__(self) -> int:
         return self.n_tracks
+
+    def _feature_concentration(self, kappa: float) -> None:
+        """Set the concentration parameter (kappa) for visual feature likelihoods."""
+        self._lib.set_feature_concentration(self._engine, float(kappa))
 
     def _max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
@@ -436,8 +448,9 @@ class BayesianTracker:
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
         tracking_updates : list, optional
-            A list of tracking updates to perform. See
-            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
+            A list of tracking update modalities to perform, e.g.
+            `[constants.BayesianUpdateFeatures.MOTION, constants.BayesianUpdateFeatures.VISUAL]`.
+            See :py:class:`btrack.constants.BayesianUpdateFeatures` for details.
         """
 
         logger.info("Starting tracking... ")

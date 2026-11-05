@@ -19,6 +19,7 @@ def _random_config() -> dict:
         "store_candidate_graph": bool(rng.uniform(0, 2)),
         "verbose": bool(rng.uniform(0, 2)),
         "volume": tuple((0, rng.uniform(1, 100)) for _ in range(3)),
+        "feature_concentration": float(rng.uniform(0.1, 10.0)),
     }
 
 

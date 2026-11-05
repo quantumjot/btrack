@@ -3,27 +3,38 @@
 use std::collections::{HashMap, HashSet};
 use nalgebra::DMatrix;
 
-use crate::bayes::safe_bayesian_update;
 use crate::hyperbin::ObjectBin;
 use crate::manager::TrackManager;
 use crate::motion::MotionModel;
-use crate::pdf::{cosine_similarity, multivariate_erf};
+use crate::pdf::{
+    feature_norm, multivariate_erf_fast, precompute_erf_inv_denom, vmf_likelihood_ratio_fast,
+};
 use crate::tracklet::Tracklet;
 use crate::types::{
     ImagingVolume, ObjectStateLabel, TrackObject, TrackingError, TrackingInfo,
-    DEFAULT_ACCURACY, MAX_LOST, MAX_SEARCH_RADIUS, PROB_NOT_ASSIGN,
+    DEFAULT_ACCURACY, DEFAULT_FEATURE_CONCENTRATION, MAX_LOST, MAX_SEARCH_RADIUS, PROB_NOT_ASSIGN,
 };
 
 /// Configuration parameters for the BayesianTracker.
 #[derive(Debug, Clone)]
 pub struct TrackerConfig {
+    /// Maximum search radius for candidate object linkage.
     pub max_search_radius: f64,
+    /// Spatial integration bound around predicted position for erf CDF calculation.
     pub accuracy: f64,
+    /// Probability of spatial non-assignment (clutter / background detection rate).
     pub prob_not_assign: f64,
+    /// Concentration parameter ($\kappa$) for directional von Mises-Fisher visual feature likelihood.
+    pub feature_concentration: f64,
+    /// Maximum number of frames a track can remain lost before termination.
     pub max_lost: usize,
+    /// Whether to evaluate Kalman motion prediction likelihoods.
     pub use_motion_features: bool,
+    /// Whether to evaluate visual appearance feature likelihoods.
     pub use_visual_features: bool,
-    pub update_mode: usize, // 0 = Exact, 1 = Approximate
+    /// Belief matrix computation mode (0 = Exact, 1 = Approximate local search).
+    pub update_mode: usize,
+    /// Biological constraint to prevent incorrect links from metaphase into anaphase.
     pub disallow_metaphase_anaphase_linking: bool,
 }
 
@@ -33,6 +44,7 @@ impl Default for TrackerConfig {
             max_search_radius: MAX_SEARCH_RADIUS,
             accuracy: DEFAULT_ACCURACY,
             prob_not_assign: PROB_NOT_ASSIGN,
+            feature_concentration: DEFAULT_FEATURE_CONCENTRATION,
             max_lost: MAX_LOST,
             use_motion_features: true,
             use_visual_features: false,
@@ -249,22 +261,73 @@ impl BayesianTracker {
         Ok(self.statistics.clone())
     }
 
-    /// Computes full exact belief matrix for all active tracks and candidate observations.
+    /// Computes full exact belief matrix for all active tracks and candidate observations
+    /// using closed-form symmetric categorical Bayesian updates (order-invariant).
+    ///
+    /// For each active tracklet $k$ and candidate observation $i \in \{0, \dots, M-1\}$:
+    /// $$\Lambda_i = \lambda_i^{\text{motion}} \times \lambda_i^{\text{visual}}, \quad \Lambda_{\text{lost}} = 1.0$$
+    ///
+    /// The posterior distribution over mutually exclusive linkages is evaluated in $\mathcal{O}(M)$ time:
+    /// $$P(H_i \mid Z) = \frac{\Lambda_i}{1.0 + \sum_j \Lambda_j}, \quad P(H_{\text{lost}} \mid Z) = \frac{1.0}{1.0 + \sum_j \Lambda_j}$$
     fn cost_exact(&self, belief: &mut DMatrix<f64>, new_objects: &[TrackObject]) {
         let n_obs = new_objects.len();
-        let uniform_prior = 1.0 / (n_obs as f64 + 1.0);
+        if n_obs == 0 {
+            for col in 0..self.active_indices.len() {
+                belief[(0, col)] = 1.0;
+            }
+            return;
+        }
+
+        let obj_positions: Vec<[f64; 3]> = new_objects.iter().map(|o| [o.x, o.y, o.z]).collect();
+        let obj_norms: Vec<f64> = if self.config.use_visual_features {
+            new_objects
+                .iter()
+                .map(|o| feature_norm(o.features.as_slice()))
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        let p_not_assign_spatial = self.config.prob_not_assign.max(1e-99);
+
+        let mut lambda = vec![0.0; n_obs];
 
         for (col, &trk_idx) in self.active_indices.iter().enumerate() {
             let trk = &self.manager.tracks[trk_idx];
-            let mut col_prob = DMatrix::from_element(n_obs + 1, 1, uniform_prior);
 
-            // Pass 1: Motion Model / Spatial Likelihood
-            if self.config.use_motion_features {
+            let (mu, inv_denom, last_label) = if self.config.use_motion_features {
                 let pred = trk.predict();
-                let last_label = trk.track.last().map(|o| o.label).unwrap_or(0);
+                let label = trk.track.last().map(|o| o.label).unwrap_or(0);
+                (
+                    [pred.mu[0], pred.mu[1], pred.mu[2]],
+                    precompute_erf_inv_denom(&pred),
+                    label,
+                )
+            } else {
+                ([0.0; 3], [0.0; 3], 0)
+            };
 
-                for (row, obj) in new_objects.iter().enumerate() {
-                    let mut prob_assign = multivariate_erf(&pred, &obj.position(), self.config.accuracy);
+            let (last_features, trk_norm) = if self.config.use_visual_features {
+                let f = trk.track.last().unwrap().features.as_slice();
+                let n = feature_norm(f);
+                (Some(f), n)
+            } else {
+                (None, 0.0)
+            };
+
+            let mut sum_lambda = 0.0;
+
+            for (row, obj) in new_objects.iter().enumerate() {
+                let mut ratio = 1.0;
+
+                // Motion likelihood ratio
+                if self.config.use_motion_features {
+                    let mut prob_assign = multivariate_erf_fast(
+                        &mu,
+                        &inv_denom,
+                        &obj_positions[row],
+                        self.config.accuracy,
+                    );
 
                     if self.config.disallow_metaphase_anaphase_linking
                         && last_label == ObjectStateLabel::Metaphase as u32
@@ -273,64 +336,74 @@ impl BayesianTracker {
                         prob_assign = 0.0;
                     }
 
-                    let prior_assign = col_prob[(row, 0)];
-                    let (safe_update, posterior) = safe_bayesian_update(
-                        prior_assign,
-                        prob_assign,
-                        self.config.prob_not_assign,
-                    );
-
-                    for r in 0..=n_obs {
-                        if r != row {
-                            col_prob[(r, 0)] *= safe_update;
-                        }
-                    }
-                    col_prob[(row, 0)] = posterior;
+                    ratio *= prob_assign / p_not_assign_spatial;
                 }
-            }
 
-            // Pass 2: Visual Features
-            if self.config.use_visual_features {
-                let last_features = &trk.track.last().unwrap().features;
-
-                for (row, obj) in new_objects.iter().enumerate() {
-                    let prob_assign = cosine_similarity(last_features.as_slice(), obj.features.as_slice());
-                    let prior_assign = col_prob[(row, 0)];
-                    let (safe_update, posterior) = safe_bayesian_update(
-                        prior_assign,
-                        prob_assign,
-                        self.config.prob_not_assign,
+                // Visual features directional likelihood ratio (vMF density)
+                if let Some(lf) = last_features {
+                    let ratio_visual = vmf_likelihood_ratio_fast(
+                        lf,
+                        trk_norm,
+                        obj.features.as_slice(),
+                        obj_norms[row],
+                        self.config.feature_concentration,
                     );
-
-                    for r in 0..=n_obs {
-                        if r != row {
-                            col_prob[(r, 0)] *= safe_update;
-                        }
-                    }
-                    col_prob[(row, 0)] = posterior;
+                    ratio *= ratio_visual;
                 }
+
+                lambda[row] = ratio;
+                sum_lambda += ratio;
             }
 
-            for row in 0..=n_obs {
-                belief[(row, col)] = col_prob[(row, 0)];
+            // Normalizer S = Lambda_lost (1.0) + sum_i Lambda_i
+            let s = 1.0 + sum_lambda;
+            let inv_s = 1.0 / s;
+
+            for row in 0..n_obs {
+                belief[(row, col)] = lambda[row] * inv_s;
             }
+            belief[(n_obs, col)] = 1.0 * inv_s;
         }
     }
 
-    /// Computes approximate belief matrix restricted to neighboring spatial bins.
+    /// Computes approximate belief matrix restricted to neighboring spatial bins
+    /// using closed-form symmetric categorical Bayesian updates (order-invariant).
+    ///
+    /// Candidates outside the local neighborhood $\mathcal{N}$ are assigned zero probability,
+    /// while candidates inside $\mathcal{N}$ and the lost hypothesis are normalized in closed-form:
+    /// $$S = 1.0 + \sum_{i \in \mathcal{N}} \Lambda_i$$
+    /// $$P(H_i \mid Z) = \frac{\Lambda_i}{S} \; (i \in \mathcal{N}), \quad P(H_{\text{lost}} \mid Z) = \frac{1.0}{S}$$
     fn cost_approximate(&self, belief: &mut DMatrix<f64>, new_objects: &[TrackObject]) {
         let n_obs = new_objects.len();
+        if n_obs == 0 {
+            for col in 0..self.active_indices.len() {
+                belief[(0, col)] = 1.0;
+            }
+            return;
+        }
+
         let mut bin = ObjectBin::new(self.config.max_search_radius, 1.0);
         for (i, obj) in new_objects.iter().enumerate() {
-            bin.add_object(obj.clone(), i);
+            bin.add_object(&obj.position(), i);
         }
+
+        let obj_positions: Vec<[f64; 3]> = new_objects.iter().map(|o| [o.x, o.y, o.z]).collect();
+        let obj_norms: Vec<f64> = if self.config.use_visual_features {
+            new_objects
+                .iter()
+                .map(|o| feature_norm(o.features.as_slice()))
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        let p_not_assign_spatial = self.config.prob_not_assign.max(1e-99);
 
         for (col, &trk_idx) in self.active_indices.iter().enumerate() {
             let trk = &self.manager.tracks[trk_idx];
             let neighbors = bin.get_near(&trk.position());
 
             if neighbors.is_empty() {
-                // If no objects within radius, track is lost
                 for r in 0..n_obs {
                     belief[(r, col)] = 0.0;
                 }
@@ -338,19 +411,44 @@ impl BayesianTracker {
                 continue;
             }
 
-            let local_prior = 1.0 / (neighbors.len() as f64 + 1.0);
-            let mut col_prob = DMatrix::zeros(n_obs + 1, 1);
-            for (_, idx) in &neighbors {
-                col_prob[(*idx, 0)] = local_prior;
-            }
-            col_prob[(n_obs, 0)] = local_prior;
-
-            if self.config.use_motion_features {
+            let (mu, inv_denom, last_label) = if self.config.use_motion_features {
                 let pred = trk.predict();
-                let last_label = trk.track.last().map(|o| o.label).unwrap_or(0);
+                let label = trk.track.last().map(|o| o.label).unwrap_or(0);
+                (
+                    [pred.mu[0], pred.mu[1], pred.mu[2]],
+                    precompute_erf_inv_denom(&pred),
+                    label,
+                )
+            } else {
+                ([0.0; 3], [0.0; 3], 0)
+            };
 
-                for (obj, idx) in &neighbors {
-                    let mut prob_assign = multivariate_erf(&pred, &obj.position(), self.config.accuracy);
+            let (last_features, trk_norm) = if self.config.use_visual_features {
+                let f = trk.track.last().unwrap().features.as_slice();
+                let n = feature_norm(f);
+                (Some(f), n)
+            } else {
+                (None, 0.0)
+            };
+
+            // Clear column
+            for r in 0..n_obs {
+                belief[(r, col)] = 0.0;
+            }
+
+            let mut sum_lambda = 0.0;
+
+            for &idx in &neighbors {
+                let obj = &new_objects[idx];
+                let mut ratio = 1.0;
+
+                if self.config.use_motion_features {
+                    let mut prob_assign = multivariate_erf_fast(
+                        &mu,
+                        &inv_denom,
+                        &obj_positions[idx],
+                        self.config.accuracy,
+                    );
 
                     if self.config.disallow_metaphase_anaphase_linking
                         && last_label == ObjectStateLabel::Metaphase as u32
@@ -359,26 +457,31 @@ impl BayesianTracker {
                         prob_assign = 0.0;
                     }
 
-                    let prior_assign = col_prob[(*idx, 0)];
-                    let (safe_update, posterior) = safe_bayesian_update(
-                        prior_assign,
-                        prob_assign,
-                        self.config.prob_not_assign,
-                    );
-
-                    for (_, other_idx) in &neighbors {
-                        if *other_idx != *idx {
-                            col_prob[(*other_idx, 0)] *= safe_update;
-                        }
-                    }
-                    col_prob[(n_obs, 0)] *= safe_update;
-                    col_prob[(*idx, 0)] = posterior;
+                    ratio *= prob_assign / p_not_assign_spatial;
                 }
+
+                if let Some(lf) = last_features {
+                    let ratio_visual = vmf_likelihood_ratio_fast(
+                        lf,
+                        trk_norm,
+                        obj.features.as_slice(),
+                        obj_norms[idx],
+                        self.config.feature_concentration,
+                    );
+                    ratio *= ratio_visual;
+                }
+
+                belief[(idx, col)] = ratio;
+                sum_lambda += ratio;
             }
 
-            for row in 0..=n_obs {
-                belief[(row, col)] = col_prob[(row, 0)];
+            let s = 1.0 + sum_lambda;
+            let inv_s = 1.0 / s;
+
+            for &idx in &neighbors {
+                belief[(idx, col)] *= inv_s;
             }
+            belief[(n_obs, col)] = 1.0 * inv_s;
         }
     }
 
@@ -544,5 +647,79 @@ mod tests {
         assert_eq!(trk.length(), 4);
         assert!(trk.track[2].dummy);
         assert_eq!(trk.track[2].t, 2);
+    }
+
+    #[test]
+    fn test_cost_exact_permutation_symmetry() {
+        let mm = test_motion_model();
+        let mut tracker = BayesianTracker::new(mm, TrackerConfig::default());
+
+        // Ingest objects across frame 0 and 1
+        let obj0 = TrackObject::new(1, 10.0, 10.0, 0.0, 0);
+        let dummy_f1 = TrackObject::new(99, 10.0, 10.0, 0.0, 1);
+        tracker.append(vec![obj0, dummy_f1]);
+        tracker.initialise().unwrap();
+        tracker.update_active();
+
+        assert_eq!(tracker.active_indices.len(), 1);
+
+        // Frame 1 has two identical candidates at equal distance
+        let obj_a = TrackObject::new(2, 11.0, 10.0, 0.0, 1);
+        let obj_b = TrackObject::new(3, 11.0, 10.0, 0.0, 1);
+
+        let mut belief_ab = DMatrix::zeros(3, 1);
+        tracker.cost_exact(&mut belief_ab, &[obj_a.clone(), obj_b.clone()]);
+
+        // Assert exact symmetry between identical candidates
+        assert!(
+            (belief_ab[(0, 0)] - belief_ab[(1, 0)]).abs() < 1e-12,
+            "Candidates A and B must receive equal probabilities! Got A={}, B={}",
+            belief_ab[(0, 0)],
+            belief_ab[(1, 0)]
+        );
+
+        // Assert sum to 1.0
+        let total_ab = belief_ab[(0, 0)] + belief_ab[(1, 0)] + belief_ab[(2, 0)];
+        assert!((total_ab - 1.0).abs() < 1e-12);
+
+        // Test reversed order: B then A
+        let mut belief_ba = DMatrix::zeros(3, 1);
+        tracker.cost_exact(&mut belief_ba, &[obj_b, obj_a]);
+
+        assert!((belief_ba[(0, 0)] - belief_ab[(0, 0)]).abs() < 1e-12);
+        assert!((belief_ba[(1, 0)] - belief_ab[(1, 0)]).abs() < 1e-12);
+        assert!((belief_ba[(2, 0)] - belief_ab[(2, 0)]).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_cost_approximate_permutation_symmetry() {
+        let mm = test_motion_model();
+        let mut cfg = TrackerConfig::default();
+        cfg.update_mode = 1; // Approximate
+        let mut tracker = BayesianTracker::new(mm, cfg);
+
+        let obj0 = TrackObject::new(1, 10.0, 10.0, 0.0, 0);
+        let dummy_f1 = TrackObject::new(99, 10.0, 10.0, 0.0, 1);
+        tracker.append(vec![obj0, dummy_f1]);
+        tracker.initialise().unwrap();
+        tracker.update_active();
+
+        assert_eq!(tracker.active_indices.len(), 1);
+
+        let obj_a = TrackObject::new(2, 11.0, 10.0, 0.0, 1);
+        let obj_b = TrackObject::new(3, 11.0, 10.0, 0.0, 1);
+
+        let mut belief = DMatrix::zeros(3, 1);
+        tracker.cost_approximate(&mut belief, &[obj_a, obj_b]);
+
+        assert!(
+            (belief[(0, 0)] - belief[(1, 0)]).abs() < 1e-12,
+            "Approximate update must be symmetric! Got A={}, B={}",
+            belief[(0, 0)],
+            belief[(1, 0)]
+        );
+
+        let total = belief[(0, 0)] + belief[(1, 0)] + belief[(2, 0)];
+        assert!((total - 1.0).abs() < 1e-12);
     }
 }

@@ -44,6 +44,12 @@ class RustLibraryWrapper:
     def set_update_features(self, engine: _btrack_core.BayesianTracker, features: int) -> None:
         engine.set_update_features(int(features))
 
+    def set_feature_concentration(
+        self, engine: _btrack_core.BayesianTracker, kappa: float
+    ) -> None:
+        """Set the concentration parameter kappa for directional vMF visual feature density."""
+        engine.set_feature_concentration(float(kappa))
+
     def set_store_candidate_graph(self, engine: _btrack_core.BayesianTracker, store_graph: bool) -> None:
         engine.set_store_candidate_graph(bool(store_graph))
 

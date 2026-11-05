@@ -47,11 +47,11 @@ class TrackerConfig(BaseModel):
         The method to perform the bayesian updates during tracklet linking.
 
             * BayesianUpdates.EXACT
-                Use the exact Bayesian update method. Can be slow for systems
-                with many objects.
+                Use the exact closed-form categorical Bayesian update across all
+                candidate objects. Order-invariant and normalized.
             * BayesianUpdates.APPROXIMATE
-                Use the approximate Bayesian update method. Useful for systems
-                with may objects.
+                Use the approximate Bayesian update method restricted to local
+                spatial neighborhood bins. Useful for crowded fields with many objects.
             * BayesianUpdates.CUDA
                 Use the CUDA implementation of the Bayesian update method. Not
                 currently implemented.
@@ -61,8 +61,12 @@ class TrackerConfig(BaseModel):
         A list of feature names to be used during tracking updates. These must
         correspond to named features found in the properties of each
         `:py:class:btrack.btypes.PyTrackObject` in the dataset.
+    feature_concentration : float, default = 3.0
+        The concentration parameter (kappa) for directional von Mises-Fisher (vMF)
+        feature likelihood during visual tracking updates. Controls feature tolerance.
     tracking_updates : list
-        A list of features to be used for tracking, such as MOTION or VISUAL.
+        A list of feature modalities to be used for tracking, such as MOTION
+        (Kalman filter spatial prediction) or VISUAL (directional appearance similarity).
         Must have at least one entry.
     enable_optimisation
         A flag which, if `False`, will report a warning to the user if they then
@@ -86,6 +90,7 @@ class TrackerConfig(BaseModel):
     update_method: constants.BayesianUpdates = constants.BayesianUpdates.EXACT
     optimizer_options: dict = constants.GLPK_OPTIONS
     features: list[str] = []
+    feature_concentration: float = constants.DEFAULT_FEATURE_CONCENTRATION
     tracking_updates: list[constants.BayesianUpdateFeatures] = Field(
         default=[constants.BayesianUpdateFeatures.MOTION],
         min_length=1,

@@ -3,8 +3,6 @@
 use hashbrown::HashMap;
 use nalgebra::Vector3;
 
-use crate::types::TrackObject;
-
 /// Discretized integer coordinate in 4D (x, y, z, t).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HashIndex {
@@ -30,7 +28,7 @@ impl HashIndex {
 #[derive(Debug, Clone)]
 pub struct ObjectBin {
     bin_size_xyz: f64,
-    cube: HashMap<HashIndex, Vec<(TrackObject, usize)>>,
+    cube: HashMap<HashIndex, Vec<usize>>,
 }
 
 impl ObjectBin {
@@ -55,13 +53,13 @@ impl ObjectBin {
         }
     }
 
-    pub fn add_object(&mut self, obj: TrackObject, idx: usize) {
-        let h = self.hash_index(&obj.position());
-        self.cube.entry(h).or_default().push((obj, idx));
+    pub fn add_object(&mut self, pos: &Vector3<f64>, idx: usize) {
+        let h = self.hash_index(pos);
+        self.cube.entry(h).or_default().push(idx);
     }
 
     /// Queries objects in the 27 neighboring spatial bins surrounding `pos`.
-    pub fn get_near(&self, pos: &Vector3<f64>) -> Vec<(TrackObject, usize)> {
+    pub fn get_near(&self, pos: &Vector3<f64>) -> Vec<usize> {
         let center = self.hash_index(pos);
         let mut results = Vec::new();
 
@@ -69,8 +67,8 @@ impl ObjectBin {
             for y in (center.y - 1)..=(center.y + 1) {
                 for x in (center.x - 1)..=(center.x + 1) {
                     let key = HashIndex { x, y, z, n: 1 };
-                    if let Some(objs) = self.cube.get(&key) {
-                        results.extend_from_slice(objs);
+                    if let Some(indices) = self.cube.get(&key) {
+                        results.extend_from_slice(indices);
                     }
                 }
             }
@@ -134,6 +132,7 @@ impl<T: Clone> HypercubeBin<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::types::TrackObject;
 
     #[test]
     fn test_object_bin_query() {
@@ -141,12 +140,12 @@ mod tests {
         let obj1 = TrackObject::new(1, 5.0, 5.0, 5.0, 0);
         let obj2 = TrackObject::new(2, 50.0, 50.0, 50.0, 0);
 
-        bin.add_object(obj1, 0);
-        bin.add_object(obj2, 1);
+        bin.add_object(&obj1.position(), 0);
+        bin.add_object(&obj2.position(), 1);
 
         let query_pos = Vector3::new(6.0, 6.0, 6.0);
         let near = bin.get_near(&query_pos);
         assert_eq!(near.len(), 1);
-        assert_eq!(near[0].1, 0);
+        assert_eq!(near[0], 0);
     }
 }

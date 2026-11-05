@@ -4,12 +4,11 @@ from . import btypes, config, constants, libwrapper, models, utils
 from .io import export_delegator, localizations_to_objects
 from .optimise import hypothesis, optimiser
 
-import ctypes
 import itertools
 import logging
 import os
 import warnings
-from typing import Union
+from typing import Any, Union
 
 import numpy as np
 from numpy import typing as npt
@@ -26,7 +25,7 @@ class BayesianTracker:
     BayesianTracker is a multi object tracking algorithm, specifically used to
     reconstruct tracks in crowded fields. Here we use a probabilistic network of
     information to perform the trajectory linking. This class is a wrapper for
-    the C++ implementation of the BayesianTracker.
+    the Rust implementation of the BayesianTracker.
 
     Parameters
     ----------
@@ -58,16 +57,20 @@ class BayesianTracker:
     Notes
     -----
     This method uses positional information (position, velocity ...) as well as
-    visual information (labels, features...) for track linking.
+    visual appearance features for track linking.
 
     The tracking algorithm assembles reliable sections of track that do not
     contain splitting events (tracklets). Each new tracklet initiates a
     probabilistic model in the form of a Kalman filter [1]_, and utilises this to
     predict future states (and error in states) of each of the objects in the
-    field of view.  We assign new observations to the growing tracklets
-    (linking) by evaluating the posterior probability of each potential linkage
-    from a Bayesian belief matrix for all possible linkages [2]_. The best
-    linkages are those with the highest posterior probability.
+    field of view.
+
+    We assign new observations to the growing tracklets (linking) by evaluating
+    the posterior probability of each potential linkage using a closed-form
+    symmetric joint categorical Bayesian update across all candidate objects [2]_.
+    When visual features are enabled, visual similarity is modeled via directional
+    density likelihood ratios (von Mises-Fisher exponential cosine kernel).
+    The best linkages are those with the highest posterior probability.
 
     Data can be passed in in the following formats:
 
@@ -124,7 +127,7 @@ class BayesianTracker:
         self,
         verbose: bool = True,  # noqa: FBT001 FBT002
     ):
-        """Initialise the BayesianTracker C++ engine and parameters."""
+        """Initialise the BayesianTracker Rust engine and parameters."""
 
         # load the library, get an instance of the engine
         self._initialised = False
@@ -139,6 +142,9 @@ class BayesianTracker:
 
         # silently set the update method to EXACT
         self._lib.set_update_mode(self._engine, self.configuration.update_method.value)
+        self._lib.set_feature_concentration(
+            self._engine, self.configuration.feature_concentration
+        )
 
         # default parameters and space for stored objects
         self._objects: list[btypes.PyTrackObject] = []
@@ -203,7 +209,7 @@ class BayesianTracker:
         else:
             object.__setattr__(self, attr, value)
 
-        # if we need to update the C++ library instance, do it here
+        # if we need to update the Rust library instance, do it here
         attrs_to_update = [
             "motion_model",
             "object_model",
@@ -211,6 +217,7 @@ class BayesianTracker:
             "volume",
             "update_method",
             "store_candidate_graph",
+            "feature_concentration",
         ]
         if attr in attrs_to_update and value is not None:
             update_lib_func = getattr(self, f"_{attr}")
@@ -218,6 +225,10 @@ class BayesianTracker:
 
     def __len__(self) -> int:
         return self.n_tracks
+
+    def _feature_concentration(self, kappa: float) -> None:
+        """Set the concentration parameter (kappa) for visual feature likelihoods."""
+        self._lib.set_feature_concentration(self._engine, float(kappa))
 
     def _max_search_radius(self, max_search_radius: int):
         """Set the maximum search radius for fast cost updates."""
@@ -332,7 +343,7 @@ class BayesianTracker:
             A motion model to be used by the tracker.
         """
 
-        # need to populate fields in the C++ library
+        # need to populate fields in the Rust library
         self._lib.motion(
             self._engine,
             model.measurements,
@@ -360,7 +371,7 @@ class BayesianTracker:
         logger.info(f"Loading object model: {model.name}")
         self.configuration.object_model = model
 
-        # need to populate fields in the C++ library
+        # need to populate fields in the Rust library
         self._lib.model(
             self._engine,
             model.states,
@@ -372,7 +383,7 @@ class BayesianTracker:
     @property
     def frame_range(self) -> tuple:
         """Return the frame range."""
-        return tuple(self.configuration.frame_range)
+        return tuple(self._frame_range)
 
     @property
     def objects(self) -> list[btypes.PyTrackObject]:
@@ -409,13 +420,13 @@ class BayesianTracker:
         # store a copy of the list of objects
         self._objects += objects
 
-    def _stats(self, info_ptr: ctypes.pointer) -> btypes.PyTrackingInfo:
+    def _stats(
+        self, info_ptr: Any
+    ) -> btypes.PyTrackingInfo:
         """Cast the info pointer back to an object."""
-
-        if not isinstance(info_ptr, ctypes.POINTER(btypes.PyTrackingInfo)):
-            raise TypeError("Stats requires the pointer to the object")
-
-        return info_ptr.contents
+        if hasattr(info_ptr, "contents"):
+            return info_ptr.contents
+        return info_ptr
 
     def track_interactive(self, *args, **kwargs) -> None:
         logger.warning("`track_interactive` will be deprecated. Use `track` instead.")
@@ -437,8 +448,9 @@ class BayesianTracker:
             statistics. The tracking will be followed to completion, regardless
             of the step size provided.
         tracking_updates : list, optional
-            A list of tracking updates to perform. See
-            :py:class:`btrack.btypes.BayesianUpdateFeatures` for details.
+            A list of tracking update modalities to perform, e.g.
+            `[constants.BayesianUpdateFeatures.MOTION, constants.BayesianUpdateFeatures.VISUAL]`.
+            See :py:class:`btrack.constants.BayesianUpdateFeatures` for details.
         """
 
         logger.info("Starting tracking... ")

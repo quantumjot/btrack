@@ -1,0 +1,24 @@
+[package]
+name = "btrack_core"
+version = "0.7.1"
+edition = "2021"
+authors = ["Alan R. Lowe <a.lowe@ucl.ac.uk>"]
+description = "Fast Bayesian multi-object tracking core in Rust"
+license = "MIT"
+
+[lib]
+name = "_btrack_core"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+pyo3 = { version = "0.22", optional = true, features = ["extension-module"] }
+numpy = { version = "0.22", optional = true }
+nalgebra = { version = "0.33" }
+statrs = "0.17"
+hashbrown = "0.14"
+thiserror = "1.0"
+minilp = "0.2.2"
+
+[features]
+default = []
+python = ["dep:pyo3", "dep:numpy"]

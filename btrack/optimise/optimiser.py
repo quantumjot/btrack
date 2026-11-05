@@ -16,30 +16,16 @@
 __author__ = "Alan R. Lowe"
 __email__ = "a.lowe@ucl.ac.uk"
 
-from btrack.constants import GLPK_OPTIONS, Fates
+from btrack.constants import GLPK_OPTIONS
 
 from . import hypothesis
 
 import logging
 
-from cvxopt import matrix, spmatrix
-from cvxopt.glpk import ilp
+import _btrack_core
 
 # get the logger instance
 logger = logging.getLogger(__name__)
-
-INIT_FATES = (
-    Fates.INITIALIZE,
-    Fates.INITIALIZE_BORDER,
-    Fates.INITIALIZE_FRONT,
-    Fates.INITIALIZE_LAZY,
-)
-TERM_FATES = (
-    Fates.TERMINATE,
-    Fates.TERMINATE_BORDER,
-    Fates.TERMINATE_BACK,
-    Fates.TERMINATE_LAZY,
-)
 
 
 class TrackOptimiser:
@@ -50,7 +36,7 @@ class TrackOptimiser:
     Parameters
     ----------
     options : dict
-        A dictionary of options to pass to the GLPK optimizer.
+        A dictionary of options to pass to the optimizer.
 
 
     Attributes
@@ -71,22 +57,15 @@ class TrackOptimiser:
         3. Merge/'link' trajectories
         4. Assign a 'fate' or optimal hypothesis to each trajectory
 
-    The global optimisation utilises integer optimisation from the GLPK library
+    The global optimisation utilises pure-Rust integer linear programming.
     Takes in the list of hypotheses and formulates as a mixed integer linear
-    programming problem.  Then attempts to use GLPK to solve the association
-    problem, returns a list of hypotheses to act upon.
-
-    We set up a constraints matrix, A in this manner: (num_hypotheses x 2N)
-    Uses cvxopt.gplk.ilp to:
+    programming problem, then solves the association problem, returning a
+    list of indices of hypotheses to act upon.
 
     minimize    c'*x
     subject to  G*x <= h
                 A*x = b
-                x[I] are all integer (empty set in this case)
                 x[B] are all binary
-
-    Since this is a *minimisation* we need to invert the (log) probability of
-    each hypothesis. If the hypotheses are badly formed, this can take *FOREVER*.
 
     'Report Automated Cell Lineage Construction' Al-Kofahi et al.
     Cell Cycle 2006 vol. 5 (3) pp. 327-335
@@ -101,7 +80,7 @@ class TrackOptimiser:
 
     def __init__(self, options: dict = GLPK_OPTIONS):
         self._hypotheses: list[hypothesis.Hypothesis] = []
-        self.options = options  # TODO(arl): do some option parsing?
+        self.options = options
 
     @property
     def hypotheses(self):
@@ -111,7 +90,7 @@ class TrackOptimiser:
     def hypotheses(self, hypotheses):
         self._hypotheses = hypotheses
 
-    def optimise(self):  # noqa: PLR0915
+    def optimise(self):
         """Run the opimization algorithm.
 
         Returns
@@ -119,107 +98,14 @@ class TrackOptimiser:
         optimized : list
             The list of selected hypotheses that forms the optimal solution.
         """
+        if not self.hypotheses:
+            return []
 
         logger.info("Setting up constraints matrix for global optimisation...")
         if self.options:
-            logger.info(f"Using GLPK options: {self.options}...")
+            logger.info(f"Using optimizer options: {self.options}...")
 
-        # anon function to renumber track ID from C++
-        def trk_idx(_h):
-            return int(_h) - 1
-
-        # calculate the number of hypotheses, could use this moment to cull?
-        n_hypotheses = len(self.hypotheses)
-        N = max(int(h.ID) for h in self.hypotheses)
-
-        # A is the constraints matrix (store as sparse since mostly empty)
-        # note that we make this in the already transposed form...
-        A = spmatrix([], [], [], (2 * N, n_hypotheses), "d")
-        rho = matrix(0.0, (n_hypotheses, 1), "d")
-
-        # iterate over the hypotheses and build the constraints
-        # TODO(arl): vectorize this for increased performance
-        for counter, h in enumerate(self.hypotheses):
-            # set the hypothesis score
-            rho[counter] = h.log_likelihood
-
-            if h.hypothesis_type == Fates.FALSE_POSITIVE:
-                # is this a false positive?
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                A[N + trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type in INIT_FATES:
-                # an initialisation, therefore we only present this in the
-                # second half of the A matrix
-                trk = trk_idx(h.ID)
-                A[N + trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type in TERM_FATES:
-                # a termination event, entry in first half only
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.APOPTOSIS:
-                # an apoptosis event, entry in first half only
-                trk = trk_idx(h.ID)
-                A[trk, counter] = 1
-                # A[N+trk,counter] = 1    # NOTE(arl): added 2019/08/29
-                continue
-
-            elif h.hypothesis_type == Fates.LINK:
-                # a linkage event
-                trk_i = trk_idx(h.ID)
-                trk_j = trk_idx(h.link_ID)
-                A[trk_i, counter] = 1
-                A[N + trk_j, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.DIVIDE:
-                # a branch event
-                trk = trk_idx(h.ID)
-                child_one = trk_idx(h.child_one_ID)
-                child_two = trk_idx(h.child_two_ID)
-                A[trk, counter] = 1
-                A[N + child_one, counter] = 1
-                A[N + child_two, counter] = 1
-                continue
-
-            elif h.hypothesis_type == Fates.MERGE:
-                # a merge event
-                trk = trk_idx(h.ID)
-                parent_one = trk_idx(h.parent_one_ID)
-                parent_two = trk_idx(h.parent_two_ID)
-                A[N + trk, counter] = 1
-                A[parent_one, counter] = 1
-                A[parent_two, counter] = 1
-                continue
-
-            else:
-                raise ValueError(f"Unknown hypothesis: {h.hypothesis_type}")
-
-        logger.info("Optimizing...")
-
-        # now set up the ILP solver
-        G = spmatrix([], [], [], (2 * N, n_hypotheses), "d")
-        h = matrix(0.0, (2 * N, 1), "d")  # NOTE h cannot be a sparse matrix
-        Ix = set()  # empty set of x which are integer
-        B = set(range(n_hypotheses))  # signifies all are binary in x
-        b = matrix(1.0, (2 * N, 1), "d")
-
-        # now try to solve it!!!
-        status, x = ilp(-rho, -G, h, A, b, Ix, B, options=self.options)
-
-        # log the warning if not optimal solution
-        if status != "optimal":
-            logger.warning(f"Optimizer returned status: {status}")
-            return []
-
-        # return only the selected hypotheses
-        results = [i for i, h in enumerate(self.hypotheses) if x[i] > 0]
-
-        logger.info(f"Optimization complete. (Solution: {status})")
+        logger.info("Optimizing with pure Rust ILP solver...")
+        results = _btrack_core.optimise_hypotheses(list(self.hypotheses))
+        logger.info(f"Optimization complete. (Selected {len(results)} hypotheses)")
         return results

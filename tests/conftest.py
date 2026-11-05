@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import btrack
 
 from ._utils import (
@@ -13,7 +15,10 @@ from typing import Union
 import numpy as np
 import numpy.typing as npt
 import pytest
-from qtpy import QtWidgets
+try:
+    from qtpy import QtWidgets
+except ImportError:
+    QtWidgets = None
 
 
 def _write_h5_file(file_path: os.PathLike, test_objects) -> os.PathLike:

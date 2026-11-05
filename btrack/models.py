@@ -310,7 +310,7 @@ class HypothesisModel(BaseModel):
         return int(h_bin[::-1], 2)
 
     def as_ctype(self) -> PyHypothesisParams:
-        """Return the ctypes representation of the `HypothesisModel`."""
+        """Return the parameters representation of the `HypothesisModel`."""
         h_params = PyHypothesisParams()
         fields = [f[0] for f in h_params._fields_]
 

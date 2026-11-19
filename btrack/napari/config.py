@@ -160,20 +160,32 @@ class TrackerConfigs:
         filename,
         overwrite,
         name=None,
+        *,
+        rename_on_conflict: bool = False,
     ) -> str:
-        """Load a TrackerConfig and add it to the store."""
+        """Load a TrackerConfig and add it to the store.
+
+        With ``rename_on_conflict``, use an available numbered name if the
+        requested name is already taken and ``overwrite`` is false.
+        """
 
         config = UnscaledTrackerConfig(filename)
         config_name = config.tracker_config.name if name is None else name
-        config.tracker_config.name = config_name
-
-        # TODO: Make the combobox editable so config names can be changed within the GUI
         if config_name in self.configs and not overwrite:
-            _msg = (
-                f"Config '{config_name}' already exists - config names must be unique."
-            )
-            raise ValueError(_msg)
+            if not rename_on_conflict:
+                _msg = (
+                    f"Config '{config_name}' already exists - "
+                    "config names must be unique."
+                )
+                raise ValueError(_msg)
 
+            base_name = config_name
+            suffix = 2
+            while config_name in self.configs:
+                config_name = f"{base_name} ({suffix})"
+                suffix += 1
+
+        config.tracker_config.name = config_name
         self.configs[config_name] = config
 
         return config_name

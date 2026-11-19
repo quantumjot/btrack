@@ -6,6 +6,7 @@ import btrack.napari
 import btrack.napari.main
 
 import napari
+from napari.components import ViewerModel
 
 import json
 import os
@@ -100,6 +101,43 @@ def test_load_config(track_widget):
 
     assert track_widget.config_name.currentText() == "Default"
     assert new_config_name != original_config_name
+
+
+@pytest.mark.parametrize("name", ["cell", "particle"])
+def test_reload_exported_config_with_conflicting_name(qtbot, tmp_path, name):
+    with patch("napari.current_viewer", return_value=ViewerModel()):
+        track_widget = btrack.napari.main.create_btrack_widget()
+    qtbot.addWidget(track_widget)
+
+    track_widget.config_name.setCurrentText(name)
+    original_radius = track_widget.max_search_radius.value()
+    exported_radius = original_radius + 10
+    track_widget.max_search_radius.setValue(exported_radius)
+    config_path = tmp_path / f"{name}.json"
+
+    with patch(
+        "btrack.napari.widgets.save_path_dialogue_box", return_value=str(config_path)
+    ):
+        track_widget.save_config_button.click()
+    assert btrack.config.load_config(config_path).name == name
+    track_widget.reset_button.click()
+
+    with patch(
+        "btrack.napari.widgets.load_path_dialogue_box", return_value=str(config_path)
+    ):
+        for suffix in (2, 3):
+            track_widget.load_config_button.click()
+            assert track_widget.config_name.currentText() == f"{name} ({suffix})"
+            assert track_widget.max_search_radius.value() == exported_radius
+
+    track_widget.config_name.setCurrentText(name)
+    assert track_widget.max_search_radius.value() == original_radius
+    track_widget.config_name.setCurrentText(f"{name} (2)")
+    assert track_widget.max_search_radius.value() == exported_radius
+    track_widget.max_search_radius.setValue(exported_radius + 10)
+    track_widget.reset_button.click()
+    assert track_widget.config_name.currentText() == f"{name} (2)"
+    assert track_widget.max_search_radius.value() == exported_radius
 
 
 def test_reset_button(track_widget):

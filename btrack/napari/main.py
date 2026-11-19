@@ -375,6 +375,8 @@ def load_config_from_json(
         logger.info(_msg)
         return
 
-    config_name = configs.add_config(filename=load_path, overwrite=False)
+    config_name = configs.add_config(
+        filename=load_path, overwrite=False, rename_on_conflict=True
+    )
     btrack_widget.config_name.addItem(config_name)
     btrack_widget.config_name.setCurrentText(config_name)

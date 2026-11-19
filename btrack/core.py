@@ -505,9 +505,17 @@ class BayesianTracker:
         # now get all of the hypotheses
         return [self._lib.get_hypothesis(self._engine, h) for h in range(n_hypotheses)]
 
-    def optimize(self, **kwargs):
-        """Proxy for `optimise` for our American friends ;)"""
-        return self.optimise(options=kwargs)
+    def optimize(
+        self, options: dict | None = None, **kwargs
+    ) -> list[hypothesis.Hypothesis]:
+        """Optimize the tracks using the GLPK options accepted by :meth:`optimise`.
+
+        Individual GLPK options can also be passed as keyword arguments.
+        A keyword argument overrides the corresponding entry in ``options``.
+        """
+        if kwargs:
+            options = {**(options or {}), **kwargs}
+        return self.optimise(options=options)
 
     def optimise(self, options: dict | None = None) -> list[hypothesis.Hypothesis]:
         """Optimize the tracks.

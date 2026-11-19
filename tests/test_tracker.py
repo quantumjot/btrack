@@ -1,3 +1,5 @@
+from btrack import BayesianTracker
+
 from ._utils import (
     TEST_DATA_PATH,
     full_tracker_example,
@@ -5,9 +7,41 @@ from ._utils import (
 )
 
 import json
+from unittest.mock import Mock
 
 import numpy as np
 import pytest
+
+
+@pytest.mark.parametrize(
+    ("args", "kwargs", "expected"),
+    [
+        pytest.param((), {}, None, id="configured-defaults"),
+        pytest.param(
+            ({"tm_lim": 2500},), {}, {"tm_lim": 2500}, id="positional-options"
+        ),
+        pytest.param(
+            (), {"options": {"tm_lim": 2500}}, {"tm_lim": 2500}, id="named-options"
+        ),
+        pytest.param((), {"options": {}}, {}, id="empty-options"),
+        pytest.param((), {"tm_lim": 2500}, {"tm_lim": 2500}, id="legacy-keywords"),
+        pytest.param(
+            ({"tm_lim": 2500, "msg_lev": 0},),
+            {"tm_lim": 1000},
+            {"tm_lim": 1000, "msg_lev": 0},
+            id="keyword-overrides",
+        ),
+    ],
+)
+def test_optimize_forwards_glpk_options(monkeypatch, args, kwargs, expected):
+    """Check that the alias passes a flat options dictionary to the optimizer."""
+    with BayesianTracker() as tracker:
+        optimise = Mock(return_value=[])
+        monkeypatch.setattr(tracker, "optimise", optimise)
+
+        assert tracker.optimize(*args, **kwargs) is optimise.return_value
+
+    optimise.assert_called_once_with(options=expected)
 
 
 def _gt_object_hook(d):
